@@ -1,0 +1,32 @@
+{
+	"FileVersion": 3,
+	"Version": 0,
+	"VersionName": "0.1.3",
+	"SemVersion": "0.1.3",
+	"FriendlyName": "Persistent Paintables",
+	"Description": "While the Color Gun is equipped, new buildings will be the currently selected color. Also, color sampling and foundation color selection.",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "PersistentPaintables",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "SML",
+        	"SemVersion": "^3.0.1",
+			"Enabled": true
+		}
+	]
+}

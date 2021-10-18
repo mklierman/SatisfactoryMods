@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 0,
+	"VersionName": "0.0.1",
+	"FriendlyName": "Manta Raise",
+	"Description": "Adjusts Flying Manta heights to keep them from flying through your buildings",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Plugins": [
+		{
+			"Name": "SML",
+        	"SemVersion": "^3.0.1",
+			"Enabled": true
+		}
+	]
+}

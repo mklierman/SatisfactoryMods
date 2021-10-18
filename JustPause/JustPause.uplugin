@@ -1,0 +1,25 @@
+{
+	"FileVersion": 3,
+	"Version": 0,
+	"VersionName": "0.0.2",
+	"SemVersion": "0.0.2",
+	"FriendlyName": "Just Pause",
+	"Description": "Pause button goes brrr",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Plugins": [
+		{
+			"Name": "SML",
+        	"SemVersion": "^3.0.1",
+			"Enabled": true
+		}
+	]
+}

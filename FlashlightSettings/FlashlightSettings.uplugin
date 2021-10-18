@@ -1,0 +1,33 @@
+{
+	"FileVersion": 3,
+	"Version": 0,
+	"VersionName": "0.0.7",
+	"SemVersion": "0.0.7",
+	"FriendlyName": "Flashlight Settings",
+	"Description": "Adds a new widget which lets you adjust the settings of your flashlight",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "FlashlightSettings",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+		"Plugins": 
+		[
+			{
+				"Name": "SML",
+				"SemVersion": "^3.0.1",
+				"Enabled": true
+			}
+		]
+}
