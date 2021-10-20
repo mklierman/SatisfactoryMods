@@ -36,3 +36,29 @@ FString UHologramLocation_BPLib::AddCommasToInt(int inputInt)
 
     return dest.c_str();
 }
+
+FVector UHologramLocation_BPLib::GetConnectionComponentLocation(UFGFactoryConnectionComponent* connection)
+{
+    return connection->GetConnectorLocation();
+}
+
+FVector UHologramLocation_BPLib::GetConnectionComponentRotation(UFGFactoryConnectionComponent* connection)
+{
+    return connection->GetConnectorNormal();
+}
+
+FTransform UHologramLocation_BPLib::GetLiftHologramTransform(AFGConveyorLiftHologram* clHologram)
+{
+    return clHologram->GetTopTransform();
+}
+
+FString UHologramLocation_BPLib::FormatIntAsNumberString(int32 number, bool usePeriod)
+{
+    FString formattedString;
+    formattedString = formattedString.FormatAsNumber(number);
+    if (usePeriod)
+    {
+        formattedString = formattedString.Replace(TEXT(","), TEXT("."),ESearchCase::IgnoreCase);
+    }
+    return formattedString;
+}
