@@ -22,15 +22,6 @@ void FHoverPackPoleRangeModule::StartupModule() {
 //		});
 //
 //#endif
-//	//SUBSCRIBE_METHOD(AFGHoverPack::IsPowerConnectionValid, [](auto& scope,const AFGHoverPack* self, UFGPowerConnectionComponent* Connection, bool CheckDistance = true) {
-//	//	UE_LOG(HoverPackPoleRange_Log, Display, TEXT("IsPowerConnectionValid1"));
-//	//	scope.Override(false);
-//	//	});
-//
-//	//SUBSCRIBE_METHOD(AFGHoverPack::IsPowerConnectionValid, [](auto& scope, const AFGHoverPack* self, UFGPowerConnectionComponent* Connection, bool CheckDistance) {
-//	//	UE_LOG(HoverPackPoleRange_Log, Display, TEXT("IsPowerConnectionValid2"));
-//	//	scope.Override(false);
-//	//	});
 //
 //	//SUBSCRIBE_METHOD(AFGHoverPack::IsPowerConnectionValid, [](auto& scope, const AFGHoverPack* self, class UFGPowerConnectionComponent* Connection, bool CheckDistance = true) {
 //	//	UE_LOG(HoverPackPoleRange_Log, Display, TEXT("IsPowerConnectionValid3"));
