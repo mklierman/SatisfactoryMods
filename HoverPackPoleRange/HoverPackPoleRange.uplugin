@@ -1,25 +1,32 @@
 {
-	"FileVersion": 3,
-	"Version": 0,
-	"VersionName": "0.0.2",
-	"SemVersion": "0.0.2",
-	"FriendlyName": "Expanded Hover Range",
-	"Description": "Higher tier Power Poles give the Hover Pack a larger range",
-	"Category": "Modding",
-	"CreatedBy": "SirDigby",
-	"CreatedByURL": "",
-	"DocsURL": "",
-	"MarketplaceURL": "",
-	"SupportURL": "https://discord.gg/WM5KT7pVu8",
-	"CanContainContent": true,
-	"IsBetaVersion": false,
-	"IsExperimentalVersion": false,
-	"Installed": false,
-	"Plugins": [
-		{
-			"Name": "SML",
-        	"SemVersion": "^3.0.1",
-			"Enabled": true
-		}
-	]
+  "FileVersion": 3,
+  "Version": 0,
+  "VersionName": "0.0.2",
+  "SemVersion": "0.0.2",
+  "FriendlyName": "Expanded Hover Range",
+  "Description": "Higher tier Power Poles give the Hover Pack a larger range",
+  "Category": "Modding",
+  "CreatedBy": "SirDigby",
+  "CreatedByURL": "",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "https://discord.gg/WM5KT7pVu8",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": false,
+  "Plugins": [
+    {
+      "Name": "SML",
+      "SemVersion": "^3.0.1",
+      "Enabled": true
+    }
+  ],
+  "Modules": [
+    {
+      "Name": "HoverPackPoleRange",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
 }

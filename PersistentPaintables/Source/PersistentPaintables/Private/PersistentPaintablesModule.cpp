@@ -5,12 +5,9 @@
 #include "Subsystem/SubsystemActorManager.h"
 
 void FPersistentPaintablesModule::StartupModule() {
-	//virtual void PlayBuildEffects( AActor* inInstigator );
 	AFGBuildable* CDOBuildable = GetMutableDefault<AFGBuildable>();
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::PlayBuildEffects, CDOBuildable, [](auto& scope, AFGBuildable* self, AActor* instigator) {
-		// do some nice stuff there
-
 		UWorld* WorldObject = self->GetWorld();
 		USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
 		APersistentPaintablesCppSubSystem* subsystem = SubsystemActorManager->GetSubsystemActor<APersistentPaintablesCppSubSystem>();
