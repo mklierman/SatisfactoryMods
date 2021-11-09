@@ -1,17 +1,26 @@
 {
-	"FileVersion": 3,
-	"Version": 1,
-	"VersionName": "1.0",
-	"FriendlyName": "CDO",
-	"Description": "",
-	"Category": "Modding",
-	"CreatedBy": "SirDigby",
-	"CreatedByURL": "",
-	"DocsURL": "",
-	"MarketplaceURL": "",
-	"SupportURL": "",
-	"CanContainContent": true,
-	"IsBetaVersion": false,
-	"IsExperimentalVersion": false,
-	"Installed": false
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "SemVersion": null,
+  "FriendlyName": "CDO",
+  "Description": "",
+  "Category": "Modding",
+  "CreatedBy": "SirDigby",
+  "CreatedByURL": "",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": false,
+  "Plugins": null,
+  "Modules": [
+    {
+      "Name": "CDO",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
 }

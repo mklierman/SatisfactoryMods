@@ -7,7 +7,6 @@ function New-Sym-Link ($Link) {
 }
 
 $dir = Get-ChildItem $ModDir | Where-Object{$_.PSISContainer}
-
 foreach ($d in $dir){
     New-Sym-Link($d.Name)
 }

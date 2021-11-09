@@ -18,18 +18,18 @@ void FCrashSiteBeaconsModule::StartupModule() {
 	//		subsystem->OnDropPodOpened.Broadcast(self);
 	//	});
 
-	UClass* SomeClass = GetMutableDefault<AFGDropPod>()->GetClass();
-	UFunction* SomeFunc = SomeClass->FindFunctionByName(TEXT("OnOpened"));
-	UBlueprintHookManager* hooker = GetMutableDefault<UBlueprintHookManager>();
-	hooker->HookBlueprintFunction(SomeFunc, [](FBlueprintHookHelper& helper) {
-		UObject* ctx = helper.GetContext(); // the object this function got called onto
-		// do some nice stuff there
-		AFGDropPod* self = Cast<AFGDropPod>(ctx);
-		UWorld* WorldObject = self->GetWorld();
-		USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
-		ACrashSiteBeaconsSubSystem* subsystem = SubsystemActorManager->GetSubsystemActor<ACrashSiteBeaconsSubSystem>();
-		subsystem->OnDropPodOpened.Broadcast(self);
-		}, EPredefinedHookOffset::Return);
+	//UClass* SomeClass = GetMutableDefault<AFGDropPod>()->GetClass();
+	//UFunction* SomeFunc = SomeClass->FindFunctionByName(TEXT("OnOpened"));
+	//UBlueprintHookManager* hooker = GetMutableDefault<UBlueprintHookManager>();
+	//hooker->HookBlueprintFunction(SomeFunc, [](FBlueprintHookHelper& helper) {
+	//	UObject* ctx = helper.GetContext(); // the object this function got called onto
+	//	// do some nice stuff there
+	//	AFGDropPod* self = Cast<AFGDropPod>(ctx);
+	//	UWorld* WorldObject = self->GetWorld();
+	//	USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
+	//	ACrashSiteBeaconsSubSystem* subsystem = SubsystemActorManager->GetSubsystemActor<ACrashSiteBeaconsSubSystem>();
+	//	subsystem->OnDropPodOpened.Broadcast(self);
+	//	}, EPredefinedHookOffset::Return);
 #endif
 }
 
