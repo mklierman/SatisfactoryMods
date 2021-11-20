@@ -1,26 +1,24 @@
 {
-  "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "1.0",
-  "SemVersion": null,
-  "FriendlyName": "UniversalVehiclePaths",
-  "Description": "Load vehicle paths from any type of vehicle",
-  "Category": "Other",
-  "CreatedBy": "SirDigby",
-  "CreatedByURL": "",
-  "DocsURL": "",
-  "MarketplaceURL": "",
-  "SupportURL": "",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "IsExperimentalVersion": false,
-  "Installed": false,
-  "Plugins": null,
-  "Modules": [
-    {
-      "Name": "UniversalVehiclePaths",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ]
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "UniversalVehiclePaths",
+	"Description": "Load vehicle paths from any type of vehicle",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "UniversalVehiclePaths",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
 }

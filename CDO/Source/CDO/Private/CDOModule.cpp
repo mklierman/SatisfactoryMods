@@ -11,6 +11,7 @@
 #include "WheeledVehicles/FGWheeledVehicleMovementComponent6W.h"
 #include "WheeledVehicles/FGWheeledVehicleMovementComponent4W.h"
 #include "WheeledVehicleMovementComponent.h"
+#include "FGResourceSinkSettings.h"
 
 DEFINE_LOG_CATEGORY(CDO_Log);
 void FCDOModule::StartupModule() {
@@ -27,7 +28,7 @@ void FCDOModule::StartupModule() {
 	//		}
 	//		//if (self->mCreatureClass->GetName().Contains("stinger"))
 	//		//{
-	//			
+	//
 	//			//self->mCreatureClass = HogClassReference.TryLoadClass<AFGEnemy>();
 	//		//}
 
@@ -72,15 +73,15 @@ void FCDOModule::StartupModule() {
 			}
 		}
 		});
-
-	SUBSCRIBE_METHOD(AFGCreature::GetIsArachnid, [](auto& scope, AFGCreature* self) {
-		UE_LOG(CDO_Log, Display, TEXT("GetIsArachnid"));
-		});
-
-	SUBSCRIBE_METHOD(AFGCreatureSpawner::GetCreatureToSpawn, [](auto& scope, const AFGCreatureSpawner* self) {
-		UE_LOG(CDO_Log, Display, TEXT("GetCreatureToSpawn: %s"), TCHAR_TO_UTF8(*self->mCreatureClass.GetDefaultObject()->GetName()));
-		});
 //#endif
+	//FString pointExpression = UFGResourceSinkSettings::GetPointCalculationExpression();
+	UFGResourceSinkSettings* rssCDO = GetMutableDefault<UFGResourceSinkSettings>();
+	rssCDO->mMultiplier = 250;
+	float mult = rssCDO->mMultiplier;
+	float exp = rssCDO->mExponent;
+	//UE_LOG(CDO_Log, Display, TEXT("GetPointCalculationExpression: %s"), pointExpression);
+	UE_LOG(CDO_Log, Display, TEXT("mMultiplier: %f"), mult);
+	UE_LOG(CDO_Log, Display, TEXT("mExponent: %f"), exp);
 }
 
 
