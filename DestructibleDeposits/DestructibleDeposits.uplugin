@@ -1,7 +1,8 @@
 {
 	"FileVersion": 3,
-	"Version": 0,
-	"VersionName": "0.0.1",
+	"Version": 1,
+	"VersionName": "1.0.1",
+  "SemVersion": "1.0.1",
 	"FriendlyName": "Destructible Deposits",
 	"Description": "Lets you blow up resource deposits with Nobelisk",
 	"Category": "Modding",
@@ -17,6 +18,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
+      		"SemVersion": "^3.2.0",
 			"Enabled": true
 		}
 	]

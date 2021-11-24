@@ -54,11 +54,22 @@ FTransform UHologramLocation_BPLib::GetLiftHologramTransform(AFGConveyorLiftHolo
 
 FString UHologramLocation_BPLib::FormatIntAsNumberString(int32 number, bool usePeriod)
 {
+    int32 num = number;
+    bool numIsNegative = false;
+    if (num < 0)
+    {
+        numIsNegative = true;
+        num = abs(num);
+    }
     FString formattedString;
-    formattedString = formattedString.FormatAsNumber(number);
+    formattedString = formattedString.FormatAsNumber(num);
     if (usePeriod)
     {
         formattedString = formattedString.Replace(TEXT(","), TEXT("."),ESearchCase::IgnoreCase);
+    }
+    if (numIsNegative)
+    {
+        formattedString.InsertAt(0, "-");
     }
     return formattedString;
 }

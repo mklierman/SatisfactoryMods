@@ -2,7 +2,7 @@
   "FileVersion": 3,
   "Version": 1,
   "VersionName": "1.0",
-  "SemVersion": null,
+  "SemVersion": "1.0.0",
   "FriendlyName": "Infinite Zoop",
   "Description": "",
   "Category": "Modding",
@@ -21,6 +21,13 @@
       "Name": "InfiniteZoop",
       "Type": "Runtime",
       "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "SML",
+      "SemVersion": "^3.2.0",
+      "Enabled": true
     }
   ]
 }
