@@ -10,7 +10,7 @@
 
 
 /**
- * 
+ *
  */
 UCLASS()
 class CDO_API UCDO_BPLib : public UBlueprintFunctionLibrary
@@ -24,4 +24,8 @@ class CDO_API UCDO_BPLib : public UBlueprintFunctionLibrary
 
 	UFUNCTION(BlueprintCallable, Category = "CDO")
 		static float GetGradientForce(UFGRailroadVehicleMovementComponent* actor);
+
+
+	UFUNCTION(BlueprintCallable, Category = "CDO")
+		static void GenerateScannerNodeList(AFGResourceScanner* resourceScanner);
 };

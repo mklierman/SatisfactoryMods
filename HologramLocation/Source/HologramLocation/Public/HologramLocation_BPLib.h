@@ -10,7 +10,7 @@
 
 
 /**
- * 
+ *
  */
 UCLASS()
 class HOLOGRAMLOCATION_API UHologramLocation_BPLib : public UBlueprintFunctionLibrary
@@ -37,4 +37,7 @@ class HOLOGRAMLOCATION_API UHologramLocation_BPLib : public UBlueprintFunctionLi
 
 	UFUNCTION(BlueprintCallable, Category = "HologramLocation")
 		static FString FormatIntAsNumberString(int32 number, bool usePeriod);
+
+	UFUNCTION(BlueprintCallable, Category = "HologramLocation")
+		static FString FormatFloatAsNumberString(float number, bool usePeriod);
 };

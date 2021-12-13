@@ -1,10 +1,11 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0",
-	"FriendlyName": "AltRecipeResearch",
+	"VersionName": "1.0.0",
+	"SemVersion": "1.0.0",
+	"FriendlyName": "Alternate Recipe Research",
 	"Description": "",
-	"Category": "Other",
+	"Category": "Modding",
 	"CreatedBy": "SirDigby",
 	"CreatedByURL": "",
 	"DocsURL": "",
@@ -13,5 +14,20 @@
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
-	"Installed": false
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "AltRecipeResearch",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+		"Plugins": 
+		[
+			{
+				"Name": "SML",
+				"SemVersion": "^3.2.0",
+				"Enabled": true
+			}
+		]
 }

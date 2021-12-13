@@ -73,3 +73,28 @@ FString UHologramLocation_BPLib::FormatIntAsNumberString(int32 number, bool useP
     }
     return formattedString;
 }
+
+FString UHologramLocation_BPLib::FormatFloatAsNumberString(float number, bool usePeriod)
+{
+
+    float num = number;
+    bool numIsNegative = false;
+    if (num < 0.0)
+    {
+        numIsNegative = true;
+        num = abs(num);
+    }
+    FString formattedString;
+    float fractional = modf(number, nullptr);
+    formattedString = formattedString.FormatAsNumber(num);
+    if (usePeriod)
+    {
+        formattedString = formattedString.Replace(TEXT(","), TEXT("."), ESearchCase::IgnoreCase);
+    }
+    if (numIsNegative)
+    {
+        formattedString.InsertAt(0, "-");
+    }
+
+    return formattedString;
+}

@@ -12,11 +12,18 @@
 #include "WheeledVehicles/FGWheeledVehicleMovementComponent4W.h"
 #include "WheeledVehicleMovementComponent.h"
 #include "FGResourceSinkSettings.h"
+#include "Equipment/FGResourceScanner.h"
+#include "Buildables/FGBuildableWidgetSign.h"
 
 DEFINE_LOG_CATEGORY(CDO_Log);
 void FCDOModule::StartupModule() {
-	UFGHardDriveSettings* hdsCDO = GetMutableDefault<UFGHardDriveSettings>();
-//#if !WITH_EDITOR
+	#if !WITH_EDITOR
+	AFGBuildableWidgetSign* SignCDO = GetMutableDefault<AFGBuildableWidgetSign>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableWidgetSign::BeginPlay, SignCDO, [](auto scope, AFGBuildableWidgetSign* self)
+			{
+			UE_LOG(CDO_Log, Display, TEXT("AFGBuildableWidgetSign"));
+			});
+	//
 	//UFGHardDriveSettings* hdsCDO = GetMutableDefault<UFGHardDriveSettings>();
 	//hdsCDO->mUniqueItemCount = 6;
 	//SUBSCRIBE_METHOD_VIRTUAL(AFGCreatureSpawner::BeginPlay, csCDO, [](auto scope, AFGCreatureSpawner* self)
@@ -39,6 +46,12 @@ void FCDOModule::StartupModule() {
 	//SUBSCRIBE_METHOD_VIRTUAL(UFGWheeledVehicleMovementComponent4W::GenerateTireForces, fourWCDO, [](auto& scope, UFGWheeledVehicleMovementComponent4W* self, class UVehicleWheel* Wheel, const FTireShaderInput& Input, FTireShaderOutput& Output) {
 
 	//	});
+	// 	void PrecacheObjects();
+	//AFGResourceScanner* rsCDO = GetMutableDefault<AFGResourceScanner>();
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGResourceScanner::OnScanPressed, rsCDO, [](auto& scope, AFGResourceScanner* self) {
+	//	//self->mNodeClusters.Reset();
+	//	 self->GenerateNodeClusters();
+	// });
 	//SUBSCRIBE_METHOD(AFGWheeledVehicle::SetMovementComponent, [](auto& scope, AFGWheeledVehicle* self, UWheeledVehicleMovementComponent* movementComponent) {
 		//self->mMaxAssistedAcceleration = self->mMaxAssistedAcceleration * 10;
 		/*UFGWheeledVehicleMovementComponent4W* four = Cast< UFGWheeledVehicleMovementComponent4W>(movementComponent);
@@ -62,26 +75,7 @@ void FCDOModule::StartupModule() {
 		}*/
 		//});
 
-	SUBSCRIBE_METHOD(UFGItemDescriptor::GetStackSize, [](auto& scope, TSubclassOf<UFGItemDescriptor> item) {
-		//UE_LOG(CDO_Log, Display, TEXT("GetStackSizeConverted"));
-		if (item->IsValidLowLevel())
-		{
-			if (UFGItemDescriptor::GetForm(item) != EResourceForm::RF_LIQUID && item.GetDefaultObject()->mStackSize != EStackSize::SS_ONE)
-			{
-				//UE_LOG(CDO_Log, Display, TEXT("Override"));
-				scope.Override(500);
-			}
-		}
-		});
-//#endif
-	//FString pointExpression = UFGResourceSinkSettings::GetPointCalculationExpression();
-	UFGResourceSinkSettings* rssCDO = GetMutableDefault<UFGResourceSinkSettings>();
-	rssCDO->mMultiplier = 250;
-	float mult = rssCDO->mMultiplier;
-	float exp = rssCDO->mExponent;
-	//UE_LOG(CDO_Log, Display, TEXT("GetPointCalculationExpression: %s"), pointExpression);
-	UE_LOG(CDO_Log, Display, TEXT("mMultiplier: %f"), mult);
-	UE_LOG(CDO_Log, Display, TEXT("mExponent: %f"), exp);
+#endif
 }
 
 
