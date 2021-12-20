@@ -11,8 +11,11 @@ class AInfiniteZoopSubsystem : public AModSubsystem
 	GENERATED_BODY()
 public:
 	AInfiniteZoopSubsystem();
-	
+
 	UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
 	int currentZoopAmount = 12;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
+	bool zoopCorners = false;
 };
 

@@ -27,10 +27,26 @@ void FInfiniteZoopModule::StartupModule() {
 				AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
 
 				AFGFactoryBuildingHologram* bhg = Cast<AFGFactoryBuildingHologram>(self);
-				if (bhg)
+				//UE_LOG(InfiniteZoop_Log, Display, TEXT("Zoop Corners: "));
+				if (!zoopSubsystem->zoopCorners)
 				{
-					bhg->mMaxZoopAmount = zoopSubsystem->currentZoopAmount - 1;
-					return;
+					UE_LOG(InfiniteZoop_Log, Display, TEXT("Zoop Corners: False"));
+					if (bhg && bhg->mMaxZoopAmount > 0)
+					{
+						bhg->mMaxZoopAmount = zoopSubsystem->currentZoopAmount - 1;
+						UE_LOG(InfiniteZoop_Log, Display, TEXT("Increased Zoop Amount"));
+						return;
+					}
+				}
+				else
+				{
+					UE_LOG(InfiniteZoop_Log, Display, TEXT("Zoop Corners: True"));
+					if (bhg)
+					{
+						bhg->mMaxZoopAmount = zoopSubsystem->currentZoopAmount - 1;
+						UE_LOG(InfiniteZoop_Log, Display, TEXT("Increased Zoop Amount"));
+						return;
+					}
 				}
 
 				AFGLadderHologram* ladderHG = Cast<AFGLadderHologram>(self);

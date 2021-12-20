@@ -1,11 +1,11 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.1.0",
-  "SemVersion": "1.1.0",
-  "FriendlyName": "Infinite Zoop",
+  "VersionName": "1.0.0",
+  "SemVersion": "1.0.0",
+  "FriendlyName": "LoadBalancers",
   "Description": "",
-  "Category": "Modding",
+  "Category": "Other",
   "CreatedBy": "SirDigby",
   "CreatedByURL": "",
   "DocsURL": "",
@@ -15,18 +15,18 @@
   "IsBetaVersion": false,
   "IsExperimentalVersion": false,
   "Installed": false,
-  "Modules": [
-    {
-      "Name": "InfiniteZoop",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ],
   "Plugins": [
     {
       "Name": "SML",
       "SemVersion": "^3.2.0",
       "Enabled": true
+    }
+  ],
+  "Modules": [
+    {
+      "Name": "LoadBalancers",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
     }
   ]
 }
