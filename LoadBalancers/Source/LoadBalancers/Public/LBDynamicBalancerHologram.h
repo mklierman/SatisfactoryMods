@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Hologram/FGConveyorAttachmentHologram.h"
+#include "LBBuildableBalancer3.h"
 #include "LBDynamicBalancerHologram.generated.h"
 
 UENUM()
@@ -25,6 +26,7 @@ public:
 		virtual void ScrollRotate(int32 delta, int32 step) override;
 		virtual int32 GetRotationStep() const override;
 		virtual void ConfigureComponents(AFGBuildable* inBuildable) const override;
+		virtual void ConfigureActor(AFGBuildable* inBuildable) const override;
 
 		EDynamicBalancerHologramBuildStep mBuildStep = EDynamicBalancerHologramBuildStep::DBHBS_PlacementAndRotation;
 
@@ -36,8 +38,27 @@ public:
 		UPROPERTY(EditDefaultsOnly)
 		UStaticMesh* savedStaticMesh;
 
+		//UPROPERTY(EditDefaultsOnly)
+		//	TSubclassOf<UFGRecipe> lb2Recipe;
+		//UPROPERTY(EditDefaultsOnly)
+		//	TSubclassOf<UFGRecipe> lb3Recipe;
+		//UPROPERTY(EditDefaultsOnly)
+		//	TSubclassOf<UFGRecipe> lb4Recipe;
+		//UPROPERTY(EditDefaultsOnly)
+		//	TSubclassOf<UFGRecipe> lb5Recipe;
+		//UPROPERTY(EditDefaultsOnly)
+		//	TSubclassOf<UFGRecipe> lb6Recipe;
+		//UPROPERTY(EditDefaultsOnly)
+		//	TSubclassOf<UFGRecipe> lb7Recipe;
+		//UPROPERTY(EditDefaultsOnly)
+		//	TSubclassOf<UFGRecipe> lb8Recipe;
+		//UPROPERTY(EditDefaultsOnly)
+		//	TSubclassOf<UFGRecipe> lb9Recipe;
+		//UPROPERTY(EditDefaultsOnly)
+		//	TSubclassOf<UFGRecipe> lb10Recipe;
+
 		UPROPERTY(EditDefaultsOnly)
-			TSubclassOf<UFGRecipe> savedRecipe;
+			TMap<int, TSubclassOf<ALBBuildableBalancer3>> BuildableMap;
 
 		bool flipper;
 

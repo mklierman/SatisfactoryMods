@@ -9,6 +9,7 @@
 #include "CDO_BPLib.generated.h"
 
 
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnWidgetCreated, UUserWidget*, Widget);
 /**
  *
  */
@@ -17,15 +18,8 @@ class CDO_API UCDO_BPLib : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
-		UFUNCTION(BlueprintCallable, Category = "CDO")
-		static float GetGravitationalForce(UFGRailroadVehicleMovementComponent* actor);
-	UFUNCTION(BlueprintCallable, Category = "CDO")
-		static float GetResistiveForce(UFGRailroadVehicleMovementComponent* actor);
+	UFUNCTION(BlueprinTCallable)
+		static void BindOnWidgetConstruct(const TSubclassOf<UUserWidget> WidgetClass, FOnWidgetCreated Binding);
 
-	UFUNCTION(BlueprintCallable, Category = "CDO")
-		static float GetGradientForce(UFGRailroadVehicleMovementComponent* actor);
-
-
-	UFUNCTION(BlueprintCallable, Category = "CDO")
-		static void GenerateScannerNodeList(AFGResourceScanner* resourceScanner);
+	static FOnWidgetCreated OnWidgetCreated;
 };

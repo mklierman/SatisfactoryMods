@@ -17,5 +17,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
 	bool zoopCorners = false;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
+	int tempZoopAmount = 0;
 };
 

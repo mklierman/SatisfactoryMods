@@ -4,26 +4,20 @@
 #include "AI/FGAISystem.h"
 #include "FGRailroadVehicleMovementComponent.h"
 #include "Equipment/FGResourceScanner.h"
+#include "Blueprint/UserWidget.h"
+#include "Patching/BlueprintHookHelper.h"
+#include "Patching/BlueprintHookManager.h"
 
-
-float UCDO_BPLib::GetGravitationalForce(UFGRailroadVehicleMovementComponent* actor)
-{
-	return actor->GetGravitationalForce();
-}
-
-float UCDO_BPLib::GetResistiveForce(UFGRailroadVehicleMovementComponent* actor)
-{
-	return actor->GetResistiveForce();
-}
-
-float UCDO_BPLib::GetGradientForce(UFGRailroadVehicleMovementComponent* actor)
-{
-	return actor->GetGradientForce();
-}
-
-void UCDO_BPLib::GenerateScannerNodeList(AFGResourceScanner* resourceScanner)
-{
-	resourceScanner->mNodeClusters.Empty();
-	resourceScanner->GenerateNodeClusters();
-	//resourceScanner->mNodeClusters = newClusters;
+void UCDO_BPLib::BindOnWidgetConstruct(const TSubclassOf<UUserWidget> WidgetClass, FOnWidgetCreated Binding) {
+	if (!WidgetClass)
+		return;
+	UFunction* ConstructFunction = WidgetClass->FindFunctionByName(TEXT("Construct"));
+	if (!ConstructFunction || ConstructFunction->IsNative())
+	{
+		return;
+	}
+	UBlueprintHookManager* HookManager = GEngine->GetEngineSubsystem<UBlueprintHookManager>();
+	HookManager->HookBlueprintFunction(ConstructFunction, [Binding](FBlueprintHookHelper& HookHelper) {
+		Binding.ExecuteIfBound(Cast<UUserWidget>(HookHelper.GetContext()));
+		}, EPredefinedHookOffset::Return);
 }

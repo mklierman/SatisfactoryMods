@@ -1,9 +1,9 @@
 
 
+#include "LBDynamicBalancerHologram.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "FGColoredInstanceMeshProxy.h"
-#include "LBDynamicBalancerHologram.h"
 #include "FGClearanceComponent.h"
 
 void ALBDynamicBalancerHologram::BeginPlay()
@@ -100,66 +100,71 @@ int32 ALBDynamicBalancerHologram::GetRotationStep() const
 
 void ALBDynamicBalancerHologram::ConfigureComponents(AFGBuildable* inBuildable) const
 {
-    if (inBuildable)
-    {
-        for (int i = 1; i <= additionalChunks; i++)
-        {
-            UFGColoredInstanceMeshProxy* newComponent = NewObject<UFGColoredInstanceMeshProxy>(inBuildable, UFGColoredInstanceMeshProxy::StaticClass());
+    //if (inBuildable)
+    //{
+    //    for (int i = 1; i <= additionalChunks; i++)
+    //    {
+    //        UFGColoredInstanceMeshProxy* newComponent = NewObject<UFGColoredInstanceMeshProxy>(inBuildable, UFGColoredInstanceMeshProxy::StaticClass());
 
-            if (newComponent->AttachTo(inBuildable->GetRootComponent(), NAME_None))
-            {
-                FVector newLocation = FVector(0, (200 * i) + 200, -50);
-                FQuat newRotation = FQuat(0, 0, 180, 0);
+    //        if (newComponent->AttachTo(inBuildable->GetRootComponent(), NAME_None))
+    //        {
+    //            FVector newLocation = FVector(0, (200 * i) + 200, -50);
+    //            FQuat newRotation = FQuat(0, 0, 180, 0);
 
-                newComponent->SetRelativeLocationAndRotation(newLocation, newRotation);
-                newComponent->SetStaticMesh(savedStaticMesh);
-                newComponent->RegisterComponent();
+    //            newComponent->SetRelativeLocationAndRotation(newLocation, newRotation);
+    //            newComponent->SetStaticMesh(savedStaticMesh);
+    //            newComponent->RegisterComponent();
 
-                //Add inputs and outputs
+    //            //Add inputs and outputs
 
-                UFGFactoryConnectionComponent* newInput = NewObject<UFGFactoryConnectionComponent>(inBuildable, UFGFactoryConnectionComponent::StaticClass());
+    //            UFGFactoryConnectionComponent* newInput = NewObject<UFGFactoryConnectionComponent>(inBuildable, UFGFactoryConnectionComponent::StaticClass());
 
-                if (newInput->AttachTo(inBuildable->GetRootComponent(), NAME_None))
-                {
-                    newInput->SetDirection(EFactoryConnectionDirection::FCD_INPUT);
-                    newInput->SetConnectorClearance(100);
-                    newInput->SetForwardPeekAndGrabToBuildable(true);
-                    newInput->SetConnector(EFactoryConnectionConnector::FCC_CONVEYOR);
-                    FVector inputLoc = FVector(100, (200 * i) + 200, 0);
-                    FQuat inputRot = FQuat(0, 0, 0, 0);
-                    newInput->SetRelativeLocationAndRotation(inputLoc, inputRot);
-                    newInput->RegisterComponent();
-                }
+    //            if (newInput->AttachTo(inBuildable->GetRootComponent(), NAME_None))
+    //            {
+    //                newInput->SetDirection(EFactoryConnectionDirection::FCD_INPUT);
+    //                newInput->SetConnectorClearance(100);
+    //                newInput->SetForwardPeekAndGrabToBuildable(true);
+    //                newInput->SetConnector(EFactoryConnectionConnector::FCC_CONVEYOR);
+    //                FVector inputLoc = FVector(100, (200 * i) + 200, 0);
+    //                FQuat inputRot = FQuat(0, 0, 0, 0);
+    //                newInput->SetRelativeLocationAndRotation(inputLoc, inputRot);
+    //                newInput->RegisterComponent();
+    //            }
 
-                UFGFactoryConnectionComponent* newOutput = NewObject<UFGFactoryConnectionComponent>(inBuildable, UFGFactoryConnectionComponent::StaticClass());
+    //            UFGFactoryConnectionComponent* newOutput = NewObject<UFGFactoryConnectionComponent>(inBuildable, UFGFactoryConnectionComponent::StaticClass());
 
-                if (newOutput->AttachTo(inBuildable->GetRootComponent(), NAME_None))
-                {
-                    newOutput->SetDirection(EFactoryConnectionDirection::FCD_OUTPUT);
-                    newOutput->SetConnectorClearance(100);
-                    newOutput->SetForwardPeekAndGrabToBuildable(true);
-                    newOutput->SetConnector(EFactoryConnectionConnector::FCC_CONVEYOR);
-                    FVector outputLoc = FVector(-100, (200 * i) + 200, 0);
-                    FQuat outputRot = FQuat(0, 0, 180, 0);
-                    newOutput->SetRelativeLocationAndRotation(outputLoc, outputRot);
-                    newOutput->RegisterComponent();
-                }
+    //            if (newOutput->AttachTo(inBuildable->GetRootComponent(), NAME_None))
+    //            {
+    //                newOutput->SetDirection(EFactoryConnectionDirection::FCD_OUTPUT);
+    //                newOutput->SetConnectorClearance(100);
+    //                newOutput->SetForwardPeekAndGrabToBuildable(true);
+    //                newOutput->SetConnector(EFactoryConnectionConnector::FCC_CONVEYOR);
+    //                FVector outputLoc = FVector(-100, (200 * i) + 200, 0);
+    //                FQuat outputRot = FQuat(0, 0, 180, 0);
+    //                newOutput->SetRelativeLocationAndRotation(outputLoc, outputRot);
+    //                newOutput->RegisterComponent();
+    //            }
 
-                //Expand clearance box
-                auto clearanceComp = Cast<UFGClearanceComponent>(this->GetComponentByClass(UFGClearanceComponent::StaticClass()));
-                if (clearanceComp)
-                {
-                    auto newLoc = clearanceComp->GetComponentLocation();
-                    newLoc.Y += 100;
-                    clearanceComp->SetRelativeLocation(newLoc);
-                    auto boxExt = clearanceComp->GetUnscaledBoxExtent();
-                    clearanceComp->SetBoxExtent(FVector(boxExt.X, boxExt.Y += 100, boxExt.Z));
-                }
-            }
+    //            //Expand clearance box
+    //            auto clearanceComp = Cast<UFGClearanceComponent>(this->GetComponentByClass(UFGClearanceComponent::StaticClass()));
+    //            if (clearanceComp)
+    //            {
+    //                auto newLoc = clearanceComp->GetComponentLocation();
+    //                newLoc.Y += 100;
+    //                clearanceComp->SetRelativeLocation(newLoc);
+    //                auto boxExt = clearanceComp->GetUnscaledBoxExtent();
+    //                clearanceComp->SetBoxExtent(FVector(boxExt.X, boxExt.Y += 100, boxExt.Z));
+    //            }
+    //        }
 
-        }
+    //    }
 
-    }
+    //}
     Super::ConfigureComponents(inBuildable);
 
+}
+
+void ALBDynamicBalancerHologram::ConfigureActor(AFGBuildable* inBuildable) const
+{
+    int balancerSize = additionalChunks + 1;
 }

@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
-	"Version": 0,
-	"VersionName": "0.1.0",
-	"SemVersion": "0.1.0",
+	"Version": 1,
+	"VersionName": "1.0.0",
+	"SemVersion": "1.0.0",
 	"FriendlyName": "Destructible Gas Pillars",
 	"Description": "Allows Gas Pillars to be destroyed with explosives",
 	"Category": "Modding",
@@ -26,7 +26,7 @@
 		[
 			{
 				"Name": "SML",
-      			"SemVersion": "^3.2.0",
+      			"SemVersion": "^3.3.0",
 				"Enabled": true
 			}
 		]

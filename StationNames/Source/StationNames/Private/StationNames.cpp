@@ -13,44 +13,44 @@
 DEFINE_LOG_CATEGORY(StationNames_Log);
 void FStationNamesModule::StartupModule()
 {
-#if !WITH_EDITOR
+//#if !WITH_EDITOR
+//
+//
+//	AFGBuildableDockingStation* CDODockingStation = GetMutableDefault<AFGBuildableDockingStation>();
+//	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableDockingStation::Tick, CDODockingStation, [](AFGBuildableDockingStation* self, float dseconds) {
+//
+//
+//		FText areaText = FText::FromString("Empty");
+//		AFGPlayerController* player = UFGBlueprintFunctionLibrary::GetLocalPlayerController(self->GetWorld());
+//		if (player)
+//		{
+//			UFGMapAreaTexture* mat = player->GetMapAreaTexture(); if (mat)
+//			{
+//				//UFGMapAreaTexture* mat = UFGMapAreaTexture::StaticClass();
+//				auto mapArea = mat->GetMapAreaForWorldLocation(self->GetActorLocation());
+//				if (mapArea)
+//				{
+//					areaText = UFGMapArea::GetAreaDisplayName(mapArea);
+//				}
+//			}
+//		}
+//
+//		FString loadModeString = self->GetIsInLoadMode() ? "Load" : "Unload";
+//		FText loadModeText = FText::FromString(loadModeString);
+//		auto firstItemIndex = self->GetInventory()->GetFirstIndexWithItem();
+//		FText inventoryText = FText::FromString("Empty");
+//		if (firstItemIndex > 0)
+//		{
+//			auto invComp = self->GetInventory();
+//			FInventoryStack invStack = invComp->GetStackFromIndex(firstItemIndex);
+//			FString inventoryString = invStack.Item.ItemClass.Get()->GetName();
+//			inventoryText = FText::FromString(inventoryString);
+//		}
+//
+//		UE_LOG(StationNames_Log, Display, TEXT("Map Area: %s | Load Mode: %s | Item: %s"), *areaText.ToString(), *loadModeText.ToString(), *inventoryText.ToString());
+//		});
 
-
-	AFGBuildableDockingStation* CDODockingStation = GetMutableDefault<AFGBuildableDockingStation>();
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableDockingStation::Tick, CDODockingStation, [](AFGBuildableDockingStation* self, float dseconds) {
-
-
-		FText areaText = FText::FromString("Empty");
-		AFGPlayerController* player = UFGBlueprintFunctionLibrary::GetLocalPlayerController(self->GetWorld());
-		if (player)
-		{
-			UFGMapAreaTexture* mat = player->GetMapAreaTexture(); if (mat)
-			{
-				//UFGMapAreaTexture* mat = UFGMapAreaTexture::StaticClass();
-				auto mapArea = mat->GetMapAreaForWorldLocation(self->GetActorLocation());
-				if (mapArea)
-				{
-					areaText = UFGMapArea::GetAreaDisplayName(mapArea);
-				}
-			}
-		}
-
-		FString loadModeString = self->GetIsInLoadMode() ? "Load" : "Unload";
-		FText loadModeText = FText::FromString(loadModeString);
-		auto firstItemIndex = self->GetInventory()->GetFirstIndexWithItem();
-		FText inventoryText = FText::FromString("Empty");
-		if (firstItemIndex > 0)
-		{
-			auto invComp = self->GetInventory();
-			FInventoryStack invStack = invComp->GetStackFromIndex(firstItemIndex);
-			FString inventoryString = invStack.Item.ItemClass.Get()->GetName();
-			inventoryText = FText::FromString(inventoryString);
-		}
-
-		UE_LOG(StationNames_Log, Display, TEXT("Map Area: %s | Load Mode: %s | Item: %s"), *areaText.ToString(), *loadModeText.ToString(), *inventoryText.ToString());
-		});
-
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableDockingStation::BeginPlay, CDODockingStation, [](AFGBuildableDockingStation* self) {
+	/*SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableDockingStation::BeginPlay, CDODockingStation, [](AFGBuildableDockingStation* self) {
 		struct NameStruct
 		{
 			FString Name;
@@ -129,8 +129,8 @@ void FStationNamesModule::StartupModule()
 
 		self->mMapText = FText::FromString(NewName);
 		self->UpdateRepresentation();
-		});
-#endif
+		});*/
+//#endif
 }
 
 

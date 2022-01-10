@@ -14,15 +14,28 @@
 #include "FGResourceSinkSettings.h"
 #include "Equipment/FGResourceScanner.h"
 #include "Buildables/FGBuildableWidgetSign.h"
+#include "Hologram/FGConveyorBeltHologram.h"
+#include "Hologram/FGPoleHologram.h"
+#include "Hologram/FGBuildableHologram.h"
+#include "FGDroneVehicle.h"
 
 DEFINE_LOG_CATEGORY(CDO_Log);
+
+
+//bool MSPlacementThing(T scope, AFGPoleHologram* self, bool isInputFromARelease)
+//{
+//	return false;
+//}
+
 void FCDOModule::StartupModule() {
-	#if !WITH_EDITOR
-	AFGBuildableWidgetSign* SignCDO = GetMutableDefault<AFGBuildableWidgetSign>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableWidgetSign::BeginPlay, SignCDO, [](auto scope, AFGBuildableWidgetSign* self)
-			{
-			UE_LOG(CDO_Log, Display, TEXT("AFGBuildableWidgetSign"));
-			});
+
+#if !WITH_EDITOR
+	AFGDroneVehicle* droneCDO = GetMutableDefault<AFGDroneVehicle>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGDroneVehicle::IsUseable_Implementation, droneCDO, [](auto scope, const AFGDroneVehicle* self)
+		{
+			scope.Override(true);
+		});
+#endif
 	//
 	//UFGHardDriveSettings* hdsCDO = GetMutableDefault<UFGHardDriveSettings>();
 	//hdsCDO->mUniqueItemCount = 6;
@@ -75,8 +88,10 @@ void FCDOModule::StartupModule() {
 		}*/
 		//});
 
-#endif
+//#endif
+
 }
+
 
 
 IMPLEMENT_GAME_MODULE(FCDOModule, CDO);
