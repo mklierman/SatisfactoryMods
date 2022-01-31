@@ -6,7 +6,7 @@
 //#include "Kismet/KismetAnimationLibrary.h"
 #include "CoreMinimal.h"
 
-DEFINE_LOG_CATEGORY(LoadBalancers_Log);
+//DEFINE_LOG_CATEGORY(LoadBalancers_Log);
 
 ALBBuildableBalancer3::ALBBuildableBalancer3()
 {

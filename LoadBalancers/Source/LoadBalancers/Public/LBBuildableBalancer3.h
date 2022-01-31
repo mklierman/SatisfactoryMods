@@ -37,6 +37,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		TArray<UFGFactoryConnectionComponent*> InputConnections;
 
+
 	UPROPERTY(BlueprintReadWrite)
 	UFGInventoryComponent* Buffer;
 
