@@ -14,7 +14,6 @@
 /**
  *
  */
-//DECLARE_LOG_CATEGORY_EXTERN(LoadBalancers_Log, Display, All);
 UCLASS()
 class LOADBALANCERS_API ALBBuildableBalancer3 : public AFGBuildableConveyorAttachment
 {
