@@ -31,6 +31,7 @@ void ALBBuild_ModularLoadBalancer::Destroyed()
                 newLeader->GroupLeader = newLeader;
 
                 //Figure out how to refund
+
                 newLeader->Buffer->Resize(this->Buffer->GetSizeLinear() - 2);
 
                 newLeader->InputConnections = this->InputConnections;
