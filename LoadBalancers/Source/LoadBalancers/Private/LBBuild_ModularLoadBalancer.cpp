@@ -10,13 +10,20 @@
 DEFINE_LOG_CATEGORY(LoadBalancers_Log);
 ALBBuild_ModularLoadBalancer::ALBBuild_ModularLoadBalancer()
 {
+    this->mInventorySizeX = 2;
+    this->mInventorySizeY = 2;
 }
 
 void ALBBuild_ModularLoadBalancer::BeginPlay()
 {
 	Super::BeginPlay();
-    this->mInventorySizeX = 2;
-    this->mInventorySizeY = 2;
+    if (InputQueue.IsEmpty())
+    {
+        for (int i = 0; i < InputConnections.Num(); i++)
+        {
+            InputQueue.Enqueue(InputConnections[i]);
+        }
+    }
 }
 
 void ALBBuild_ModularLoadBalancer::Destroyed()
@@ -35,6 +42,7 @@ void ALBBuild_ModularLoadBalancer::Destroyed()
                 newLeader->Buffer->Resize(this->Buffer->GetSizeLinear() - 2);
 
                 newLeader->InputConnections = this->InputConnections;
+                newLeader->InputQueue.Empty();
                 newLeader->OutputMap = this->OutputMap;
 
                 newLeader->InputConnections.Remove(this->InputConnections[0]);
@@ -42,6 +50,7 @@ void ALBBuild_ModularLoadBalancer::Destroyed()
 
                 for (auto conn : newLeader->InputConnections)
                 {
+                    newLeader->InputQueue.Enqueue(conn);
                     ALBBuild_ModularLoadBalancer* balancer = Cast<ALBBuild_ModularLoadBalancer>(conn->GetOuterBuildable());
                     if (balancer)
                     {
@@ -94,6 +103,16 @@ void ALBBuild_ModularLoadBalancer::Tick(float dt)
             }
         }
     }
+    //if (MyInputConnection && !MyInputConnection->IsConnected())
+    //{
+    //    if (this->GroupLeader)
+    //    {
+    //        if (this->GroupLeader->InputMap.Contains(MyInputConnection))
+    //        {
+    //            this->GroupLeader->InputMap[MyInputConnection] = 0;
+    //        }
+    //    }
+    //}
 }
 
 bool ALBBuild_ModularLoadBalancer::ShouldSave_Implementation() const
@@ -105,24 +124,46 @@ void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()
 {
     if (this->GroupLeader == this)
     {
-        for (int i = 0; i < InputConnections.Num(); i++)
+        //for (int i = 0; i < InputConnections.Num(); i++)
+        //{
+        //    UFGFactoryConnectionComponent* Input = Cast<UFGFactoryConnectionComponent>(InputConnections[i]);
+        //    if (Input->IsConnected())
+        //    {
+        //        int emptyBufferIndex = Buffer->FindEmptyIndex();
+        //        if (emptyBufferIndex >= 0)
+        //        {
+        //            FInventoryItem OutItem;
+        //            bool OutBool;
+        //            float out_OffsetBeyond;
+        //            OutBool = Input->Factory_GrabOutput(OutItem, out_OffsetBeyond);
+        //            if (OutBool)
+        //            {
+        //                FInventoryStack Stack = UFGInventoryLibrary::MakeInventoryStack(1, OutItem);
+        //                Buffer->AddStackToIndex(emptyBufferIndex, Stack, false);
+        //            }
+        //        }
+        //    }
+        //}
+        int emptyBufferIndex = Buffer->FindEmptyIndex();
+        if (emptyBufferIndex >= 0)
         {
-            UFGFactoryConnectionComponent* Input = Cast<UFGFactoryConnectionComponent>(InputConnections[i]);
-            if (Input->IsConnected())
+            FScopeLock ScopeLock(&mInputLock);
+            UFGFactoryConnectionComponent* currentInput = nullptr;
+            if (InputQueue.Dequeue(currentInput))
             {
-                int emptyBufferIndex = Buffer->FindEmptyIndex();
-                if (emptyBufferIndex >= 0)
+                if (currentInput && currentInput->IsConnected())
                 {
                     FInventoryItem OutItem;
                     bool OutBool;
                     float out_OffsetBeyond;
-                    OutBool = Input->Factory_GrabOutput(OutItem, out_OffsetBeyond);
+                    OutBool = currentInput->Factory_GrabOutput(OutItem, out_OffsetBeyond);
                     if (OutBool)
                     {
                         FInventoryStack Stack = UFGInventoryLibrary::MakeInventoryStack(1, OutItem);
                         Buffer->AddStackToIndex(emptyBufferIndex, Stack, false);
                     }
                 }
+                InputQueue.Enqueue(currentInput);
             }
         }
 
@@ -164,7 +205,7 @@ bool ALBBuild_ModularLoadBalancer::Factory_GrabOutput_Implementation(UFGFactoryC
                 int OutputCalls = *OutputMap.Find(connection);
                 if (!Buffer->IsEmpty())
                 {
-                    FScopeLock ScopeLock(&mLock);
+                    FScopeLock ScopeLock(&mOutputLock);
                     UKismetMathLibrary::MaxOfIntArray(ValueArray, MaxIntIndex, MaxInt);
                     if (OutputCalls == MaxInt)
                     {

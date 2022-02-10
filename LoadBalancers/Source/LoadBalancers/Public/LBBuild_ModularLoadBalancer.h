@@ -9,6 +9,7 @@
 #include "FGInventoryComponent.h"
 #include "LoadBalancersModule.h"
 #include "Misc/ScopeLock.h"
+#include "Containers/Queue.h"
 #include "LBBuild_ModularLoadBalancer.generated.h"
 
 /**
@@ -41,10 +42,14 @@ public:
 	UPROPERTY(BlueprintReadWrite, SaveGame)
 	TMap<ALBBuild_ModularLoadBalancer*, UFGFactoryConnectionComponent*> OutputOwners;
 
-	FCriticalSection mLock;
+	FCriticalSection mOutputLock;
+	FCriticalSection mInputLock;
 
 	UPROPERTY(BlueprintReadWrite, SaveGame)
 		TMap<UFGFactoryConnectionComponent*, int> OutputMap;
+
+
+		TQueue< UFGFactoryConnectionComponent*, EQueueMode::Mpsc> InputQueue;
 
 	UPROPERTY(BlueprintReadWrite, SaveGame)
 	bool OutputCleared;

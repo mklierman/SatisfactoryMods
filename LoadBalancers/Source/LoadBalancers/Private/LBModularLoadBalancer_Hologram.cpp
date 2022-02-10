@@ -28,6 +28,7 @@ AActor* ALBModularLoadBalancer_Hologram::Construct(TArray<AActor*>& out_children
 					for (auto conn : newBalancer->InputConnections)
 					{
 						newBalancer->GroupLeader->InputConnections.Add(conn);
+						newBalancer->GroupLeader->InputQueue.Enqueue(conn);
 					}
 					for (auto conn : newBalancer->OutputMap)
 					{
