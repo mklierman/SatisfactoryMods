@@ -9,5 +9,7 @@ class FCDOModule : public FDefaultGameModuleImpl {
 public:
 	virtual void StartupModule() override;
 
+	void SetMeshInstanced(UMeshComponent* MeshComp, bool Instanced);
+
 	virtual bool IsGameModule() const override { return true; }
 };

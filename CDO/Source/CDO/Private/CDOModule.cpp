@@ -23,7 +23,14 @@
 #include "Hologram/FGBuildableHologram.h"
 #include "FGDroneVehicle.h"
 #include "Equipment/FGBuildGunBuild.h"
+#include "Hologram/FGConveyorLiftHologram.h"
 #include "Equipment/FGBuildGun.h"
+#include "FGProductionIndicatorInstanceComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include <Runtime/Engine/Classes/Components/ProxyInstancedStaticMeshComponent.h>
+#include "FGColoredInstanceMeshProxy.h"
+#include "Resources/FGItemDescriptor.h"
+#include "Buildables/FGBuildablePipeline.h"
 
 DEFINE_LOG_CATEGORY(CDO_Log);
 
@@ -34,9 +41,13 @@ DEFINE_LOG_CATEGORY(CDO_Log);
 //}
 
 void FCDOModule::StartupModule() {
-
-	//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
 #if !WITH_EDITOR
+#endif
+		//	{
+		//		self->mFineTuneRotationStep = 1;
+		//	});
+	//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+//#if !WITH_EDITOR
 	//AFGDroneVehicle* droneCDO = GetMutableDefault<AFGDroneVehicle>();
 	//SUBSCRIBE_METHOD_VIRTUAL(AFGDroneVehicle::IsUseable_Implementation, droneCDO, [](auto scope, const AFGDroneVehicle* self)
 	//	{
@@ -51,28 +62,28 @@ void FCDOModule::StartupModule() {
 	//	});
 	//void SetScrollRotateValue(int32 rotValue) { mScrollRotation = rotValue; }
 	AFGHologram* fCDO = GetMutableDefault<AFGHologram>();
-	SUBSCRIBE_METHOD(AFGHologram::GetScrollRotateValue, [](auto scope, const AFGHologram* self)
-		{
-			//self->mScrollRotation = self->mScrollRotation - 9;
-			float rotfloat = (float)self->mScrollRotation;
-			UE_LOG(CDO_Log, Display, TEXT("AFGHologram::GetScrollRotateValue: %f"), rotfloat);
-			//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
-			//scope.Cancel();
-		});
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::ScrollRotate, fCDO, [](auto scope, AFGHologram* self, int32 delta, int32 step)
-		{/*
-			FRotator newrot = FRotator(0, delta * 5, 0);
-			newrot = newrot + self->GetActorRotation();
-			self->SetActorRotation(newrot);*/
+	//SUBSCRIBE_METHOD(AFGHologram::GetScrollRotateValue, [](auto scope, const AFGHologram* self)
+	//	{
+	//		//self->mScrollRotation = self->mScrollRotation - 9;
+	//		float rotfloat = (float)self->mScrollRotation;
+	//		UE_LOG(CDO_Log, Display, TEXT("AFGHologram::GetScrollRotateValue: %f"), rotfloat);
+	//		//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+	//		//scope.Cancel();
+	//	});
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::ScrollRotate, fCDO, [](auto scope, AFGHologram* self, int32 delta, int32 step)
+	//	{/*
+	//		FRotator newrot = FRotator(0, delta * 5, 0);
+	//		newrot = newrot + self->GetActorRotation();
+	//		self->SetActorRotation(newrot);*/
 
-			float rotfloat = (float)self->mScrollRotation;
-			//UE_LOG(CDO_Log, Display, TEXT("AFGHologram::ScrollRotate: %f"), rotfloat);
-			self->mScrollRotation = 5;
-			//rotfloat = (float)self->mScrollRotation;
-			UE_LOG(CDO_Log, Display, TEXT("AFGHologram::ScrollRotate: %f"), rotfloat);
-			//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
-			//scope.Cancel();
-		});
+	//		float rotfloat = (float)self->mScrollRotation;
+	//		//UE_LOG(CDO_Log, Display, TEXT("AFGHologram::ScrollRotate: %f"), rotfloat);
+	//		self->mScrollRotation = 5;
+	//		//rotfloat = (float)self->mScrollRotation;
+	//		UE_LOG(CDO_Log, Display, TEXT("AFGHologram::ScrollRotate: %f"), rotfloat);
+	//		//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+	//		//scope.Cancel();
+	//	});
 	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::UpdateRotationValuesFromTransform, fCDO, [](auto scope, AFGHologram* self)
 	//	{
 	//		UE_LOG(CDO_Log, Display, TEXT("UpdateRotationValuesFromTransform"));
@@ -85,29 +96,136 @@ void FCDOModule::StartupModule() {
 	//		//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
 	//		scope.Cancel();
 	//	});
-	AFGBuildableHologram* bhgCDO = GetMutableDefault<AFGBuildableHologram>();
+	//AFGBuildableHologram* bhgCDO = GetMutableDefault<AFGBuildableHologram>();
+	////virtual void ConfigureActor(class AFGBuildable* inBuildable) const;
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::ConfigureActor, bhgCDO, [](auto scope, const AFGBuildableHologram* self, AFGBuildable* inBuildable)
+	//	{
+	//			TInlineComponentArray<UMeshComponent*> MeshComps(inBuildable);
+	//			for (const auto& MeshComp : MeshComps) {
+	//				auto StaticMeshProxy = Cast<UProxyInstancedStaticMeshComponent>(MeshComp);
+	//				if (StaticMeshProxy) {
+	//					StaticMeshProxy->SetInstanced(false);
+	//				}
+	//				else {
+	//					auto ColoredMeshProxy = Cast<UFGColoredInstanceMeshProxy>(MeshComp);
+	//					if (ColoredMeshProxy) {
+	//						ColoredMeshProxy->mBlockInstancing = !false;
+	//						ColoredMeshProxy->SetInstanced(false);
+	//					}
+	//					else {
+	//						auto ProdIndInst = Cast<UFGProductionIndicatorInstanceComponent>(MeshComp);
+	//						if (ProdIndInst) {
+	//							ProdIndInst->SetInstanced(false);
+	//						}
+	//					}
+	//				}
+	//				//SetMeshInstanced(MeshComp, false); // false = before swap, true = after restore
+	//			}
+	//	});
+	//AFGBuildable* self = nullptr;
+	//auto currentMesh = Cast<UFGColoredInstanceMeshProxy>(self->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass()));
+	//if (currentMesh)
+	//{
+	//	UStaticMeshComponent* newComponent = NewObject<UStaticMeshComponent>(self, UStaticMeshComponent::StaticClass());
+
+	//	if (newComponent->AttachTo(self->GetRootComponent(), NAME_None))
+	//	{
+	//		FVector newLocation = currentMesh->GetRelativeLocation();
+	//		FQuat newRotation = FQuat(currentMesh->GetRelativeRotation().Quaternion());
+
+	//		newComponent->SetRelativeLocationAndRotation(newLocation, newRotation);
+	//		newComponent->SetStaticMesh(currentMesh->GetStaticMesh());
+	//		newComponent->RegisterComponent();
+
+	//		TArray<USceneComponent*> ChildrenComps;
+	//		currentMesh->GetChildrenComponents(true, ChildrenComps);
+	//		for (auto comp : ChildrenComps)
+	//		{
+	//			comp->AttachToComponent(newComponent, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+	//		}
+
+	//		currentMesh->DestroyComponent();
+	//	}
+	//}
+
+	/*AFGBuildable* bCDO = GetMutableDefault<AFGBuildable>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, bCDO, [](auto scope, const AFGBuildable* self)
+		{
+			auto currentMesh = Cast<UFGColoredInstanceMeshProxy>(self->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass()));
+			if (currentMesh)
+			{
+				UStaticMeshComponent* newComponent = NewObject<UStaticMeshComponent>(self->GetOuter(), UStaticMeshComponent::StaticClass());
+
+				if (newComponent->AttachTo(self->GetRootComponent(), NAME_None))
+				{
+					FVector newLocation = currentMesh->GetRelativeLocation();
+					FQuat newRotation = FQuat(currentMesh->GetRelativeRotation().Quaternion());
+
+					newComponent->SetRelativeLocationAndRotation(newLocation, newRotation);
+					newComponent->SetStaticMesh(currentMesh->GetStaticMesh());
+					newComponent->RegisterComponent();
+
+					TArray<USceneComponent*> ChildrenComps;
+					currentMesh->GetChildrenComponents(true, ChildrenComps);
+					for (auto comp : ChildrenComps)
+					{
+						comp->AttachToComponent(newComponent, FAttachmentTransformRules::KeepRelativeTransform, comp->GetAttachSocketName());
+					}
+
+					currentMesh->DestroyComponent();
+				}
+			}*/
+
+
+			//self->GetRootComponent()->Component
+			//TInlineComponentArray<UMeshComponent*> MeshComps(self);
+			//for (const auto& MeshComp : MeshComps) {
+			//	auto StaticMeshProxy = Cast<UProxyInstancedStaticMeshComponent>(MeshComp);
+			//	if (StaticMeshProxy) {
+			//		StaticMeshProxy->SetInstanced(false);
+			//		StaticMeshProxy->SetInstanced(true);
+			//	}
+			//	else {
+			//		auto ColoredMeshProxy = Cast<UFGColoredInstanceMeshProxy>(MeshComp);
+			//		if (ColoredMeshProxy) {
+			//			ColoredMeshProxy->mBlockInstancing = !false;
+			//			ColoredMeshProxy->SetInstanced(false);
+			//			ColoredMeshProxy->mBlockInstancing = !true;
+			//			ColoredMeshProxy->SetInstanced(true);
+			//		}
+			//		else {
+			//			auto ProdIndInst = Cast<UFGProductionIndicatorInstanceComponent>(MeshComp);
+			//			if (ProdIndInst) {
+			//				ProdIndInst->SetInstanced(false);
+			//				ProdIndInst->SetInstanced(true);
+			//			}
+			//		}
+			//	}
+			//	//SetMeshInstanced(MeshComp, false); // false = before swap, true = after restore
+			//}
+		//});
 	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::ScrollRotate, bhgCDO, [](auto scope, AFGBuildableHologram* self, int32 delta, int32 step)
 	//	{
 	//		scope.Cancel();
 	//		UE_LOG(CDO_Log, Display, TEXT("AFGBuildableHologram::ScrollRotate"));
 	//		//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+	////	});
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::SetHologramLocationAndRotation, bhgCDO, [](auto scope, AFGBuildableHologram* self, const FHitResult& hitResult)
+	//	{
+	//		//scope.Cancel();
+	//		//self->mScrollRotation = self->mScrollRotation - 9;
+	//		//float rotfloat = (float)self->mScrollRotation;
+	//		//UE_LOG(CDO_Log, Display, TEXT("AFGBuildableHologram::SetHologramLocationAndRotation: %f"), rotfloat);
+	//		//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
 	//	});
-	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::SetHologramLocationAndRotation, bhgCDO, [](auto scope, AFGBuildableHologram* self, const FHitResult& hitResult)
-		{
-			//scope.Cancel();
-			//self->mScrollRotation = self->mScrollRotation - 9;
-			//float rotfloat = (float)self->mScrollRotation;
-			//UE_LOG(CDO_Log, Display, TEXT("AFGBuildableHologram::SetHologramLocationAndRotation: %f"), rotfloat);
-			//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
-		});
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::SetHologramLocationAndRotation, bhgCDO, [](AFGBuildableHologram* self, const FHitResult& hitResult)
-		{
-			//scope.Cancel();
-			//float rotfloat = (float)self->mScrollRotation;
-			//UE_LOG(CDO_Log, Display, TEXT("AFGBuildableHologram::SetHologramLocationAndRotation_After: %f"), rotfloat);
-			//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
-		});
-	AFGBeamHologram* bhCDO = GetMutableDefault<AFGBeamHologram>();
+	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::SetHologramLocationAndRotation, bhgCDO, [](AFGBuildableHologram* self, const FHitResult& hitResult)
+	//	{
+	//		//scope.Cancel();
+	//		//float rotfloat = (float)self->mScrollRotation;
+	//		//UE_LOG(CDO_Log, Display, TEXT("AFGBuildableHologram::SetHologramLocationAndRotation_After: %f"), rotfloat);
+	//		//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+	//	});
+	//AFGBeamHologram* bhCDO = GetMutableDefault<AFGBeamHologram>();
 	//SUBSCRIBE_METHOD_VIRTUAL(AFGBeamHologram::SetHologramLocationAndRotation, bhCDO, [](auto scope, AFGBeamHologram* self, const FHitResult& hitResult)
 	//	{
 	//		scope.Cancel();
@@ -182,7 +300,7 @@ void FCDOModule::StartupModule() {
 	//		FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
 	//		//scope.Override(1);
 	//	});
-#endif
+//#endif
 	//
 	//UFGHardDriveSettings* hdsCDO = GetMutableDefault<UFGHardDriveSettings>();
 	//hdsCDO->mUniqueItemCount = 6;
@@ -239,6 +357,25 @@ void FCDOModule::StartupModule() {
 
 }
 
-
+void FCDOModule::SetMeshInstanced(UMeshComponent* MeshComp, bool Instanced)
+{
+	auto StaticMeshProxy = Cast<UProxyInstancedStaticMeshComponent>(MeshComp);
+	if (StaticMeshProxy) {
+		StaticMeshProxy->SetInstanced(Instanced);
+	}
+	else {
+		auto ColoredMeshProxy = Cast<UFGColoredInstanceMeshProxy>(MeshComp);
+		if (ColoredMeshProxy) {
+			ColoredMeshProxy->mBlockInstancing = !Instanced;
+			ColoredMeshProxy->SetInstanced(Instanced);
+		}
+		else {
+			auto ProdIndInst = Cast<UFGProductionIndicatorInstanceComponent>(MeshComp);
+			if (ProdIndInst) {
+				ProdIndInst->SetInstanced(Instanced);
+			}
+		}
+	}
+}
 
 IMPLEMENT_GAME_MODULE(FCDOModule, CDO);

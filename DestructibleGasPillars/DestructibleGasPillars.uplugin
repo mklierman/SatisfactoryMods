@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.0",
-	"SemVersion": "1.0.0",
+	"VersionName": "1.0.1",
+	"SemVersion": "1.0.1",
 	"FriendlyName": "Destructible Gas Pillars",
 	"Description": "Allows Gas Pillars to be destroyed with explosives",
 	"Category": "Modding",

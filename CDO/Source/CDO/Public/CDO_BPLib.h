@@ -18,8 +18,10 @@ class CDO_API UCDO_BPLib : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
-	UFUNCTION(BlueprinTCallable)
-		static void BindOnWidgetConstruct(const TSubclassOf<UUserWidget> WidgetClass, FOnWidgetCreated Binding);
 
 	static FOnWidgetCreated OnWidgetCreated;
+
+
+	UFUNCTION(BlueprinTCallable)
+		static void SetLiftProperties(float stepHeight, float minHeight);
 };

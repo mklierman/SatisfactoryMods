@@ -13,7 +13,7 @@
 DEFINE_LOG_CATEGORY(HoverPackPoleRange_Log);
 void FHoverPackPoleRangeModule::StartupModule() {
 //	AFGHoverPack* CDOHoverPack = GetMutableDefault<AFGHoverPack>();
-//#if !WITH_EDITOR
+#if !WITH_EDITOR
 //	UE_LOG(HoverPackPoleRange_Log, Display, TEXT("Starting module"));
 //	SUBSCRIBE_METHOD(AFGHoverPack::ConnectToPowerConnection, [](auto& scope, AFGHoverPack* self, class UFGPowerConnectionComponent* Connection) {
 //		UE_LOG(HoverPackPoleRange_Log, Display, TEXT("Starting Hook"));
@@ -23,9 +23,41 @@ void FHoverPackPoleRangeModule::StartupModule() {
 //		});
 //
 //
+	//bool IsPowerConnectionValid(class UFGPowerConnectionComponent* Connection, bool CheckDistance = true) const;
+	SUBSCRIBE_METHOD(AFGHoverPack::IsPowerConnectionValid, [](auto& scope, const AFGHoverPack* self, UFGPowerConnectionComponent* Connection, bool CheckDistance)
+		{
+			UE_LOG(HoverPackPoleRange_Log, Display, TEXT("IsPowerConnectionValid"));
+
+			FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+		});
+
+	//void ConnectToPowerConnection(class UFGPowerConnectionComponent* Connection);
+	SUBSCRIBE_METHOD(AFGHoverPack::ConnectToPowerConnection, [](auto& scope, AFGHoverPack* self, UFGPowerConnectionComponent* Connection)
+		{
+			UE_LOG(HoverPackPoleRange_Log, Display, TEXT("ConnectToPowerConnection"));
+
+			FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+		});
 //	//ConnectToNearestPowerConnection
-//	SUBSCRIBE_METHOD(AFGHoverPack::ConnectToNearestPowerConnection, [](auto& scope, const AFGHoverPack* self)
-//		{
+	SUBSCRIBE_METHOD(AFGHoverPack::ConnectToNearestPowerConnection, [](auto& scope, const AFGHoverPack* self)
+		{
+	//		UE_LOG(HoverPackPoleRange_Log, Display, TEXT("ConnectToNearestPowerConnection"));
+
+	//		FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+	/*TArray< struct FOverlapResult& > OutOverlaps;
+	FCollisionShape searchSphere = FCollisionShape::Sphere;
+	searchSphere.SetSphere(self->mPowerConnectionSearchRadius);
+	UWorld::OverlapMultiByChannel(OutOverlaps, self->GetActorLocation(), self->GetActorRotation().Quaternion(), ECollisionChannel::ECC_GameTraceChannel10, searchSphere);
+	for (FOverlapResult& comp : OutOverlaps)
+	{
+		auto powerComp = Cast< UFGPowerConnectionComponent>(comp.Component);
+		if (powerComp)
+		{
+
+		}
+	}*/
+		});
+#endif
 //			return;
 //			if (self == nullptr)
 //			{

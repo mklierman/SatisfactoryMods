@@ -29,6 +29,12 @@ public:
 	// End AActor interface
 	virtual bool ShouldSave_Implementation() const override;
 
+	virtual void SetCustomizationData_Native(const FFactoryCustomizationData& customizationData) override;
+	virtual void ApplyCustomizationData_Native(const FFactoryCustomizationData& customizationData) override;
+	void LocalSetCustomizationData_Native(const FFactoryCustomizationData& customizationData);
+	void LocalApplyCustomizationData_Native(const FFactoryCustomizationData& customizationData);
+
+
 	UPROPERTY(BlueprintReadWrite, SaveGame)
 		TArray<UFGFactoryConnectionComponent*> InputConnections;
 
@@ -42,32 +48,45 @@ public:
 	UPROPERTY(BlueprintReadWrite, SaveGame)
 	TMap<ALBBuild_ModularLoadBalancer*, UFGFactoryConnectionComponent*> OutputOwners;
 
+	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
+	TArray<ALBBuild_ModularLoadBalancer*> GroupModules;
+
+	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
+		TArray<UMaterialInterface*> DefaultLoadBalancerMaterials;
+	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
+		UMaterialInterface* TempLoadBalancerMaterial;
+	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
+		UFGColoredInstanceMeshProxy* Mesh;
+
 	FCriticalSection mOutputLock;
 	FCriticalSection mInputLock;
 
 	UPROPERTY(BlueprintReadWrite, SaveGame)
 		TMap<UFGFactoryConnectionComponent*, int> OutputMap;
+	UPROPERTY(BlueprintReadWrite, SaveGame)
+		TMap<UFGFactoryConnectionComponent*, int> InputMap;
 
-
-		TQueue< UFGFactoryConnectionComponent*, EQueueMode::Mpsc> InputQueue;
 
 	UPROPERTY(BlueprintReadWrite, SaveGame)
 	bool OutputCleared;
 
 	UPROPERTY(BlueprintReadWrite, SaveGame)
 	UFGFactoryConnectionComponent* MyOutputConnection;
+	UPROPERTY(BlueprintReadWrite, SaveGame)
+		UFGFactoryConnectionComponent* MyInputConnection;
 
 	float mOffset;
 
-	UPROPERTY(BlueprintReadWrite, SaveGame)
+	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
 	ALBBuild_ModularLoadBalancer* GroupLeader;
 
-	UPROPERTY(BlueprintReadWrite, SaveGame)
+	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
 	ALBBuild_ModularLoadBalancer* SnappedBalancer;
 
 protected:
 	// Begin Factory_ interface
 	virtual void Factory_CollectInput_Implementation() override;
+	void CollectInput(UFGFactoryConnectionComponent* connection);
 	void GiveOutput(bool& result, FInventoryItem& out_item);
 	virtual bool Factory_GrabOutput_Implementation(class UFGFactoryConnectionComponent* connection, FInventoryItem& out_item, float& out_OffsetBeyond, TSubclassOf< UFGItemDescriptor > type) override;
 	// End Factory_ interface
