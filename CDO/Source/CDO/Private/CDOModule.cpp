@@ -31,6 +31,7 @@
 #include "FGColoredInstanceMeshProxy.h"
 #include "Resources/FGItemDescriptor.h"
 #include "Buildables/FGBuildablePipeline.h"
+#include "FGVehicleWheel.h"
 
 DEFINE_LOG_CATEGORY(CDO_Log);
 

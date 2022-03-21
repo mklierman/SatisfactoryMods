@@ -5,6 +5,7 @@
 #include <string>
 #include <algorithm>
 #include <regex>
+#include "Misc/CoreDelegates.h"
 
 FString UHologramLocation_BPLib::RegexReplace(FString inputString, FString regexCode, FString replacementText = "")
 {

@@ -1,0 +1,421 @@
+﻿# HologramLocation German translation.
+# Copyright Epic Games, Inc. All Rights Reserved.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: HologramLocation\n"
+"POT-Creation-Date: 2022-03-15 23:29\n"
+"PO-Revision-Date: 2022-03-15 23:29\n"
+"Language-Team: \n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Key:	0110B9E54B1D2853E7DC31A6D6ED4239
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock_271.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock_271.Text
+msgctxt ",0110B9E54B1D2853E7DC31A6D6ED4239"
+msgid "<Y>Y</>"
+msgstr ""
+
+#. Key:	017BED5E4B4EF0F57E3E399402F337FC
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.HitActorComponent_TextBlock_1.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.HitActorComponent_TextBlock_1.Text
+msgctxt ",017BED5E4B4EF0F57E3E399402F337FC"
+msgid "Component"
+msgstr "Komponente"
+
+#. Key:	14D4902C47E1204791B644B8B66CA7DD
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock.Text
+msgctxt ",14D4902C47E1204791B644B8B66CA7DD"
+msgid "<Z>Z</>"
+msgstr ""
+
+#. Key:	16F9AC214734FF07DDAB53ABAEBCFFD6
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock_7.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock_7.Text
+msgctxt ",16F9AC214734FF07DDAB53ABAEBCFFD6"
+msgid "<Z>Z</>"
+msgstr ""
+
+#. Key:	1905BB794F13B22998A040B124988458
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.ComponentLocationZ_TextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.ComponentLocationZ_TextBlock.Text
+msgctxt ",1905BB794F13B22998A040B124988458"
+msgid "123"
+msgstr ""
+
+#. Key:	1E39F7044B3E5EB969CAADBEE5CCA9FC
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_699.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_699.Text
+msgctxt ",1E39F7044B3E5EB969CAADBEE5CCA9FC"
+msgid "<Y>Y</>"
+msgstr ""
+
+#. Key:	205A06024F6BF9E7071C89910DFC7A5E
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ComponentLocationX_TextBlock_1.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ComponentLocationX_TextBlock_1.Text
+msgctxt ",205A06024F6BF9E7071C89910DFC7A5E"
+msgid "123"
+msgstr ""
+
+#. Key:	20751F164B3DB101915FDFBA2F66A6B6
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock_139.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock_139.Text
+msgctxt ",20751F164B3DB101915FDFBA2F66A6B6"
+msgid "<X>X</>"
+msgstr ""
+
+#. Key:	20AC07B14196A8B167E0D99CBDC1ABB0
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.TextBlock_5.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.TextBlock_5.Text
+msgctxt ",20AC07B14196A8B167E0D99CBDC1ABB0"
+msgid "Scale"
+msgstr ""
+
+#. Key:	22B4019545AC435F3CE28CA82E07EE90
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_271.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_271.Text
+msgctxt ",22B4019545AC435F3CE28CA82E07EE90"
+msgid "<Y>Y</>"
+msgstr ""
+
+#. Key:	28A626AE410571F077528693FC054D3F
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.TextBlock_6.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.TextBlock_6.Text
+msgctxt ",28A626AE410571F077528693FC054D3F"
+msgid "Location"
+msgstr "Standort"
+
+#. Key:	2AB7D84B48F75D2C1B1717854E5BC6AA
+#. SourceLocation:	/HologramLocation/Config/HologramLocation_OrientationEnum.HologramLocation_OrientationEnum.DisplayNameMap(0 - Value).DisplayNameMap
+#: /HologramLocation/Config/HologramLocation_OrientationEnum.HologramLocation_OrientationEnum.DisplayNameMap(0 - Value).DisplayNameMap
+msgctxt ",2AB7D84B48F75D2C1B1717854E5BC6AA"
+msgid "Vertical"
+msgstr ""
+
+#. Key:	37A24F1C4730B0A0139002936A3AC9EA
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock_5.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock_5.Text
+msgctxt ",37A24F1C4730B0A0139002936A3AC9EA"
+msgid "<X>X</>"
+msgstr ""
+
+#. Key:	394C492E49F779D8F5DC6A970832B662
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.ComponentLocationX_TextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.ComponentLocationX_TextBlock.Text
+msgctxt ",394C492E49F779D8F5DC6A970832B662"
+msgid "-1,234,567"
+msgstr ""
+
+#. Key:	3E6050CD4DC224A9DF476DA0B278E7ED
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.HitActor_TextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.HitActor_TextBlock.Text
+msgctxt ",3E6050CD4DC224A9DF476DA0B278E7ED"
+msgid "Actor"
+msgstr "Akteur"
+
+#. Key:	54F6DAFD4AB2BFDC7CB304A1F631B236
+#. SourceLocation:	/HologramLocation/HologramLocation_GameInstance.Default__HologramLocation_GameInstance_C.ModKeyBindings(0).ModKeyBindings.DisplayName
+#: /HologramLocation/HologramLocation_GameInstance.Default__HologramLocation_GameInstance_C.ModKeyBindings(0).ModKeyBindings.DisplayName
+msgctxt ",54F6DAFD4AB2BFDC7CB304A1F631B236"
+msgid "Save Location & Rotation"
+msgstr ""
+
+#. Key:	571C982749FAC1580EEDFCA501333C57
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.TextBlock_1.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.TextBlock_1.Text
+msgctxt ",571C982749FAC1580EEDFCA501333C57"
+msgid "Rotation"
+msgstr ""
+
+#. Key:	5B4D344A4267CABD2C5779A3F9CBBEE0
+#. SourceLocation:	/HologramLocation/Config/HologramLocation_LocationEnum.HologramLocation_LocationEnum.DisplayNameMap(1 - Value).DisplayNameMap
+#: /HologramLocation/Config/HologramLocation_LocationEnum.HologramLocation_LocationEnum.DisplayNameMap(1 - Value).DisplayNameMap
+msgctxt ",5B4D344A4267CABD2C5779A3F9CBBEE0"
+msgid "Top Right"
+msgstr ""
+
+#. Key:	5E9CA98846DAC410394D5AAB8B1FEE0B
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ActorRotation_TextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ActorRotation_TextBlock.Text
+msgctxt ",5E9CA98846DAC410394D5AAB8B1FEE0B"
+msgid "123"
+msgstr ""
+
+#. Key:	5FAC7E24459782AB83C8B1B78658F348
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_1.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_1.Text
+msgctxt ",5FAC7E24459782AB83C8B1B78658F348"
+msgid "<Y> °</>"
+msgstr ""
+
+#. Key:	6206AA78412BEA89E9AC60950BB4F042
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.ActorLocationX_TextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.ActorLocationX_TextBlock.Text
+msgctxt ",6206AA78412BEA89E9AC60950BB4F042"
+msgid "123"
+msgstr ""
+
+#. Key:	65F0C0A8408B218D360FAF97337C2B05
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.TextBlock_4.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.TextBlock_4.Text
+msgctxt ",65F0C0A8408B218D360FAF97337C2B05"
+msgid "Roll"
+msgstr ""
+
+#. Key:	66D8287D45C30960BC900F84ACDC7DBD
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.TextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.TextBlock.Text
+msgctxt ",66D8287D45C30960BC900F84ACDC7DBD"
+msgid "Location"
+msgstr "Standort"
+
+#. Key:	76AF68B043873AF78E071A838BDA13E6
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_388.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_388.Text
+msgctxt ",76AF68B043873AF78E071A838BDA13E6"
+msgid "<Z>Z</>"
+msgstr ""
+
+#. Key:	8247BF2541602E5F22A012AFD987038A
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.ActorLocationZ_TextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.ActorLocationZ_TextBlock.Text
+msgctxt ",8247BF2541602E5F22A012AFD987038A"
+msgid "123"
+msgstr ""
+
+#. Key:	88B7349845B103E2E2A38FB87BC9176D
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ComponentLocationY_TextBlock_1.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ComponentLocationY_TextBlock_1.Text
+msgctxt ",88B7349845B103E2E2A38FB87BC9176D"
+msgid "123"
+msgstr ""
+
+#. Key:	8A129B034077FEDC28069D84C3BD2330
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ComponentLocationZ_TextBlock_1.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ComponentLocationZ_TextBlock_1.Text
+msgctxt ",8A129B034077FEDC28069D84C3BD2330"
+msgid "123"
+msgstr ""
+
+#. Key:	8A6EF97D448F204AF753CEA40F587875
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_4.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_4.Text
+msgctxt ",8A6EF97D448F204AF753CEA40F587875"
+msgid "<X> %</>"
+msgstr ""
+
+#. Key:	A2C42B1F4209562885B9249C02E60211
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.ComponentLocationY_TextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.ComponentLocationY_TextBlock.Text
+msgctxt ",A2C42B1F4209562885B9249C02E60211"
+msgid "123"
+msgstr ""
+
+#. Key:	A5D6372345CC25EC056AE48D8DC7BD6F
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.ActorLocationY_TextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.ActorLocationY_TextBlock.Text
+msgctxt ",A5D6372345CC25EC056AE48D8DC7BD6F"
+msgid "123"
+msgstr ""
+
+#. Key:	A62F454C40D1862A1B10DC9EA6D90A4C
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.TextBlock_88.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.TextBlock_88.Text
+msgctxt ",A62F454C40D1862A1B10DC9EA6D90A4C"
+msgid "Object"
+msgstr ""
+
+#. Key:	AB1B18E647F671651341F08BE624CCB2
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock_6.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock_6.Text
+msgctxt ",AB1B18E647F671651341F08BE624CCB2"
+msgid "<Y>Y</>"
+msgstr ""
+
+#. Key:	ABDC7F174CA115D8C4559398ED9068F6
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.TextBlock_3.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.TextBlock_3.Text
+msgctxt ",ABDC7F174CA115D8C4559398ED9068F6"
+msgid "Pitch"
+msgstr ""
+
+#. Key:	B07782BE4D5794B428D6FAA8F880FFF4
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ActorLocationY_TextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ActorLocationY_TextBlock.Text
+msgctxt ",B07782BE4D5794B428D6FAA8F880FFF4"
+msgid "123"
+msgstr ""
+
+#. Key:	B11CB79F474CDAB9F32C62B0C20CC3EA
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_2.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_2.Text
+msgctxt ",B11CB79F474CDAB9F32C62B0C20CC3EA"
+msgid "<X> °</>"
+msgstr ""
+
+#. Key:	BC03E5B6401B1C12D749B78F9B7EEE7B
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.TextBlock_88.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.TextBlock_88.Text
+msgctxt ",BC03E5B6401B1C12D749B78F9B7EEE7B"
+msgid "Object"
+msgstr ""
+
+#. Key:	C3C8F70346E6A5D41760B892176C96FC
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.HitActor_TextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.HitActor_TextBlock.Text
+msgctxt ",C3C8F70346E6A5D41760B892176C96FC"
+msgid "Actor"
+msgstr "Akteur"
+
+#. Key:	C485CD5045E40E453C629BA7EDC8445E
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ActorLocationX_TextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ActorLocationX_TextBlock.Text
+msgctxt ",C485CD5045E40E453C629BA7EDC8445E"
+msgid "123"
+msgstr ""
+
+#. Key:	C60AAEAC451A47ABE5D7E0AFCEB941ED
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_3.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_3.Text
+msgctxt ",C60AAEAC451A47ABE5D7E0AFCEB941ED"
+msgid "<Z> °</>"
+msgstr ""
+
+#. Key:	C690510F439AEA567B49158C452FF95A
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ActorLocationZ_TextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.ActorLocationZ_TextBlock.Text
+msgctxt ",C690510F439AEA567B49158C452FF95A"
+msgid "123"
+msgstr ""
+
+#. Key:	C8196D444B5BDB1EAF605AB3ED8A6000
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_860.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_860.Text
+msgctxt ",C8196D444B5BDB1EAF605AB3ED8A6000"
+msgid "<Z>Z</>"
+msgstr ""
+
+#. Key:	C911CA8F4D4D9B6B20D909AE86336F01
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock_388.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.RichTextBlock_388.Text
+msgctxt ",C911CA8F4D4D9B6B20D909AE86336F01"
+msgid "<Z>Z</>"
+msgstr ""
+
+#. Key:	CC6B0B8C49F312AD2501E4A5C233E7E8
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_537.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_537.Text
+msgctxt ",CC6B0B8C49F312AD2501E4A5C233E7E8"
+msgid "<X>X</>"
+msgstr ""
+
+#. Key:	DCE0A3FE448F5785DD3D3B9D251366AF
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_139.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock_139.Text
+msgctxt ",DCE0A3FE448F5785DD3D3B9D251366AF"
+msgid "<X>X</>"
+msgstr ""
+
+#. Key:	E0C967DB4B8E49110967FCAE08BB5219
+#. SourceLocation:	/HologramLocation/Config/HologramLocation_LocationEnum.HologramLocation_LocationEnum.DisplayNameMap(0 - Value).DisplayNameMap
+#: /HologramLocation/Config/HologramLocation_LocationEnum.HologramLocation_LocationEnum.DisplayNameMap(0 - Value).DisplayNameMap
+msgctxt ",E0C967DB4B8E49110967FCAE08BB5219"
+msgid "Top Left"
+msgstr ""
+
+#. Key:	E6F437A74006F2C35511CC81593B9D86
+#. SourceLocation:	/HologramLocation/Config/HologramLocation_OrientationEnum.HologramLocation_OrientationEnum.DisplayNameMap(1 - Value).DisplayNameMap
+#: /HologramLocation/Config/HologramLocation_OrientationEnum.HologramLocation_OrientationEnum.DisplayNameMap(1 - Value).DisplayNameMap
+msgctxt ",E6F437A74006F2C35511CC81593B9D86"
+msgid "Horizontal"
+msgstr ""
+
+#. Key:	E942C63840D6B834312FCDB19DD92017
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.TextBlock_5.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Horizontal_Base.TraceHitInfo_Widget_Horizontal_Base_C:WidgetTree.TextBlock_5.Text
+msgctxt ",E942C63840D6B834312FCDB19DD92017"
+msgid "Component"
+msgstr "Komponente"
+
+#. Key:	EB426F8E45FF81C763E838864BDF764D
+#. SourceLocation:	/HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock.Text
+#: /HologramLocation/Widget/TraceHitInfo_Widget_Vertical_Base.TraceHitInfo_Widget_Vertical_Base_C:WidgetTree.RichTextBlock.Text
+msgctxt ",EB426F8E45FF81C763E838864BDF764D"
+msgid "<Z> °</>"
+msgstr ""
+
+#. Key:	Angle
+#. SourceLocation:	/HologramLocation/HL_StringTable.HL_StringTable
+#: /HologramLocation/HL_StringTable.HL_StringTable
+msgctxt "HL_StringTable,Angle"
+msgid "Angle"
+msgstr ""
+
+#. Key:	ComponentAngle
+#. SourceLocation:	/HologramLocation/HL_StringTable.HL_StringTable
+#: /HologramLocation/HL_StringTable.HL_StringTable
+msgctxt "HL_StringTable,ComponentAngle"
+msgid "ComponentAngle"
+msgstr ""
+
+#. Key:	ComponentLocation
+#. SourceLocation:	/HologramLocation/HL_StringTable.HL_StringTable
+#: /HologramLocation/HL_StringTable.HL_StringTable
+msgctxt "HL_StringTable,ComponentLocation"
+msgid "ComponentLocation"
+msgstr ""
+
+#. Key:	ComponentRotation
+#. SourceLocation:	/HologramLocation/HL_StringTable.HL_StringTable
+#: /HologramLocation/HL_StringTable.HL_StringTable
+msgctxt "HL_StringTable,ComponentRotation"
+msgid "ComponentRotation"
+msgstr ""
+
+#. Key:	EndLocation
+#. SourceLocation:	/HologramLocation/HL_StringTable.HL_StringTable
+#: /HologramLocation/HL_StringTable.HL_StringTable
+msgctxt "HL_StringTable,EndLocation"
+msgid "End Location"
+msgstr ""
+
+#. Key:	EndRotation
+#. SourceLocation:	/HologramLocation/HL_StringTable.HL_StringTable
+#: /HologramLocation/HL_StringTable.HL_StringTable
+msgctxt "HL_StringTable,EndRotation"
+msgid "End Rotation"
+msgstr ""
+
+#. Key:	LightAngle
+#. SourceLocation:	/HologramLocation/HL_StringTable.HL_StringTable
+#: /HologramLocation/HL_StringTable.HL_StringTable
+msgctxt "HL_StringTable,LightAngle"
+msgid "Light Angle"
+msgstr ""
+
+#. Key:	Location
+#. SourceLocation:	/HologramLocation/HL_StringTable.HL_StringTable
+#: /HologramLocation/HL_StringTable.HL_StringTable
+msgctxt "HL_StringTable,Location"
+msgid "Location"
+msgstr ""
+
+#. Key:	PadAngle
+#. SourceLocation:	/HologramLocation/HL_StringTable.HL_StringTable
+#: /HologramLocation/HL_StringTable.HL_StringTable
+msgctxt "HL_StringTable,PadAngle"
+msgid "Pad Angle"
+msgstr ""
+
+#. Key:	Rotation
+#. SourceLocation:	/HologramLocation/HL_StringTable.HL_StringTable
+#: /HologramLocation/HL_StringTable.HL_StringTable
+msgctxt "HL_StringTable,Rotation"
+msgid "Rotation"
+msgstr ""
+
