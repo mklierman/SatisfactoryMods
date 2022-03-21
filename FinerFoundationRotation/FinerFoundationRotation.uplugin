@@ -1,0 +1,32 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0.0",
+  "SemVersion": "1.0.0",
+  "FriendlyName": "Finer Foundation Rotation",
+  "Description": "Lets you rotate foundations by 1 degree when using fine rotation",
+  "Category": "Modding",
+  "CreatedBy": "SirDigby",
+  "CreatedByURL": "",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": false,
+  "Plugins": [
+    {
+      "Name": "SML",
+      "SemVersion": "^3.3.0",
+      "Enabled": true
+    }
+  ],
+  "Modules": [
+    {
+      "Name": "FinerFoundationRotation",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}

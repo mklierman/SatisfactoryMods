@@ -1,0 +1,26 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0.0",
+  "SemVersion": null,
+  "FriendlyName": "DaisyChainEverything",
+  "Description": "Increases the number of power connections on all buildings, both vanilla and modded",
+  "Category": "Modding",
+  "CreatedBy": "SirDigby",
+  "CreatedByURL": "",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": false,
+  "Plugins": null,
+  "Modules": [
+    {
+      "Name": "DaisyChainEverything",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}
