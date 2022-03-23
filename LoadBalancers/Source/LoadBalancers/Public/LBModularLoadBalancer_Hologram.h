@@ -32,13 +32,10 @@ public:
 
 	void UnHighlightAll();
 
-	void HighlightBalancer(ALBBuild_ModularLoadBalancer* Balancer);
-
 	void HighlightAll(TArray<ALBBuild_ModularLoadBalancer*> actorsToOutline);
 
-	void SetMeshInstanced(UMeshComponent* MeshComp, bool Instanced);
-
-	void UnHighlightBalancer(ALBBuild_ModularLoadBalancer* Balancer);
+	// Let use configure the load balancer.
+	virtual void ConfigureActor(AFGBuildable* inBuildable) const override;
 
 	UPROPERTY()
 	FVector cachedDismantleColor = FVector(-1.0, -1.0, -1.0);

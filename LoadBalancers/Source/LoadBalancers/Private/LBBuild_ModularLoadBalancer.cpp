@@ -2,6 +2,8 @@
 
 
 #include "LBBuild_ModularLoadBalancer.h"
+
+#include "FGColoredInstanceMeshProxy.h"
 #include "FGFactoryConnectionComponent.h"
 #include "FGInventoryLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -18,399 +20,259 @@ ALBBuild_ModularLoadBalancer::ALBBuild_ModularLoadBalancer()
 void ALBBuild_ModularLoadBalancer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(ALBBuild_ModularLoadBalancer, GroupModules);
+    DOREPLIFETIME(ALBBuild_ModularLoadBalancer, mGroupModules);
     DOREPLIFETIME(ALBBuild_ModularLoadBalancer, GroupLeader);
-    DOREPLIFETIME(ALBBuild_ModularLoadBalancer, SnappedBalancer);
-    DOREPLIFETIME(ALBBuild_ModularLoadBalancer, DefaultLoadBalancerMaterials);
-    DOREPLIFETIME(ALBBuild_ModularLoadBalancer, TempLoadBalancerMaterial);
-    DOREPLIFETIME(ALBBuild_ModularLoadBalancer, Mesh);
 }
 
 void ALBBuild_ModularLoadBalancer::BeginPlay()
 {
     Super::BeginPlay();
-    this->SetActorTickEnabled(true);
-    if (this->GroupLeader)
-    {
-        this->GroupLeader->InputMap.Add(MyInputConnection, 0);
-        this->GroupLeader->InputConnections.AddUnique(MyInputConnection);
-        this->GroupLeader->OutputMap.Add(MyOutputConnection, 0);
-        this->GroupLeader->GroupModules.AddUnique(this);
 
-        //UE_LOG(LoadBalancers_Log, Display, TEXT("Leader Group Modules: %f"), (float)this->GroupLeader->GroupModules.Num());
-        //UE_LOG(LoadBalancers_Log, Display, TEXT("Group Leader InputMaps: %f"), (float)this->GroupLeader->InputMap.Num());
-        //UE_LOG(LoadBalancers_Log, Display, TEXT("Group Leader OutputMaps: %f"), (float)this->GroupLeader->OutputMap.Num());
-        //UE_LOG(LoadBalancers_Log, Display, TEXT("Group Leader InputConnections: %f"), (float)this->GroupLeader->InputConnections.Num());
-        //UE_LOG(LoadBalancers_Log, Display, TEXT("Group Leader Buffer Size: %f"), (float)bufferSize);
+    ApplyGroupModule(this);
+}
+
+void ALBBuild_ModularLoadBalancer::ApplyLeader(ALBBuild_ModularLoadBalancer* OldLeader)
+{
+    if(HasAuthority())
+    {
+        if(OldLeader->GetBufferInventory() && GetBufferInventory())
+        {
+            GetBufferInventory()->CopyFromOtherComponent(OldLeader->GetBufferInventory());
+            GetBufferInventory()->Resize(FMath::Max<int>((GetGroupModules().Num() - 1) * 2, 2));
+        }
+
+        GroupLeader = this;
+
+        for (ALBBuild_ModularLoadBalancer* ModularLoadBalancer : GetGroupModules())
+            if(ModularLoadBalancer)
+                ModularLoadBalancer->GroupLeader = GroupLeader;
+
+        UpdateCache();
+    }
+}
+
+TArray<UFGFactoryConnectionComponent*> ALBBuild_ModularLoadBalancer::GetConnections(EFactoryConnectionDirection Direction) const
+{
+    TArray<UFGFactoryConnectionComponent*> Return;
+
+    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> Array;
+    if(IsLeader())
+        Array = Direction == EFactoryConnectionDirection::FCD_INPUT ? mConnectedInputs : mConnectedOutputs;
+    else if(GroupLeader)
+        Array = Direction == EFactoryConnectionDirection::FCD_INPUT ? GroupLeader->mConnectedInputs : GroupLeader->mConnectedOutputs;;
+    
+    for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> LoadBalancer : Array)
+        if(LoadBalancer.IsValid())
+            Return.Add(Direction == EFactoryConnectionDirection::FCD_INPUT ? LoadBalancer->MyInputConnection : LoadBalancer->MyOutputConnection);
+    
+    return Return;
+}
+
+TArray<ALBBuild_ModularLoadBalancer*> ALBBuild_ModularLoadBalancer::GetGroupModules() const
+{
+    TArray<ALBBuild_ModularLoadBalancer*> Return;
+
+    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> Array;
+    if(IsLeader())
+        Array = mGroupModules;
+    else if(GroupLeader)
+        Array = GroupLeader->mGroupModules;
+    
+    for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> ModularLoadBalancer : Array)
+        if(ModularLoadBalancer.IsValid())
+            Return.Add(ModularLoadBalancer.Get());
+    return Return;
+}
+
+void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
+{
+    Super::Factory_Tick(dt);
+
+    if(IsLeader() && HasAuthority())
+    {
+        mTimer += dt;
+        if(mTimer >= 5.f)
+            UpdateCache();
+        
+        mOutputIndex++;
+        if(!mConnectedOutputs.IsValidIndex(mOutputIndex))
+            mOutputIndex = 0;
+
+        // if still BREAK! something goes wrong here!
+        if(!mConnectedOutputs.IsValidIndex(mOutputIndex))
+        {
+            UE_LOG(LoadBalancers_Log, Error, TEXT("mConnectedInputs has still a invalid Index!"));
+            return;
+        }
+
+        bool HasPushed = false;
+        TArray<ALBBuild_ModularLoadBalancer*> CanPush = {};
+        for(int idx = mOutputIndex; idx < mConnectedOutputs.Num(); ++idx)
+        {
+            if(mConnectedOutputs[idx].IsValid())
+            {
+                ALBBuild_ModularLoadBalancer* Balancer = mConnectedOutputs[idx].Get();
+                if(CanPushOutput(Balancer))
+                {
+                    if(idx >= mOutputIndex)
+                    {
+                        PushOutput(Balancer);
+                        HasPushed = true;
+                    }
+                    else
+                        CanPush.AddUnique(Balancer);
+                }
+            }
+        }
+
+        if(CanPush.Num() > 0 && !HasPushed)
+            if(CanPush[0])
+                PushOutput(CanPush[0]);
+    }
+}
+
+
+void ALBBuild_ModularLoadBalancer::PushOutput(ALBBuild_ModularLoadBalancer* Module)
+{
+    FInventoryStack Stack;
+    GetBufferInventory()->GetStackFromIndex(GetBufferInventory()->GetFirstIndexWithItem(), Stack);
+    if(Stack.HasItems())
+    {
+        float Offset = .0f;
+        if(Module->MyOutputConnection->Factory_GrabOutput(Stack.Item, Offset))
+            GetBufferInventory()->RemoveFromIndex(GetBufferInventory()->GetFirstIndexWithItem(), 1);
+    }
+}
+
+bool ALBBuild_ModularLoadBalancer::CanPushOutput(ALBBuild_ModularLoadBalancer* Module) const
+{
+    if(GroupLeader)
+        if(Module && GroupLeader->GetBufferInventory())
+            if(Module->MyOutputConnection && !GroupLeader->GetBufferInventory()->IsEmpty())
+                if(Module->MyOutputConnection->IsConnected())
+                {
+                    TArray< FInventoryItem > Out;
+                    return !Module->MyOutputConnection->Factory_PeekOutput(Out);
+                }
+    return false;
+}
+
+void ALBBuild_ModularLoadBalancer::UpdateCache()
+{
+    mTimer = .0f;
+
+    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> ConnectedOutputs = {};
+    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> ConnectedInputs = {};
+    
+    for (ALBBuild_ModularLoadBalancer* GroupModule : GetGroupModules())
+    {
+        if(GroupModule->MyInputConnection)
+            if(GroupModule->MyInputConnection->IsConnected())
+                ConnectedInputs.AddUnique(GroupModule);
+                
+        if(GroupModule->MyOutputConnection)
+            if(GroupModule->MyOutputConnection->IsConnected())
+                ConnectedOutputs.AddUnique(GroupModule);
     }
 
-    ForceNetUpdate();
+    mConnectedOutputs = ConnectedOutputs;
+    mConnectedInputs = ConnectedInputs;
 }
 
 void ALBBuild_ModularLoadBalancer::Destroyed()
 {
-    if (this->GroupLeader == this)
-    {
-        if (this->InputConnections.Num() > 1)
-        {
-            ALBBuild_ModularLoadBalancer* newLeader = Cast<ALBBuild_ModularLoadBalancer>(this->InputConnections[1]->GetOuterBuildable());
-            if (newLeader)
-            {
-                newLeader->GroupLeader = newLeader;
-
-                //Figure out how to refund
-
-                newLeader->Buffer->Resize(this->Buffer->GetSizeLinear() - 2);
-
-                newLeader->InputConnections = this->InputConnections;
-                newLeader->OutputMap = this->OutputMap;
-                newLeader->InputMap = this->InputMap;
-                newLeader->GroupModules = this->GroupModules;
-
-                newLeader->InputConnections.Remove(this->InputConnections[0]);
-                newLeader->OutputMap.Remove(this->MyOutputConnection);
-                newLeader->InputMap.Remove(this->MyInputConnection);
-                newLeader->GroupModules.Remove(this);
-
-                for (auto conn : newLeader->InputConnections)
+    if (IsLeader())
+        if (GetGroupModules().Num() > 1)
+            for (ALBBuild_ModularLoadBalancer* LoadBalancer : GetGroupModules())
+                if(LoadBalancer != this)
                 {
-                    //newLeader->InputQueue.Enqueue(conn);
-                    ALBBuild_ModularLoadBalancer* balancer = Cast<ALBBuild_ModularLoadBalancer>(conn->GetOuterBuildable());
-                    if (balancer)
-                    {
-                        balancer->GroupLeader = newLeader;
-                    }
+                    LoadBalancer->ApplyLeader(this);
+                    break;
                 }
-            }
-        }
-    }
-    else
-    {
-        if (this->GroupLeader && this->GroupLeader->Buffer->GetSizeLinear() > 4)
-        {
-            this->GroupLeader->Buffer->Resize(this->GroupLeader->Buffer->GetSizeLinear() - 2);
-        }
 
-        for (auto conn : this->InputConnections)
-        {
-            if (this->GroupLeader && this->GroupLeader->InputMap.Contains(conn))
-            {
-                this->GroupLeader->InputMap.Remove(conn);
-            }
-
-            if (this->GroupLeader && this->GroupLeader->InputConnections.Contains(conn))
-            {
-                this->GroupLeader->InputConnections.Remove(conn);
-            }
-        }
-
-        TArray<UFGFactoryConnectionComponent*> conns;
-        this->OutputMap.GetKeys(conns);
-        for (auto conn : conns)
-        {
-            if (this->GroupLeader && this->GroupLeader->OutputMap.Contains(conn))
-            {
-                this->GroupLeader->OutputMap.Remove(conn);
-            }
-        }
-
-        TArray<UFGFactoryConnectionComponent*> inputconns;
-        this->InputMap.GetKeys(inputconns);
-        for (auto conn : inputconns)
-        {
-            if (this->GroupLeader && this->GroupLeader->InputMap.Contains(conn))
-            {
-                this->GroupLeader->InputMap.Remove(conn);
-            }
-        }
-
-        if (this->GroupLeader && this->GroupLeader->GroupModules.Contains(this))
-        {
-            this->GroupLeader->GroupModules.Remove(this);
-        }
-    }
     ForceNetUpdate();
     Super::Destroyed();
 }
 
-void ALBBuild_ModularLoadBalancer::Tick(float dt)
+void ALBBuild_ModularLoadBalancer::ApplyGroupModule(ALBBuild_ModularLoadBalancer* Balancer)
 {
-    Super::Tick(dt);
-
-    if (MyOutputConnection && !MyOutputConnection->IsConnected())
+    if(HasAuthority() && GroupLeader)
     {
-        if (this->GroupLeader)
+        if(Balancer)
         {
-            if (this->GroupLeader->OutputMap.Contains(MyOutputConnection))
-            {
-                this->GroupLeader->OutputMap[MyOutputConnection] = 0;
-            }
-        }
-    }
+            GroupLeader->mGroupModules.AddUnique(Balancer);
 
-    TArray<FInventoryItem> peeker;
-    if (MyInputConnection)
-    {
-        if (!MyInputConnection->IsConnected())
-        {
-            if (this->GroupLeader)
-            {
-                if (this->GroupLeader->InputMap.Contains(MyInputConnection))
-                {
-                    this->GroupLeader->InputMap[MyInputConnection] = 0;
-                }
-            }
-        }
-        else if (MyInputConnection->IsConnected() && MyInputConnection->mConnectedComponent && MyInputConnection->mConnectedComponent->GetInventory() && MyInputConnection->mConnectedComponent->GetInventory()->IsEmpty())
-        {
-            if (this->GroupLeader)
-            {
-                if (this->GroupLeader->InputMap.Contains(MyInputConnection))
-                {
-                    this->GroupLeader->InputMap[MyInputConnection] = 0;
-                }
-            }
-        }
-    }
-}
+            if(GroupLeader->GetBufferInventory())
+                GroupLeader->GetBufferInventory()->Resize(FMath::Max<int>(GetGroupModules().Num() * 2, 2));
 
-bool ALBBuild_ModularLoadBalancer::ShouldSave_Implementation() const
-{
-    return true;
-}
-
-void ALBBuild_ModularLoadBalancer::SetCustomizationData_Native(const FFactoryCustomizationData& customizationData)
-{
-    Super::SetCustomizationData_Native(customizationData);
-    //if (this->GroupLeader == this)
-    //{
-    //    TArray< UFGFactoryConnectionComponent*> groupConns;
-    //    this->OutputMap.GenerateKeyArray(groupConns);
-    //    for (auto conn : groupConns)
-    //    {
-    //        ALBBuild_ModularLoadBalancer* bal = Cast<ALBBuild_ModularLoadBalancer>(conn->GetOuterBuildable());
-    //        if (bal)
-    //        {
-    //            bal->LocalSetCustomizationData_Native(customizationData);
-    //        }
-    //    }
-    //}
-    //else
-    //{
-    //    this->GroupLeader->SetCustomizationData_Native(customizationData);
-    //}
-}
-void ALBBuild_ModularLoadBalancer::ApplyCustomizationData_Native(const FFactoryCustomizationData& customizationData)
-{
-    Super::ApplyCustomizationData_Native(customizationData);
-    /*if (this->GroupLeader == this)
-    {
-        TArray< UFGFactoryConnectionComponent*> groupConns;
-        this->OutputMap.GenerateKeyArray(groupConns);
-        for (auto conn : groupConns)
-        {
-            ALBBuild_ModularLoadBalancer* bal = Cast<ALBBuild_ModularLoadBalancer>(conn->GetOuterBuildable());
-            if (bal)
-            {
-                bal->LocalApplyCustomizationData_Native(customizationData);
-            }
+            UpdateCache();
         }
+        else
+            UE_LOG(LoadBalancers_Log, Error, TEXT("Cannot Apply module: Invalid"))
     }
     else
-    {
-        this->GroupLeader->ApplyCustomizationData_Native(customizationData);
-    }*/
+        UE_LOG(LoadBalancers_Log, Error, TEXT("Cannot Apply GroupLeader: Invalid"))
 }
 
-void ALBBuild_ModularLoadBalancer::LocalSetCustomizationData_Native(const FFactoryCustomizationData& customizationData)
+void ALBBuild_ModularLoadBalancer::PostInitializeComponents()
 {
-    Super::SetCustomizationData_Native(customizationData);
-}
+    Super::PostInitializeComponents();
 
-void ALBBuild_ModularLoadBalancer::LocalApplyCustomizationData_Native(const FFactoryCustomizationData& customizationData)
-{
-    Super::ApplyCustomizationData_Native(customizationData);
+    for (UActorComponent* ComponentsByClass : GetComponentsByClass(UFGFactoryConnectionComponent::StaticClass()))
+        if(UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
+        {
+            if(ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
+            {
+                MyInputConnection = ConnectionComponent;
+            }
+            else if(ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
+            {
+                MyOutputConnection = ConnectionComponent;
+            }
+        }
 }
 
 void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()
 {
-    if (this->GroupLeader == this)
-    {
-        this->CollectInput(MyInputConnection);
-        /*for (int i = 0; i < InputConnections.Num(); i++)
-        {
-            UFGFactoryConnectionComponent* Input = Cast<UFGFactoryConnectionComponent>(InputConnections[i]);
-            if (Input->IsConnected())
-            {
-                int emptyBufferIndex = Buffer->FindEmptyIndex();
-                if (emptyBufferIndex >= 0)
-                {
-                    FInventoryItem OutItem;
-                    bool OutBool;
-                    float out_OffsetBeyond = 100.f;
-                    OutBool = Input->Factory_GrabOutput(OutItem, out_OffsetBeyond);
-                    if (OutBool)
-                    {
-                        FInventoryStack Stack = UFGInventoryLibrary::MakeInventoryStack(1, OutItem);
-                        Buffer->AddStackToIndex(emptyBufferIndex, Stack, false);
-                    }
-                }
-            }
-        }*/
+    if(!IsLeader() || !HasAuthority())
+        return;
 
-        //int emptyBufferIndex = Buffer->FindEmptyIndex();
-        //if (emptyBufferIndex >= 0)
-        //{
-        //    FScopeLock ScopeLock(&mInputLock);
-        //    UFGFactoryConnectionComponent* currentInput = nullptr;
-        //    if (InputQueue.Dequeue(currentInput))
-        //    {
-        //        if (currentInput && currentInput->IsConnected())
-        //        {
-        //            FInventoryItem OutItem;
-        //            bool OutBool;
-        //            float out_OffsetBeyond;
-        //            OutBool = currentInput->Factory_GrabOutput(OutItem, out_OffsetBeyond);
-        //            if (OutBool)
-        //            {
-        //                FInventoryStack Stack = UFGInventoryLibrary::MakeInventoryStack(1, OutItem);
-        //                Buffer->AddStackToIndex(emptyBufferIndex, Stack, false);
-        //            }
-        //        }
-        //        InputQueue.Enqueue(currentInput);
-        //    }
-        //}
+    mInputIndex++;
+    if(!mConnectedInputs.IsValidIndex(mInputIndex))
+        mInputIndex = 0;
 
-    }
-    else
+    // if still BREAK! something goes wrong here!
+    if(!mConnectedInputs.IsValidIndex(mInputIndex))
     {
-        GroupLeader->CollectInput(MyInputConnection);
+        UE_LOG(LoadBalancers_Log, Error, TEXT("mConnectedInputs has still a invalid Index!"));
+        return;
     }
+
+    if(mConnectedInputs[mInputIndex].IsValid())
+        CollectInput(mConnectedInputs[mInputIndex].Get());
 }
 
-void ALBBuild_ModularLoadBalancer::CollectInput(UFGFactoryConnectionComponent* connection)
+void ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Module)
 {
-    bool result = false;
-    TArray<FInventoryItem> peeker;
-    if (this->GroupLeader == this)
-    {
-        if (connection->IsConnected() && connection->Factory_PeekOutput(peeker))
-        {
-            TArray<int> ValueArray;
-            InputMap.GenerateValueArray(ValueArray);
-            int MaxInt;
-            int MaxIntIndex;
-            if (InputMap.Find(connection))
-            {
-                FScopeLock ScopeLock(&mInputLock);
-                int InputCalls = *InputMap.Find(connection);
-                int emptyBufferIndex = Buffer->FindEmptyIndex();
-                if (emptyBufferIndex >= 0)
-                {
-                    UKismetMathLibrary::MaxOfIntArray(ValueArray, MaxIntIndex, MaxInt);
-                    if (InputCalls == MaxInt)
-                    {
-                        FInventoryItem OutItem;
-                        bool OutBool;
-                        float out_OffsetBeyond = 100.f;
-                        OutBool = connection->Factory_GrabOutput(OutItem, out_OffsetBeyond);
-                        if (OutBool)
-                        {
-                            FInventoryStack Stack = UFGInventoryLibrary::MakeInventoryStack(1, OutItem);
-                            Buffer->AddStackToIndex(emptyBufferIndex, Stack, false);
-                            InputMap[connection] = 0;
-                        }
+    UFGFactoryConnectionComponent* connection = Module->MyInputConnection;
+    if(!connection || !GroupLeader)
+        return;
 
-                    }
-                    else
-                    {
-                        InputMap[connection] = InputCalls + 1;
-                    }
-                }
-                else
-                {
-                    InputMap[connection] = InputCalls + 1;
-                }
-            }
-        }
-        else
+    if(connection->IsConnected() && GroupLeader->GetBufferInventory())
+    {
+        TArray<FInventoryItem> peeker;
+        if (connection->Factory_PeekOutput(peeker))
         {
-            if (OutputMap.Find(connection))
-            {
-                OutputMap[connection] = 0;
-            }
+            FInventoryItem Item = peeker[0];
+            if(GroupLeader->GetBufferInventory()->HasEnoughSpaceForItem(Item))
+                if(connection->Factory_Internal_GrabOutputInventory(Item, UFGItemDescriptor::StaticClass()))
+                    GroupLeader->GetBufferInventory()->AddItem(Item);
         }
     }
 }
 
-void ALBBuild_ModularLoadBalancer::GiveOutput(bool& result, FInventoryItem& out_item)
+bool ALBBuild_ModularLoadBalancer::Factory_GrabOutput_Implementation(UFGFactoryConnectionComponent* connection,
+    FInventoryItem& out_item, float& out_OffsetBeyond, TSubclassOf<UFGItemDescriptor> type)
 {
-    if (this->GroupLeader == this)
-    {
-        auto mBufferIndex = Buffer->GetFirstIndexWithItem();
-        if (mBufferIndex >= 0)
-        {
-            FInventoryStack Stack;
-            result = Buffer->GetStackFromIndex(mBufferIndex, Stack);
-            if (result && Stack.HasItems())
-            {
-                Buffer->RemoveAllFromIndex(mBufferIndex);
-                int numItems;
-                UFGInventoryLibrary::BreakInventoryStack(Stack, numItems, out_item);
-            }
-        }
-    }
-}
-
-bool ALBBuild_ModularLoadBalancer::Factory_GrabOutput_Implementation(UFGFactoryConnectionComponent* connection, FInventoryItem& out_item, float& out_OffsetBeyond, TSubclassOf<UFGItemDescriptor> type)
-{
-    bool result = false;
-    if (this->GroupLeader == this)
-    {
-        if (connection->IsConnected())
-        {
-            TArray<int> ValueArray;
-            OutputMap.GenerateValueArray(ValueArray);
-            int MaxInt;
-            int MaxIntIndex;
-            if (OutputMap.Find(connection))
-            {
-                int OutputCalls = *OutputMap.Find(connection);
-                if (!Buffer->IsEmpty())
-                {
-                    FScopeLock ScopeLock(&mOutputLock);
-                    UKismetMathLibrary::MaxOfIntArray(ValueArray, MaxIntIndex, MaxInt);
-                    if (OutputCalls == MaxInt)
-                    {
-                        GiveOutput(result, out_item);
-                        OutputMap[connection] = 0;
-                    }
-                    else
-                    {
-                        OutputMap[connection] = OutputCalls + 1;
-                    }
-                }
-                else
-                {
-                    OutputMap[connection] = OutputCalls + 1;
-                }
-            }
-        }
-        else
-        {
-            if (OutputMap.Find(connection))
-            {
-                OutputMap[connection] = 0;
-            }
-        }
-        return result;
-    }
-    else
-    {
-        if (this->GroupLeader)
-        {
-            return this->GroupLeader->Factory_GrabOutput_Implementation(connection, out_item, out_OffsetBeyond, type);
-        }
-    }
-    return result;
+    return false;
 }
