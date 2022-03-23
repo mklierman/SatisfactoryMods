@@ -137,6 +137,7 @@ void ALBBuild_ModularLoadBalancer::Tick(float dt)
 {
     Super::Tick(dt);
 
+    //Check if a belt has been disconnected and reset the map value if so
     if (MyOutputConnection && !MyOutputConnection->IsConnected())
     {
         if (this->GroupLeader)
@@ -182,6 +183,7 @@ bool ALBBuild_ModularLoadBalancer::ShouldSave_Implementation() const
 void ALBBuild_ModularLoadBalancer::SetCustomizationData_Native(const FFactoryCustomizationData& customizationData)
 {
     Super::SetCustomizationData_Native(customizationData);
+    //Code for when customization data gets propogated. Currently issues with new balancers being added to group
     //if (this->GroupLeader == this)
     //{
     //    TArray< UFGFactoryConnectionComponent*> groupConns;
@@ -203,6 +205,7 @@ void ALBBuild_ModularLoadBalancer::SetCustomizationData_Native(const FFactoryCus
 void ALBBuild_ModularLoadBalancer::ApplyCustomizationData_Native(const FFactoryCustomizationData& customizationData)
 {
     Super::ApplyCustomizationData_Native(customizationData);
+    //Code for when customization data gets propogated. Currently issues with new balancers being added to group
     /*if (this->GroupLeader == this)
     {
         TArray< UFGFactoryConnectionComponent*> groupConns;
@@ -237,50 +240,6 @@ void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()
     if (this->GroupLeader == this)
     {
         this->CollectInput(MyInputConnection);
-        /*for (int i = 0; i < InputConnections.Num(); i++)
-        {
-            UFGFactoryConnectionComponent* Input = Cast<UFGFactoryConnectionComponent>(InputConnections[i]);
-            if (Input->IsConnected())
-            {
-                int emptyBufferIndex = Buffer->FindEmptyIndex();
-                if (emptyBufferIndex >= 0)
-                {
-                    FInventoryItem OutItem;
-                    bool OutBool;
-                    float out_OffsetBeyond = 100.f;
-                    OutBool = Input->Factory_GrabOutput(OutItem, out_OffsetBeyond);
-                    if (OutBool)
-                    {
-                        FInventoryStack Stack = UFGInventoryLibrary::MakeInventoryStack(1, OutItem);
-                        Buffer->AddStackToIndex(emptyBufferIndex, Stack, false);
-                    }
-                }
-            }
-        }*/
-
-        //int emptyBufferIndex = Buffer->FindEmptyIndex();
-        //if (emptyBufferIndex >= 0)
-        //{
-        //    FScopeLock ScopeLock(&mInputLock);
-        //    UFGFactoryConnectionComponent* currentInput = nullptr;
-        //    if (InputQueue.Dequeue(currentInput))
-        //    {
-        //        if (currentInput && currentInput->IsConnected())
-        //        {
-        //            FInventoryItem OutItem;
-        //            bool OutBool;
-        //            float out_OffsetBeyond;
-        //            OutBool = currentInput->Factory_GrabOutput(OutItem, out_OffsetBeyond);
-        //            if (OutBool)
-        //            {
-        //                FInventoryStack Stack = UFGInventoryLibrary::MakeInventoryStack(1, OutItem);
-        //                Buffer->AddStackToIndex(emptyBufferIndex, Stack, false);
-        //            }
-        //        }
-        //        InputQueue.Enqueue(currentInput);
-        //    }
-        //}
-
     }
     else
     {
