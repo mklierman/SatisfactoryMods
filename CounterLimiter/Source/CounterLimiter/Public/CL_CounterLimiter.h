@@ -16,22 +16,24 @@ class COUNTERLIMITER_API ACL_CounterLimiter : public AFGBuildableConveyorAttachm
 {
 	GENERATED_BODY()
 public:
+	ACL_CounterLimiter();
+
 		virtual void BeginPlay() override;
 		virtual bool ShouldSave_Implementation() const override;
 
-	//virtual void Factory_CollectInput_Implementation() override;
+	virtual void Factory_CollectInput_Implementation() override;
 	virtual bool Factory_GrabOutput_Implementation(class UFGFactoryConnectionComponent* connection, FInventoryItem& out_item, float& out_OffsetBeyond, TSubclassOf< UFGItemDescriptor > type) override;
 
 	float GetSecondsPerItem();
 	float GetSecondsSinceLastInput();
 
-	UPROPERTY(BlueprintReadWrite, SaveGame)
+	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
 	float mPerMinuteLimitRate;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Replicated)
 	UFGFactoryConnectionComponent* inputConnection;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Replicated)
 	UFGFactoryConnectionComponent* outputConnection;
 
 	UFUNCTION(BlueprintPure)
@@ -41,10 +43,13 @@ public:
 
 	int32 ItemCount;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Replicated)
 	UFGInventoryComponent* OutputStageBuffer;
 
-	UPROPERTY(BlueprintReadWrite, SaveGame)
+	UPROPERTY(BlueprintReadWrite, Replicated)
+		UFGInventoryComponent* InputBuffer;
+
+	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
 	float DisplayIPM = -1;
 
 	FTimerHandle ipmTimerHandle;

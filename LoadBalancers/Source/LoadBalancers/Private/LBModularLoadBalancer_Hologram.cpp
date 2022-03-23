@@ -5,6 +5,7 @@
 #include "FGColoredInstanceMeshProxy.h"
 #include "FGProductionIndicatorInstanceComponent.h"
 #include "LB_RCO.h"
+#include "FGGameUserSettings.h"
 #include <Runtime/Engine/Classes/Components/ProxyInstancedStaticMeshComponent.h>
 
 //DEFINE_LOG_CATEGORY(LoadBalancers_Log);
@@ -55,18 +56,26 @@ AActor* ALBModularLoadBalancer_Hologram::Construct(TArray<AActor*>& out_children
 		}
 	}
 
-	for (auto Balancer : HologrammedBalancers)
-	{
-		UnHighlightBalancer(Balancer);
-	}
+	UnHighlightAll();
 	ForceNetUpdate();
 	return constructedActor;
 }
 
 void ALBModularLoadBalancer_Hologram::Destroyed()
 {
+	if (cachedDismantleColor.X != -1.0)
+	{
+		auto settings = UFGGameUserSettings::GetFGGameUserSettings();
+		settings->SetDismantleHologramColour(cachedDismantleColor);
+		settings->ApplyHologramColoursToCollectionParameterInstance(this->GetWorld());
+	}
 	UnHighlightAll();
 	Super::Destroyed();
+}
+
+void ALBModularLoadBalancer_Hologram::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult)
@@ -84,14 +93,15 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 			}
 			LastSnapped = SnappedBalancer;
 
-			for (auto bal : SnappedBalancer->GroupLeader->GroupModules)
-			{
-				if (bal)
-				{
-					HighlightBalancer(bal);
-					HologrammedBalancers.AddUnique(bal);
-				}
-			}
+			HighlightAll(SnappedBalancer->GroupLeader->GroupModules);
+			//for (auto bal : SnappedBalancer->GroupLeader->GroupModules)
+			//{
+			//	if (bal)
+			//	{
+			//		HighlightBalancer(bal);
+			//		HologrammedBalancers.AddUnique(bal);
+			//	}
+			//}
 		}
 	}
 	else
@@ -125,15 +135,16 @@ void ALBModularLoadBalancer_Hologram::Server_SnapStuff(bool SnapResult)
 			}
 			LastSnapped = SnappedBalancer;
 			//UE_LOG(LoadBalancers_Log, Display, TEXT("LastSnapped = SnappedBalancer;"));
-			for (auto bal : SnappedBalancer->GroupLeader->GroupModules)
-			{
-				if (bal)
-				{
-					//UE_LOG(LoadBalancers_Log, Display, TEXT("if (bal)"));
-					HighlightBalancer(bal);
-					HologrammedBalancers.AddUnique(bal);
-				}
-			}
+			HighlightAll(SnappedBalancer->GroupLeader->GroupModules);
+			//for (auto bal : SnappedBalancer->GroupLeader->GroupModules)
+			//{
+			//	if (bal)
+			//	{
+			//		//UE_LOG(LoadBalancers_Log, Display, TEXT("if (bal)"));
+			//		HighlightBalancer(bal);
+			//		HologrammedBalancers.AddUnique(bal);
+			//	}
+			//}
 		}
 	}
 	else
@@ -147,11 +158,15 @@ void ALBModularLoadBalancer_Hologram::Server_SnapStuff(bool SnapResult)
 
 void ALBModularLoadBalancer_Hologram::UnHighlightAll()
 {
-	for (auto Balancer : HologrammedBalancers)
-	{
-		UnHighlightBalancer(Balancer);
-	}
-	//HologrammedBalancers.Empty();
+	UFGOutlineComponent* OL = UFGOutlineComponent::Get(this->GetWorld());
+	OL->HideOutline();
+//	if (HologrammedBalancers.Num() > 0)
+//	{
+//		for (auto Balancer : HologrammedBalancers)
+//		{
+//			UnHighlightBalancer(Balancer);
+//		}
+//	}
 }
 
 void ALBModularLoadBalancer_Hologram::UnHighlightBalancer(ALBBuild_ModularLoadBalancer* Balancer)
@@ -168,15 +183,42 @@ void ALBModularLoadBalancer_Hologram::UnHighlightBalancer(ALBBuild_ModularLoadBa
 
 void ALBModularLoadBalancer_Hologram::HighlightBalancer(ALBBuild_ModularLoadBalancer* Balancer)
 {
+	UFGOutlineComponent* OL = UFGOutlineComponent::Get(this->GetWorld());
+	OL->ShowOutline(Balancer, EOutlineColor::OC_DISMANTLE);
+
 		// code to call before swapping materials or after restoring materials
 
-		SetMeshInstanced(Balancer->Mesh, false);
-		int Mats = Balancer->Mesh->GetNumMaterials();
-		for (int i = 0; i < Mats; i++)
+		//SetMeshInstanced(Balancer->Mesh, false);
+		//int Mats = Balancer->Mesh->GetNumMaterials();
+		//for (int i = 0; i < Mats; i++)
+		//{
+		//	Balancer->Mesh->SetMaterial(i, Balancer->TempLoadBalancerMaterial);
+		//}
+		//SetMeshInstanced(Balancer->Mesh, true);
+}
+
+void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBalancer*> actorsToOutline)
+{
+	if (cachedDismantleColor.X == -1.0)
+	{
+		auto settings = UFGGameUserSettings::GetFGGameUserSettings();
+		UE_LOG(LoadBalancers_Log, Display, TEXT("Cached Color: %f, %f, %f"), cachedDismantleColor.X, cachedDismantleColor.Y, cachedDismantleColor.Z);
+		cachedDismantleColor = settings->mDismantleHologramColour;
+		UE_LOG(LoadBalancers_Log, Display, TEXT("Cached Color: %f, %f, %f"), cachedDismantleColor.X, cachedDismantleColor.Y, cachedDismantleColor.Z);
+		settings->SetDismantleHologramColour(FVector(0.5, 0.5, 0.5));
+		settings->ApplyHologramColoursToCollectionParameterInstance(this->GetWorld());
+	}
+	if (actorsToOutline != HologrammedBalancers)
+	{
+		UFGOutlineComponent* OL = UFGOutlineComponent::Get(this->GetWorld());
+		TArray<AActor*> actors;
+		for (auto bal : actorsToOutline)
 		{
-			Balancer->Mesh->SetMaterial(i, Balancer->TempLoadBalancerMaterial);
+			actors.AddUnique(Cast<AActor>(bal));
 		}
-		SetMeshInstanced(Balancer->Mesh, true);
+		OL->ShowMultiActorOutline(actors, EOutlineColor::OC_DISMANTLE);
+		HologrammedBalancers = actorsToOutline;
+	}
 }
 
 void ALBModularLoadBalancer_Hologram::SetMeshInstanced(UMeshComponent* MeshComp, bool Instanced)

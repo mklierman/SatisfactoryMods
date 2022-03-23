@@ -5,6 +5,21 @@
 
 DEFINE_LOG_CATEGORY(CounterLimiter_Log);
 
+void ACL_CounterLimiter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ACL_CounterLimiter, inputConnection);
+	DOREPLIFETIME(ACL_CounterLimiter, outputConnection);
+	DOREPLIFETIME(ACL_CounterLimiter, OutputStageBuffer);
+	DOREPLIFETIME(ACL_CounterLimiter, DisplayIPM);
+	DOREPLIFETIME(ACL_CounterLimiter, InputBuffer);
+}
+
+ACL_CounterLimiter::ACL_CounterLimiter()
+{
+	//this->GetBufferInventory()->Resize(1);
+}
+
 
 void ACL_CounterLimiter::BeginPlay()
 {
@@ -12,8 +27,8 @@ void ACL_CounterLimiter::BeginPlay()
 	//mGameSecondsAtLastInput = this->GetGameTimeSinceCreation();
 	this->mInputs.AddUnique(inputConnection);
 	this->mOutputs.AddUnique(outputConnection);
-	this->mBufferInventory->Resize(1);
-	this->OutputStageBuffer->Resize(1);
+	//this->GetBufferInventory()->Resize(1);
+	//this->mBufferInventory->Resize(1);
 	GetWorld()->GetTimerManager().SetTimer(ipmTimerHandle, this, &ACL_CounterLimiter::CalculateIPM, 60.f, true, 60.f);
 	SetThroughputLimit(mPerMinuteLimitRate);
 }
@@ -23,14 +38,22 @@ bool ACL_CounterLimiter::ShouldSave_Implementation() const
 	return true;
 }
 
-//void ACL_CounterLimiter::Factory_CollectInput_Implementation()
-//{
-//	if (GetSecondsSinceLastInput() > GetSecondsPerItem())
-//	{
-//		mGameSecondsAtLastInput = this->GetGameTimeSinceCreation();
-//		Super::Factory_CollectInput_Implementation();
-//	}
-//}
+void ACL_CounterLimiter::Factory_CollectInput_Implementation()
+{
+	int emptyBufferIndex = InputBuffer->FindEmptyIndex();
+	if (emptyBufferIndex >= 0)
+	{
+		FInventoryItem OutItem;
+		bool OutBool;
+		float out_OffsetBeyond = 100.f;
+		OutBool = inputConnection->Factory_GrabOutput(OutItem, out_OffsetBeyond);
+		if (OutBool)
+		{
+			FInventoryStack Stack = UFGInventoryLibrary::MakeInventoryStack(1, OutItem);
+			InputBuffer->AddStackToIndex(emptyBufferIndex, Stack, false);
+		}
+	}
+}
 
 bool ACL_CounterLimiter::Factory_GrabOutput_Implementation(UFGFactoryConnectionComponent* connection, FInventoryItem& out_item, float& out_OffsetBeyond, TSubclassOf<UFGItemDescriptor> type)
 {
@@ -99,15 +122,15 @@ void ACL_CounterLimiter::StageItemForOutput()
 	int emptyBufferIndex = OutputStageBuffer->FindEmptyIndex();
 	if (emptyBufferIndex >= 0)
 	{
-		auto mBufferIndex = mBufferInventory->GetFirstIndexWithItem();
+		auto mBufferIndex = InputBuffer->GetFirstIndexWithItem();
 		if (mBufferIndex >= 0)
 		{
 			FInventoryStack Stack;
-			bool result = mBufferInventory->GetStackFromIndex(mBufferIndex, Stack);
+			bool result = InputBuffer->GetStackFromIndex(mBufferIndex, Stack);
 			if (result && Stack.HasItems() )
 			{
 				//mGameSecondsAtLastInput = this->GetGameTimeSinceCreation();
-				mBufferInventory->RemoveAllFromIndex(mBufferIndex);
+				InputBuffer->RemoveAllFromIndex(mBufferIndex);
 				int numItems;
 				FInventoryItem OutItem;
 				UFGInventoryLibrary::BreakInventoryStack(Stack, numItems, OutItem);

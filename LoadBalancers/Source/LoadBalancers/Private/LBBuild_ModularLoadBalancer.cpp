@@ -5,6 +5,7 @@
 #include "FGFactoryConnectionComponent.h"
 #include "FGInventoryLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "FGOutlineComponent.h"
 #include "LoadBalancersModule.h"
 
 DEFINE_LOG_CATEGORY(LoadBalancers_Log);
