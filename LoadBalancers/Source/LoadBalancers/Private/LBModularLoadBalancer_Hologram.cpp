@@ -35,20 +35,18 @@ void ALBModularLoadBalancer_Hologram::Destroyed()
 	Super::Destroyed();
 }
 
-void ALBModularLoadBalancer_Hologram::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult)
 {
-	ForceNetUpdate();
 	const bool SnapResult = Super::TrySnapToActor(hitResult);
 	if (SnapResult)
 	{
-		ALBBuild_ModularLoadBalancer* SnappedBalancer = Cast<ALBBuild_ModularLoadBalancer>(this->GetSnappedBuilding());
-		if (SnappedBalancer)
+		ALBBuild_ModularLoadBalancer* Default = GetDefaultBuildable<ALBBuild_ModularLoadBalancer>();
+		if (ALBBuild_ModularLoadBalancer* SnappedBalancer = Cast<ALBBuild_ModularLoadBalancer>(hitResult.GetActor()))
 		{
+			if(Default->mLoaderType == ELoaderType::Overflow)
+				if(SnappedBalancer->HasOverflowLoader())
+					AddConstructDisqualifier(UFGCDHasOverflow::StaticClass());
+			
 			if (LastSnapped && SnappedBalancer != LastSnapped)
 			{
 				UnHighlightAll();
@@ -64,59 +62,40 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 		if (LastSnapped)
 		{
 			UnHighlightAll();
+			LastSnapped = nullptr;
 		}
 	}
-	ForceNetUpdate();
+
 	return SnapResult;
-}
-
-void ALBModularLoadBalancer_Hologram::Server_SnapStuff(bool SnapResult)
-{
-	this->SetOwner(GetWorld()->GetFirstPlayerController());
-	if (SnapResult)
-	{
-		ALBBuild_ModularLoadBalancer* SnappedBalancer = Cast<ALBBuild_ModularLoadBalancer>(this->GetSnappedBuilding());
-		if (SnappedBalancer)
-		{
-			if (LastSnapped && SnappedBalancer != LastSnapped)
-			{
-				UnHighlightAll();
-			}
-			LastSnapped = SnappedBalancer;
-			
-			HighlightAll(SnappedBalancer->GetGroupModules());
-		}
-	}
-	else
-	{
-		if (LastSnapped)
-		{
-			UnHighlightAll();
-		}
-	}
 }
 
 void ALBModularLoadBalancer_Hologram::UnHighlightAll()
 {
-	if(UFGOutlineComponent* OL = UFGOutlineComponent::Get(GetWorld()))
-		OL->HideOutline();
+	for (TWeakObjectPtr<AActor> Actor : mOutlineActors)
+		if(Actor.IsValid())
+		{
+			Actor.Get()->K2_DestroyActor();
+		}
+
+	for (TWeakObjectPtr<UFGColoredInstanceMeshProxy> MeshProxy : mColoredInstanceMeshProxy)
+		if(MeshProxy.IsValid())
+		{
+			MeshProxy->SetHiddenInGame(false);
+			if(!MeshProxy->mInstanceHandle.IsInstanced())
+				MeshProxy->SetInstanced(true);
+		}
+	
+	mColoredInstanceMeshProxy.Empty();
+	mOutlineActors.Empty();
 }
 
 void ALBModularLoadBalancer_Hologram::ConfigureActor(AFGBuildable* inBuildable) const
 {
 	if(ALBBuild_ModularLoadBalancer* Balancer = Cast<ALBBuild_ModularLoadBalancer>(inBuildable))
-		if(inBuildable && LastSnapped)
-		{
-			Balancer->GroupLeader = LastSnapped;
-			Balancer->ApplyGroupModule(Balancer);
-			UE_LOG(LoadBalancers_Log, Warning, TEXT("BUILD > Apply GroupLeader > LastSnapped"))
-		}
+		if(LastSnapped)
+			Balancer->GroupLeader = LastSnapped->GroupLeader;
 		else
-		{
 			Balancer->GroupLeader = Balancer;
-			Balancer->ApplyGroupModule(Balancer);
-			UE_LOG(LoadBalancers_Log, Warning, TEXT("BUILD > Is Now Group Leader"))
-		}
 	
 	Super::ConfigureActor(inBuildable);
 }
@@ -135,26 +114,41 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 		settings->SetDismantleHologramColour(FVector(0.5, 0.5, 0.5));
 		settings->ApplyHologramColoursToCollectionParameterInstance(this->GetWorld());
 	}
-	if (actorsToOutline != HologrammedBalancers)
+	
+	if(LastSnapped)
 	{
-		UFGOutlineComponent* OL = UFGOutlineComponent::Get(GetWorld());
-
-		if(OL && GetSnappedBuilding())
-		{
-			OL->ShowDismantlePendingMaterial(TArray<AActor*>(actorsToOutline));
-
-			UStaticMesh* Mesh = actorsToOutline[0]->FindComponentByClass<UFGColoredInstanceMeshProxy>()->GetStaticMesh();
-			for (AActor* OutlineActor : OL->mActiveMultiOutlineActors)
+		for (AActor* OutlineActor : TArray<AActor*>(actorsToOutline))
+			if(UFGColoredInstanceMeshProxy* Proxy = OutlineActor->FindComponentByClass<UFGColoredInstanceMeshProxy>())
 			{
-				UStaticMeshComponent* Component = OutlineActor->FindComponentByClass<UStaticMeshComponent>();
-				if(Component)
-				{
-					Component->SetStaticMesh(Mesh);
-					UE_LOG(LoadBalancers_Log, Display, TEXT("SetStaticMesh"));
-				}
+				FTransform Transform = LastSnapped->GetTransform();
+				if(AActor* OutlinerActor = GetWorld()->SpawnActorDeferred<AActor>(AActor::StaticClass(), Transform))
+					if(UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(OutlinerActor))
+					{
+						Component->RegisterComponent();
+						OutlinerActor->FinishSpawning(Transform, true);
+
+						Component->SetRelativeTransform(Proxy->GetRelativeTransform());
+						Component->AttachToComponent(OutlineActor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+						Component->SetStaticMesh(Proxy->GetStaticMesh());
+						Component->SetRenderCustomDepth(true);
+						Component->SetCustomDepthStencilValue(250);
+
+						for(int i = 0; i < Component->GetNumMaterials(); ++i)
+							Component->SetMaterial(i, mHoloMaterial);
+						
+						Proxy->SetHiddenInGame(true);
+						if(Proxy->mInstanceHandle.IsInstanced())
+							Proxy->SetInstanced(false);
+
+						mColoredInstanceMeshProxy.Add(Proxy);
+						
+						OutlinerActor->SetReplicates(true);
+						OutlinerActor->ForceNetUpdate();
+						
+						mOutlineActors.Add(OutlinerActor);
+					}
+					else
+						OutlineActor->Destroy();
 			}
-		}
-		
-		HologrammedBalancers = actorsToOutline;
 	}
 }

@@ -7,10 +7,15 @@
 #include "Buildables/FGBuildableConveyorAttachment.h"
 #include "FGFactoryConnectionComponent.h"
 #include "FGInventoryComponent.h"
-#include "LoadBalancersModule.h"
-#include "Misc/ScopeLock.h"
-#include "Containers/Queue.h"
 #include "LBBuild_ModularLoadBalancer.generated.h"
+
+UENUM(BlueprintType)
+enum class ELoaderType : uint8
+{
+	Normal = 0 UMETA(DisplayName = "Normal"),
+	Overflow = 1 UMETA(DisplayName = "Overflow"),
+	Filter = 2 UMETA(DisplayName = "Filter")
+};
 
 /**
  *
@@ -27,10 +32,10 @@ public:
 	virtual void Destroyed() override;
 	// End AActor interface
 
-	void ApplyGroupModule(ALBBuild_ModularLoadBalancer* Balancer);
+	void ApplyGroupModule();
 	
 	FORCEINLINE bool IsLeader() const { return GroupLeader == this; }
-	void ApplyLeader(ALBBuild_ModularLoadBalancer* OldLeader);
+	void ApplyLeader();
 
 	UPROPERTY(Transient)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mConnectedOutputs;
@@ -40,16 +45,23 @@ public:
 	UPROPERTY(Replicated)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mGroupModules;
 	TArray<ALBBuild_ModularLoadBalancer*> GetGroupModules() const;
+	
+	TWeakObjectPtr<ALBBuild_ModularLoadBalancer> mOverflowLoader;
+	FORCEINLINE ALBBuild_ModularLoadBalancer* GetOverflowLoader() const { return HasOverflowLoader() ? mOverflowLoader.Get() : nullptr; }
+	FORCEINLINE bool HasOverflowLoader() const { return mOverflowLoader.IsValid(); }
+	FORCEINLINE bool IsOverflowLoader() const { return mLoaderType == ELoaderType::Overflow; }
 
 	float mTimer;
 
 	virtual void Factory_Tick(float dt) override;
+	bool SendItemsToOutputs(float dt, ALBBuild_ModularLoadBalancer* Balancer);
+	bool CanSendToOverflow() const;
 
 	//Update our caches
 	void UpdateCache();
 
-	FCriticalSection mOutputLock;
-	FCriticalSection mInputLock;
+	UPROPERTY(EditDefaultsOnly, Category="ModularLoader")
+	ELoaderType mLoaderType = ELoaderType::Normal;
 
 	UPROPERTY(SaveGame)
 	int mInputIndex = 0;
@@ -70,6 +82,9 @@ public:
 	UPROPERTY(Transient)
 	UFGFactoryConnectionComponent* MyInputConnection;
 
+	UPROPERTY(SaveGame)
+	UFGInventoryComponent* mOutputInventory;
+
 protected:
 	// Begin AActor Interface
 	virtual void PostInitializeComponents() override;
@@ -78,9 +93,6 @@ protected:
 	// Begin Factory_ interface
 	virtual void Factory_CollectInput_Implementation() override;
 	void CollectInput(ALBBuild_ModularLoadBalancer* Module);
-	void PushOutput(ALBBuild_ModularLoadBalancer* Module);
-	bool CanPushOutput(ALBBuild_ModularLoadBalancer* Module) const;
-	virtual bool Factory_GrabOutput_Implementation(class UFGFactoryConnectionComponent* connection, FInventoryItem& out_item, float& out_OffsetBeyond, TSubclassOf< UFGItemDescriptor > type) override;
 	// End Factory_ interface
 
 };

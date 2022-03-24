@@ -4,6 +4,7 @@
 
 #include "FactoryGame.h"
 #include "CoreMinimal.h"
+#include "FGConstructDisqualifier.h"
 #include "Hologram/FGFactoryHologram.h"
 #include "LBBuild_ModularLoadBalancer.h"
 #include "Subsystem/ModSubsystem.h"
@@ -25,10 +26,7 @@ public:
 
 	virtual AActor* Construct(TArray< AActor* >& out_children, FNetConstructionID netConstructionID) override;
 	virtual void Destroyed() override;
-	virtual void BeginPlay() override;
 	virtual bool TrySnapToActor(const FHitResult& hitResult) override;
-
-	void Server_SnapStuff(bool SnapResult);
 
 	void UnHighlightAll();
 
@@ -47,4 +45,21 @@ public:
 	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
 	TArray<ALBBuild_ModularLoadBalancer*> HologrammedBalancers;
 
+	TArray<TWeakObjectPtr<AActor>> mOutlineActors;
+	TArray<TWeakObjectPtr<UFGColoredInstanceMeshProxy>> mColoredInstanceMeshProxy;
+
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInterface* mHoloMaterial;
+};
+
+
+UCLASS()
+class LOADBALANCERS_API UFGCDHasOverflow : public UFGConstructDisqualifier
+{
+	GENERATED_BODY()
+
+	UFGCDHasOverflow()
+	{
+		mDisqfualifyingText = FText::FromString(TEXT("Only one Overflow module can be attached"));
+	}
 };
