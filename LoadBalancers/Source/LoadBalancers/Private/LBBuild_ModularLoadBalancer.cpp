@@ -8,6 +8,7 @@
 #include "FGInventoryLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "FGOutlineComponent.h"
+#include "LBDefaultRCO.h"
 #include "LoadBalancersModule.h"
 
 DEFINE_LOG_CATEGORY(LoadBalancers_Log);
@@ -23,6 +24,7 @@ void ALBBuild_ModularLoadBalancer::GetLifetimeReplicatedProps(TArray<FLifetimePr
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ALBBuild_ModularLoadBalancer, mGroupModules);
     DOREPLIFETIME(ALBBuild_ModularLoadBalancer, GroupLeader);
+    DOREPLIFETIME(ALBBuild_ModularLoadBalancer, mFilteredItem);
 }
 
 void ALBBuild_ModularLoadBalancer::BeginPlay()
@@ -37,21 +39,56 @@ void ALBBuild_ModularLoadBalancer::BeginPlay()
         if(GetBufferInventory() && MyOutputConnection)
         {
             MyOutputConnection->SetInventory(GetBufferInventory());
-            MyOutputConnection->SetInventoryAccessIndex(0);
-            GetBufferInventory()->Resize(1);
-            GetBufferInventory()->AddArbitrarySlotSize(0, 5);
+            MyOutputConnection->SetInventoryAccessIndex(-1);
+            GetBufferInventory()->Resize(IsOverflowLoader() ? 5 : 1);
+            for(int i = 0; i < GetBufferInventory()->GetSizeLinear(); ++i)
+                if(GetBufferInventory()->IsValidIndex(i))
+                    GetBufferInventory()->AddArbitrarySlotSize(i, 10);
         }
 
         if(mOutputInventory)
         {
             mOutputInventory->Resize(10);
-            for(int i = 0; i < 10; ++i)
-                mOutputInventory->AddArbitrarySlotSize(i, 5);
+            for(int i = 0; i < mOutputInventory->GetSizeLinear(); ++i)
+                if(mOutputInventory->IsValidIndex(i))
+                    mOutputInventory->AddArbitrarySlotSize(i, 10);
         }
         
         ApplyGroupModule();
     }
 
+}
+
+bool ALBBuild_ModularLoadBalancer::IsMarkToFilter() const
+{
+    FInventoryStack Stack;
+    if(mOutputInventory)
+        mOutputInventory->GetStackFromIndex(mOutputInventory->GetFirstIndexWithItem(), Stack);
+
+    if(Stack.HasItems())
+        for (const UFGFactoryConnectionComponent* Connection : GetConnections(EFactoryConnectionDirection::FCD_OUTPUT, true))
+        {
+            if(Connection)
+                if(const UFGInventoryComponent* InventoryComponent = Connection->GetInventory()){
+                   if(InventoryComponent->IsItemAllowed(Stack.Item.ItemClass, 0))
+                       return true;
+                }
+        }
+    return false;
+}
+
+void ALBBuild_ModularLoadBalancer::SetFilteredItem(TSubclassOf<UFGItemDescriptor> ItemClass)
+{
+    if(HasAuthority())
+    {
+        if(IsFilterLoader() && GetBufferInventory())
+        {
+            GetBufferInventory()->SetAllowedItemOnIndex(0, ItemClass);
+            mFilteredItem = GetBufferInventory()->GetAllowedItemOnIndex(0);
+        }
+    }
+    else if(ULBDefaultRCO* RCO = ULBDefaultRCO::Get(GetWorld()))
+            RCO->Server_SetFilteredItem(this, ItemClass);
 }
 
 void ALBBuild_ModularLoadBalancer::ApplyLeader()
@@ -62,26 +99,14 @@ void ALBBuild_ModularLoadBalancer::ApplyLeader()
 
         for (ALBBuild_ModularLoadBalancer* ModularLoadBalancer : GetGroupModules())
             if(ModularLoadBalancer)
+            {
                 ModularLoadBalancer->GroupLeader = GroupLeader;
+                ModularLoadBalancer->ForceNetUpdate();
+            }
 
         UpdateCache();
         ForceNetUpdate();
     }
-}
-
-TArray<UFGFactoryConnectionComponent*> ALBBuild_ModularLoadBalancer::GetConnections(EFactoryConnectionDirection Direction) const
-{
-    if(!GroupLeader)
-        return {};
-    
-    TArray<UFGFactoryConnectionComponent*> Return;
-    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> Array = Direction == EFactoryConnectionDirection::FCD_INPUT ? GroupLeader->mConnectedInputs : GroupLeader->mConnectedOutputs;;
-    
-    for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> LoadBalancer : Array)
-        if(LoadBalancer.IsValid())
-            Return.Add(Direction == EFactoryConnectionDirection::FCD_INPUT ? LoadBalancer->MyInputConnection : LoadBalancer->MyOutputConnection);
-    
-    return Return;
 }
 
 TArray<ALBBuild_ModularLoadBalancer*> ALBBuild_ModularLoadBalancer::GetGroupModules() const
@@ -105,30 +130,51 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
 
     if(IsLeader() && HasAuthority())
     {
-        // not 100% sure if this needed (just going sure here)
         mTimer += dt;
-        if(mTimer >= 5.f)
+        if(mTimer >= 1.f)
             UpdateCache();
 
-        if(mConnectedOutputs.Num() > 0 && mOutputInventory)
-        {
-            if(!mConnectedOutputs.IsValidIndex(mOutputIndex))
-                mOutputIndex = 0;
+        if(IsFilterLoader() && GetBufferInventory())
+            if(mFilteredItem != GetBufferInventory()->GetAllowedItemOnIndex(0))
+                GetBufferInventory()->SetAllowedItemOnIndex(0, mFilteredItem);
 
-            // if still BREAK! something goes wrong here!
-            if(!mConnectedOutputs.IsValidIndex(mOutputIndex))
+        if(mOutputInventory)
+            if(!mOutputInventory->IsEmpty())
             {
-                UE_LOG(LoadBalancers_Log, Error, TEXT("mConnectedOutputs has still a invalid Index!"));
-                return;
+                if(IsMarkToFilter())
+                {
+                    if(!TickGroupTypeOutput(mFilteredLoaderData, dt))
+                        TickGroupTypeOutput(mNormalLoaderData, dt);
+                    return;
+                }
+                TickGroupTypeOutput(mNormalLoaderData, dt);
             }
-            if(!mConnectedOutputs[mOutputIndex].IsValid())
-                return;
+    }
+}
 
-            if(!mOutputInventory || mOutputInventory->IsEmpty())
-                return;
-        
-            if(!SendItemsToOutputs(dt, mConnectedOutputs[mOutputIndex].Get()))
-            {
+bool ALBBuild_ModularLoadBalancer::TickGroupTypeOutput(FLBBalancerData& TypeData, float dt)
+{
+    if(TypeData.mConnectedOutputs.Num() > 0 && mOutputInventory)
+    {
+        if(!TypeData.mConnectedOutputs.IsValidIndex(TypeData.mOutputIndex))
+            TypeData.mOutputIndex = 0;
+
+        // if still BREAK! something goes wrong here!
+        if(!TypeData.mConnectedOutputs.IsValidIndex(TypeData.mOutputIndex))
+        {
+            UE_LOG(LoadBalancers_Log, Error, TEXT("mConnectedOutputs has still a invalid Index!"));
+            return false;
+        }
+        if(!TypeData.mConnectedOutputs[TypeData.mOutputIndex].IsValid())
+            return false;
+
+        if(!mOutputInventory || mOutputInventory->IsEmpty())
+            return false;
+
+        ALBBuild_ModularLoadBalancer* Balancer = TypeData.mConnectedOutputs[TypeData.mOutputIndex].Get();
+        if(!SendItemsToOutputs(dt, Balancer))
+        {
+            if(!Balancer->IsFilterLoader())
                 if(CanSendToOverflow())
                 {
                     int Index = mOutputInventory->GetFirstIndexWithItem();
@@ -137,11 +183,11 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
                     GetOverflowLoader()->GetBufferInventory()->AddItem(Stack.Item);
                     mOutputInventory->RemoveFromIndex(Index, 1);
                 }
-            }
-            
-            mOutputIndex++;
         }
+            
+        TypeData.mOutputIndex++;
     }
+    return false;
 }
 
 bool ALBBuild_ModularLoadBalancer::CanSendToOverflow() const
@@ -197,34 +243,60 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
     TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> ConnectedOutputs = {};
     TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> ConnectedInputs = {};
     
+    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> FilteredConnectedOutputs = {};
+    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> FilteredConnectedInputs = {};
+    
     for (ALBBuild_ModularLoadBalancer* GroupModule : GetGroupModules())
     {
+        // We skip here the overflow Loader otherwise it push in normal cycle all there
+        if(GroupModule->IsOverflowLoader())
+            continue;
+        
         if(GroupModule->MyInputConnection)
             if(GroupModule->MyInputConnection->IsConnected())
-                ConnectedInputs.AddUnique(GroupModule);
+                if(GroupModule->IsFilterLoader())
+                {
+                    FilteredConnectedInputs.AddUnique(GroupModule);
+                }
+                else
+                {
+                    ConnectedInputs.AddUnique(GroupModule);
+                }
                 
         if(GroupModule->MyOutputConnection)
             if(GroupModule->MyOutputConnection->IsConnected())
-                ConnectedOutputs.AddUnique(GroupModule);
+                if(GroupModule->IsFilterLoader())
+                {
+                    FilteredConnectedOutputs.AddUnique(GroupModule);
+                }
+                else
+                {
+                    ConnectedOutputs.AddUnique(GroupModule);
+                }
     }
 
-    mConnectedOutputs = ConnectedOutputs;
-    mConnectedInputs = ConnectedInputs;
+    mNormalLoaderData.mConnectedInputs = ConnectedInputs;
+    mNormalLoaderData.mConnectedOutputs = ConnectedOutputs;
+
+    mFilteredLoaderData.mConnectedInputs = FilteredConnectedInputs;
+    mFilteredLoaderData.mConnectedOutputs = FilteredConnectedOutputs;
 }
 
-void ALBBuild_ModularLoadBalancer::Destroyed()
+void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    if (IsLeader())
-        if (GetGroupModules().Num() > 1)
-            for (ALBBuild_ModularLoadBalancer* LoadBalancer : GetGroupModules())
-                if(LoadBalancer != this)
-                {
-                    LoadBalancer->ApplyLeader();
-                    break;
-                }
-
-    ForceNetUpdate();
-    Super::Destroyed();
+    // Apply new Leader to the group if the group has more as 1 module (single loader)
+    // EndPlay is here a better use. We should do this better only if it's Destroyed on EndPlay (is also in no case to late to can be invalid)
+    if(EndPlayReason == EEndPlayReason::Destroyed)
+        if (IsLeader())
+            if (GetGroupModules().Num() > 1)
+                for (ALBBuild_ModularLoadBalancer* LoadBalancer : GetGroupModules())
+                    if(LoadBalancer != this)
+                    {
+                        LoadBalancer->ApplyLeader();
+                        break;
+                    }
+    
+   Super::EndPlay(EndPlayReason);
 }
 
 void ALBBuild_ModularLoadBalancer::ApplyGroupModule()
@@ -243,6 +315,24 @@ void ALBBuild_ModularLoadBalancer::ApplyGroupModule()
     }
     else
         UE_LOG(LoadBalancers_Log, Error, TEXT("Cannot Apply GroupLeader: Invalid"))
+}
+
+TArray<UFGFactoryConnectionComponent*> ALBBuild_ModularLoadBalancer::GetConnections(
+    EFactoryConnectionDirection Direction, bool Filtered) const
+{
+    if(!GroupLeader)
+        return {};
+
+    FLBBalancerData Data = Filtered ? GroupLeader->mFilteredLoaderData : GroupLeader->mNormalLoaderData;
+    
+    TArray<UFGFactoryConnectionComponent*> Return;
+    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> Array = Direction == EFactoryConnectionDirection::FCD_INPUT ? Data.mConnectedInputs : Data.mConnectedOutputs;;
+    
+    for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> LoadBalancer : Array)
+        if(LoadBalancer.IsValid())
+            Return.Add(Direction == EFactoryConnectionDirection::FCD_INPUT ? LoadBalancer->MyInputConnection : LoadBalancer->MyOutputConnection);
+    
+    return Return;
 }
 
 void ALBBuild_ModularLoadBalancer::PostInitializeComponents()
@@ -270,21 +360,21 @@ void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()
     if(!IsLeader() || !HasAuthority())
         return;
 
-    if(mConnectedInputs.Num() == 0)
+    if(mNormalLoaderData.mConnectedInputs.Num() == 0)
         return;
 
-    if(!mConnectedInputs.IsValidIndex(mInputIndex))
-        mInputIndex = 0;
+    if(!mNormalLoaderData.mConnectedInputs.IsValidIndex(mNormalLoaderData.mInputIndex))
+        mNormalLoaderData.mInputIndex = 0;
 
     // if still BREAK! something goes wrong here!
-    if(!mConnectedInputs.IsValidIndex(mInputIndex))
+    if(!mNormalLoaderData.mConnectedInputs.IsValidIndex(mNormalLoaderData.mInputIndex))
     {
         UE_LOG(LoadBalancers_Log, Error, TEXT("mConnectedInputs has still a invalid Index!"));
         return;
     }
 
-    CollectInput(mConnectedInputs[mInputIndex].Get());
-    mInputIndex++;
+    CollectInput(mNormalLoaderData.mConnectedInputs[mNormalLoaderData.mInputIndex].Get());
+    mNormalLoaderData.mInputIndex++;
 }
 
 void ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Module)

@@ -2,15 +2,11 @@
 
 #pragma once
 
-#include "FactoryGame.h"
 #include "CoreMinimal.h"
 #include "FGConstructDisqualifier.h"
 #include "Hologram/FGFactoryHologram.h"
 #include "LBBuild_ModularLoadBalancer.h"
-#include "Subsystem/ModSubsystem.h"
-#include "Subsystem/SubsystemActorManager.h"
-#include "LoadBalancers_Subsystem_CPP.h"
-#include "FGFactoryConnectionComponent.h"
+#include "LBOutlineSubsystem.h"
 #include "FGPlayerController.h"
 #include "LBModularLoadBalancer_Hologram.generated.h"
 
@@ -23,6 +19,7 @@ class LOADBALANCERS_API ALBModularLoadBalancer_Hologram : public AFGFactoryHolog
 {
 	GENERATED_BODY()
 public:
+	virtual void BeginPlay() override;
 
 	virtual AActor* Construct(TArray< AActor* >& out_children, FNetConstructionID netConstructionID) override;
 	virtual void Destroyed() override;
@@ -34,22 +31,21 @@ public:
 
 	// Let use configure the load balancer.
 	virtual void ConfigureActor(AFGBuildable* inBuildable) const override;
-
-	UPROPERTY()
-	FVector cachedDismantleColor = FVector(-1.0, -1.0, -1.0);
-
-
-	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
+	
+	UPROPERTY(BlueprintReadWrite, Replicated)
 	ALBBuild_ModularLoadBalancer* LastSnapped;
+	
+	UPROPERTY(BlueprintReadWrite, Replicated)
+	ALBBuild_ModularLoadBalancer* ActiveGroupLeader;
 
-	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
-	TArray<ALBBuild_ModularLoadBalancer*> HologrammedBalancers;
-
-	TArray<TWeakObjectPtr<AActor>> mOutlineActors;
-	TArray<TWeakObjectPtr<UFGColoredInstanceMeshProxy>> mColoredInstanceMeshProxy;
-
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category="Holo")
 	UMaterialInterface* mHoloMaterial;
+
+	UPROPERTY(EditDefaultsOnly, Category="Holo")
+	FLinearColor mHoloColor = FLinearColor(.5f, .5f, .5f, 1.f);
+
+	UPROPERTY(Transient)
+	ALBOutlineSubsystem* mOutlineSubsystem;
 };
 
 

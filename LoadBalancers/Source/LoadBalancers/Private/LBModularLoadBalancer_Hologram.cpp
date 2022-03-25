@@ -1,12 +1,9 @@
 
 
 #include "LBModularLoadBalancer_Hologram.h"
-#include "LoadBalancersModule.h"
 #include "FGColoredInstanceMeshProxy.h"
 #include "FGProductionIndicatorInstanceComponent.h"
-#include "LB_RCO.h"
-#include "FGGameUserSettings.h"
-#include <Runtime/Engine/Classes/Components/ProxyInstancedStaticMeshComponent.h>
+#include "LoadBalancersModule.h"
 
 //DEFINE_LOG_CATEGORY(LoadBalancers_Log);
 
@@ -14,7 +11,13 @@ void ALBModularLoadBalancer_Hologram::GetLifetimeReplicatedProps(TArray<FLifetim
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ALBModularLoadBalancer_Hologram, LastSnapped);
-	DOREPLIFETIME(ALBModularLoadBalancer_Hologram, HologrammedBalancers);
+	DOREPLIFETIME(ALBModularLoadBalancer_Hologram, ActiveGroupLeader);
+}
+
+void ALBModularLoadBalancer_Hologram::BeginPlay()
+{
+	mOutlineSubsystem = ALBOutlineSubsystem::Get(GetWorld());
+	Super::BeginPlay();
 }
 
 AActor* ALBModularLoadBalancer_Hologram::Construct(TArray<AActor*>& out_children, FNetConstructionID netConstructionID)
@@ -25,12 +28,6 @@ AActor* ALBModularLoadBalancer_Hologram::Construct(TArray<AActor*>& out_children
 
 void ALBModularLoadBalancer_Hologram::Destroyed()
 {
-	if (cachedDismantleColor.X != -1.0)
-	{
-		UFGGameUserSettings* settings = UFGGameUserSettings::GetFGGameUserSettings();
-		settings->SetDismantleHologramColour(cachedDismantleColor);
-		settings->ApplyHologramColoursToCollectionParameterInstance(this->GetWorld());
-	}
 	UnHighlightAll();
 	Super::Destroyed();
 }
@@ -47,22 +44,24 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 				if(SnappedBalancer->HasOverflowLoader())
 					AddConstructDisqualifier(UFGCDHasOverflow::StaticClass());
 			
-			if (LastSnapped && SnappedBalancer != LastSnapped)
+			if (ActiveGroupLeader != SnappedBalancer->GroupLeader)
 			{
 				UnHighlightAll();
 			}
 			
 			LastSnapped = SnappedBalancer;
-
+			ActiveGroupLeader = SnappedBalancer->GroupLeader;
+			
 			HighlightAll(SnappedBalancer->GetGroupModules());
 		}
 	}
 	else
 	{
-		if (LastSnapped)
+		if (ActiveGroupLeader)
 		{
 			UnHighlightAll();
 			LastSnapped = nullptr;
+			ActiveGroupLeader = nullptr;
 		}
 	}
 
@@ -71,22 +70,8 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 
 void ALBModularLoadBalancer_Hologram::UnHighlightAll()
 {
-	for (TWeakObjectPtr<AActor> Actor : mOutlineActors)
-		if(Actor.IsValid())
-		{
-			Actor.Get()->K2_DestroyActor();
-		}
-
-	for (TWeakObjectPtr<UFGColoredInstanceMeshProxy> MeshProxy : mColoredInstanceMeshProxy)
-		if(MeshProxy.IsValid())
-		{
-			MeshProxy->SetHiddenInGame(false);
-			if(!MeshProxy->mInstanceHandle.IsInstanced())
-				MeshProxy->SetInstanced(true);
-		}
-	
-	mColoredInstanceMeshProxy.Empty();
-	mOutlineActors.Empty();
+	if(mOutlineSubsystem)
+		mOutlineSubsystem->ClearOutlines(true);
 }
 
 void ALBModularLoadBalancer_Hologram::ConfigureActor(AFGBuildable* inBuildable) const
@@ -105,50 +90,11 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 	if(actorsToOutline.Num() <= 0)
 		return;
 	
-	if (cachedDismantleColor.X == -1.0)
+	if(ActiveGroupLeader)
 	{
-		auto settings = UFGGameUserSettings::GetFGGameUserSettings();
-		UE_LOG(LoadBalancers_Log, Display, TEXT("Cached Color: %f, %f, %f"), cachedDismantleColor.X, cachedDismantleColor.Y, cachedDismantleColor.Z);
-		cachedDismantleColor = settings->mDismantleHologramColour;
-		UE_LOG(LoadBalancers_Log, Display, TEXT("Cached Color: %f, %f, %f"), cachedDismantleColor.X, cachedDismantleColor.Y, cachedDismantleColor.Z);
-		settings->SetDismantleHologramColour(FVector(0.5, 0.5, 0.5));
-		settings->ApplyHologramColoursToCollectionParameterInstance(this->GetWorld());
-	}
-	
-	if(LastSnapped)
-	{
-		for (AActor* OutlineActor : TArray<AActor*>(actorsToOutline))
-			if(UFGColoredInstanceMeshProxy* Proxy = OutlineActor->FindComponentByClass<UFGColoredInstanceMeshProxy>())
-			{
-				FTransform Transform = LastSnapped->GetTransform();
-				if(AActor* OutlinerActor = GetWorld()->SpawnActorDeferred<AActor>(AActor::StaticClass(), Transform))
-					if(UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(OutlinerActor))
-					{
-						Component->RegisterComponent();
-						OutlinerActor->FinishSpawning(Transform, true);
-
-						Component->SetRelativeTransform(Proxy->GetRelativeTransform());
-						Component->AttachToComponent(OutlineActor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-						Component->SetStaticMesh(Proxy->GetStaticMesh());
-						Component->SetRenderCustomDepth(true);
-						Component->SetCustomDepthStencilValue(250);
-
-						for(int i = 0; i < Component->GetNumMaterials(); ++i)
-							Component->SetMaterial(i, mHoloMaterial);
-						
-						Proxy->SetHiddenInGame(true);
-						if(Proxy->mInstanceHandle.IsInstanced())
-							Proxy->SetInstanced(false);
-
-						mColoredInstanceMeshProxy.Add(Proxy);
-						
-						OutlinerActor->SetReplicates(true);
-						OutlinerActor->ForceNetUpdate();
-						
-						mOutlineActors.Add(OutlinerActor);
-					}
-					else
-						OutlineActor->Destroy();
-			}
+		mOutlineSubsystem->SetOutlineColor(mHoloColor, true);
+		for (ALBBuild_ModularLoadBalancer* OutlineActor : actorsToOutline)
+			if(mOutlineSubsystem)
+				mOutlineSubsystem->CreateOutline(OutlineActor, true);
 	}
 }
