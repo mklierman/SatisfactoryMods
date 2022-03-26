@@ -2,14 +2,27 @@
 #include "Hologram/FGBuildableHologram.h"
 #include "Patching/NativeHookManager.h"
 #include "FGFactoryConnectionComponent.h"
-#include "Buildables/FGBuildable.h"
-#include "LBBuild_ModularLoadBalancer.h"
+#include "FGGameMode.h"
+#include "LBDefaultRCO.h"
 
 //DEFINE_LOG_CATEGORY(LoadBalancers_Log);
 
-void FLoadBalancersModule::StartupModule() {
+void GameModePostLogin(CallScope<void(*)(AFGGameMode*, APlayerController*)>& scope, AFGGameMode* gm,
+					   APlayerController* pc)
+{
+	if (gm->HasAuthority() && !gm->IsMainMenuGameMode())
+	{
+		//Register RCO
+		gm->RegisterRemoteCallObjectClass(ULBDefaultRCO::StaticClass());
+	}
+}
 
-	//		UE_LOG(LoadBalancers_Log, Display, TEXT("AFGBuildable::GetNumFactoryOuputConnections"));
+void FLoadBalancersModule::StartupModule() {
+#if !WITH_EDITOR
+	// Hooking to register RCOs
+	AFGGameMode* LocalGameMode = GetMutableDefault<AFGGameMode>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, &GameModePostLogin)
+#endif
 }
 
 

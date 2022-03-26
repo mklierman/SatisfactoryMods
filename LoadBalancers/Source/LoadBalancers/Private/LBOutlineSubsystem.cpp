@@ -120,8 +120,14 @@ void ALBOutlineSubsystem::SetOutlineColor(FLinearColor Color, bool Multicast)
 	}
 	else
 	{
-		mGameUserSettings->SetDismantleHologramColour(UKismetMathLibrary::Conv_LinearColorToVector(Color));
-		mGameUserSettings->ApplyHologramColoursToCollectionParameterInstance(GetWorld());
+		if(!mGameUserSettings)
+			mGameUserSettings = UFGGameUserSettings::GetFGGameUserSettings();
+		
+		if(mGameUserSettings)
+		{
+			mGameUserSettings->SetDismantleHologramColour(UKismetMathLibrary::Conv_LinearColorToVector(Color));
+			mGameUserSettings->ApplyHologramColoursToCollectionParameterInstance(GetWorld());
+		}
 	}
 }
 
@@ -140,7 +146,13 @@ void ALBOutlineSubsystem::ResetOutlineColor(bool Multicast)
 	}
 	else
 	{
-		mGameUserSettings->SetDismantleHologramColour(mCachedDismantleColor);
-		mGameUserSettings->ApplyHologramColoursToCollectionParameterInstance(GetWorld());
+		if(!mGameUserSettings)
+			mGameUserSettings = UFGGameUserSettings::GetFGGameUserSettings();
+		
+		if(mGameUserSettings)
+		{
+			mGameUserSettings->SetDismantleHologramColour(mCachedDismantleColor);
+			mGameUserSettings->ApplyHologramColoursToCollectionParameterInstance(GetWorld());
+		}
 	}
 }
