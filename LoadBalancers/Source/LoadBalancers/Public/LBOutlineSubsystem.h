@@ -50,6 +50,13 @@ class LOADBALANCERS_API ALBOutlineSubsystem : public AModSubsystem
 	/** Reset the DismantleColor to mCachedDismantleColor */
 	UFUNCTION(BlueprintCallable)
 	void ResetOutlineColor(bool Multicast = false);
+	
+	/** Check if we have any outlines */
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE bool HasAnyOutlines() const
+	{
+		return mOutlineMap.Num() > 0;
+	};
 
 	UPROPERTY(Transient)
 	TMap<AActor*, ALBOutlineActor*> mOutlineMap;

@@ -73,8 +73,9 @@ bool ALBModularLoadBalancer_Hologram::IsValidHitResult(const FHitResult& hitResu
 	bool SuperBool = Super::IsValidHitResult(hitResult);
 
 	// We clear the outline here if it invalid hit (in some cases it still hold the old outline because he switch instandly to Invalid)
-	if(SuperBool && mOutlineSubsystem)
-		mOutlineSubsystem->ClearOutlines();
+	if(!SuperBool && mOutlineSubsystem)
+		if(mOutlineSubsystem->HasAnyOutlines())
+			mOutlineSubsystem->ClearOutlines();
 	
 	return SuperBool;
 }
