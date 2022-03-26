@@ -25,6 +25,8 @@ public:
 	virtual void Destroyed() override;
 	virtual bool TrySnapToActor(const FHitResult& hitResult) override;
 
+	virtual bool IsValidHitResult(const FHitResult& hitResult) const override;
+
 	void UnHighlightAll();
 
 	void HighlightAll(TArray<ALBBuild_ModularLoadBalancer*> actorsToOutline);

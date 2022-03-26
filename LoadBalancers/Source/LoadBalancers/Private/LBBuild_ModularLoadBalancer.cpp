@@ -140,9 +140,6 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
 
     if(IsLeader() && HasAuthority())
     {
-        mTimer += dt;
-        if(mTimer >= 1.f)
-            UpdateCache();
 
         if(IsFilterLoader() && GetBufferInventory())
             if(mFilteredItem != GetBufferInventory()->GetAllowedItemOnIndex(0))
@@ -162,8 +159,17 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
     }
 
     if(MyOutputConnection && HasAuthority())
+    {
+        mTimer += dt;
+        if(mTimer >= 1.f)
+        {
+            mTimer -= 1.f;
+            UpdateCache();
+        }
+        
         if(MyOutputConnection->GetInventory())
             MyOutputConnection->SetInventoryAccessIndex(MyOutputConnection->GetInventory()->GetFullestStackIndex());
+    }
 }
 
 bool ALBBuild_ModularLoadBalancer::TickGroupTypeOutput(FLBBalancerData& TypeData, float dt)
@@ -242,48 +248,28 @@ bool ALBBuild_ModularLoadBalancer::SendItemsToOutputs(float dt, ALBBuild_Modular
 
 void ALBBuild_ModularLoadBalancer::UpdateCache()
 {
-    mTimer = .0f;
-
-    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> ConnectedOutputs = {};
-    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> ConnectedInputs = {};
+    if(!GroupLeader)
+        return;
     
-    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> FilteredConnectedOutputs = {};
-    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> FilteredConnectedInputs = {};
-    
-    for (ALBBuild_ModularLoadBalancer* GroupModule : GetGroupModules())
+    if(IsNormalLoader())
     {
-        // We skip here the overflow Loader otherwise it push in normal cycle all there
-        if(GroupModule->IsOverflowLoader())
-            continue;
+        if(GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this) && !MyInputConnection->IsConnected())
+            GroupLeader->mNormalLoaderData.mConnectedInputs.Remove(this);
+        else if(!GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this) && MyInputConnection->IsConnected())
+            GroupLeader->mNormalLoaderData.mConnectedInputs.AddUnique(this);
         
-        if(GroupModule->MyInputConnection)
-            if(GroupModule->MyInputConnection->IsConnected())
-                if(GroupModule->IsFilterLoader())
-                {
-                    FilteredConnectedInputs.AddUnique(GroupModule);
-                }
-                else
-                {
-                    ConnectedInputs.AddUnique(GroupModule);
-                }
-                
-        if(GroupModule->MyOutputConnection)
-            if(GroupModule->MyOutputConnection->IsConnected())
-                if(GroupModule->IsFilterLoader())
-                {
-                    FilteredConnectedOutputs.AddUnique(GroupModule);
-                }
-                else
-                {
-                    ConnectedOutputs.AddUnique(GroupModule);
-                }
+        if(GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && !MyOutputConnection->IsConnected())
+            GroupLeader->mNormalLoaderData.mConnectedOutputs.Remove(this);
+        else if(!GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && MyOutputConnection->IsConnected())
+            GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
     }
-
-    mNormalLoaderData.mConnectedInputs = ConnectedInputs;
-    mNormalLoaderData.mConnectedOutputs = ConnectedOutputs;
-
-    mFilteredLoaderData.mConnectedInputs = FilteredConnectedInputs;
-    mFilteredLoaderData.mConnectedOutputs = FilteredConnectedOutputs;
+    else if(IsFilterLoader())
+    {
+        if(GroupLeader->mFilteredLoaderData.mConnectedOutputs.Contains(this) && !MyOutputConnection->IsConnected())
+            GroupLeader->mFilteredLoaderData.mConnectedOutputs.Remove(this);
+        else if(!GroupLeader->mFilteredLoaderData.mConnectedOutputs.Contains(this) && MyOutputConnection->IsConnected())
+            GroupLeader->mFilteredLoaderData.mConnectedOutputs.AddUnique(this);
+    }
 }
 
 void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayReason)

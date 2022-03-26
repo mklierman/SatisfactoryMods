@@ -68,6 +68,17 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 	return SnapResult;
 }
 
+bool ALBModularLoadBalancer_Hologram::IsValidHitResult(const FHitResult& hitResult) const
+{
+	bool SuperBool = Super::IsValidHitResult(hitResult);
+
+	// We clear the outline here if it invalid hit (in some cases it still hold the old outline because he switch instandly to Invalid)
+	if(SuperBool && mOutlineSubsystem)
+		mOutlineSubsystem->ClearOutlines();
+	
+	return SuperBool;
+}
+
 void ALBModularLoadBalancer_Hologram::UnHighlightAll()
 {
 	if(mOutlineSubsystem)

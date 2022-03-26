@@ -132,8 +132,8 @@ private:
 	/** Update our cached In and Outputs */
 	void UpdateCache();
 	
-	/* Timer for cache update*/
-	float mTimer;
+	/** Collect Logic for an Input */
+	void CollectInput(ALBBuild_ModularLoadBalancer* Module);
 
 	/* All Loaders */
 	UPROPERTY(SaveGame)
@@ -150,6 +150,9 @@ private:
 	/** All our group modules */
 	UPROPERTY(Replicated)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mGroupModules;
+
+	UPROPERTY(SaveGame)
+	float mTimer;
 protected:
 	// Begin AActor Interface
 	virtual void PostInitializeComponents() override;
@@ -158,7 +161,5 @@ protected:
 	// Begin AFGBuildableFactory interface
 	virtual void Factory_Tick(float dt) override;
 	virtual void Factory_CollectInput_Implementation() override;
-	// End AFGBuildableFactory interface
-	
-	void CollectInput(ALBBuild_ModularLoadBalancer* Module);
+	// End
 };

@@ -40,7 +40,6 @@ class LOADBALANCERS_API ALBOutlineActor : public AActor
 				if(MeshName != FString("ClearanceBox") && MeshName != FString("Arrows"))
 					if(UStaticMeshComponent* NewComponent = NewObject<UStaticMeshComponent>(this))
 					{
-						NewComponent->SetRelativeTransform(OtherMeshComponent->GetComponentTransform());
 						NewComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 						NewComponent->SetStaticMesh(Mesh);
 
@@ -71,6 +70,11 @@ class LOADBALANCERS_API ALBOutlineActor : public AActor
 							for(int i = 0; i < CustomPrimitivDatas.Num(); ++i)
 								NewComponent->SetCustomPrimitiveDataFloat(i, CustomPrimitivDatas[i]);
 						}
+						
+						FTransform Transform = OtherMeshComponent->GetComponentTransform();
+						Transform.SetScale3D(Transform.GetScale3D() + FVector(.025));
+						
+						NewComponent->SetWorldTransform(Transform);
 					}
 				}
 			

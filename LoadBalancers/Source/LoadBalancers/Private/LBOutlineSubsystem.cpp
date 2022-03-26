@@ -72,7 +72,6 @@ void ALBOutlineSubsystem::CreateOutline(AActor* Actor, bool Multicast)
 			if(Actor)
 			{
 				FTransform Transform = Actor->GetTransform();
-				Transform.SetScale3D(Transform.GetScale3D() + FVector(.1));
 				if(ALBOutlineActor* OutlineActor = GetWorld()->SpawnActorDeferred<ALBOutlineActor>(ALBOutlineActor::StaticClass(), Transform, GetWorld()->GetFirstPlayerController()))
 				{
 					OutlineActor->CreateOutlineFromActor(Actor, mHoloMaterial);
