@@ -185,7 +185,7 @@ bool ALBBuild_ModularLoadBalancer::TickGroupTypeOutput(FLBBalancerData& TypeData
 
         ALBBuild_ModularLoadBalancer* Balancer = TypeData.mConnectedOutputs[TypeData.mOutputIndex].Get();
         
-        UE_LOG(LoadBalancers_Log, Error, TEXT("SendItemsToOutputs > %d"), TypeData.mOutputIndex);
+        //UE_LOG(LoadBalancers_Log, Error, TEXT("SendItemsToOutputs > %d"), TypeData.mOutputIndex);
         TypeData.mOutputIndex++;
         return SendItemsToOutputs(dt, Balancer);
     }
