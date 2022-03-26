@@ -70,12 +70,16 @@ void ALBOutlineSubsystem::CreateOutline(AActor* Actor, bool Multicast)
 	{
 		if(!mOutlineMap.Contains(Actor))
 			if(Actor)
-				if(ALBOutlineActor* OutlineActor = GetWorld()->SpawnActorDeferred<ALBOutlineActor>(ALBOutlineActor::StaticClass(), Actor->GetTransform(), GetWorld()->GetFirstPlayerController()))
+			{
+				FTransform Transform = Actor->GetTransform();
+				Transform.SetScale3D(Transform.GetScale3D() + FVector(.1));
+				if(ALBOutlineActor* OutlineActor = GetWorld()->SpawnActorDeferred<ALBOutlineActor>(ALBOutlineActor::StaticClass(), Transform, GetWorld()->GetFirstPlayerController()))
 				{
 					OutlineActor->CreateOutlineFromActor(Actor, mHoloMaterial);
-					OutlineActor->FinishSpawning(Actor->GetTransform(), true);
+					OutlineActor->FinishSpawning(Transform, true);
 					mOutlineMap.Add(Actor, OutlineActor);
 				}
+			}
 	}
 }
 

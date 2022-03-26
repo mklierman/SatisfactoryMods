@@ -55,11 +55,11 @@ class LOADBALANCERS_API ALBOutlineActor : public AActor
 						NewComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 						TArray<float> CustomPrimitivDatas;
-						OtherMeshComponent->SetHiddenInGame(true);
+						//OtherMeshComponent->SetHiddenInGame(true);
 						if(UFGColoredInstanceMeshProxy* MeshProxy = Cast<UFGColoredInstanceMeshProxy>(OtherMeshComponent))
 							if(MeshProxy->mInstanceHandle.IsInstanced())
 							{
-								MeshProxy->SetInstanced(false);
+								//MeshProxy->SetInstanced(false);
 								CustomPrimitivDatas = MeshProxy->mInstanceHandle.GetCustomData();
 							}
 
@@ -103,10 +103,10 @@ class LOADBALANCERS_API ALBOutlineActor : public AActor
 			for (UActorComponent* ComponentsByClass : mOutlinedActor.Get()->GetComponentsByClass(UStaticMeshComponent::StaticClass()))
 				if(UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ComponentsByClass))
 				{
-					if(UFGColoredInstanceMeshProxy* MeshProxy = Cast<UFGColoredInstanceMeshProxy>(ComponentsByClass))
-						if(!MeshProxy->mInstanceHandle.IsInstanced() && !MeshProxy->mBlockInstancing)
-							MeshProxy->SetInstanced(true);
-					MeshComponent->SetHiddenInGame(false);
+					//if(UFGColoredInstanceMeshProxy* MeshProxy = Cast<UFGColoredInstanceMeshProxy>(ComponentsByClass))
+						//if(!MeshProxy->mInstanceHandle.IsInstanced() && !MeshProxy->mBlockInstancing)
+							//MeshProxy->SetInstanced(true);
+					//MeshComponent->SetHiddenInGame(false);
 				}
 	}
 
