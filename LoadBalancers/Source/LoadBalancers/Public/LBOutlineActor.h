@@ -38,9 +38,7 @@ class LOADBALANCERS_API ALBOutlineActor : public AActor
 				FString MeshName = OtherMeshComponent->GetStaticMesh()->GetName();
 				
 				if(MeshName != FString("ClearanceBox") && MeshName != FString("Arrows"))
-				{
-					UStaticMeshComponent* NewComponent = NewObject<UStaticMeshComponent>(this);
-					if(NewComponent)
+					if(UStaticMeshComponent* NewComponent = NewObject<UStaticMeshComponent>(this))
 					{
 						NewComponent->SetRelativeTransform(OtherMeshComponent->GetComponentTransform());
 						NewComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
@@ -75,7 +73,7 @@ class LOADBALANCERS_API ALBOutlineActor : public AActor
 						}
 					}
 				}
-			}
+			
 	}
 	
 

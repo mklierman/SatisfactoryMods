@@ -89,10 +89,22 @@ public:
 	TWeakObjectPtr<ALBBuild_ModularLoadBalancer> mOverflowLoader;
 	
 	/* Overflow get pointer for the loader */
-	FORCEINLINE ALBBuild_ModularLoadBalancer* GetOverflowLoader() const { return HasOverflowLoader() ? mOverflowLoader.Get() : nullptr; }
+	FORCEINLINE ALBBuild_ModularLoadBalancer* GetOverflowLoader() const { return HasOverflowLoader() ? GroupLeader->mOverflowLoader.Get() : nullptr; }
 	
 	/* Do we have a overflow loader? (return true if pointer valid) */
-	FORCEINLINE bool HasOverflowLoader() const { return mOverflowLoader.IsValid(); }
+	FORCEINLINE bool HasOverflowLoader() const
+	{
+		if(GroupLeader)
+			return GroupLeader->mOverflowLoader.IsValid();
+		return false;
+	}
+	
+	FORCEINLINE bool HasFilterLoader() const
+	{
+		if(GroupLeader)
+			return GetConnections(EFactoryConnectionDirection::FCD_OUTPUT, true).Num() > 0;
+		return false;
+	}
 	
 	/* Some native helper */
 	FORCEINLINE bool IsOverflowLoader() const { return mLoaderType == ELoaderType::Overflow; }

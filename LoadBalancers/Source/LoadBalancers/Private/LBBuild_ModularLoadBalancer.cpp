@@ -44,6 +44,9 @@ void ALBBuild_ModularLoadBalancer::BeginPlay()
             for(int i = 0; i < GetBufferInventory()->GetSizeLinear(); ++i)
                 if(GetBufferInventory()->IsValidIndex(i))
                     GetBufferInventory()->AddArbitrarySlotSize(i, 10);
+            
+            if(IsFilterLoader())
+                GetBufferInventory()->SetAllowedItemOnIndex(0, mFilteredItem);
         }
 
         if(mOutputInventory)
@@ -145,9 +148,9 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
                 {
                     if(!TickGroupTypeOutput(mFilteredLoaderData, dt))
                         TickGroupTypeOutput(mNormalLoaderData, dt);
-                    return;
                 }
-                TickGroupTypeOutput(mNormalLoaderData, dt);
+                else
+                    TickGroupTypeOutput(mNormalLoaderData, dt);
             }
     }
 }
@@ -172,20 +175,9 @@ bool ALBBuild_ModularLoadBalancer::TickGroupTypeOutput(FLBBalancerData& TypeData
             return false;
 
         ALBBuild_ModularLoadBalancer* Balancer = TypeData.mConnectedOutputs[TypeData.mOutputIndex].Get();
-        if(!SendItemsToOutputs(dt, Balancer))
-        {
-            if(!Balancer->IsFilterLoader())
-                if(CanSendToOverflow())
-                {
-                    int Index = mOutputInventory->GetFirstIndexWithItem();
-                    FInventoryStack Stack;
-                    mOutputInventory->GetStackFromIndex(Index, Stack);
-                    GetOverflowLoader()->GetBufferInventory()->AddItem(Stack.Item);
-                    mOutputInventory->RemoveFromIndex(Index, 1);
-                }
-        }
             
         TypeData.mOutputIndex++;
+        return SendItemsToOutputs(dt, Balancer);
     }
     return false;
 }
@@ -390,12 +382,28 @@ void ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Mo
         {
             if(connection->GetInventory() != GroupLeader->mOutputInventory)
                 connection->SetInventory(GroupLeader->mOutputInventory);
+
             
             FInventoryItem Item = peeker[0];
             float offset;
-            if(GroupLeader->mOutputInventory->HasEnoughSpaceForItem(Item))
+
+            if(GroupLeader->mOutputInventory->GetNumItems(Item.ItemClass) <= 10)
+            {
                 if(connection->Factory_GrabOutput(Item, offset))
+                {
                     GroupLeader->mOutputInventory->AddItem(Item);
+                    return;
+                }
+            }
+            
+            if(HasOverflowLoader())
+            {
+                ALBBuild_ModularLoadBalancer* OverflowLoader = GetOverflowLoader();
+                if(OverflowLoader->GetBufferInventory())
+                    if(OverflowLoader->GetBufferInventory()->HasEnoughSpaceForItem(Item))
+                        if(connection->Factory_GrabOutput(Item, offset))
+                            OverflowLoader->GetBufferInventory()->AddItem(Item);
+            }
         }
     }
 }
