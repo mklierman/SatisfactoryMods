@@ -44,6 +44,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Holo")
 	FLinearColor mHoloColor = FLinearColor(.5f, .5f, .5f, 1.f);
 
+	UPROPERTY(EditDefaultsOnly, Category="Holo")
+	FLinearColor mHoloFailedColor = FLinearColor(1.f, .0f, .0f, 1.f);
+
 	UPROPERTY(Transient)
 	ALBOutlineSubsystem* mOutlineSubsystem;
 };

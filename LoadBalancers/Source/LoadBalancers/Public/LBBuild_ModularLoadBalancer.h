@@ -53,10 +53,6 @@ public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	// End AActor interface
-	
-	// Begin AFGBuildableFactory interface
-	virtual void Factory_Tick(float dt) override;
-	// End AFGBuildableFactory interface
 
 	/** Apply this module to the group (Called on BeginPlay should not need to call again) */
 	void ApplyGroupModule();
@@ -84,9 +80,6 @@ public:
 	
 	/* Get ALL valid GroupModules */
 	TArray<ALBBuild_ModularLoadBalancer*> GetGroupModules() const;
-
-	/* Overflow loader */
-	TWeakObjectPtr<ALBBuild_ModularLoadBalancer> mOverflowLoader;
 	
 	/* Overflow get pointer for the loader */
 	FORCEINLINE ALBBuild_ModularLoadBalancer* GetOverflowLoader() const { return HasOverflowLoader() ? GroupLeader->mOverflowLoader.Get() : nullptr; }
@@ -142,13 +135,17 @@ private:
 	/* Timer for cache update*/
 	float mTimer;
 
-	// All Loaders
+	/* All Loaders */
 	UPROPERTY(SaveGame)
 	FLBBalancerData mNormalLoaderData;
 	
-	// All FilteredLoaders
+	/* All FilteredLoaders */
 	UPROPERTY(SaveGame)
 	FLBBalancerData mFilteredLoaderData;
+
+	/* Overflow loader */
+	UPROPERTY(Transient)
+	TWeakObjectPtr<ALBBuild_ModularLoadBalancer> mOverflowLoader;
 	
 	/** All our group modules */
 	UPROPERTY(Replicated)
@@ -158,8 +155,10 @@ protected:
 	virtual void PostInitializeComponents() override;
 	// End AActor Interface
 	
-	// Begin Factory_ interface
+	// Begin AFGBuildableFactory interface
+	virtual void Factory_Tick(float dt) override;
 	virtual void Factory_CollectInput_Implementation() override;
+	// End AFGBuildableFactory interface
+	
 	void CollectInput(ALBBuild_ModularLoadBalancer* Module);
-	// End Factory_ interface
 };

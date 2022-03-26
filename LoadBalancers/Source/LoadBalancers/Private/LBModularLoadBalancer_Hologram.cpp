@@ -92,7 +92,7 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 	
 	if(ActiveGroupLeader)
 	{
-		mOutlineSubsystem->SetOutlineColor(mHoloColor, true);
+		mOutlineSubsystem->SetOutlineColor(mConstructDisqualifiers.Contains(UFGCDHasOverflow::StaticClass()) ? mHoloFailedColor : mHoloColor, true);
 		for (ALBBuild_ModularLoadBalancer* OutlineActor : actorsToOutline)
 			if(mOutlineSubsystem)
 				mOutlineSubsystem->CreateOutline(OutlineActor, true);

@@ -40,13 +40,14 @@ void ALBBuild_ModularLoadBalancer::BeginPlay()
         {
             MyOutputConnection->SetInventory(GetBufferInventory());
             MyOutputConnection->SetInventoryAccessIndex(-1);
-            GetBufferInventory()->Resize(IsOverflowLoader() ? 5 : 1);
+            GetBufferInventory()->Resize(10);
             for(int i = 0; i < GetBufferInventory()->GetSizeLinear(); ++i)
                 if(GetBufferInventory()->IsValidIndex(i))
-                    GetBufferInventory()->AddArbitrarySlotSize(i, 10);
-            
-            if(IsFilterLoader())
-                GetBufferInventory()->SetAllowedItemOnIndex(0, mFilteredItem);
+                {
+                    GetBufferInventory()->AddArbitrarySlotSize(i, 20);
+                    if(IsFilterLoader())
+                        GetBufferInventory()->SetAllowedItemOnIndex(i, mFilteredItem);
+                }
         }
 
         if(mOutputInventory)
@@ -54,7 +55,7 @@ void ALBBuild_ModularLoadBalancer::BeginPlay()
             mOutputInventory->Resize(10);
             for(int i = 0; i < mOutputInventory->GetSizeLinear(); ++i)
                 if(mOutputInventory->IsValidIndex(i))
-                    mOutputInventory->AddArbitrarySlotSize(i, 10);
+                    mOutputInventory->AddArbitrarySlotSize(i, 20);
         }
         
         ApplyGroupModule();
@@ -86,7 +87,11 @@ void ALBBuild_ModularLoadBalancer::SetFilteredItem(TSubclassOf<UFGItemDescriptor
     {
         if(IsFilterLoader() && GetBufferInventory())
         {
-            GetBufferInventory()->SetAllowedItemOnIndex(0, ItemClass);
+            for(int i = 0; i < GetBufferInventory()->GetSizeLinear(); ++i)
+                if(GetBufferInventory()->IsValidIndex(i))
+                {
+                    GetBufferInventory()->SetAllowedItemOnIndex(i, ItemClass);
+                }
             mFilteredItem = GetBufferInventory()->GetAllowedItemOnIndex(0);
         }
     }
@@ -104,6 +109,8 @@ void ALBBuild_ModularLoadBalancer::ApplyLeader()
             if(ModularLoadBalancer)
             {
                 ModularLoadBalancer->GroupLeader = GroupLeader;
+                ModularLoadBalancer->mFilteredLoaderData = mFilteredLoaderData;
+                ModularLoadBalancer->mNormalLoaderData = mNormalLoaderData;
                 ModularLoadBalancer->ForceNetUpdate();
             }
 
@@ -144,7 +151,7 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
         if(mOutputInventory)
             if(!mOutputInventory->IsEmpty())
             {
-                if(IsMarkToFilter())
+                if(HasFilterLoader())
                 {
                     if(!TickGroupTypeOutput(mFilteredLoaderData, dt))
                         TickGroupTypeOutput(mNormalLoaderData, dt);
@@ -153,6 +160,10 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
                     TickGroupTypeOutput(mNormalLoaderData, dt);
             }
     }
+
+    if(MyOutputConnection && HasAuthority())
+        if(MyOutputConnection->GetInventory())
+            MyOutputConnection->SetInventoryAccessIndex(MyOutputConnection->GetInventory()->GetFullestStackIndex());
 }
 
 bool ALBBuild_ModularLoadBalancer::TickGroupTypeOutput(FLBBalancerData& TypeData, float dt)
@@ -168,14 +179,13 @@ bool ALBBuild_ModularLoadBalancer::TickGroupTypeOutput(FLBBalancerData& TypeData
             UE_LOG(LoadBalancers_Log, Error, TEXT("mConnectedOutputs has still a invalid Index!"));
             return false;
         }
+        
         if(!TypeData.mConnectedOutputs[TypeData.mOutputIndex].IsValid())
             return false;
 
-        if(!mOutputInventory || mOutputInventory->IsEmpty())
-            return false;
-
         ALBBuild_ModularLoadBalancer* Balancer = TypeData.mConnectedOutputs[TypeData.mOutputIndex].Get();
-            
+        
+        UE_LOG(LoadBalancers_Log, Error, TEXT("SendItemsToOutputs > %d"), TypeData.mOutputIndex);
         TypeData.mOutputIndex++;
         return SendItemsToOutputs(dt, Balancer);
     }
@@ -217,12 +227,14 @@ bool ALBBuild_ModularLoadBalancer::SendItemsToOutputs(float dt, ALBBuild_Modular
         {
             FInventoryStack Stack;
             mOutputInventory->GetStackFromIndex(Index, Stack);
-            if(Stack.HasItems() && Balancer->GetBufferInventory()->HasEnoughSpaceForItem(Stack.Item))
-            {
-                Balancer->GetBufferInventory()->AddItem(Stack.Item);
-                mOutputInventory->RemoveFromIndex(Index,1 );
-                return true;
-            }
+            if(Stack.HasItems())
+                if(Balancer->GetBufferInventory()->HasEnoughSpaceForItem(Stack.Item))
+                    if(Balancer->GetBufferInventory()->GetNumItems(Stack.Item.ItemClass) < 10)
+                    {
+                        Balancer->GetBufferInventory()->AddItem(Stack.Item);
+                        mOutputInventory->RemoveFromIndex(Index,1 );
+                        return true;
+                    }
         }
     }
     return false;
@@ -371,8 +383,11 @@ void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()
 
 void ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Module)
 {
+    if(!Module || Module->IsPendingKill())
+        return;
+    
     UFGFactoryConnectionComponent* connection = Module->MyInputConnection;
-    if(!connection || !GroupLeader)
+    if(!connection || !GroupLeader || connection->IsPendingKill())
         return;
 
     if(connection->IsConnected() && GroupLeader->mOutputInventory)
@@ -387,14 +402,13 @@ void ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Mo
             FInventoryItem Item = peeker[0];
             float offset;
 
-            if(GroupLeader->mOutputInventory->GetNumItems(Item.ItemClass) <= 10)
-            {
-                if(connection->Factory_GrabOutput(Item, offset))
-                {
-                    GroupLeader->mOutputInventory->AddItem(Item);
-                    return;
-                }
-            }
+            if( GroupLeader->mOutputInventory->HasEnoughSpaceForItem(Item) )
+                if(GroupLeader->mOutputInventory->GetNumItems(Item.ItemClass) < 10)
+                    if(connection->Factory_GrabOutput(Item, offset))
+                    {
+                        GroupLeader->mOutputInventory->AddItem(Item);
+                        return;
+                    }
             
             if(HasOverflowLoader())
             {
