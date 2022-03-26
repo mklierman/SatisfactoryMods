@@ -2,14 +2,11 @@
 
 #pragma once
 
-#include "FactoryGame.h"
 #include "CoreMinimal.h"
+#include "FGConstructDisqualifier.h"
 #include "Hologram/FGFactoryHologram.h"
 #include "LBBuild_ModularLoadBalancer.h"
-#include "Subsystem/ModSubsystem.h"
-#include "Subsystem/SubsystemActorManager.h"
-#include "LoadBalancers_Subsystem_CPP.h"
-#include "FGFactoryConnectionComponent.h"
+#include "LBOutlineSubsystem.h"
 #include "FGPlayerController.h"
 #include "LBModularLoadBalancer_Hologram.generated.h"
 
@@ -22,32 +19,48 @@ class LOADBALANCERS_API ALBModularLoadBalancer_Hologram : public AFGFactoryHolog
 {
 	GENERATED_BODY()
 public:
+	virtual void BeginPlay() override;
 
 	virtual AActor* Construct(TArray< AActor* >& out_children, FNetConstructionID netConstructionID) override;
 	virtual void Destroyed() override;
-	virtual void BeginPlay() override;
 	virtual bool TrySnapToActor(const FHitResult& hitResult) override;
 
-	void Server_SnapStuff(bool SnapResult);
+	virtual bool IsValidHitResult(const FHitResult& hitResult) const override;
 
 	void UnHighlightAll();
 
-	void HighlightBalancer(ALBBuild_ModularLoadBalancer* Balancer);
-
 	void HighlightAll(TArray<ALBBuild_ModularLoadBalancer*> actorsToOutline);
 
-	void SetMeshInstanced(UMeshComponent* MeshComp, bool Instanced);
-
-	void UnHighlightBalancer(ALBBuild_ModularLoadBalancer* Balancer);
-
-	UPROPERTY()
-	FVector cachedDismantleColor = FVector(-1.0, -1.0, -1.0);
-
-
-	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
+	// Let use configure the load balancer.
+	virtual void ConfigureActor(AFGBuildable* inBuildable) const override;
+	
+	UPROPERTY(BlueprintReadWrite, Replicated)
 	ALBBuild_ModularLoadBalancer* LastSnapped;
+	
+	UPROPERTY(BlueprintReadWrite, Replicated)
+	ALBBuild_ModularLoadBalancer* ActiveGroupLeader;
 
-	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
-	TArray<ALBBuild_ModularLoadBalancer*> HologrammedBalancers;
+	UPROPERTY(EditDefaultsOnly, Category="Holo")
+	UMaterialInterface* mHoloMaterial;
 
+	UPROPERTY(EditDefaultsOnly, Category="Holo")
+	FLinearColor mHoloColor = FLinearColor(.5f, .5f, .5f, 1.f);
+
+	UPROPERTY(EditDefaultsOnly, Category="Holo")
+	FLinearColor mHoloFailedColor = FLinearColor(1.f, .0f, .0f, 1.f);
+
+	UPROPERTY(Transient)
+	ALBOutlineSubsystem* mOutlineSubsystem;
+};
+
+
+UCLASS()
+class LOADBALANCERS_API UFGCDHasOverflow : public UFGConstructDisqualifier
+{
+	GENERATED_BODY()
+
+	UFGCDHasOverflow()
+	{
+		mDisqfualifyingText = FText::FromString(TEXT("Only one Overflow module can be attached"));
+	}
 };
