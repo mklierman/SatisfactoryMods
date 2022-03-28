@@ -23,13 +23,13 @@ USTRUCT()
 struct LOADBALANCERS_API FLBBalancerData
 {
 	GENERATED_BODY()
-	
+
 	UPROPERTY(Transient)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mConnectedOutputs;
-	
+
 	UPROPERTY(Transient)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mConnectedInputs;
-	
+
 	UPROPERTY(SaveGame)
 	int mInputIndex = 0;
 
@@ -47,7 +47,7 @@ class LOADBALANCERS_API ALBBuild_ModularLoadBalancer : public AFGBuildableConvey
 public:
 
 	ALBBuild_ModularLoadBalancer();
-	
+
 	// Begin AActor interface
 	virtual void GetLifetimeReplicatedProps( TArray<FLifetimeProperty>& OutLifetimeProps ) const override;
 	virtual void BeginPlay() override;
@@ -61,7 +61,7 @@ public:
 	FORCEINLINE bool IsLeader() const { return GroupLeader == this; }
 
 	/** Should this current item sorted? */
-	bool IsMarkToFilter() const;
+	bool IsFilterSet() const;
 
 	UFUNCTION(BlueprintCallable, Category="Modular Loader")
 	void SetFilteredItem(TSubclassOf<UFGItemDescriptor> ItemClass);
@@ -74,47 +74,47 @@ public:
 
 	/** Try to send Items to an Output return false if the inventory full or invalid to push */
 	bool SendItemsToOutputs(float dt, ALBBuild_ModularLoadBalancer* Balancer);
-	
+
 	/** Can we send something in the overflow inventory? */
 	bool CanSendToOverflow() const;
-	
+
 	/* Get ALL valid GroupModules */
 	TArray<ALBBuild_ModularLoadBalancer*> GetGroupModules() const;
-	
+
 	/* Overflow get pointer for the loader */
-	FORCEINLINE ALBBuild_ModularLoadBalancer* GetOverflowLoader() const { return HasOverflowLoader() ? GroupLeader->mOverflowLoader.Get() : nullptr; }
-	
+	FORCEINLINE ALBBuild_ModularLoadBalancer* GetOverflowLoader() const { return HasOverflowModule() ? GroupLeader->mOverflowModule.Get() : nullptr; }
+
 	/* Do we have a overflow loader? (return true if pointer valid) */
-	FORCEINLINE bool HasOverflowLoader() const
+	FORCEINLINE bool HasOverflowModule() const
 	{
 		if(GroupLeader)
-			return GroupLeader->mOverflowLoader.IsValid();
+			return GroupLeader->mOverflowModule.IsValid();
 		return false;
 	}
-	
-	FORCEINLINE bool HasFilterLoader() const
+
+	FORCEINLINE bool HasFilterModule() const
 	{
 		if(GroupLeader)
 			return GetConnections(EFactoryConnectionDirection::FCD_OUTPUT, true).Num() > 0;
 		return false;
 	}
-	
+
 	/* Some native helper */
-	FORCEINLINE bool IsOverflowLoader() const { return mLoaderType == ELoaderType::Overflow; }
-	FORCEINLINE bool IsFilterLoader() const { return mLoaderType == ELoaderType::Filter; }
-	FORCEINLINE bool IsNormalLoader() const { return mLoaderType == ELoaderType::Normal; }
+	FORCEINLINE bool IsOverflowModule() const { return mLoaderType == ELoaderType::Overflow; }
+	FORCEINLINE bool IsFilterModule() const { return mLoaderType == ELoaderType::Filter; }
+	FORCEINLINE bool IsNormalModule() const { return mLoaderType == ELoaderType::Normal; }
 
 	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
 	ALBBuild_ModularLoadBalancer* GroupLeader;
-	
+
 	/** Current Filtered Item (if Filter) */
 	UPROPERTY(BlueprintReadOnly, Replicated, SaveGame)
 	TSubclassOf<UFGItemDescriptor> mFilteredItem = UFGNoneDescriptor::StaticClass();
-	
+
 	// Dont need to be Saved > CAN SET BY CPP
 	UPROPERTY(Transient)
 	UFGFactoryConnectionComponent* MyOutputConnection;
-	
+
 	// Dont need to be Saved > CAN SET BY CPP
 	UPROPERTY(Transient)
 	UFGFactoryConnectionComponent* MyInputConnection;
@@ -123,30 +123,30 @@ public:
 	UPROPERTY(SaveGame)
 	UFGInventoryComponent* mOutputInventory;
 	TArray<UFGFactoryConnectionComponent*> GetConnections(EFactoryConnectionDirection Direction = EFactoryConnectionDirection::FCD_OUTPUT, bool Filtered = false) const;
-	
+
 	/** What type is this loader? */
 	UPROPERTY(EditDefaultsOnly, Category="ModularLoader")
 	ELoaderType mLoaderType = ELoaderType::Normal;
-	
+
 private:
 	/** Update our cached In and Outputs */
 	void UpdateCache();
-	
+
 	/** Collect Logic for an Input */
 	void CollectInput(ALBBuild_ModularLoadBalancer* Module);
 
 	/* All Loaders */
 	UPROPERTY(SaveGame)
 	FLBBalancerData mNormalLoaderData;
-	
+
 	/* All FilteredLoaders */
 	UPROPERTY(SaveGame)
-	FLBBalancerData mFilteredLoaderData;
+	FLBBalancerData mFilteredModuleData;
 
 	/* Overflow loader */
 	UPROPERTY(Transient)
-	TWeakObjectPtr<ALBBuild_ModularLoadBalancer> mOverflowLoader;
-	
+	TWeakObjectPtr<ALBBuild_ModularLoadBalancer> mOverflowModule;
+
 	/** All our group modules */
 	UPROPERTY(Replicated)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mGroupModules;
@@ -157,7 +157,7 @@ protected:
 	// Begin AActor Interface
 	virtual void PostInitializeComponents() override;
 	// End AActor Interface
-	
+
 	// Begin AFGBuildableFactory interface
 	virtual void Factory_Tick(float dt) override;
 	virtual void Factory_CollectInput_Implementation() override;

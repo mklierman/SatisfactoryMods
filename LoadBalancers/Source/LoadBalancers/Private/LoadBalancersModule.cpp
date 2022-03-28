@@ -25,5 +25,4 @@ void FLoadBalancersModule::StartupModule() {
 #endif
 }
 
-
 IMPLEMENT_GAME_MODULE(FLoadBalancersModule, LoadBalancers);

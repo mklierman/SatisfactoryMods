@@ -8,15 +8,19 @@
 
 ALBOutlineSubsystem* ALBOutlineSubsystem::Get(UObject* worldContext)
 {
-	if(worldContext)
+	if (worldContext)
 	{
 		const UWorld* WorldObject = GEngine->GetWorldFromContextObjectChecked(worldContext);
 		USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
 		check(SubsystemActorManager);
-		
+
 		for (auto Subsystem : SubsystemActorManager->SubsystemActors)
-			if(Subsystem.Key->IsChildOf(StaticClass()))
+		{
+			if (Subsystem.Key->IsChildOf(StaticClass()))
+			{
 				return Cast<ALBOutlineSubsystem>(Subsystem.Value);
+			}
+		}
 	}
 	return nullptr;
 }
@@ -26,7 +30,7 @@ void ALBOutlineSubsystem::BeginPlay()
 	Super::BeginPlay();
 
 	mGameUserSettings = UFGGameUserSettings::GetFGGameUserSettings();
-	if(mGameUserSettings)
+	if (mGameUserSettings)
 	{
 		mCachedDismantleColor = mGameUserSettings->mDismantleHologramColour;
 	}
@@ -55,78 +59,98 @@ void ALBOutlineSubsystem::MultiCast_ResetOutlineColor_Implementation()
 
 void ALBOutlineSubsystem::CreateOutline(AActor* Actor, bool Multicast)
 {
-	if(Multicast)
+	if (Multicast)
 	{
-		if(HasAuthority())
+		if (HasAuthority())
+		{
 			MultiCast_CreateOutlineForActor(Actor);
+		}
 		else
 		{
 			ULBDefaultRCO* RCO = ULBDefaultRCO::Get(GetWorld());
-			if(RCO)
+			if (RCO)
+			{
 				RCO->Server_CreateOutlineForActor(this, Actor);
+			}
 		}
 	}
 	else
 	{
-		if(!mOutlineMap.Contains(Actor))
-			if(Actor)
+		if (!mOutlineMap.Contains(Actor))
+		{
+			if (Actor)
 			{
 				FTransform Transform = Actor->GetTransform();
-				if(ALBOutlineActor* OutlineActor = GetWorld()->SpawnActorDeferred<ALBOutlineActor>(ALBOutlineActor::StaticClass(), Transform, GetWorld()->GetFirstPlayerController()))
+				if (ALBOutlineActor* OutlineActor = GetWorld()->SpawnActorDeferred<ALBOutlineActor>(ALBOutlineActor::StaticClass(), Transform, GetWorld()->GetFirstPlayerController()))
 				{
 					OutlineActor->CreateOutlineFromActor(Actor, mHoloMaterial);
 					OutlineActor->FinishSpawning(Transform, true);
 					mOutlineMap.Add(Actor, OutlineActor);
 				}
 			}
+		}
 	}
 }
 
 void ALBOutlineSubsystem::ClearOutlines(bool Multicast)
 {
-	if(Multicast)
+	if (Multicast)
 	{
-		if(HasAuthority())
+		if (HasAuthority())
+		{
 			MultiCast_ClearOutlines();
+		}
 		else
 		{
 			ULBDefaultRCO* RCO = ULBDefaultRCO::Get(GetWorld());
-			if(RCO)
+			if (RCO)
+			{
 				RCO->Server_ClearOutlines(this);
+			}
 		}
 	}
 	else
 	{
-		if(mOutlineMap.Num() > 0)
+		if (mOutlineMap.Num() > 0)
+		{
 			for (auto OutlineActor : mOutlineMap)
-				if(OutlineActor.Value)
+			{
+				if (OutlineActor.Value)
 				{
 					OutlineActor.Value->ResetOther();
 					OutlineActor.Value->Destroy();
 				}
+			}
+		}
 		mOutlineMap.Empty();
 	}
 }
 
 void ALBOutlineSubsystem::SetOutlineColor(FLinearColor Color, bool Multicast)
 {
-	if(Multicast)
+	if (Multicast)
 	{
-		if(HasAuthority())
+		if (HasAuthority())
+		{
 			MultiCast_SetOutlineColor(Color);
+		}
 		else
 		{
 			ULBDefaultRCO* RCO = ULBDefaultRCO::Get(GetWorld());
-			if(RCO)
+			if (RCO)
+			{
 				RCO->Server_SetOutlineColor(this, UKismetMathLibrary::Conv_LinearColorToVector(Color));
+			}
 		}
 	}
 	else
 	{
-		if(!mGameUserSettings)
+		if (!mGameUserSettings)
+		{
 			mGameUserSettings = UFGGameUserSettings::GetFGGameUserSettings();
-		
-		if(mGameUserSettings)
+		}
+
+		if (mGameUserSettings)
 		{
 			mGameUserSettings->SetDismantleHologramColour(UKismetMathLibrary::Conv_LinearColorToVector(Color));
 			mGameUserSettings->ApplyHologramColoursToCollectionParameterInstance(GetWorld());
@@ -136,23 +160,29 @@ void ALBOutlineSubsystem::SetOutlineColor(FLinearColor Color, bool Multicast)
 
 void ALBOutlineSubsystem::ResetOutlineColor(bool Multicast)
 {
-	if(Multicast)
+	if (Multicast)
 	{
-		if(HasAuthority())
+		if (HasAuthority())
+		{
 			MultiCast_ResetOutlineColor();
+		}
 		else
 		{
 			ULBDefaultRCO* RCO = ULBDefaultRCO::Get(GetWorld());
-			if(RCO)
+			if (RCO)
+			{
 				RCO->Server_ResetOutlineColor(this);
+			}
 		}
 	}
 	else
 	{
-		if(!mGameUserSettings)
+		if (!mGameUserSettings)
+		{
 			mGameUserSettings = UFGGameUserSettings::GetFGGameUserSettings();
-		
-		if(mGameUserSettings)
+		}
+
+		if (mGameUserSettings)
 		{
 			mGameUserSettings->SetDismantleHologramColour(mCachedDismantleColor);
 			mGameUserSettings->ApplyHologramColoursToCollectionParameterInstance(GetWorld());

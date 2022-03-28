@@ -1,5 +1,3 @@
-
-
 #include "LBModularLoadBalancer_Hologram.h"
 #include "FGColoredInstanceMeshProxy.h"
 #include "FGProductionIndicatorInstanceComponent.h"
@@ -40,18 +38,22 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 		ALBBuild_ModularLoadBalancer* Default = GetDefaultBuildable<ALBBuild_ModularLoadBalancer>();
 		if (ALBBuild_ModularLoadBalancer* SnappedBalancer = Cast<ALBBuild_ModularLoadBalancer>(hitResult.GetActor()))
 		{
-			if(Default->mLoaderType == ELoaderType::Overflow)
-				if(SnappedBalancer->HasOverflowLoader())
+			if (Default->mLoaderType == ELoaderType::Overflow)
+			{
+				if (SnappedBalancer->HasOverflowModule())
+				{
 					AddConstructDisqualifier(UFGCDHasOverflow::StaticClass());
-			
+				}
+			}
+
 			if (ActiveGroupLeader != SnappedBalancer->GroupLeader)
 			{
 				UnHighlightAll();
 			}
-			
+
 			LastSnapped = SnappedBalancer;
 			ActiveGroupLeader = SnappedBalancer->GroupLeader;
-			
+
 			HighlightAll(SnappedBalancer->GetGroupModules());
 		}
 	}
@@ -73,40 +75,58 @@ bool ALBModularLoadBalancer_Hologram::IsValidHitResult(const FHitResult& hitResu
 	bool SuperBool = Super::IsValidHitResult(hitResult);
 
 	// We clear the outline here if it invalid hit (in some cases it still hold the old outline because he switch instandly to Invalid)
-	if(!SuperBool && mOutlineSubsystem)
-		if(mOutlineSubsystem->HasAnyOutlines())
+	if (!SuperBool && mOutlineSubsystem)
+	{
+		if (mOutlineSubsystem->HasAnyOutlines())
+		{
 			mOutlineSubsystem->ClearOutlines();
-	
+		}
+	}
+
 	return SuperBool;
 }
 
 void ALBModularLoadBalancer_Hologram::UnHighlightAll()
 {
-	if(mOutlineSubsystem)
+	if (mOutlineSubsystem)
+	{
 		mOutlineSubsystem->ClearOutlines(true);
+	}
 }
 
 void ALBModularLoadBalancer_Hologram::ConfigureActor(AFGBuildable* inBuildable) const
 {
-	if(ALBBuild_ModularLoadBalancer* Balancer = Cast<ALBBuild_ModularLoadBalancer>(inBuildable))
-		if(LastSnapped)
+	if (ALBBuild_ModularLoadBalancer* Balancer = Cast<ALBBuild_ModularLoadBalancer>(inBuildable))
+	{
+		if (LastSnapped)
+		{
 			Balancer->GroupLeader = LastSnapped->GroupLeader;
+		}
 		else
+		{
 			Balancer->GroupLeader = Balancer;
-	
+		}
+	}
+
 	Super::ConfigureActor(inBuildable);
 }
 
 void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBalancer*> actorsToOutline)
 {
-	if(actorsToOutline.Num() <= 0)
+	if (actorsToOutline.Num() <= 0)
+	{
 		return;
-	
-	if(ActiveGroupLeader)
+	}
+
+	if (ActiveGroupLeader)
 	{
 		mOutlineSubsystem->SetOutlineColor(mConstructDisqualifiers.Contains(UFGCDHasOverflow::StaticClass()) ? mHoloFailedColor : mHoloColor, true);
 		for (ALBBuild_ModularLoadBalancer* OutlineActor : actorsToOutline)
-			if(mOutlineSubsystem)
+		{
+			if (mOutlineSubsystem)
+			{
 				mOutlineSubsystem->CreateOutline(OutlineActor, true);
+			}
+		}
 	}
 }
