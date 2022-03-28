@@ -207,6 +207,8 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
         {
             MyOutputConnection->SetInventoryAccessIndex(MyOutputConnection->GetInventory()->GetFullestStackIndex());
         }
+
+        HandleOutput();
     }
 }
 
@@ -292,17 +294,48 @@ bool ALBBuild_ModularLoadBalancer::SendItemsToOutputs(float dt, ALBBuild_Modular
     return false;
 }
 
+void ALBBuild_ModularLoadBalancer::HandleOutput()
+{
+    if (MyOutputConnection && GetBufferInventory())
+    {
+        if (MyOutputConnection->IsConnected() && !GetBufferInventory()->IsEmpty())
+        {
+            if (UFGFactoryConnectionComponent* ConnectedComponent = MyOutputConnection->GetConnection())
+            {
+                int Index = GetBufferInventory()->GetFirstIndexWithItem(MyOutputConnection->GetInventoryAccessIndex());
+                Index = Index == -1 ? GetBufferInventory()->GetFirstIndexWithItem() : Index;
+
+                if (Index >= 0)
+                {
+                    TArray<FInventoryItem> Items;
+                    if (ConnectedComponent->Factory_PeekOutput(Items))
+                    {
+                        FInventoryStack Stack;
+                        GetBufferInventory()->GetStackFromIndex(Index, Stack);
+                        FInventoryItem Item = Stack.Item;
+                        float Offset;
+                        if (ConnectedComponent->Factory_GrabOutput(Item, Offset))
+                        {
+                            GetBufferInventory()->RemoveFromIndex(Index, 1);
+                            MyOutputConnection->SetInventoryAccessIndex(Index);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 void ALBBuild_ModularLoadBalancer::UpdateCache()
 {
     if (!GroupLeader)
     {
         return;
     }
-
+    TWeakObjectPtr<ALBBuild_ModularLoadBalancer> WeakThis = this;
     bool InputConnected = MyInputConnection->IsConnected();
-    bool HasConnectedInputs = GroupLeader->mNormalLoaderData.mConnectedInputs.Num() > 0;
     bool InputsContainThis = false;
-    if (HasConnectedInputs)
+    if (GroupLeader->mNormalLoaderData.mConnectedInputs.Num() > 0)
     {
         InputsContainThis = GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this);
     }
@@ -310,7 +343,7 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
 
     if (MyInputConnection)
     {
-        if (HasConnectedInputs)
+        if (GroupLeader->mNormalLoaderData.mConnectedInputs.Num() > 0)
         {
             if (InputsContainThis && !InputConnected)
             {
@@ -330,16 +363,15 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
     if (IsNormalModule())
     {
         bool OutputConnected = MyOutputConnection->IsConnected();
-        bool HasConnectedOutputs = GroupLeader->mNormalLoaderData.mConnectedOutputs.Num() > 0;
         bool OutputsContainThis = false;
-        if (HasConnectedOutputs)
+        if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Num() > 0)
         {
             OutputsContainThis = GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this);
         }
 
         if (MyOutputConnection)
         {
-            if (HasConnectedOutputs)
+            if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Num() > 0)
             {
                 if (OutputsContainThis && !OutputConnected)
                 {
@@ -360,14 +392,13 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
     if (IsFilterModule())
     {
         bool FilterOutputConnected = MyOutputConnection->IsConnected();
-        bool HasConnectedFilterOutputs = GroupLeader->mFilteredModuleData.mConnectedOutputs.Num() > 0;
         bool FilterOutputsContainThis = false;
-        if (HasConnectedFilterOutputs)
+        if (GroupLeader->mFilteredModuleData.mConnectedOutputs.Num() > 0)
         {
             FilterOutputsContainThis = GroupLeader->mFilteredModuleData.mConnectedOutputs.Contains(this);
         }
 
-        if (HasConnectedFilterOutputs)
+        if (GroupLeader->mFilteredModuleData.mConnectedOutputs.Num() > 0)
         {
             if (FilterOutputsContainThis && !FilterOutputConnected)
             {

@@ -75,6 +75,8 @@ public:
 	/** Try to send Items to an Output return false if the inventory full or invalid to push */
 	bool SendItemsToOutputs(float dt, ALBBuild_ModularLoadBalancer* Balancer);
 
+	void HandleOutput();
+
 	/** Can we send something in the overflow inventory? */
 	bool CanSendToOverflow() const;
 
