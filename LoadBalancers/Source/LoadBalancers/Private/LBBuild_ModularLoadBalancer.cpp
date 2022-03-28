@@ -299,53 +299,88 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
         return;
     }
 
-    if (IsNormalModule())
+    bool InputConnected = MyInputConnection->IsConnected();
+    bool HasConnectedInputs = GroupLeader->mNormalLoaderData.mConnectedInputs.Num() > 0;
+    bool InputsContainThis = false;
+    if (HasConnectedInputs)
     {
-        if (GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this) && !MyInputConnection->IsConnected())
+        InputsContainThis = GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this);
+    }
+
+
+    if (MyInputConnection)
+    {
+        if (HasConnectedInputs)
         {
-            GroupLeader->mNormalLoaderData.mConnectedInputs.Remove(this);
+            if (InputsContainThis && !InputConnected)
+            {
+                GroupLeader->mNormalLoaderData.mConnectedInputs.Remove(this);
+            }
+            else if (!InputsContainThis && InputConnected)
+            {
+                GroupLeader->mNormalLoaderData.mConnectedInputs.AddUnique(this);
+            }
         }
-        else if (!GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this) && MyInputConnection->IsConnected())
+        else if (InputConnected)
         {
             GroupLeader->mNormalLoaderData.mConnectedInputs.AddUnique(this);
-        }
-
-        if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && !MyOutputConnection->IsConnected())
-        {
-            GroupLeader->mNormalLoaderData.mConnectedOutputs.Remove(this);
-        }
-        else if (!GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && MyOutputConnection->IsConnected())
-        {
-            GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
         }
     }
-    else if (IsFilterModule())
+
+    if (IsNormalModule())
     {
-        if (GroupLeader->mFilteredModuleData.mConnectedOutputs.Contains(this) && !MyOutputConnection->IsConnected())
+        bool OutputConnected = MyOutputConnection->IsConnected();
+        bool HasConnectedOutputs = GroupLeader->mNormalLoaderData.mConnectedOutputs.Num() > 0;
+        bool OutputsContainThis = false;
+        if (HasConnectedOutputs)
         {
-            GroupLeader->mFilteredModuleData.mConnectedOutputs.Remove(this);
+            OutputsContainThis = GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this);
         }
-        else if (!GroupLeader->mFilteredModuleData.mConnectedOutputs.Contains(this) && MyOutputConnection->IsConnected())
+
+        if (MyOutputConnection)
+        {
+            if (HasConnectedOutputs)
+            {
+                if (OutputsContainThis && !OutputConnected)
+                {
+                    GroupLeader->mNormalLoaderData.mConnectedOutputs.Remove(this);
+                }
+                else if (!OutputsContainThis && OutputConnected)
+                {
+                    GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
+                }
+            }
+            else if (OutputConnected)
+            {
+                GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
+            }
+        }
+    }
+
+    if (IsFilterModule())
+    {
+        bool FilterOutputConnected = MyOutputConnection->IsConnected();
+        bool HasConnectedFilterOutputs = GroupLeader->mFilteredModuleData.mConnectedOutputs.Num() > 0;
+        bool FilterOutputsContainThis = false;
+        if (HasConnectedFilterOutputs)
+        {
+            FilterOutputsContainThis = GroupLeader->mFilteredModuleData.mConnectedOutputs.Contains(this);
+        }
+
+        if (HasConnectedFilterOutputs)
+        {
+            if (FilterOutputsContainThis && !FilterOutputConnected)
+            {
+                GroupLeader->mFilteredModuleData.mConnectedOutputs.Remove(this);
+            }
+            else if (!FilterOutputsContainThis && FilterOutputConnected)
+            {
+                GroupLeader->mFilteredModuleData.mConnectedOutputs.AddUnique(this);
+            }
+        }
+        else if (FilterOutputConnected)
         {
             GroupLeader->mFilteredModuleData.mConnectedOutputs.AddUnique(this);
-        }
-
-        if (GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this) && !MyInputConnection->IsConnected())
-        {
-            GroupLeader->mNormalLoaderData.mConnectedInputs.Remove(this);
-        }
-        else if (!GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this) && MyInputConnection->IsConnected())
-        {
-            GroupLeader->mNormalLoaderData.mConnectedInputs.AddUnique(this);
-        }
-
-        if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && !MyOutputConnection->IsConnected())
-        {
-            GroupLeader->mNormalLoaderData.mConnectedOutputs.Remove(this);
-        }
-        else if (!GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && MyOutputConnection->IsConnected())
-        {
-            GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
         }
     }
 }
