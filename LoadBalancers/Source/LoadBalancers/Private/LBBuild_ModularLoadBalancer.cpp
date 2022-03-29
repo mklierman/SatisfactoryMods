@@ -495,6 +495,8 @@ bool ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Mo
                 }
             }
         }
+        else
+            return true;
     }
     return false;
 }
