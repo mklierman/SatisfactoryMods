@@ -13,7 +13,6 @@ ALBBuild_ModularLoadBalancer::ALBBuild_ModularLoadBalancer()
 {
     this->mInventorySizeX = 2;
     this->mInventorySizeY = 2;
-    mOutputInventory = CreateDefaultSubobject<UFGInventoryComponent>(TEXT("OutputInventory"));
 }
 
 void ALBBuild_ModularLoadBalancer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -30,22 +29,20 @@ void ALBBuild_ModularLoadBalancer::BeginPlay()
 
     if (HasAuthority())
     {
-        if (!mOutputInventory)
-        {
-            mOutputInventory = UFGInventoryLibrary::CreateInventoryComponent(this, TEXT("OutputInventory"));
-        }
+        if(!GroupLeader)
+            GroupLeader = this;
 
         if (GetBufferInventory() && MyOutputConnection)
         {
+            GetBufferInventory()->OnItemRemovedDelegate.AddDynamic(this, &ALBBuild_ModularLoadBalancer::OnOutputItemRemoved);
             MyOutputConnection->SetInventory(GetBufferInventory());
-            MyOutputConnection->SetInventoryAccessIndex(-1);
-            GetBufferInventory()->Resize(10);
+            GetBufferInventory()->Resize(20);
 
             for (int i = 0; i < GetBufferInventory()->GetSizeLinear(); ++i)
             {
                 if (GetBufferInventory()->IsValidIndex(i))
                 {
-                    GetBufferInventory()->AddArbitrarySlotSize(i, 20);
+                    GetBufferInventory()->AddArbitrarySlotSize(i, 1);
 
                     if (IsFilterModule())
                     {
@@ -55,46 +52,10 @@ void ALBBuild_ModularLoadBalancer::BeginPlay()
             }
         }
 
-        if (mOutputInventory)
-        {
-            mOutputInventory->Resize(10);
-            for (int i = 0; i < mOutputInventory->GetSizeLinear(); ++i)
-            {
-                if (mOutputInventory->IsValidIndex(i))
-                {
-                    mOutputInventory->AddArbitrarySlotSize(i, 20);
-                }
-            }
-        }
+        if(IsFilterModule())
+            SetFilteredItem(mFilteredItem);
         ApplyGroupModule();
     }
-}
-
-bool ALBBuild_ModularLoadBalancer::IsFilterSet() const
-{
-    FInventoryStack Stack;
-    if (mOutputInventory)
-    {
-        mOutputInventory->GetStackFromIndex(mOutputInventory->GetFirstIndexWithItem(), Stack);
-    }
-
-    if (Stack.HasItems())
-    {
-        for (const UFGFactoryConnectionComponent* Connection : GetConnections(EFactoryConnectionDirection::FCD_OUTPUT, true))
-        {
-            if (Connection)
-            {
-                if (const UFGInventoryComponent* InventoryComponent = Connection->GetInventory())
-                {
-                    if (InventoryComponent->IsItemAllowed(Stack.Item.ItemClass, 0))
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-    return false;
 }
 
 void ALBBuild_ModularLoadBalancer::SetFilteredItem(TSubclassOf<UFGItemDescriptor> ItemClass)
@@ -103,6 +64,7 @@ void ALBBuild_ModularLoadBalancer::SetFilteredItem(TSubclassOf<UFGItemDescriptor
     {
         if (IsFilterModule() && GetBufferInventory())
         {
+            GroupLeader->mNormalLoaderData.SetFilterItemForBalancer(this, ItemClass, GetBufferInventory()->GetAllowedItemOnIndex(0));
             for (int i = 0; i < GetBufferInventory()->GetSizeLinear(); ++i)
             {
                 if (GetBufferInventory()->IsValidIndex(i))
@@ -129,8 +91,7 @@ void ALBBuild_ModularLoadBalancer::ApplyLeader()
         {
             if (ModularLoadBalancer)
             {
-                ModularLoadBalancer->GroupLeader = GroupLeader;
-                ModularLoadBalancer->mFilteredModuleData = mFilteredModuleData;
+                ModularLoadBalancer->GroupLeader = this;
                 ModularLoadBalancer->mNormalLoaderData = mNormalLoaderData;
                 ModularLoadBalancer->ForceNetUpdate();
             }
@@ -174,22 +135,7 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
         {
             if (mFilteredItem != GetBufferInventory()->GetAllowedItemOnIndex(0))
             {
-                GetBufferInventory()->SetAllowedItemOnIndex(0, mFilteredItem);
-            }
-        }
-
-        if (mOutputInventory && !mOutputInventory->IsEmpty())
-        {
-            if (HasFilterModule())
-            {
-                if (!TickGroupTypeOutput(mFilteredModuleData, dt))
-                {
-                    TickGroupTypeOutput(mNormalLoaderData, dt);
-                }
-            }
-            else
-            {
-                TickGroupTypeOutput(mNormalLoaderData, dt);
+                SetFilteredItem(mFilteredItem);
             }
         }
     }
@@ -202,127 +148,6 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
             mTimer -= 1.f;
             UpdateCache();
         }
-
-        if (MyOutputConnection->GetInventory())
-        {
-            MyOutputConnection->SetInventoryAccessIndex(MyOutputConnection->GetInventory()->GetFullestStackIndex());
-        }
-
-        HandleOutput();
-    }
-}
-
-bool ALBBuild_ModularLoadBalancer::TickGroupTypeOutput(FLBBalancerData& TypeData, float dt)
-{
-    if (TypeData.mConnectedOutputs.Num() > 0 && mOutputInventory)
-    {
-        if (!TypeData.mConnectedOutputs.IsValidIndex(TypeData.mOutputIndex))
-        {
-            TypeData.mOutputIndex = 0;
-        }
-
-        // if still BREAK! something goes wrong here!
-        if (!TypeData.mConnectedOutputs.IsValidIndex(TypeData.mOutputIndex))
-        {
-            UE_LOG(LoadBalancers_Log, Error, TEXT("mConnectedOutputs has still an invalid Index!"));
-            return false;
-        }
-
-        if (!TypeData.mConnectedOutputs[TypeData.mOutputIndex].IsValid())
-        {
-            return false;
-        }
-
-        ALBBuild_ModularLoadBalancer* Balancer = TypeData.mConnectedOutputs[TypeData.mOutputIndex].Get();
-
-        //UE_LOG(LoadBalancers_Log, Error, TEXT("SendItemsToOutputs > %d"), TypeData.mOutputIndex);
-        TypeData.mOutputIndex++;
-        return SendItemsToOutputs(dt, Balancer);
-    }
-    return false;
-}
-
-bool ALBBuild_ModularLoadBalancer::CanSendToOverflow() const
-{
-    bool CanSend = HasOverflowModule();
-    if (CanSend)
-    {
-        const int Index = mOutputInventory->GetFirstIndexWithItem();
-        if (Index >= 0)
-        {
-            FInventoryStack Stack;
-            mOutputInventory->GetStackFromIndex(Index, Stack);
-            CanSend = Stack.HasItems() ? GetOverflowLoader()->GetBufferInventory()->HasEnoughSpaceForItem(Stack.Item) : false;
-
-            if (CanSend)
-            {
-                for (ALBBuild_ModularLoadBalancer* GroupModule : GetGroupModules())
-                {
-                    if (GroupModule->GetBufferInventory()->HasEnoughSpaceForItem(Stack.Item) && Stack.HasItems())
-                    {
-                        CanSend = false;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    return CanSend;
-}
-
-bool ALBBuild_ModularLoadBalancer::SendItemsToOutputs(float dt, ALBBuild_ModularLoadBalancer* Balancer)
-{
-    if (Balancer->GetBufferInventory() && mOutputInventory)
-    {
-        const int Index = mOutputInventory->GetFirstIndexWithItem();
-        if (Index >= 0)
-        {
-            FInventoryStack Stack;
-            mOutputInventory->GetStackFromIndex(Index, Stack);
-            if (Stack.HasItems())
-            {
-                if (Balancer->GetBufferInventory()->HasEnoughSpaceForItem(Stack.Item) &&
-                    Balancer->GetBufferInventory()->GetNumItems(Stack.Item.ItemClass) < 10)
-                {
-                    Balancer->GetBufferInventory()->AddItem(Stack.Item);
-                    mOutputInventory->RemoveFromIndex(Index, 1);
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
-}
-
-void ALBBuild_ModularLoadBalancer::HandleOutput()
-{
-    if (MyOutputConnection && GetBufferInventory())
-    {
-        if (MyOutputConnection->IsConnected() && !GetBufferInventory()->IsEmpty())
-        {
-            if (UFGFactoryConnectionComponent* ConnectedComponent = MyOutputConnection->GetConnection())
-            {
-                int Index = GetBufferInventory()->GetFirstIndexWithItem(MyOutputConnection->GetInventoryAccessIndex());
-                Index = Index == -1 ? GetBufferInventory()->GetFirstIndexWithItem() : Index;
-
-                if (Index >= 0)
-                {
-                    TArray<FInventoryItem> Items;
-                    if (ConnectedComponent->Factory_PeekOutput(Items))
-                    {
-                        FInventoryStack Stack;
-                        GetBufferInventory()->GetStackFromIndex(Index, Stack);
-                        FInventoryItem Item = Stack.Item;
-                        float Offset;
-                        if (ConnectedComponent->Factory_GrabOutput(Item, Offset))
-                        {
-                            GetBufferInventory()->RemoveFromIndex(Index, 1);
-                            MyOutputConnection->SetInventoryAccessIndex(Index);
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -332,86 +157,42 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
     {
         return;
     }
-    TWeakObjectPtr<ALBBuild_ModularLoadBalancer> WeakThis = this;
-    bool InputConnected = MyInputConnection->IsConnected();
-    bool InputsContainThis = false;
-    if (GroupLeader->mNormalLoaderData.mConnectedInputs.Num() > 0)
-    {
-        InputsContainThis = GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this);
-    }
-
 
     if (MyInputConnection)
     {
         if (GroupLeader->mNormalLoaderData.mConnectedInputs.Num() > 0)
         {
-            if (InputsContainThis && !InputConnected)
+            if (GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this) && !MyInputConnection->IsConnected())
             {
                 GroupLeader->mNormalLoaderData.mConnectedInputs.Remove(this);
             }
-            else if (!InputsContainThis && InputConnected)
+            else if (!GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this) && MyInputConnection->IsConnected())
             {
                 GroupLeader->mNormalLoaderData.mConnectedInputs.AddUnique(this);
             }
         }
-        else if (InputConnected)
+        else if (MyInputConnection->IsConnected())
         {
             GroupLeader->mNormalLoaderData.mConnectedInputs.AddUnique(this);
         }
     }
 
-    if (IsNormalModule())
+    if (MyOutputConnection && IsNormalModule())
     {
-        bool OutputConnected = MyOutputConnection->IsConnected();
-        bool OutputsContainThis = false;
         if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Num() > 0)
         {
-            OutputsContainThis = GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this);
-        }
-
-        if (MyOutputConnection)
-        {
-            if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Num() > 0)
+            if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && !MyOutputConnection->IsConnected())
             {
-                if (OutputsContainThis && !OutputConnected)
-                {
-                    GroupLeader->mNormalLoaderData.mConnectedOutputs.Remove(this);
-                }
-                else if (!OutputsContainThis && OutputConnected)
-                {
-                    GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
-                }
+                GroupLeader->mNormalLoaderData.mConnectedOutputs.Remove(this);
             }
-            else if (OutputConnected)
+            else if (!GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && MyOutputConnection->IsConnected())
             {
                 GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
             }
         }
-    }
-
-    if (IsFilterModule())
-    {
-        bool FilterOutputConnected = MyOutputConnection->IsConnected();
-        bool FilterOutputsContainThis = false;
-        if (GroupLeader->mFilteredModuleData.mConnectedOutputs.Num() > 0)
+        else if (MyOutputConnection->IsConnected())
         {
-            FilterOutputsContainThis = GroupLeader->mFilteredModuleData.mConnectedOutputs.Contains(this);
-        }
-
-        if (GroupLeader->mFilteredModuleData.mConnectedOutputs.Num() > 0)
-        {
-            if (FilterOutputsContainThis && !FilterOutputConnected)
-            {
-                GroupLeader->mFilteredModuleData.mConnectedOutputs.Remove(this);
-            }
-            else if (!FilterOutputsContainThis && FilterOutputConnected)
-            {
-                GroupLeader->mFilteredModuleData.mConnectedOutputs.AddUnique(this);
-            }
-        }
-        else if (FilterOutputConnected)
-        {
-            GroupLeader->mFilteredModuleData.mConnectedOutputs.AddUnique(this);
+            GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
         }
     }
 }
@@ -422,6 +203,11 @@ void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayRea
     // EndPlay is here a better use. We should do this better only if it's Destroyed on EndPlay (is also in no case to late to can be invalid)
     if (EndPlayReason == EEndPlayReason::Destroyed)
     {
+        if(IsFilterModule() && GroupLeader)
+        {
+            GroupLeader->mNormalLoaderData.RemoveBalancer(this, mFilteredItem);
+        }
+
         if (IsLeader() && GetGroupModules().Num() > 1)
         {
             for (ALBBuild_ModularLoadBalancer* LoadBalancer : GetGroupModules())
@@ -436,6 +222,25 @@ void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayRea
     }
 
    Super::EndPlay(EndPlayReason);
+}
+
+void ALBBuild_ModularLoadBalancer::OnOutputItemRemoved(TSubclassOf<UFGItemDescriptor> itemClass, int32 numRemoved)
+{
+    if(MyOutputConnection && GetBufferInventory())
+    {
+        int Index = MyOutputConnection->GetInventoryAccessIndex() + 1;
+
+        const bool IsValidIndex = GetBufferInventory()->IsValidIndex(Index);
+        if(IsValidIndex)
+            Index = GetBufferInventory()->GetFirstIndexWithItem(Index);
+        else
+            Index = GetBufferInventory()->GetFirstIndexWithItem();
+
+        if(Index == -1 && IsValidIndex)
+            Index = GetBufferInventory()->GetFirstIndexWithItem();
+
+        MyOutputConnection->SetInventoryAccessIndex(Index);
+    }
 }
 
 void ALBBuild_ModularLoadBalancer::ApplyGroupModule()
@@ -455,29 +260,6 @@ void ALBBuild_ModularLoadBalancer::ApplyGroupModule()
     {
         UE_LOG(LoadBalancers_Log, Error, TEXT("Cannot Apply GroupLeader: Invalid"))
     }
-}
-
-TArray<UFGFactoryConnectionComponent*> ALBBuild_ModularLoadBalancer::GetConnections(EFactoryConnectionDirection Direction, bool Filtered) const
-{
-    if (!GroupLeader)
-    {
-        return {};
-    }
-
-    FLBBalancerData Data = Filtered ? GroupLeader->mFilteredModuleData : GroupLeader->mNormalLoaderData;
-
-    TArray<UFGFactoryConnectionComponent*> Return;
-    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> Array = Direction == EFactoryConnectionDirection::FCD_INPUT ? Data.mConnectedInputs : Data.mConnectedOutputs;;
-
-    for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> LoadBalancer : Array)
-    {
-        if (LoadBalancer.IsValid())
-        {
-            Return.Add(Direction == EFactoryConnectionDirection::FCD_INPUT ? LoadBalancer->MyInputConnection : LoadBalancer->MyOutputConnection);
-        }
-    }
-
-    return Return;
 }
 
 void ALBBuild_ModularLoadBalancer::PostInitializeComponents()
@@ -509,60 +291,146 @@ void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()
         return;
     }
 
-    if (mNormalLoaderData.mConnectedInputs.Num() == 0)
+    TArray<ALBBuild_ModularLoadBalancer*> Balancers;
+    GroupLeader->mNormalLoaderData.GetInputBalancers(Balancers);
+
+    if (Balancers.Num() == 0)
     {
         return;
     }
 
-    if (!mNormalLoaderData.mConnectedInputs.IsValidIndex(mNormalLoaderData.mInputIndex))
+    for (ALBBuild_ModularLoadBalancer* Balancer : Balancers)
     {
-        mNormalLoaderData.mInputIndex = 0;
+        if(!Balancer->IsPendingKill())
+        {
+            Balancer->Balancer_CollectInput();
+        }
+    }
+}
+
+void ALBBuild_ModularLoadBalancer::Balancer_CollectInput()
+{
+    if(!GroupLeader)
+        return;
+    
+    int CachedIndex = GroupLeader->mNormalLoaderData.mInputIndex;
+
+    if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(CachedIndex))
+    {
+        GroupLeader->mNormalLoaderData.mInputIndex = 0;
+        CachedIndex = 0;
     }
 
     // if still BREAK! something goes wrong here!
-    if (!mNormalLoaderData.mConnectedInputs.IsValidIndex(mNormalLoaderData.mInputIndex))
+    if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(CachedIndex))
     {
-        UE_LOG(LoadBalancers_Log, Error, TEXT("mConnectedInputs has still a invalid Index!"));
         return;
     }
 
-    CollectInput(mNormalLoaderData.mConnectedInputs[mNormalLoaderData.mInputIndex].Get());
-    mNormalLoaderData.mInputIndex++;
+    if(CollectInput(GroupLeader->mNormalLoaderData.mConnectedInputs[CachedIndex].Get()))
+        GroupLeader->mNormalLoaderData.mInputIndex++;
 }
 
-void ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Module)
+ALBBuild_ModularLoadBalancer* ALBBuild_ModularLoadBalancer::GetNextInputBalancer(FInventoryItem Item)
+{
+    if(!GroupLeader)
+        return nullptr;
+    
+    int Index;
+    ALBBuild_ModularLoadBalancer* Balancer = nullptr;
+    if(HasFilterModule() && GroupLeader->mNormalLoaderData.HasItemFilterBalancer(Item.ItemClass))
+    {
+        Index = GroupLeader->mNormalLoaderData.GetOutputIndexFromItem(Item.ItemClass, true);
+        //UE_LOG(LoadBalancers_Log, Warning, TEXT("HasFilterModule() %d"), Index);
+        if(Index >= 0)
+        {
+            GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mOutputIndex++;
+            const int NextIndex = GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mOutputIndex;
+            if(!GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer.IsValidIndex(NextIndex))
+            {
+                GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mOutputIndex = 0;
+            }
+
+            if(GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer.IsValidIndex(Index))
+            {
+                //UE_LOG(LoadBalancers_Log, Warning, TEXT("IsValidIndex"));
+                if(GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer[Index].IsValid())
+                    Balancer = GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer[Index].Get();
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+    }
+
+    if(Balancer)
+        if(Balancer->GetBufferInventory()->GetNumItems(Item.ItemClass) < 1 && Balancer->GetBufferInventory()->HasEnoughSpaceForItem(Item))
+        {
+            return Balancer;
+        }
+
+    Index = GroupLeader->mNormalLoaderData.GetOutputIndexFromItem(Item.ItemClass);
+    //UE_LOG(LoadBalancers_Log, Warning, TEXT("!HasFilterModule() %d"), Index);
+    if(Index >= 0)
+    {
+        GroupLeader->mNormalLoaderData.mOutputIndex[Item.ItemClass]++;
+        const int NextIndex = GroupLeader->mNormalLoaderData.mOutputIndex[Item.ItemClass];
+        if(!GroupLeader->mNormalLoaderData.mConnectedOutputs.IsValidIndex(NextIndex))
+        {
+            GroupLeader->mNormalLoaderData.mOutputIndex[Item.ItemClass] = 0;
+        }
+
+        if(GroupLeader->mNormalLoaderData.mConnectedOutputs.IsValidIndex(Index))
+        {
+            //UE_LOG(LoadBalancers_Log, Warning, TEXT("IsValidIndex"));
+            if(GroupLeader->mNormalLoaderData.mConnectedOutputs[Index].IsValid())
+                Balancer = GroupLeader->mNormalLoaderData.mConnectedOutputs[Index].Get();
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+
+    if(Balancer)
+        if(Balancer->GetBufferInventory()->GetNumItems(Item.ItemClass) < 1 && Balancer->GetBufferInventory()->HasEnoughSpaceForItem(Item))
+        {
+            return Balancer;
+        }
+
+    return nullptr;
+}
+
+bool ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Module)
 {
     if (!Module || Module->IsPendingKill())
     {
-        return;
+        return false;
     }
 
     UFGFactoryConnectionComponent* connection = Module->MyInputConnection;
     if (!connection || !GroupLeader || connection->IsPendingKill())
     {
-        return;
+        return false;
     }
 
-    if (connection->IsConnected() && GroupLeader->mOutputInventory)
+    if (connection->IsConnected())
     {
         TArray<FInventoryItem> peeker;
         if (connection->Factory_PeekOutput(peeker))
         {
-            if (connection->GetInventory() != GroupLeader->mOutputInventory)
-            {
-                connection->SetInventory(GroupLeader->mOutputInventory);
-            }
-
             FInventoryItem Item = peeker[0];
             float offset;
 
-            if (GroupLeader->mOutputInventory->HasEnoughSpaceForItem(Item) &&
-                GroupLeader->mOutputInventory->GetNumItems(Item.ItemClass) < 10)
+            if(ALBBuild_ModularLoadBalancer* Balancer = GetNextInputBalancer(Item))
             {
+                //UE_LOG(LoadBalancers_Log, Warning, TEXT("Factory_GrabOutput, %d"), Balancer->IsFilterModule());
                 if (connection->Factory_GrabOutput(Item, offset))
                 {
-                    GroupLeader->mOutputInventory->AddItem(Item);
-                    return;
+                    //UE_LOG(LoadBalancers_Log, Warning, TEXT("AddItem"));
+                    Balancer->GetBufferInventory()->AddItem(Item);
+                    return true;
                 }
             }
 
@@ -570,12 +438,19 @@ void ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Mo
             {
                 ALBBuild_ModularLoadBalancer* OverflowModule = GetOverflowLoader();
                 if (OverflowModule->GetBufferInventory() &&
-                    OverflowModule->GetBufferInventory()->HasEnoughSpaceForItem(Item) &&
-                    connection->Factory_GrabOutput(Item, offset))
+                    OverflowModule->GetBufferInventory()->HasEnoughSpaceForItem(Item)
+                    )
                 {
-                    OverflowModule->GetBufferInventory()->AddItem(Item);
+                    if(connection->Factory_GrabOutput(Item, offset))
+                    {
+                        OverflowModule->GetBufferInventory()->AddItem(Item);
+                        return true;
+                    }
                 }
             }
         }
+        else
+            return true;
     }
+    return false;
 }

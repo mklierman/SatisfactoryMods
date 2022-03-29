@@ -20,6 +20,32 @@ enum class ELoaderType : uint8
 
 class ALBBuild_ModularLoadBalancer;
 USTRUCT()
+struct LOADBALANCERS_API FLBBalancerData_Filters
+{
+	GENERATED_BODY()
+
+	FLBBalancerData_Filters() = default;
+	FLBBalancerData_Filters(ALBBuild_ModularLoadBalancer* Balancer)
+	{
+		mBalancer.Add(Balancer);
+		mOutputIndex = 0;
+	}
+	
+	UPROPERTY(Transient)
+	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mBalancer;
+	
+	UPROPERTY(SaveGame)
+	int mOutputIndex = 0;
+
+	void GetBalancers(TArray<ALBBuild_ModularLoadBalancer*> Out)
+	{
+		for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mBalancer)
+			if(Balancer.IsValid())
+				Out.AddUnique(Balancer.Get());
+	}
+};
+
+USTRUCT()
 struct LOADBALANCERS_API FLBBalancerData
 {
 	GENERATED_BODY()
@@ -30,11 +56,120 @@ struct LOADBALANCERS_API FLBBalancerData
 	UPROPERTY(Transient)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mConnectedInputs;
 
+	// for MAYBE LATER IS NOT USED!
+	UPROPERTY(Transient)
+	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mOverflowBalancer;
+
 	UPROPERTY(SaveGame)
 	int mInputIndex = 0;
 
 	UPROPERTY(SaveGame)
-	int mOutputIndex = 0;
+	TMap<TSubclassOf<UFGItemDescriptor>, int> mOutputIndex;
+	
+	UPROPERTY(SaveGame)
+	TMap<TSubclassOf<UFGItemDescriptor>, FLBBalancerData_Filters> mFilterMap;
+
+	void GetInputBalancers(TArray<ALBBuild_ModularLoadBalancer*>& Out)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NUM %d"), mConnectedInputs.Num());
+		for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mConnectedInputs)
+			if(Balancer.IsValid())
+				Out.AddUnique(Balancer.Get());
+	}
+
+	bool HasAnyValidFilter() const
+	{
+		if(mFilterMap.Num() >= 0)
+		{
+			TArray<TSubclassOf<UFGItemDescriptor>> Keys;
+			mFilterMap.GenerateKeyArray(Keys);
+			return !(mFilterMap.Num() == 1 && Keys.Contains(UFGNoneDescriptor::StaticClass()));
+		}
+		return true;
+	}
+
+	int GetOutputIndexFromItem(TSubclassOf<UFGItemDescriptor> Item, bool IsFilter = false)
+	{
+		if(IsFilter)
+		{
+			if(HasItemFilterBalancer(Item))
+			{
+				return mFilterMap[Item].mOutputIndex;
+			}
+			return -1;
+		}
+
+		if(mOutputIndex.Contains(Item))
+		{
+			return mOutputIndex[Item];
+		}
+		
+		mOutputIndex.Add(Item, 0);
+		return 0;
+	}
+
+	void SetFilterItemForBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> Item, TSubclassOf<UFGItemDescriptor> OldItem)
+	{
+		if(HasItemFilterBalancer(OldItem))
+		{
+			RemoveBalancer(Balancer, OldItem);
+		}
+		
+		if(HasItemFilterBalancer(Item))
+		{
+			mFilterMap[Item].mBalancer.AddUnique(Balancer);
+			if(mFilterMap[Item].mOutputIndex == -1)
+				mFilterMap[Item] = 0;
+		}
+		else
+		{
+			mFilterMap.Add(Item, FLBBalancerData_Filters(Balancer));
+			if(mFilterMap[Item].mOutputIndex == -1)
+				mFilterMap[Item] = 0;
+		}
+	}
+
+	void RemoveBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> OldItem)
+	{
+		if(HasItemFilterBalancer(OldItem))
+		{
+			if(mFilterMap[OldItem].mBalancer.Contains(Balancer))
+				mFilterMap[OldItem].mBalancer.Remove(Balancer);
+			if(mFilterMap[OldItem].mBalancer.Num() == 0)
+				mFilterMap.Remove(OldItem);
+
+			if(Balancer)
+			{
+				if(mConnectedOutputs.Contains(Balancer))
+					mConnectedOutputs.Remove(Balancer);
+			}
+		}
+	}
+	
+	bool HasItemFilterBalancer(TSubclassOf<UFGItemDescriptor> Item) const
+	{
+		if(Item)
+			return mFilterMap.Contains(Item);
+		return false;
+	}
+
+	TArray<ALBBuild_ModularLoadBalancer*> GetBalancerForFilters(TSubclassOf<UFGItemDescriptor> Item)
+	{
+		TArray<ALBBuild_ModularLoadBalancer*> Balancers = {};
+
+		if(HasItemFilterBalancer(Item))
+		{
+			for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mFilterMap[Item].mBalancer)
+			{
+				if(Balancer.IsValid())
+				{
+					Balancers.Add(Balancer.Get());
+				}
+			}
+		}
+
+		return Balancers;
+	}
 };
 
 /**
@@ -54,31 +189,20 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	// End AActor interface
 
+	UFUNCTION()
+	void OnOutputItemRemoved( TSubclassOf<UFGItemDescriptor> itemClass, int32 numRemoved );
+
 	/** Apply this module to the group (Called on BeginPlay should not need to call again) */
 	void ApplyGroupModule();
 
 	/** Is this module the Leader return true if yes */
 	FORCEINLINE bool IsLeader() const { return GroupLeader == this; }
 
-	/** Should this current item sorted? */
-	bool IsFilterSet() const;
-
 	UFUNCTION(BlueprintCallable, Category="Modular Loader")
 	void SetFilteredItem(TSubclassOf<UFGItemDescriptor> ItemClass);
 
 	/** Make this Loader to new GroupLeader (Tell all group modules the new leader and force an update) */
 	void ApplyLeader();
-
-	/** Tick FLBBalancerData and return if something was Pushed (used for Filter and normal) */
-	bool TickGroupTypeOutput(FLBBalancerData& TypeData, float dt);
-
-	/** Try to send Items to an Output return false if the inventory full or invalid to push */
-	bool SendItemsToOutputs(float dt, ALBBuild_ModularLoadBalancer* Balancer);
-
-	void HandleOutput();
-
-	/** Can we send something in the overflow inventory? */
-	bool CanSendToOverflow() const;
 
 	/* Get ALL valid GroupModules */
 	TArray<ALBBuild_ModularLoadBalancer*> GetGroupModules() const;
@@ -97,7 +221,7 @@ public:
 	FORCEINLINE bool HasFilterModule() const
 	{
 		if(GroupLeader)
-			return GetConnections(EFactoryConnectionDirection::FCD_OUTPUT, true).Num() > 0;
+			return GroupLeader->mNormalLoaderData.HasAnyValidFilter();
 		return false;
 	}
 
@@ -121,29 +245,25 @@ public:
 	UPROPERTY(Transient)
 	UFGFactoryConnectionComponent* MyInputConnection;
 
-	// Inventory for master handle (Push items to the Modules)
-	UPROPERTY(SaveGame)
-	UFGInventoryComponent* mOutputInventory;
-	TArray<UFGFactoryConnectionComponent*> GetConnections(EFactoryConnectionDirection Direction = EFactoryConnectionDirection::FCD_OUTPUT, bool Filtered = false) const;
-
 	/** What type is this loader? */
 	UPROPERTY(EditDefaultsOnly, Category="ModularLoader")
 	ELoaderType mLoaderType = ELoaderType::Normal;
+
+	// Execute Logic by Leader > Factory_CollectInput_Implementation
+	void Balancer_CollectInput();
 
 private:
 	/** Update our cached In and Outputs */
 	void UpdateCache();
 
-	/** Collect Logic for an Input */
-	void CollectInput(ALBBuild_ModularLoadBalancer* Module);
+	/** Collect Logic for an Input
+	 * Return true if the Item was store into a balancer
+	 */
+	bool CollectInput(ALBBuild_ModularLoadBalancer* Module);
 
 	/* All Loaders */
 	UPROPERTY(SaveGame)
 	FLBBalancerData mNormalLoaderData;
-
-	/* All FilteredLoaders */
-	UPROPERTY(SaveGame)
-	FLBBalancerData mFilteredModuleData;
 
 	/* Overflow loader */
 	UPROPERTY(Transient)
@@ -163,5 +283,6 @@ protected:
 	// Begin AFGBuildableFactory interface
 	virtual void Factory_Tick(float dt) override;
 	virtual void Factory_CollectInput_Implementation() override;
+	ALBBuild_ModularLoadBalancer* GetNextInputBalancer(FInventoryItem Item);
 	// End
 };
