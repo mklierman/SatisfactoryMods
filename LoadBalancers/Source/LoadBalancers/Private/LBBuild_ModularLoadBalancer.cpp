@@ -158,28 +158,21 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
     {
         return;
     }
-    
-    bool InputConnected = MyInputConnection->IsConnected();
-    bool InputsContainThis = false;
-    if (GroupLeader->mNormalLoaderData.mConnectedInputs.Num() > 0)
-    {
-        InputsContainThis = GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this);
-    }
 
     if (MyInputConnection)
     {
         if (GroupLeader->mNormalLoaderData.mConnectedInputs.Num() > 0)
         {
-            if (InputsContainThis && !InputConnected)
+            if (GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this) && !MyInputConnection->IsConnected())
             {
                 GroupLeader->mNormalLoaderData.mConnectedInputs.Remove(this);
             }
-            else if (!InputsContainThis && InputConnected)
+            else if (!GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this) && MyInputConnection->IsConnected())
             {
                 GroupLeader->mNormalLoaderData.mConnectedInputs.AddUnique(this);
             }
         }
-        else if (InputConnected)
+        else if (MyInputConnection->IsConnected())
         {
             GroupLeader->mNormalLoaderData.mConnectedInputs.AddUnique(this);
         }
@@ -187,27 +180,20 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
 
     if (IsNormalModule())
     {
-        bool OutputConnected = MyOutputConnection->IsConnected();
-        bool OutputsContainThis = false;
-        if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Num() > 0)
-        {
-            OutputsContainThis = GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this);
-        }
-
         if (MyOutputConnection)
         {
             if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Num() > 0)
             {
-                if (OutputsContainThis && !OutputConnected)
+                if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && !MyOutputConnection->IsConnected())
                 {
                     GroupLeader->mNormalLoaderData.mConnectedOutputs.Remove(this);
                 }
-                else if (!OutputsContainThis && OutputConnected)
+                else if (!GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && MyOutputConnection->IsConnected())
                 {
                     GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
                 }
             }
-            else if (OutputConnected)
+            else if (MyOutputConnection->IsConnected())
             {
                 GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
             }
@@ -216,26 +202,19 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
 
     if (IsFilterModule())
     {
-        bool FilterOutputConnected = MyOutputConnection->IsConnected();
-        bool FilterOutputsContainThis = false;
         if (GroupLeader->mFilteredModuleData.mConnectedOutputs.Num() > 0)
         {
-            FilterOutputsContainThis = GroupLeader->mFilteredModuleData.mConnectedOutputs.Contains(this);
-        }
-
-        if (GroupLeader->mFilteredModuleData.mConnectedOutputs.Num() > 0)
-        {
-            if (FilterOutputsContainThis && !FilterOutputConnected)
+            if (GroupLeader->mFilteredModuleData.mConnectedOutputs.Contains(this) && !MyOutputConnection->IsConnected())
             {
                 GroupLeader->mFilteredModuleData.RemoveBalancer(this, GetBufferInventory()->GetAllowedItemOnIndex(0));
             }
-            else if (!FilterOutputsContainThis && FilterOutputConnected)
+            else if (!GroupLeader->mFilteredModuleData.mConnectedOutputs.Contains(this) && MyOutputConnection->IsConnected())
             {
                 GroupLeader->mFilteredModuleData.mConnectedOutputs.AddUnique(this);
                 GroupLeader->mFilteredModuleData.SetFilterItemForBalancer(this, GetBufferInventory()->GetAllowedItemOnIndex(0), GetBufferInventory()->GetAllowedItemOnIndex(0));
             }
         }
-        else if (FilterOutputConnected)
+        else if (MyOutputConnection->IsConnected())
         {
             GroupLeader->mFilteredModuleData.mConnectedOutputs.AddUnique(this);
         }
@@ -252,7 +231,7 @@ void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayRea
         {
             GroupLeader->mFilteredModuleData.RemoveBalancer(this, mFilteredItem);
         }
-        
+
         if (IsLeader() && GetGroupModules().Num() > 1)
         {
             for (ALBBuild_ModularLoadBalancer* LoadBalancer : GetGroupModules())
@@ -274,16 +253,16 @@ void ALBBuild_ModularLoadBalancer::OnOutputItemRemoved(TSubclassOf<UFGItemDescri
     if(MyOutputConnection && GetBufferInventory())
     {
         int Index = MyOutputConnection->GetInventoryAccessIndex() + 1;
-        
+
         const bool IsValidIndex = GetBufferInventory()->IsValidIndex(Index);
         if(IsValidIndex)
             Index = GetBufferInventory()->GetFirstIndexWithItem(Index);
         else
             Index = GetBufferInventory()->GetFirstIndexWithItem();
-        
+
         if(Index == -1 && IsValidIndex)
             Index = GetBufferInventory()->GetFirstIndexWithItem();
-        
+
         MyOutputConnection->SetInventoryAccessIndex(Index);
     }
 }
@@ -396,7 +375,7 @@ ALBBuild_ModularLoadBalancer* ALBBuild_ModularLoadBalancer::GetNextInputBalancer
             {
                 mFilteredModuleData.mFilterMap[Item.ItemClass].mOutputIndex = 0;
             }
-                
+
             if(mFilteredModuleData.mFilterMap[Item.ItemClass].mBalancer.IsValidIndex(Index))
             {
                 //UE_LOG(LoadBalancers_Log, Warning, TEXT("IsValidIndex"));
@@ -426,7 +405,7 @@ ALBBuild_ModularLoadBalancer* ALBBuild_ModularLoadBalancer::GetNextInputBalancer
         {
             mNormalLoaderData.mOutputIndex[Item.ItemClass] = 0;
         }
-    
+
         if(mNormalLoaderData.mConnectedOutputs.IsValidIndex(Index))
         {
             //UE_LOG(LoadBalancers_Log, Warning, TEXT("IsValidIndex"));
@@ -468,7 +447,7 @@ bool ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Mo
         {
             FInventoryItem Item = peeker[0];
             float offset;
-            
+
             if(ALBBuild_ModularLoadBalancer* Balancer = GetNextInputBalancer(Item))
             {
                 //UE_LOG(LoadBalancers_Log, Warning, TEXT("Factory_GrabOutput, %d"), Balancer->IsFilterModule());
