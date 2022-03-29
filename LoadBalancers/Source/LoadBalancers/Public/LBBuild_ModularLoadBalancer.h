@@ -36,6 +36,13 @@ struct LOADBALANCERS_API FLBBalancerData_Filters
 	
 	UPROPERTY(SaveGame)
 	int mOutputIndex = 0;
+
+	void GetBalancers(TArray<ALBBuild_ModularLoadBalancer*> Out)
+	{
+		for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mBalancer)
+			if(Balancer.IsValid())
+				Out.AddUnique(Balancer.Get());
+	}
 };
 
 USTRUCT()
@@ -49,6 +56,10 @@ struct LOADBALANCERS_API FLBBalancerData
 	UPROPERTY(Transient)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mConnectedInputs;
 
+	// for MAYBE LATER IS NOT USED!
+	UPROPERTY(Transient)
+	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mOverflowBalancer;
+
 	UPROPERTY(SaveGame)
 	int mInputIndex = 0;
 
@@ -57,6 +68,25 @@ struct LOADBALANCERS_API FLBBalancerData
 	
 	UPROPERTY(SaveGame)
 	TMap<TSubclassOf<UFGItemDescriptor>, FLBBalancerData_Filters> mFilterMap;
+
+	void GetInputBalancers(TArray<ALBBuild_ModularLoadBalancer*>& Out)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NUM %d"), mConnectedInputs.Num());
+		for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mConnectedInputs)
+			if(Balancer.IsValid())
+				Out.AddUnique(Balancer.Get());
+	}
+
+	bool HasAnyValidFilter() const
+	{
+		if(mFilterMap.Num() >= 0)
+		{
+			TArray<TSubclassOf<UFGItemDescriptor>> Keys;
+			mFilterMap.GenerateKeyArray(Keys);
+			return !(mFilterMap.Num() == 1 && Keys.Contains(UFGNoneDescriptor::StaticClass()));
+		}
+		return true;
+	}
 
 	int GetOutputIndexFromItem(TSubclassOf<UFGItemDescriptor> Item, bool IsFilter = false)
 	{
@@ -191,7 +221,7 @@ public:
 	FORCEINLINE bool HasFilterModule() const
 	{
 		if(GroupLeader)
-			return GetConnections(EFactoryConnectionDirection::FCD_OUTPUT, true).Num() > 0;
+			return GroupLeader->mNormalLoaderData.HasAnyValidFilter();
 		return false;
 	}
 
@@ -202,9 +232,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
 	ALBBuild_ModularLoadBalancer* GroupLeader;
-
-	UPROPERTY(SaveGame)
-	int mLastPulledInventoryIndex = -1;
 
 	/** Current Filtered Item (if Filter) */
 	UPROPERTY(BlueprintReadOnly, Replicated, SaveGame)
@@ -217,11 +244,13 @@ public:
 	// Dont need to be Saved > CAN SET BY CPP
 	UPROPERTY(Transient)
 	UFGFactoryConnectionComponent* MyInputConnection;
-	TArray<UFGFactoryConnectionComponent*> GetConnections(EFactoryConnectionDirection Direction = EFactoryConnectionDirection::FCD_OUTPUT, bool Filtered = false) const;
 
 	/** What type is this loader? */
 	UPROPERTY(EditDefaultsOnly, Category="ModularLoader")
 	ELoaderType mLoaderType = ELoaderType::Normal;
+
+	// Execute Logic by Leader > Factory_CollectInput_Implementation
+	void Balancer_CollectInput();
 
 private:
 	/** Update our cached In and Outputs */
@@ -235,10 +264,6 @@ private:
 	/* All Loaders */
 	UPROPERTY(SaveGame)
 	FLBBalancerData mNormalLoaderData;
-
-	/* All FilteredLoaders */
-	UPROPERTY(SaveGame)
-	FLBBalancerData mFilteredModuleData;
 
 	/* Overflow loader */
 	UPROPERTY(Transient)

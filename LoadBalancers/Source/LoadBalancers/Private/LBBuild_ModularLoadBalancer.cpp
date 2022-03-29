@@ -64,7 +64,7 @@ void ALBBuild_ModularLoadBalancer::SetFilteredItem(TSubclassOf<UFGItemDescriptor
     {
         if (IsFilterModule() && GetBufferInventory())
         {
-            GroupLeader->mFilteredModuleData.SetFilterItemForBalancer(this, ItemClass, GetBufferInventory()->GetAllowedItemOnIndex(0));
+            GroupLeader->mNormalLoaderData.SetFilterItemForBalancer(this, ItemClass, GetBufferInventory()->GetAllowedItemOnIndex(0));
             for (int i = 0; i < GetBufferInventory()->GetSizeLinear(); ++i)
             {
                 if (GetBufferInventory()->IsValidIndex(i))
@@ -92,7 +92,6 @@ void ALBBuild_ModularLoadBalancer::ApplyLeader()
             if (ModularLoadBalancer)
             {
                 ModularLoadBalancer->GroupLeader = this;
-                ModularLoadBalancer->mFilteredModuleData = mFilteredModuleData;
                 ModularLoadBalancer->mNormalLoaderData = mNormalLoaderData;
                 ModularLoadBalancer->ForceNetUpdate();
             }
@@ -178,45 +177,22 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
         }
     }
 
-    if (IsNormalModule())
+    if (MyOutputConnection && IsNormalModule())
     {
-        if (MyOutputConnection)
+        if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Num() > 0)
         {
-            if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Num() > 0)
+            if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && !MyOutputConnection->IsConnected())
             {
-                if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && !MyOutputConnection->IsConnected())
-                {
-                    GroupLeader->mNormalLoaderData.mConnectedOutputs.Remove(this);
-                }
-                else if (!GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && MyOutputConnection->IsConnected())
-                {
-                    GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
-                }
+                GroupLeader->mNormalLoaderData.mConnectedOutputs.Remove(this);
             }
-            else if (MyOutputConnection->IsConnected())
+            else if (!GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && MyOutputConnection->IsConnected())
             {
                 GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
             }
         }
-    }
-
-    if (IsFilterModule())
-    {
-        if (GroupLeader->mFilteredModuleData.mConnectedOutputs.Num() > 0)
-        {
-            if (GroupLeader->mFilteredModuleData.mConnectedOutputs.Contains(this) && !MyOutputConnection->IsConnected())
-            {
-                GroupLeader->mFilteredModuleData.RemoveBalancer(this, GetBufferInventory()->GetAllowedItemOnIndex(0));
-            }
-            else if (!GroupLeader->mFilteredModuleData.mConnectedOutputs.Contains(this) && MyOutputConnection->IsConnected())
-            {
-                GroupLeader->mFilteredModuleData.mConnectedOutputs.AddUnique(this);
-                GroupLeader->mFilteredModuleData.SetFilterItemForBalancer(this, GetBufferInventory()->GetAllowedItemOnIndex(0), GetBufferInventory()->GetAllowedItemOnIndex(0));
-            }
-        }
         else if (MyOutputConnection->IsConnected())
         {
-            GroupLeader->mFilteredModuleData.mConnectedOutputs.AddUnique(this);
+            GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
         }
     }
 }
@@ -229,7 +205,7 @@ void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayRea
     {
         if(IsFilterModule() && GroupLeader)
         {
-            GroupLeader->mFilteredModuleData.RemoveBalancer(this, mFilteredItem);
+            GroupLeader->mNormalLoaderData.RemoveBalancer(this, mFilteredItem);
         }
 
         if (IsLeader() && GetGroupModules().Num() > 1)
@@ -286,29 +262,6 @@ void ALBBuild_ModularLoadBalancer::ApplyGroupModule()
     }
 }
 
-TArray<UFGFactoryConnectionComponent*> ALBBuild_ModularLoadBalancer::GetConnections(EFactoryConnectionDirection Direction, bool Filtered) const
-{
-    if (!GroupLeader)
-    {
-        return {};
-    }
-
-    FLBBalancerData Data = Filtered ? GroupLeader->mFilteredModuleData : GroupLeader->mNormalLoaderData;
-
-    TArray<UFGFactoryConnectionComponent*> Return;
-    TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> Array = Direction == EFactoryConnectionDirection::FCD_INPUT ? Data.mConnectedInputs : Data.mConnectedOutputs;;
-
-    for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> LoadBalancer : Array)
-    {
-        if (LoadBalancer.IsValid())
-        {
-            Return.Add(Direction == EFactoryConnectionDirection::FCD_INPUT ? LoadBalancer->MyInputConnection : LoadBalancer->MyOutputConnection);
-        }
-    }
-
-    return Return;
-}
-
 void ALBBuild_ModularLoadBalancer::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
@@ -338,49 +291,71 @@ void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()
         return;
     }
 
-    if (mNormalLoaderData.mConnectedInputs.Num() == 0)
+    TArray<ALBBuild_ModularLoadBalancer*> Balancers;
+    GroupLeader->mNormalLoaderData.GetInputBalancers(Balancers);
+
+    if (Balancers.Num() == 0)
     {
         return;
     }
 
-    if (!mNormalLoaderData.mConnectedInputs.IsValidIndex(mNormalLoaderData.mInputIndex))
+    for (ALBBuild_ModularLoadBalancer* Balancer : Balancers)
     {
-        mNormalLoaderData.mInputIndex = 0;
+        if(!Balancer->IsPendingKill())
+        {
+            Balancer->Balancer_CollectInput();
+        }
+    }
+}
+
+void ALBBuild_ModularLoadBalancer::Balancer_CollectInput()
+{
+    if(!GroupLeader)
+        return;
+    
+    int CachedIndex = GroupLeader->mNormalLoaderData.mInputIndex;
+
+    if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(CachedIndex))
+    {
+        GroupLeader->mNormalLoaderData.mInputIndex = 0;
+        CachedIndex = 0;
     }
 
     // if still BREAK! something goes wrong here!
-    if (!mNormalLoaderData.mConnectedInputs.IsValidIndex(mNormalLoaderData.mInputIndex))
+    if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(CachedIndex))
     {
-        UE_LOG(LoadBalancers_Log, Error, TEXT("mConnectedInputs has still a invalid Index!"));
         return;
     }
 
-    if(CollectInput(mNormalLoaderData.mConnectedInputs[mNormalLoaderData.mInputIndex].Get()))
-        mNormalLoaderData.mInputIndex++;
+    if(CollectInput(GroupLeader->mNormalLoaderData.mConnectedInputs[CachedIndex].Get()))
+        GroupLeader->mNormalLoaderData.mInputIndex++;
 }
 
 ALBBuild_ModularLoadBalancer* ALBBuild_ModularLoadBalancer::GetNextInputBalancer(FInventoryItem Item)
 {
+    if(!GroupLeader)
+        return nullptr;
+    
     int Index;
     ALBBuild_ModularLoadBalancer* Balancer = nullptr;
-    if(HasFilterModule())
+    if(HasFilterModule() && GroupLeader->mNormalLoaderData.HasItemFilterBalancer(Item.ItemClass))
     {
-        Index = mFilteredModuleData.GetOutputIndexFromItem(Item.ItemClass, true);
+        Index = GroupLeader->mNormalLoaderData.GetOutputIndexFromItem(Item.ItemClass, true);
         //UE_LOG(LoadBalancers_Log, Warning, TEXT("HasFilterModule() %d"), Index);
         if(Index >= 0)
         {
-            mFilteredModuleData.mFilterMap[Item.ItemClass].mOutputIndex++;
-            const int NextIndex = mFilteredModuleData.mFilterMap[Item.ItemClass].mOutputIndex;
-            if(!mFilteredModuleData.mFilterMap[Item.ItemClass].mBalancer.IsValidIndex(NextIndex))
+            GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mOutputIndex++;
+            const int NextIndex = GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mOutputIndex;
+            if(!GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer.IsValidIndex(NextIndex))
             {
-                mFilteredModuleData.mFilterMap[Item.ItemClass].mOutputIndex = 0;
+                GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mOutputIndex = 0;
             }
 
-            if(mFilteredModuleData.mFilterMap[Item.ItemClass].mBalancer.IsValidIndex(Index))
+            if(GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer.IsValidIndex(Index))
             {
                 //UE_LOG(LoadBalancers_Log, Warning, TEXT("IsValidIndex"));
-                if(mFilteredModuleData.mFilterMap[Item.ItemClass].mBalancer[Index].IsValid())
-                    Balancer = mFilteredModuleData.mFilterMap[Item.ItemClass].mBalancer[Index].Get();
+                if(GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer[Index].IsValid())
+                    Balancer = GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer[Index].Get();
             }
             else
             {
@@ -395,22 +370,22 @@ ALBBuild_ModularLoadBalancer* ALBBuild_ModularLoadBalancer::GetNextInputBalancer
             return Balancer;
         }
 
-    Index = mNormalLoaderData.GetOutputIndexFromItem(Item.ItemClass);
+    Index = GroupLeader->mNormalLoaderData.GetOutputIndexFromItem(Item.ItemClass);
     //UE_LOG(LoadBalancers_Log, Warning, TEXT("!HasFilterModule() %d"), Index);
     if(Index >= 0)
     {
-        mNormalLoaderData.mOutputIndex[Item.ItemClass]++;
-        const int NextIndex = mNormalLoaderData.mOutputIndex[Item.ItemClass];
-        if(!mNormalLoaderData.mConnectedOutputs.IsValidIndex(NextIndex))
+        GroupLeader->mNormalLoaderData.mOutputIndex[Item.ItemClass]++;
+        const int NextIndex = GroupLeader->mNormalLoaderData.mOutputIndex[Item.ItemClass];
+        if(!GroupLeader->mNormalLoaderData.mConnectedOutputs.IsValidIndex(NextIndex))
         {
-            mNormalLoaderData.mOutputIndex[Item.ItemClass] = 0;
+            GroupLeader->mNormalLoaderData.mOutputIndex[Item.ItemClass] = 0;
         }
 
-        if(mNormalLoaderData.mConnectedOutputs.IsValidIndex(Index))
+        if(GroupLeader->mNormalLoaderData.mConnectedOutputs.IsValidIndex(Index))
         {
             //UE_LOG(LoadBalancers_Log, Warning, TEXT("IsValidIndex"));
-            if(mNormalLoaderData.mConnectedOutputs[Index].IsValid())
-                Balancer = mNormalLoaderData.mConnectedOutputs[Index].Get();
+            if(GroupLeader->mNormalLoaderData.mConnectedOutputs[Index].IsValid())
+                Balancer = GroupLeader->mNormalLoaderData.mConnectedOutputs[Index].Get();
         }
         else
         {
