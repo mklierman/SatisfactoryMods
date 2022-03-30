@@ -30,10 +30,10 @@ struct LOADBALANCERS_API FLBBalancerData_Filters
 		mBalancer.Add(Balancer);
 		mOutputIndex = 0;
 	}
-	
+
 	UPROPERTY(Transient)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mBalancer;
-	
+
 	UPROPERTY(SaveGame)
 	int mOutputIndex = 0;
 
@@ -65,7 +65,7 @@ struct LOADBALANCERS_API FLBBalancerData
 
 	UPROPERTY(SaveGame)
 	TMap<TSubclassOf<UFGItemDescriptor>, int> mOutputIndex;
-	
+
 	UPROPERTY(SaveGame)
 	TMap<TSubclassOf<UFGItemDescriptor>, FLBBalancerData_Filters> mFilterMap;
 
@@ -103,7 +103,7 @@ struct LOADBALANCERS_API FLBBalancerData
 		{
 			return mOutputIndex[Item];
 		}
-		
+
 		mOutputIndex.Add(Item, 0);
 		return 0;
 	}
@@ -114,7 +114,7 @@ struct LOADBALANCERS_API FLBBalancerData
 		{
 			RemoveBalancer(Balancer, OldItem);
 		}
-		
+
 		if(HasItemFilterBalancer(Item))
 		{
 			mFilterMap[Item].mBalancer.AddUnique(Balancer);
@@ -145,7 +145,7 @@ struct LOADBALANCERS_API FLBBalancerData
 			}
 		}
 	}
-	
+
 	bool HasItemFilterBalancer(TSubclassOf<UFGItemDescriptor> Item) const
 	{
 		if(Item)
