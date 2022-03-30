@@ -312,7 +312,7 @@ void ALBBuild_ModularLoadBalancer::Balancer_CollectInput()
 {
     if(!GroupLeader)
         return;
-    
+
     int CachedIndex = GroupLeader->mNormalLoaderData.mInputIndex;
 
     if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(CachedIndex))
@@ -335,7 +335,7 @@ ALBBuild_ModularLoadBalancer* ALBBuild_ModularLoadBalancer::GetNextInputBalancer
 {
     if(!GroupLeader)
         return nullptr;
-    
+
     int Index;
     ALBBuild_ModularLoadBalancer* Balancer = nullptr;
     if(HasFilterModule() && GroupLeader->mNormalLoaderData.HasItemFilterBalancer(Item.ItemClass))
