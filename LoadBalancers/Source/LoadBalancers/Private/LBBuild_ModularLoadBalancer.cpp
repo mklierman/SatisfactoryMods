@@ -80,7 +80,7 @@ void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayRea
                     LoadBalancer->mOverflowModule = this->mOverflowModule;
                     LoadBalancer->mGroupModules = this->mGroupModules;
                     LoadBalancer->ApplyLeader();
-                    UE_LOG(LoadBalancers_Log, Error, TEXT("Made Leader"))
+                    //UE_LOG(LoadBalancers_Log, Error, TEXT("Made Leader"))
                         break;
                 }
             }

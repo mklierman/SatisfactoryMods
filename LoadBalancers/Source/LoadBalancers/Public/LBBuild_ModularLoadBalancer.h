@@ -71,7 +71,7 @@ struct LOADBALANCERS_API FLBBalancerData
 
 	void GetInputBalancers(TArray<ALBBuild_ModularLoadBalancer*>& Out)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("NUM %d"), mConnectedInputs.Num());
+		//UE_LOG(LogTemp, Warning, TEXT("NUM %d"), mConnectedInputs.Num());
 		for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mConnectedInputs)
 			if(Balancer.IsValid())
 				Out.AddUnique(Balancer.Get());

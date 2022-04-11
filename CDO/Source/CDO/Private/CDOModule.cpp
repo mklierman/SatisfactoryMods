@@ -11,6 +11,7 @@
 #include "WheeledVehicles/FGWheeledVehicle.h"
 #include "WheeledVehicles/FGWheeledVehicleMovementComponent6W.h"
 #include "WheeledVehicles/FGWheeledVehicleMovementComponent4W.h"
+#include "FGFactoryConnectionComponent.h"
 #include "WheeledVehicleMovementComponent.h"
 #include "FGResourceSinkSettings.h"
 #include "Equipment/FGResourceScanner.h"
@@ -31,6 +32,7 @@
 #include "FGColoredInstanceMeshProxy.h"
 #include "Resources/FGItemDescriptor.h"
 #include "Buildables/FGBuildablePipeline.h"
+#include "Hologram/FGConveyorAttachmentHologram.h"
 #include "FGVehicleWheel.h"
 
 DEFINE_LOG_CATEGORY(CDO_Log);
@@ -42,8 +44,37 @@ DEFINE_LOG_CATEGORY(CDO_Log);
 //}
 
 void FCDOModule::StartupModule() {
-#if !WITH_EDITOR
-#endif
+
+//#if !WITH_EDITOR
+
+	//void AFGHologram::AddConstructDisqualifier(TSubclassOf<  UFGConstructDisqualifier > disqualifier) { }
+	//SUBSCRIBE_METHOD(AFGHologram::AddConstructDisqualifier, [](auto scope, AFGHologram* self, TSubclassOf<  UFGConstructDisqualifier > disqualifier)
+	//	{
+	//		scope.Cancel();
+	//	});
+	//virtual void ConfigureComponents(class AFGBuildable* inBuildable) const override;
+//	AFGConveyorAttachmentHologram* cah = GetMutableDefault<AFGConveyorAttachmentHologram>();
+//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::ConfigureComponents, cah, [](auto scope, const AFGConveyorAttachmentHologram* self, class AFGBuildable* inBuildable)
+//			{
+//			scope.Cancel();
+//			});
+//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CheckValidPlacement, cah, [](auto scope, AFGConveyorAttachmentHologram* self)
+//		{
+//			self->ResetConstructDisqualifiers();
+//			scope.Cancel();
+//		});
+//
+//	SUBSCRIBE_METHOD(UFGFactoryConnectionComponent::CanSnapTo, [](auto scope, const UFGFactoryConnectionComponent* self, UFGFactoryConnectionComponent* otherConnection)
+//	{
+//			self->ResetConstructDisqualifiers();
+//			scope.Override(true);
+//	});
+//	SUBSCRIBE_METHOD(UFGFactoryConnectionComponent::CanConnectTo, [](auto scope, const UFGFactoryConnectionComponent* self, UFGFactoryConnectionComponent* otherConnection)
+//		{
+//			self->ResetConstructDisqualifiers();
+//			scope.Override(true);
+//		});
+//#endif
 		//	{
 		//		self->mFineTuneRotationStep = 1;
 		//	});
@@ -62,7 +93,7 @@ void FCDOModule::StartupModule() {
 	//		self->mFineTuneRotationStep = 1;
 	//	});
 	//void SetScrollRotateValue(int32 rotValue) { mScrollRotation = rotValue; }
-	AFGHologram* fCDO = GetMutableDefault<AFGHologram>();
+	//AFGHologram* fCDO = GetMutableDefault<AFGHologram>();
 	//SUBSCRIBE_METHOD(AFGHologram::GetScrollRotateValue, [](auto scope, const AFGHologram* self)
 	//	{
 	//		//self->mScrollRotation = self->mScrollRotation - 9;

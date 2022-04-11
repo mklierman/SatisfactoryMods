@@ -4,12 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Buildables/FGBuildableConveyorAttachment.h"
+#include "Buildables/FGBuildableWidgetSign.h"
 #include "CL_CounterLimiter.generated.h"
 
 /**
  *
  */
 DECLARE_LOG_CATEGORY_EXTERN(CounterLimiter_Log, Display, All);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateDisplay, float, NewIPM);
 
 UCLASS()
 class COUNTERLIMITER_API ACL_CounterLimiter : public AFGBuildableConveyorAttachment
@@ -19,6 +22,7 @@ public:
 	ACL_CounterLimiter();
 
 		virtual void BeginPlay() override;
+		void PostInitializeComponents() override;
 		virtual bool ShouldSave_Implementation() const override;
 
 	virtual void Factory_CollectInput_Implementation() override;
@@ -26,6 +30,13 @@ public:
 
 	float GetSecondsPerItem();
 	float GetSecondsSinceLastInput();
+
+	//UFUNCTION(BlueprintImplementableEvent)
+	void UpdateAttachedSigns();
+
+
+	UPROPERTY(BlueprintAssignable)
+	FUpdateDisplay OnUpdateDisplay;
 
 	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
 	float mPerMinuteLimitRate;
@@ -35,6 +46,11 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	UFGFactoryConnectionComponent* outputConnection;
+
+	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
+	TArray<AFGBuildableWidgetSign*> mAttachedSigns;
+
+	TMap<TSubclassOf<class UFGItemDescriptor>, int32> mItemCounts;
 
 	UFUNCTION(BlueprintPure)
 	int32 GetCurrentPerMinuteThroughput();
