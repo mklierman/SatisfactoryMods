@@ -28,21 +28,10 @@ struct LOADBALANCERS_API FLBBalancerData_Filters
 	FLBBalancerData_Filters(ALBBuild_ModularLoadBalancer* Balancer)
 	{
 		mBalancer.Add(Balancer);
-		mOutputIndex = 0;
 	}
 	
 	UPROPERTY(Transient)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mBalancer;
-	
-	UPROPERTY(SaveGame)
-	int mOutputIndex = 0;
-
-	void GetBalancers(TArray<ALBBuild_ModularLoadBalancer*> Out)
-	{
-		for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mBalancer)
-			if(Balancer.IsValid())
-				Out.AddUnique(Balancer.Get());
-	}
 };
 
 USTRUCT()
@@ -59,15 +48,6 @@ struct LOADBALANCERS_API FLBBalancerData
 	// for MAYBE LATER IS NOT USED!
 	UPROPERTY(Transient)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mOverflowBalancer;
-
-	UPROPERTY(SaveGame)
-	int mInputIndex = 0;
-
-	UPROPERTY(SaveGame)
-	int mOverflowIndex = 0;
-
-	UPROPERTY(SaveGame)
-	TMap<TSubclassOf<UFGItemDescriptor>, int> mOutputIndex;
 	
 	UPROPERTY(SaveGame)
 	TMap<TSubclassOf<UFGItemDescriptor>, FLBBalancerData_Filters> mFilterMap;
@@ -78,15 +58,11 @@ struct LOADBALANCERS_API FLBBalancerData
 
 	bool HasAnyValidOverflow() const;
 
-	int GetOutputIndexFromItem(TSubclassOf<UFGItemDescriptor> Item, bool IsFilter = false);
-
 	void SetFilterItemForBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> Item, TSubclassOf<UFGItemDescriptor> OldItem);
 
 	void RemoveBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> OldItem);
 
 	bool HasItemFilterBalancer(TSubclassOf<UFGItemDescriptor> Item) const;
-
-	TArray<ALBBuild_ModularLoadBalancer*> GetBalancerForFilters(TSubclassOf<UFGItemDescriptor> Item);
 };
 
 /**

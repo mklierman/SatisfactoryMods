@@ -39,26 +39,6 @@ bool FLBBalancerData::HasAnyValidOverflow() const
     return true;
 }
 
-int FLBBalancerData::GetOutputIndexFromItem(TSubclassOf<UFGItemDescriptor> Item, bool IsFilter)
-{
-    if(IsFilter)
-    {
-        if(HasItemFilterBalancer(Item))
-        {
-            return mFilterMap[Item].mOutputIndex;
-        }
-        return -1;
-    }
-
-    if(mOutputIndex.Contains(Item))
-    {
-        return mOutputIndex[Item];
-    }
-		
-    mOutputIndex.Add(Item, 0);
-    return 0;
-}
-
 void FLBBalancerData::SetFilterItemForBalancer(ALBBuild_ModularLoadBalancer* Balancer,
                                                TSubclassOf<UFGItemDescriptor> Item, TSubclassOf<UFGItemDescriptor> OldItem)
 {
@@ -70,14 +50,10 @@ void FLBBalancerData::SetFilterItemForBalancer(ALBBuild_ModularLoadBalancer* Bal
     if(HasItemFilterBalancer(Item))
     {
         mFilterMap[Item].mBalancer.AddUnique(Balancer);
-        if(mFilterMap[Item].mOutputIndex == -1)
-            mFilterMap[Item] = 0;
     }
     else
     {
         mFilterMap.Add(Item, FLBBalancerData_Filters(Balancer));
-        if(mFilterMap[Item].mOutputIndex == -1)
-            mFilterMap[Item] = 0;
     }
 }
 
@@ -103,24 +79,6 @@ bool FLBBalancerData::HasItemFilterBalancer(TSubclassOf<UFGItemDescriptor> Item)
     if(Item)
         return mFilterMap.Contains(Item);
     return false;
-}
-
-TArray<ALBBuild_ModularLoadBalancer*> FLBBalancerData::GetBalancerForFilters(TSubclassOf<UFGItemDescriptor> Item)
-{
-    TArray<ALBBuild_ModularLoadBalancer*> Balancers = {};
-
-    if(HasItemFilterBalancer(Item))
-    {
-        for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mFilterMap[Item].mBalancer)
-        {
-            if(Balancer.IsValid())
-            {
-                Balancers.Add(Balancer.Get());
-            }
-        }
-    }
-
-    return Balancers;
 }
 
 ALBBuild_ModularLoadBalancer::ALBBuild_ModularLoadBalancer()
@@ -514,20 +472,6 @@ void ALBBuild_ModularLoadBalancer::Balancer_CollectInput()
 {
     if(!GroupLeader)
         return;
-    
-    int CachedIndex = GroupLeader->mNormalLoaderData.mInputIndex;
-
-    if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(CachedIndex))
-    {
-        GroupLeader->mNormalLoaderData.mInputIndex = 0;
-        CachedIndex = 0;
-    }
-
-    // if still BREAK! something goes wrong here!
-    if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(CachedIndex))
-    {
-        return;
-    }
 
     for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : GroupLeader->mNormalLoaderData.mConnectedInputs)
     {
