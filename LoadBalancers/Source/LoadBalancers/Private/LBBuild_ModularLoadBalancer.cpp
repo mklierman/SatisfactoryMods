@@ -39,14 +39,8 @@ bool FLBBalancerData::HasAnyValidOverflow() const
     return true;
 }
 
-void FLBBalancerData::SetFilterItemForBalancer(ALBBuild_ModularLoadBalancer* Balancer,
-                                               TSubclassOf<UFGItemDescriptor> Item, TSubclassOf<UFGItemDescriptor> OldItem)
+void FLBBalancerData::SetFilterItemForBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> Item)
 {
-    if(HasItemFilterBalancer(OldItem))
-    {
-        RemoveBalancer(Balancer, OldItem);
-    }
-		
     if(HasItemFilterBalancer(Item))
     {
         mFilterMap[Item].mBalancer.AddUnique(Balancer);
@@ -92,7 +86,7 @@ void ALBBuild_ModularLoadBalancer::GetLifetimeReplicatedProps(TArray<FLifetimePr
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ALBBuild_ModularLoadBalancer, mGroupModules);
     DOREPLIFETIME(ALBBuild_ModularLoadBalancer, GroupLeader);
-    DOREPLIFETIME(ALBBuild_ModularLoadBalancer, mFilteredItem);
+    DOREPLIFETIME(ALBBuild_ModularLoadBalancer, mFilteredItems);
 }
 
 void ALBBuild_ModularLoadBalancer::BeginPlay()
@@ -104,52 +98,132 @@ void ALBBuild_ModularLoadBalancer::BeginPlay()
         if(!GroupLeader)
             GroupLeader = this;
 
-        if (GetBufferInventory() && MyOutputConnection)
+        if(mFilteredItem)
         {
-            GetBufferInventory()->OnItemRemovedDelegate.AddDynamic(this, &ALBBuild_ModularLoadBalancer::OnOutputItemRemoved);
-            MyOutputConnection->SetInventory(GetBufferInventory());
-            GetBufferInventory()->Resize(20);
+            mFilteredItems.SetNum(1);
+            mFilteredItems[0] = mFilteredItem;
+            mFilteredItem = nullptr;
+        }
+
+        SetupInventory();
+
+        if(MyOutputConnection && GetBufferInventory())
+        {
+            int32 Index = MyOutputConnection->GetInventoryAccessIndex();
+            if(GetBufferInventory()->IsIndexEmpty(Index))
+                MyOutputConnection->SetInventoryAccessIndex(-1);
+        }
+
+        ApplyGroupModule();
+    }
+}
+
+void ALBBuild_ModularLoadBalancer::SetupInventory()
+{
+    if (GetBufferInventory())
+    {
+        if(!IsFilterModule())
+        {
+            if(MyOutputConnection)
+                MyOutputConnection->SetInventory(GetBufferInventory());
+
+            GetBufferInventory()->OnItemRemovedDelegate.AddUniqueDynamic(this, &ALBBuild_ModularLoadBalancer::OnOutputItemRemoved);
+            GetBufferInventory()->Resize(mSlotsInBuffer);
 
             for (int i = 0; i < GetBufferInventory()->GetSizeLinear(); ++i)
             {
                 if (GetBufferInventory()->IsValidIndex(i))
                 {
-                    GetBufferInventory()->AddArbitrarySlotSize(i, 1);
-
-                    if (IsFilterModule())
-                    {
-                        GetBufferInventory()->SetAllowedItemOnIndex(i, mFilteredItem);
-                    }
+                    GetBufferInventory()->AddArbitrarySlotSize(i, mOverwriteSlotSize);
                 }
             }
         }
+        else
+        {
+            if(MyOutputConnection)
+                MyOutputConnection->SetInventory(GetBufferInventory());
 
-        ApplyGroupModule();
-        if(IsFilterModule())
-            SetFilteredItem(mFilteredItem);
+            GetBufferInventory()->OnItemRemovedDelegate.AddUniqueDynamic(this, &ALBBuild_ModularLoadBalancer::OnOutputItemRemoved);
+            GetBufferInventory()->Resize(mFilteredItems.Num());
+
+            for (int i = 0; i < GetBufferInventory()->GetSizeLinear(); ++i)
+            {
+                if (GetBufferInventory()->IsValidIndex(i))
+                {
+                    GetBufferInventory()->AddArbitrarySlotSize(i, mOverwriteSlotSize);
+                    GetBufferInventory()->SetAllowedItemOnIndex(i, mFilteredItems[i]);
+                }
+            }
+        }
     }
 }
 
 void ALBBuild_ModularLoadBalancer::SetFilteredItem(TSubclassOf<UFGItemDescriptor> ItemClass)
 {
+    if(!ItemClass || mFilteredItems.Contains(ItemClass))
+        return;
+    
+    if(mLoaderType == ELoaderType::Programmable)
+        if(mFilteredItems.Num() >= mMaxFilterableItems)
+            return;
+    
     if (HasAuthority())
     {
         if (IsFilterModule() && GetBufferInventory())
         {
-            GroupLeader->mNormalLoaderData.SetFilterItemForBalancer(this, ItemClass, GetBufferInventory()->GetAllowedItemOnIndex(0));
-            for (int i = 0; i < GetBufferInventory()->GetSizeLinear(); ++i)
+            if(GroupLeader)
             {
-                if (GetBufferInventory()->IsValidIndex(i))
+                if(mLoaderType == ELoaderType::Filter)
                 {
-                    GetBufferInventory()->SetAllowedItemOnIndex(i, ItemClass);
+                    TSubclassOf<UFGItemDescriptor> OldItem = mFilteredItems[0];
+                    mFilteredItems[0] = ItemClass;
+                    GroupLeader->mNormalLoaderData.RemoveBalancer(this, OldItem);
                 }
+                else
+                {
+                    if(mFilteredItems[0] == UFGNoneDescriptor::StaticClass())
+                        mFilteredItems[0] = ItemClass;
+                    else
+                     mFilteredItems.Add(ItemClass);
+                }
+
+                GroupLeader->mNormalLoaderData.SetFilterItemForBalancer(this, ItemClass);
             }
-            mFilteredItem = GetBufferInventory()->GetAllowedItemOnIndex(0);
+            SetupInventory();
         }
     }
     else if (ULBDefaultRCO* RCO = ULBDefaultRCO::Get(GetWorld()))
     {
         RCO->Server_SetFilteredItem(this, ItemClass);
+    }
+}
+
+void ALBBuild_ModularLoadBalancer::RemoveFilteredItem(TSubclassOf<UFGItemDescriptor> ItemClass)
+{
+    if(!ItemClass || !mFilteredItems.Contains(ItemClass))
+        return;
+    
+    if (HasAuthority())
+    {
+        if (IsFilterModule() && GetBufferInventory())
+        {
+            mFilteredItems.Remove(ItemClass);
+            if(GroupLeader)
+                GroupLeader->mNormalLoaderData.RemoveBalancer(this, ItemClass);
+
+            if(mFilteredItems.Num() == 0)
+            {
+                mFilteredItems.SetNum(1);
+                mFilteredItems[0] = UFGNoneDescriptor::StaticClass();
+            }
+            
+            GroupLeader->mNormalLoaderData.RemoveBalancer(this, ItemClass);
+            SetupInventory();
+        }
+    }
+    else if (ULBDefaultRCO* RCO = ULBDefaultRCO::Get(GetWorld()))
+    {
+        RCO->Server_RemoveFilteredItem(this, ItemClass);
     }
 }
 
@@ -200,7 +274,44 @@ TArray<ALBBuild_ModularLoadBalancer*> ALBBuild_ModularLoadBalancer::GetGroupModu
 bool ALBBuild_ModularLoadBalancer::SendToOverflowBalancer(FInventoryItem Item)
 {
     if(HasOverflowModule())
-        for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer : mNormalLoaderData.mOverflowBalancer)
+    {
+        FLBBalancerIndexing* Indexing = mNormalLoaderData.mIndexMapping.Find(Item.ItemClass);
+        if(!Indexing)
+        {
+            mNormalLoaderData.mIndexMapping.Add(Item.ItemClass, FLBBalancerIndexing());
+            Indexing = mNormalLoaderData.mIndexMapping.Find(Item.ItemClass);
+        }
+
+        if(Indexing)
+        {
+            if(Indexing->mOverflowIndex == -1)
+                Indexing->mOverflowIndex = 0;
+        }
+        else
+            return false;
+
+        for(int i = 0; i < mNormalLoaderData.mOverflowBalancer.Num(); i++)
+        {
+            TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer = mNormalLoaderData.mOverflowBalancer.IsValidIndex(Indexing->mOverflowIndex) ? mNormalLoaderData.mOverflowBalancer[Indexing->mOverflowIndex] : nullptr;
+            Indexing->mOverflowIndex++;
+
+            if(!mNormalLoaderData.mOverflowBalancer.IsValidIndex(Indexing->mOverflowIndex))
+                Indexing->mOverflowIndex = 0;
+                
+            if(OverflowBalancer.IsValid())
+            {
+                if(OverflowBalancer->GetBufferInventory())
+                {
+                    if(OverflowBalancer->GetBufferInventory()->GetNumItems(Item.ItemClass) < mOverwriteSlotSize)
+                    {
+                        OverflowBalancer->GetBufferInventory()->AddItem(Item);
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        /**for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer : mNormalLoaderData.mOverflowBalancer)
         {
             if(OverflowBalancer.IsValid())
             {
@@ -217,14 +328,53 @@ bool ALBBuild_ModularLoadBalancer::SendToOverflowBalancer(FInventoryItem Item)
             }
             mNormalLoaderData.mOverflowBalancer.Remove(OverflowBalancer);
             mNormalLoaderData.mOverflowBalancer.Add(OverflowBalancer);
-        }
+        }*/
+    }
     return false;
 }
 
 bool ALBBuild_ModularLoadBalancer::SendToFilterBalancer(FInventoryItem Item)
 {
     if(HasFilterModule())
-        if(mNormalLoaderData.mFilterMap.Contains(Item.ItemClass))
+        if(mNormalLoaderData.HasItemFilterBalancer(Item.ItemClass))
+        {
+            FLBBalancerIndexing* Indexing = mNormalLoaderData.mIndexMapping.Find(Item.ItemClass);
+            if(!Indexing)
+            {
+                mNormalLoaderData.mIndexMapping.Add(Item.ItemClass, FLBBalancerIndexing());
+                Indexing = mNormalLoaderData.mIndexMapping.Find(Item.ItemClass);
+            }
+
+            if(Indexing)
+            {
+                if(Indexing->mFilterIndex == -1)
+                    Indexing->mFilterIndex = 0;
+            }
+            else
+                return false;
+
+            for(int i = 0; i < mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer.Num(); i++)
+            {
+                TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer = mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer.IsValidIndex(Indexing->mFilterIndex) ? mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer[Indexing->mFilterIndex] : nullptr;
+                Indexing->mFilterIndex++;
+
+                if(!mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer.IsValidIndex(Indexing->mFilterIndex))
+                    Indexing->mFilterIndex = 0;
+                
+                if(OverflowBalancer.IsValid())
+                {
+                    if(OverflowBalancer->GetBufferInventory())
+                    {
+                        if(OverflowBalancer->GetBufferInventory()->GetNumItems(Item.ItemClass) < mOverwriteSlotSize)
+                        {
+                            OverflowBalancer->GetBufferInventory()->AddItem(Item);
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+            /**
             if(mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer.Num() > 0)
                 for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer : mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer)
                 {
@@ -244,12 +394,51 @@ bool ALBBuild_ModularLoadBalancer::SendToFilterBalancer(FInventoryItem Item)
                     mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer.Remove(OverflowBalancer);
                     mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer.Add(OverflowBalancer);
                 }
+                */
     return false;
 }
 
 bool ALBBuild_ModularLoadBalancer::SendToNormalBalancer(FInventoryItem Item)
 {
     if(mNormalLoaderData.mConnectedOutputs.Num() > 0)
+    {
+        FLBBalancerIndexing* Indexing = mNormalLoaderData.mIndexMapping.Find(Item.ItemClass);
+        if(!Indexing)
+        {
+            mNormalLoaderData.mIndexMapping.Add(Item.ItemClass, FLBBalancerIndexing());
+            Indexing = mNormalLoaderData.mIndexMapping.Find(Item.ItemClass);
+        }
+
+        if(Indexing)
+        {
+            if(Indexing->mNormalIndex == -1)
+                Indexing->mNormalIndex = 0;
+        }
+        else
+            return false;
+
+        for(int i = 0; i < mNormalLoaderData.mConnectedOutputs.Num(); i++)
+        {
+            TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer = mNormalLoaderData.mConnectedOutputs.IsValidIndex(Indexing->mNormalIndex) ? mNormalLoaderData.mConnectedOutputs[Indexing->mNormalIndex] : nullptr;
+            Indexing->mNormalIndex++;
+
+            if(!mNormalLoaderData.mConnectedOutputs.IsValidIndex(Indexing->mNormalIndex))
+                Indexing->mNormalIndex = 0;
+                
+            if(OverflowBalancer.IsValid())
+            {
+                if(OverflowBalancer->GetBufferInventory())
+                {
+                    if(OverflowBalancer->GetBufferInventory()->GetNumItems(Item.ItemClass) < mOverwriteSlotSize)
+                    {
+                        OverflowBalancer->GetBufferInventory()->AddItem(Item);
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    /**
         for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer : mNormalLoaderData.mConnectedOutputs)
         {
             if(OverflowBalancer.IsValid())
@@ -267,7 +456,7 @@ bool ALBBuild_ModularLoadBalancer::SendToNormalBalancer(FInventoryItem Item)
             }
             mNormalLoaderData.mConnectedOutputs.Remove(OverflowBalancer);
             mNormalLoaderData.mConnectedOutputs.Add(OverflowBalancer);
-        }
+        }*/
     return false;
 }
 
@@ -275,25 +464,33 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
 {
     Super::Factory_Tick(dt);
 
-    if (IsLeader() && HasAuthority())
+    if (HasAuthority())
     {
-        if (IsFilterModule() && GetBufferInventory())
-        {
-            if (mFilteredItem != GetBufferInventory()->GetAllowedItemOnIndex(0))
+        if(GetBufferInventory()->GetSizeLinear() != mSlotsInBuffer)
+            SetupInventory();
+        
+        if(IsLeader())
+            if (IsFilterModule() && GetBufferInventory())
             {
-                SetFilteredItem(mFilteredItem);
+                if (mFilteredItem != GetBufferInventory()->GetAllowedItemOnIndex(0))
+                {
+                    SetFilteredItem(mFilteredItem);
+                }
+            }
+
+        if (MyOutputConnection)
+        {
+            mTimer += dt;
+            if (mTimer >= 1.f)
+            {
+                mTimer -= 1.f;
+                UpdateCache();
             }
         }
-    }
 
-    if (MyOutputConnection && HasAuthority())
-    {
-        mTimer += dt;
-        if (mTimer >= 1.f)
-        {
-            mTimer -= 1.f;
-            UpdateCache();
-        }
+        if(MyOutputConnection && GetBufferInventory())
+            if(!GetBufferInventory()->IsValidIndex(MyOutputConnection->GetInventoryAccessIndex()) && MyOutputConnection->GetInventoryAccessIndex() != -1)
+                MyOutputConnection->SetInventoryAccessIndex(-1);
     }
 }
 
@@ -370,7 +567,8 @@ void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayRea
     {
         if(IsFilterModule() && GroupLeader)
         {
-            GroupLeader->mNormalLoaderData.RemoveBalancer(this, mFilteredItem);
+            for (TSubclassOf<UFGItemDescriptor> Class : mFilteredItems) 
+                GroupLeader->mNormalLoaderData.RemoveBalancer(this, Class);
         }
 
         if (IsLeader() && GetGroupModules().Num() > 1)
@@ -414,6 +612,9 @@ void ALBBuild_ModularLoadBalancer::ApplyGroupModule()
     {
         GroupLeader->mGroupModules.AddUnique(this);
         UpdateCache();
+        if(IsFilterModule())
+            for (TSubclassOf<UFGItemDescriptor> Item : mFilteredItems) 
+                GroupLeader->mNormalLoaderData.SetFilterItemForBalancer(this, Item);
         ForceNetUpdate();
     }
     else

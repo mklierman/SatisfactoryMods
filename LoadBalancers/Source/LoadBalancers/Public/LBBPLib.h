@@ -11,5 +11,5 @@ class LOADBALANCERS_API ULBBPLib : public UBlueprintFunctionLibrary
 public:
 
 	UFUNCTION(BlueprintCallable)
-	static void SortItemArray(TArray<TSubclassOf<UFGItemDescriptor>>& Out_Items, const TArray<TSubclassOf<UFGItemDescriptor>>& In_Items, bool Reverse = false); 
+	static void SortItemArray(TArray<TSubclassOf<UFGItemDescriptor>>& Out_Items, const TArray<TSubclassOf<UFGItemDescriptor>>& In_Items, const TArray<TSubclassOf<UFGItemDescriptor>>& mForceFirstItems, bool Reverse = false); 
 };

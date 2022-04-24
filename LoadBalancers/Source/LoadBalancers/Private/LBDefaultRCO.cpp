@@ -61,3 +61,13 @@ void ULBDefaultRCO::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ULBDefaultRCO, bDummy);
 }
+
+void ULBDefaultRCO::Server_RemoveFilteredItem_Implementation(ALBBuild_ModularLoadBalancer* Balancer,
+	TSubclassOf<UFGItemDescriptor> ItemClass)
+{
+	if (Balancer)
+	{
+		Balancer->RemoveFilteredItem(ItemClass);
+		Balancer->ForceNetUpdate();
+	}
+}

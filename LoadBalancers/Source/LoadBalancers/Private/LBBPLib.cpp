@@ -1,35 +1,30 @@
 #include "LBBPLib.h"
 
-void ULBBPLib::SortItemArray(TArray<TSubclassOf<UFGItemDescriptor>>& Out_Items, const TArray<TSubclassOf<UFGItemDescriptor>>& In_Items, bool Reverse)
+void ULBBPLib::SortItemArray(TArray<TSubclassOf<UFGItemDescriptor>>& Out_Items, const TArray<TSubclassOf<UFGItemDescriptor>>& In_Items, const TArray<TSubclassOf<UFGItemDescriptor>>& mForceFirstItems, bool Reverse)
 {
-	if(In_Items.Num() > 1)
+	Out_Items = In_Items;
+	if(Out_Items.Num() > 1)
 	{
-		TMap<FString, TSubclassOf<UFGItemDescriptor>> Map;
-
-		FCriticalSection Mutex;
-		ParallelFor(In_Items.Num(), [&](int32 Idx)
-		{
-			if(In_Items.IsValidIndex(Idx))
-			{
-				Mutex.Lock();
-				TSubclassOf<UFGItemDescriptor> Item = In_Items[Idx];
-				Map.Add(UFGItemDescriptor::GetItemName(Item).ToString(), Item);
-				Mutex.Unlock();
-			}
-		});
-
-		TArray<FString> Keys;
-		Map.GenerateKeyArray(Keys);
-		Keys.Sort([Reverse](const FString A, const FString B)
+		Out_Items.Sort([Reverse](const TSubclassOf<UFGItemDescriptor> A, const TSubclassOf<UFGItemDescriptor> B)
 		{
 			if(!Reverse)
-				return A < B;
-			return A > B;
+				return UFGItemDescriptor::GetItemName(A).ToString() < UFGItemDescriptor::GetItemName(B).ToString();
+			return UFGItemDescriptor::GetItemName(A).ToString() > UFGItemDescriptor::GetItemName(B).ToString();
 		});
 
-		for (FString Name : Keys)
-			Out_Items.Add(Map[Name]);
+		if(mForceFirstItems.Num() > 0)
+		{
+			TArray<TSubclassOf<UFGItemDescriptor>> ForceReturn;
+			for (TSubclassOf<UFGItemDescriptor> Out_Item : mForceFirstItems)
+			{
+				if(Out_Items.Contains(Out_Item))
+				{
+					Out_Items.Remove(Out_Item);
+					ForceReturn.Add(Out_Item);
+				}
+			}
+			ForceReturn.Append(Out_Items);
+			Out_Items = ForceReturn;
+		}
 	}
-	else
-		Out_Items = In_Items;
 }

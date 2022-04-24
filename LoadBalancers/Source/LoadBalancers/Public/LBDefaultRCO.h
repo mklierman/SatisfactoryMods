@@ -32,6 +32,10 @@ public:
 	FORCEINLINE bool Server_SetFilteredItem_Validate(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> ItemClass) { return true; }
 
 	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
+	void Server_RemoveFilteredItem(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> ItemClass);
+	FORCEINLINE bool Server_RemoveFilteredItem_Validate(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> ItemClass) { return true; }
+
+	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
 	void Server_CreateOutlineForActor(ALBOutlineSubsystem* Subsystem, AActor* Actor);
 	FORCEINLINE bool Server_CreateOutlineForActor_Validate(ALBOutlineSubsystem* Subsystem, AActor* Actor) { return true; }
 
