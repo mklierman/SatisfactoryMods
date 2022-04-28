@@ -15,7 +15,8 @@ enum class ELoaderType : uint8
 {
 	Normal = 0 UMETA(DisplayName = "Normal"),
 	Overflow = 1 UMETA(DisplayName = "Overflow"),
-	Filter = 2 UMETA(DisplayName = "Filter")
+	Filter = 2 UMETA(DisplayName = "Filter"),
+	Programmable = 3 UMETA(DisplayName = "Programmable")
 };
 
 class ALBBuild_ModularLoadBalancer;
@@ -28,22 +29,59 @@ struct LOADBALANCERS_API FLBBalancerData_Filters
 	FLBBalancerData_Filters(ALBBuild_ModularLoadBalancer* Balancer)
 	{
 		mBalancer.Add(Balancer);
-		mOutputIndex = 0;
 	}
-
+	
 	UPROPERTY(Transient)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mBalancer;
+};
 
-	UPROPERTY(SaveGame)
-	int mOutputIndex = 0;
+class ALBBuild_ModularLoadBalancer;
+USTRUCT()
+struct LOADBALANCERS_API FLBBalancerIndexing
+{
+	GENERATED_BODY()
 
-	void GetBalancers(TArray<ALBBuild_ModularLoadBalancer*> Out)
+	FLBBalancerIndexing() = default;
+	
+	int32 mNormalIndex = -1;
+	int32 mOverflowIndex = -1;
+	int32 mFilterIndex = -1;
+
+	// for reduce the save count
+	bool Serialize( FArchive& ar )
 	{
-		for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mBalancer)
-			if(Balancer.IsValid())
-				Out.AddUnique(Balancer.Get());
+		if(ar.IsLoading() && ar.ArIsSaveGame)
+		{
+			ar << mNormalIndex;
+			ar << mOverflowIndex;
+			ar << mFilterIndex;
+		}
+		else if(ar.ArIsSaveGame)
+		{
+			if(mNormalIndex != -1)
+				ar << mNormalIndex;
+		
+			if(mOverflowIndex != -1)
+				ar << mOverflowIndex;
+		
+			if(mFilterIndex != -1)
+				ar << mFilterIndex;
+		}
+		
+		return true;
 	}
 };
+
+template<>
+struct TStructOpsTypeTraits< FLBBalancerIndexing > : public TStructOpsTypeTraitsBase2< FLBBalancerIndexing >
+{
+	enum
+	{
+		WithSerializer = true,
+		WithCopy = true
+	};
+};
+
 
 USTRUCT()
 struct LOADBALANCERS_API FLBBalancerData
@@ -56,120 +94,26 @@ struct LOADBALANCERS_API FLBBalancerData
 	UPROPERTY(Transient)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mConnectedInputs;
 
-	// for MAYBE LATER IS NOT USED!
 	UPROPERTY(Transient)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mOverflowBalancer;
-
-	UPROPERTY(SaveGame)
-	int mInputIndex = 0;
-
-	UPROPERTY(SaveGame)
-	TMap<TSubclassOf<UFGItemDescriptor>, int> mOutputIndex;
-
-	UPROPERTY(SaveGame)
+	
+	UPROPERTY(Transient)
 	TMap<TSubclassOf<UFGItemDescriptor>, FLBBalancerData_Filters> mFilterMap;
 
-	void GetInputBalancers(TArray<ALBBuild_ModularLoadBalancer*>& Out)
-	{
-		//UE_LOG(LogTemp, Warning, TEXT("NUM %d"), mConnectedInputs.Num());
-		for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mConnectedInputs)
-			if(Balancer.IsValid())
-				Out.AddUnique(Balancer.Get());
-	}
+	UPROPERTY(SaveGame)
+	TMap<TSubclassOf<UFGItemDescriptor>, FLBBalancerIndexing> mIndexMapping;
 
-	bool HasAnyValidFilter() const
-	{
-		if(mFilterMap.Num() >= 0)
-		{
-			TArray<TSubclassOf<UFGItemDescriptor>> Keys;
-			mFilterMap.GenerateKeyArray(Keys);
-			return !(mFilterMap.Num() == 1 && Keys.Contains(UFGNoneDescriptor::StaticClass()));
-		}
-		return true;
-	}
+	void GetInputBalancers(TArray<ALBBuild_ModularLoadBalancer*>& Out);
 
-	int GetOutputIndexFromItem(TSubclassOf<UFGItemDescriptor> Item, bool IsFilter = false)
-	{
-		if(IsFilter)
-		{
-			if(HasItemFilterBalancer(Item))
-			{
-				return mFilterMap[Item].mOutputIndex;
-			}
-			return -1;
-		}
+	bool HasAnyValidFilter() const;
 
-		if(mOutputIndex.Contains(Item))
-		{
-			return mOutputIndex[Item];
-		}
+	bool HasAnyValidOverflow() const;
 
-		mOutputIndex.Add(Item, 0);
-		return 0;
-	}
+	void SetFilterItemForBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> Item);
 
-	void SetFilterItemForBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> Item, TSubclassOf<UFGItemDescriptor> OldItem)
-	{
-		if(HasItemFilterBalancer(OldItem))
-		{
-			RemoveBalancer(Balancer, OldItem);
-		}
+	void RemoveBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> OldItem);
 
-		if(HasItemFilterBalancer(Item))
-		{
-			mFilterMap[Item].mBalancer.AddUnique(Balancer);
-			if(mFilterMap[Item].mOutputIndex == -1)
-				mFilterMap[Item] = 0;
-		}
-		else
-		{
-			mFilterMap.Add(Item, FLBBalancerData_Filters(Balancer));
-			if(mFilterMap[Item].mOutputIndex == -1)
-				mFilterMap[Item] = 0;
-		}
-	}
-
-	void RemoveBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> OldItem)
-	{
-		if(HasItemFilterBalancer(OldItem))
-		{
-			if(mFilterMap[OldItem].mBalancer.Contains(Balancer))
-				mFilterMap[OldItem].mBalancer.Remove(Balancer);
-			if(mFilterMap[OldItem].mBalancer.Num() == 0)
-				mFilterMap.Remove(OldItem);
-
-			if(Balancer)
-			{
-				if(mConnectedOutputs.Contains(Balancer))
-					mConnectedOutputs.Remove(Balancer);
-			}
-		}
-	}
-
-	bool HasItemFilterBalancer(TSubclassOf<UFGItemDescriptor> Item) const
-	{
-		if(Item)
-			return mFilterMap.Contains(Item);
-		return false;
-	}
-
-	TArray<ALBBuild_ModularLoadBalancer*> GetBalancerForFilters(TSubclassOf<UFGItemDescriptor> Item)
-	{
-		TArray<ALBBuild_ModularLoadBalancer*> Balancers = {};
-
-		if(HasItemFilterBalancer(Item))
-		{
-			for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mFilterMap[Item].mBalancer)
-			{
-				if(Balancer.IsValid())
-				{
-					Balancers.Add(Balancer.Get());
-				}
-			}
-		}
-
-		return Balancers;
-	}
+	bool HasItemFilterBalancer(TSubclassOf<UFGItemDescriptor> Item) const;
 };
 
 /**
@@ -189,6 +133,8 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	// End AActor interface
 
+	void SetupInventory();
+
 	UFUNCTION()
 	void OnOutputItemRemoved( TSubclassOf<UFGItemDescriptor> itemClass, int32 numRemoved );
 
@@ -201,20 +147,29 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Modular Loader")
 	void SetFilteredItem(TSubclassOf<UFGItemDescriptor> ItemClass);
 
+	UFUNCTION(BlueprintCallable, Category="Modular Loader")
+	void RemoveFilteredItem(TSubclassOf<UFGItemDescriptor> ItemClass);
+
 	/** Make this Loader to new GroupLeader (Tell all group modules the new leader and force an update) */
 	void ApplyLeader();
 
 	/* Get ALL valid GroupModules */
 	TArray<ALBBuild_ModularLoadBalancer*> GetGroupModules() const;
 
-	/* Overflow get pointer for the loader */
-	FORCEINLINE ALBBuild_ModularLoadBalancer* GetOverflowLoader() const { return HasOverflowModule() ? GroupLeader->mOverflowModule.Get() : nullptr; }
+	/* Try to send it on the next OverflowBalancer */
+	bool SendToOverflowBalancer(FInventoryItem Item) const;
+
+	/* Try to send it on the next FilterBalancer */
+	bool SendToFilterBalancer(FInventoryItem Item) const;
+
+	/* Try to send it on the next NormalBalancer */
+	bool SendToNormalBalancer(FInventoryItem Item) const;
 
 	/* Do we have a overflow loader? (return true if pointer valid) */
 	FORCEINLINE bool HasOverflowModule() const
 	{
 		if(GroupLeader)
-			return GroupLeader->mOverflowModule.IsValid();
+			return GroupLeader->mNormalLoaderData.HasAnyValidOverflow();
 		return false;
 	}
 
@@ -227,15 +182,18 @@ public:
 
 	/* Some native helper */
 	FORCEINLINE bool IsOverflowModule() const { return mLoaderType == ELoaderType::Overflow; }
-	FORCEINLINE bool IsFilterModule() const { return mLoaderType == ELoaderType::Filter; }
+	FORCEINLINE bool IsFilterModule() const { return mLoaderType == ELoaderType::Filter || mLoaderType == ELoaderType::Programmable; }
 	FORCEINLINE bool IsNormalModule() const { return mLoaderType == ELoaderType::Normal; }
 
 	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
 	ALBBuild_ModularLoadBalancer* GroupLeader;
 
 	/** Current Filtered Item (if Filter) */
-	UPROPERTY(BlueprintReadOnly, Replicated, SaveGame)
-	TSubclassOf<UFGItemDescriptor> mFilteredItem = UFGNoneDescriptor::StaticClass();
+	UPROPERTY(BlueprintReadOnly, BlueprintReadOnly, Replicated, SaveGame)
+	TArray<TSubclassOf<UFGItemDescriptor>> mFilteredItems = { UFGNoneDescriptor::StaticClass() };
+	
+	UPROPERTY(SaveGame)
+	TSubclassOf<UFGItemDescriptor> mFilteredItem = { UFGNoneDescriptor::StaticClass() };
 
 	// Dont need to be Saved > CAN SET BY CPP
 	UPROPERTY(Transient)
@@ -246,8 +204,17 @@ public:
 	UFGFactoryConnectionComponent* MyInputConnection;
 
 	/** What type is this loader? */
-	UPROPERTY(EditDefaultsOnly, Category="ModularLoader")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="ModularLoader")
 	ELoaderType mLoaderType = ELoaderType::Normal;
+	
+	UPROPERTY(EditDefaultsOnly, Category="ModularLoader")
+	uint8 mSlotsInBuffer = 25;
+	
+	UPROPERTY(EditDefaultsOnly, Category="ModularLoader")
+	uint8 mOverwriteSlotSize = 15;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="ModularLoader")
+	uint8 mMaxFilterableItems = 1;
 
 	// Execute Logic by Leader > Factory_CollectInput_Implementation
 	void Balancer_CollectInput();
@@ -265,10 +232,6 @@ private:
 	UPROPERTY(SaveGame)
 	FLBBalancerData mNormalLoaderData;
 
-	/* Overflow loader */
-	UPROPERTY(Transient)
-	TWeakObjectPtr<ALBBuild_ModularLoadBalancer> mOverflowModule;
-
 	/** All our group modules */
 	UPROPERTY(Replicated)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mGroupModules;
@@ -283,6 +246,5 @@ protected:
 	// Begin AFGBuildableFactory interface
 	virtual void Factory_Tick(float dt) override;
 	virtual void Factory_CollectInput_Implementation() override;
-	ALBBuild_ModularLoadBalancer* GetNextInputBalancer(FInventoryItem Item);
 	// End
 };

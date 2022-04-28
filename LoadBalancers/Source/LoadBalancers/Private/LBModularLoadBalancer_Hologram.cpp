@@ -38,14 +38,6 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 		ALBBuild_ModularLoadBalancer* Default = GetDefaultBuildable<ALBBuild_ModularLoadBalancer>();
 		if (ALBBuild_ModularLoadBalancer* SnappedBalancer = Cast<ALBBuild_ModularLoadBalancer>(hitResult.GetActor()))
 		{
-			if (Default->mLoaderType == ELoaderType::Overflow)
-			{
-				if (SnappedBalancer->HasOverflowModule())
-				{
-					AddConstructDisqualifier(UFGCDHasOverflow::StaticClass());
-				}
-			}
-
 			if (ActiveGroupLeader != SnappedBalancer->GroupLeader)
 			{
 				UnHighlightAll();
@@ -120,7 +112,7 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 
 	if (ActiveGroupLeader)
 	{
-		mOutlineSubsystem->SetOutlineColor(mConstructDisqualifiers.Contains(UFGCDHasOverflow::StaticClass()) ? mHoloFailedColor : mHoloColor, true);
+		mOutlineSubsystem->SetOutlineColor(mHoloColor, true);
 		for (ALBBuild_ModularLoadBalancer* OutlineActor : actorsToOutline)
 		{
 			if (mOutlineSubsystem)
