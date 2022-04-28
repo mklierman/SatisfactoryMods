@@ -157,13 +157,13 @@ public:
 	TArray<ALBBuild_ModularLoadBalancer*> GetGroupModules() const;
 
 	/* Try to send it on the next OverflowBalancer */
-	bool SendToOverflowBalancer(FInventoryItem Item);
+	bool SendToOverflowBalancer(FInventoryItem Item) const;
 
 	/* Try to send it on the next FilterBalancer */
-	bool SendToFilterBalancer(FInventoryItem Item);
+	bool SendToFilterBalancer(FInventoryItem Item) const;
 
 	/* Try to send it on the next NormalBalancer */
-	bool SendToNormalBalancer(FInventoryItem Item);
+	bool SendToNormalBalancer(FInventoryItem Item) const;
 
 	/* Do we have a overflow loader? (return true if pointer valid) */
 	FORCEINLINE bool HasOverflowModule() const
