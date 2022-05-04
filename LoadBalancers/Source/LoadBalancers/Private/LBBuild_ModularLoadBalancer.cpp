@@ -9,6 +9,7 @@
 #include "LoadBalancersModule.h"
 
 DEFINE_LOG_CATEGORY(LoadBalancers_Log);
+DEFINE_LOG_CATEGORY(LogGame);
 
 void FLBBalancerData::GetInputBalancers(TArray<ALBBuild_ModularLoadBalancer*>& Out)
 {
@@ -60,15 +61,15 @@ void FLBBalancerData::RemoveBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSu
         if(mFilterMap[OldItem].mBalancer.Num() == 0)
             mFilterMap.Remove(OldItem);
     }
-    
+
     if(Balancer)
     {
         if(mConnectedOutputs.Contains(Balancer))
             mConnectedOutputs.Remove(Balancer);
-        
+
         if(mConnectedInputs.Contains(Balancer))
             mConnectedInputs.Remove(Balancer);
-        
+
         if(Balancer->IsOverflowModule())
             if(mOverflowBalancer.Contains(Balancer))
                 mOverflowBalancer.Remove(Balancer);
@@ -169,11 +170,11 @@ void ALBBuild_ModularLoadBalancer::SetFilteredItem(TSubclassOf<UFGItemDescriptor
 {
     if(!ItemClass || mFilteredItems.Contains(ItemClass))
         return;
-    
+
     if(mLoaderType == ELoaderType::Programmable)
         if(mFilteredItems.Num() >= mMaxFilterableItems)
             return;
-    
+
     if (HasAuthority())
     {
         if (IsFilterModule() && GetBufferInventory())
@@ -209,7 +210,7 @@ void ALBBuild_ModularLoadBalancer::RemoveFilteredItem(TSubclassOf<UFGItemDescrip
 {
     if(!ItemClass || !mFilteredItems.Contains(ItemClass))
         return;
-    
+
     if (HasAuthority())
     {
         if (IsFilterModule() && GetBufferInventory())
@@ -223,7 +224,7 @@ void ALBBuild_ModularLoadBalancer::RemoveFilteredItem(TSubclassOf<UFGItemDescrip
                 mFilteredItems.SetNum(1);
                 mFilteredItems[0] = UFGNoneDescriptor::StaticClass();
             }
-            
+
             GroupLeader->mNormalLoaderData.RemoveBalancer(this, ItemClass);
             SetupInventory();
         }
@@ -282,7 +283,7 @@ bool ALBBuild_ModularLoadBalancer::SendToOverflowBalancer(FInventoryItem Item) c
 {
     if(!GroupLeader)
         return false;
-    
+
     if(HasOverflowModule())
     {
         FLBBalancerIndexing* Indexing = GroupLeader->mNormalLoaderData.mIndexMapping.Find(Item.ItemClass);
@@ -307,7 +308,7 @@ bool ALBBuild_ModularLoadBalancer::SendToOverflowBalancer(FInventoryItem Item) c
 
             if(!GroupLeader->mNormalLoaderData.mOverflowBalancer.IsValidIndex(Indexing->mOverflowIndex))
                 Indexing->mOverflowIndex = 0;
-                
+
             if(OverflowBalancer.IsValid())
             {
                 if(OverflowBalancer->GetBufferInventory())
@@ -328,7 +329,7 @@ bool ALBBuild_ModularLoadBalancer::SendToFilterBalancer(FInventoryItem Item) con
 {
     if(!GroupLeader)
         return false;
-    
+
     if(HasFilterModule())
         if(GroupLeader->mNormalLoaderData.HasItemFilterBalancer(Item.ItemClass))
         {
@@ -356,7 +357,7 @@ bool ALBBuild_ModularLoadBalancer::SendToFilterBalancer(FInventoryItem Item) con
 
                 if(!GroupLeader->mNormalLoaderData.mFilterMap[Item.ItemClass].mBalancer.IsValidIndex(Indexing->mFilterIndex))
                     Indexing->mFilterIndex = 0;
-                
+
                 if(OverflowBalancer.IsValid())
                 {
                     if(OverflowBalancer->GetBufferInventory())
@@ -377,7 +378,7 @@ bool ALBBuild_ModularLoadBalancer::SendToNormalBalancer(FInventoryItem Item) con
 {
     if(!GroupLeader)
         return false;
-    
+
     if(GroupLeader->mNormalLoaderData.mConnectedOutputs.Num() > 0)
     {
         FLBBalancerIndexing* Indexing = GroupLeader->mNormalLoaderData.mIndexMapping.Find(Item.ItemClass);
@@ -402,7 +403,7 @@ bool ALBBuild_ModularLoadBalancer::SendToNormalBalancer(FInventoryItem Item) con
 
             if(!GroupLeader->mNormalLoaderData.mConnectedOutputs.IsValidIndex(Indexing->mNormalIndex))
                 Indexing->mNormalIndex = 0;
-                
+
             if(OverflowBalancer.IsValid())
             {
                 if(OverflowBalancer->GetBufferInventory())
@@ -427,7 +428,7 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
     {
         if(GetBufferInventory()->GetSizeLinear() != mSlotsInBuffer)
             SetupInventory();
-        
+
         if(IsLeader())
             if (IsFilterModule() && GetBufferInventory())
             {
@@ -478,7 +479,7 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
             GroupLeader->mNormalLoaderData.mConnectedInputs.AddUnique(this);
         }
     }
-    
+
     if (MyOutputConnection && IsOverflowModule())
     {
         if (GroupLeader->mNormalLoaderData.mOverflowBalancer.Num() > 0)
@@ -526,9 +527,9 @@ void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayRea
     {
         GroupLeader->mNormalLoaderData.RemoveBalancer(this);
         GroupLeader->mGroupModules.Remove(this);
-    
+
         if(IsFilterModule())
-            for (TSubclassOf<UFGItemDescriptor> Item : mFilteredItems) 
+            for (TSubclassOf<UFGItemDescriptor> Item : mFilteredItems)
                 GroupLeader->mNormalLoaderData.RemoveBalancer(this, Item);
 
         if (IsLeader() && GetGroupModules().Num() > 1)
@@ -575,7 +576,7 @@ void ALBBuild_ModularLoadBalancer::ApplyGroupModule()
         GroupLeader->mGroupModules.AddUnique(this);
         UpdateCache();
         if(IsFilterModule())
-            for (TSubclassOf<UFGItemDescriptor> Item : mFilteredItems) 
+            for (TSubclassOf<UFGItemDescriptor> Item : mFilteredItems)
                 GroupLeader->mNormalLoaderData.SetFilterItemForBalancer(this, Item);
         ForceNetUpdate();
     }
