@@ -59,12 +59,19 @@ void FLBBalancerData::RemoveBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSu
             mFilterMap[OldItem].mBalancer.Remove(Balancer);
         if(mFilterMap[OldItem].mBalancer.Num() == 0)
             mFilterMap.Remove(OldItem);
-
-        if(Balancer)
-        {
-            if(mConnectedOutputs.Contains(Balancer))
-                mConnectedOutputs.Remove(Balancer);
-        }
+    }
+    
+    if(Balancer)
+    {
+        if(mConnectedOutputs.Contains(Balancer))
+            mConnectedOutputs.Remove(Balancer);
+        
+        if(mConnectedInputs.Contains(Balancer))
+            mConnectedInputs.Remove(Balancer);
+        
+        if(Balancer->IsOverflowModule())
+            if(mOverflowBalancer.Contains(Balancer))
+                mOverflowBalancer.Remove(Balancer);
     }
 }
 
@@ -517,18 +524,21 @@ void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayRea
     // EndPlay is here a better use. We should do this better only if it's Destroyed on EndPlay (is also in no case to late to can be invalid)
     if (EndPlayReason == EEndPlayReason::Destroyed)
     {
-        if(IsFilterModule() && GroupLeader)
-        {
-            for (TSubclassOf<UFGItemDescriptor> Class : mFilteredItems) 
-                GroupLeader->mNormalLoaderData.RemoveBalancer(this, Class);
-        }
+        GroupLeader->mNormalLoaderData.RemoveBalancer(this);
+        GroupLeader->mGroupModules.Remove(this);
+    
+        if(IsFilterModule())
+            for (TSubclassOf<UFGItemDescriptor> Item : mFilteredItems) 
+                GroupLeader->mNormalLoaderData.RemoveBalancer(this, Item);
 
         if (IsLeader() && GetGroupModules().Num() > 1)
         {
             for (ALBBuild_ModularLoadBalancer* LoadBalancer : GetGroupModules())
             {
-                if (LoadBalancer != this)
+                if (LoadBalancer != this && !LoadBalancer->IsPendingKillOrUnreachable())
                 {
+                    LoadBalancer->mGroupModules = mGroupModules;
+                    LoadBalancer->mNormalLoaderData = mNormalLoaderData;
                     LoadBalancer->ApplyLeader();
                     break;
                 }

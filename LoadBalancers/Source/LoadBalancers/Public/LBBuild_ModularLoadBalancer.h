@@ -40,33 +40,21 @@ USTRUCT()
 struct LOADBALANCERS_API FLBBalancerIndexing
 {
 	GENERATED_BODY()
+	FORCEINLINE FLBBalancerIndexing(int32 InNormalIndex = -1, int32 InOverflowIndex = -1, int32 InFilterIndex = -1) :
+	  mNormalIndex(InNormalIndex),
+	  mOverflowIndex(InOverflowIndex),
+	  mFilterIndex(InFilterIndex) {}
 
-	FLBBalancerIndexing() = default;
-	
-	int32 mNormalIndex = -1;
-	int32 mOverflowIndex = -1;
-	int32 mFilterIndex = -1;
+	int32 mNormalIndex;
+	int32 mOverflowIndex;
+	int32 mFilterIndex;
 
 	// for reduce the save count
 	bool Serialize( FArchive& ar )
 	{
-		if(ar.IsLoading() && ar.ArIsSaveGame)
-		{
-			ar << mNormalIndex;
-			ar << mOverflowIndex;
-			ar << mFilterIndex;
-		}
-		else if(ar.ArIsSaveGame)
-		{
-			if(mNormalIndex != -1)
-				ar << mNormalIndex;
-		
-			if(mOverflowIndex != -1)
-				ar << mOverflowIndex;
-		
-			if(mFilterIndex != -1)
-				ar << mFilterIndex;
-		}
+		ar << mNormalIndex;
+		ar << mOverflowIndex;
+		ar << mFilterIndex;
 		
 		return true;
 	}
@@ -111,7 +99,7 @@ struct LOADBALANCERS_API FLBBalancerData
 
 	void SetFilterItemForBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> Item);
 
-	void RemoveBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> OldItem);
+	void RemoveBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> OldItem = nullptr);
 
 	bool HasItemFilterBalancer(TSubclassOf<UFGItemDescriptor> Item) const;
 };
