@@ -24,7 +24,7 @@ struct FDCE_ConfigurationStruct_GlobalSection {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite)
-    int32 GlobalSetToInt;
+    int32 GlobalSetToIntOld;
 };
 
 USTRUCT(BlueprintType)
@@ -51,6 +51,9 @@ public:
 
     UPROPERTY(BlueprintReadWrite)
     FDCE_ConfigurationStruct_AddSection AddSection;
+
+    UPROPERTY(BlueprintReadWrite)
+    int32 GlobalSetToInt;
 
     UPROPERTY(BlueprintReadWrite)
     bool IgnorePowerPolesBool;

@@ -179,12 +179,6 @@ void ACL_CounterLimiter::UpdateAttachedSigns()
 					{
 						TMap<FString, int32> iconMap = out_signData.IconElementData;
 						iconMap["Icon"] = iconInt;
-						//TArray<FString> iconKeys;
-						//iconMap.GetKeys(iconKeys);
-						//for (int i = 0; i < iconMap.Num(); i++)
-						//{
-						//	iconMap[iconKeys[i]] = iconInt;
-						//}
 						out_signData.IconElementData = iconMap;
 					}
 				}

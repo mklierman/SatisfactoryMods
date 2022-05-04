@@ -13,6 +13,7 @@
 #include "WheeledVehicles/FGWheeledVehicleMovementComponent4W.h"
 #include "FGFactoryConnectionComponent.h"
 #include "WheeledVehicleMovementComponent.h"
+#include "Buildables/FGBuildableConveyorBase.h"
 #include "FGResourceSinkSettings.h"
 #include "Equipment/FGResourceScanner.h"
 #include "Buildables/FGBuildableWidgetSign.h"
@@ -26,6 +27,7 @@
 #include "Equipment/FGBuildGunBuild.h"
 #include "Hologram/FGConveyorLiftHologram.h"
 #include "Equipment/FGBuildGun.h"
+#include "Hologram/FGPipelineAttachmentHologram.h"
 #include "FGProductionIndicatorInstanceComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include <Runtime/Engine/Classes/Components/ProxyInstancedStaticMeshComponent.h>
@@ -33,6 +35,8 @@
 #include "Resources/FGItemDescriptor.h"
 #include "Buildables/FGBuildablePipeline.h"
 #include "Hologram/FGConveyorAttachmentHologram.h"
+#include "Misc/AssertionMacros.h"
+#include "FGGameState.h"
 #include "FGVehicleWheel.h"
 
 DEFINE_LOG_CATEGORY(CDO_Log);
@@ -43,38 +47,113 @@ DEFINE_LOG_CATEGORY(CDO_Log);
 //	return false;
 //}
 
+
+// simple signature scanning helper
+//char* scan_signature(char* pattern, char* mask, char* begin, size_t size)
+//{
+//	MEMORY_BASIC_INFORMATION memInfo;
+//	for (char* off = begin; off < (begin + size); off += memInfo.RegionSize)
+//	{
+//		if (!VirtualQuery(off, &memInfo, sizeof(memInfo))) return nullptr;
+//		if (memInfo.State != MEM_COMMIT || memInfo.Protect == PAGE_NOACCESS) continue;
+//		size_t patternSize = strlen(mask);
+//		for (int i = 0; i < (memInfo.RegionSize - patternSize); i++) {
+//			bool valid = true;
+//			for (int j = 0; j < patternSize; j++) {
+//				if (mask[j] == 'x') {
+//					char* ptr = begin + i + j;
+//					if (*ptr != pattern[j]) {
+//						valid = false;
+//						break;
+//					}
+//				}
+//			}
+//			if (valid)
+//				return begin + i;
+//		}
+//	}
+//	return nullptr;
+//}
+//void patch_only_connect_to_conveyors() {
+//	char* moduleBase = (char*)GetModuleHandleW(L"FactoryGame-FactoryGame-Win64-Shipping.dll");
+//	// FactoryGame-FactoryGame-Win64-Shipping.dll+03ca706
+//	char* addr = scan_signature("\x74\x00\xe8\x00\x00\x00\x00\x48\x8b\x4b\x00\x48\x8b\xd0\xff\x15\x00\x00\x00\x00\x84\xc0\x75\x00\x48\x8d\x4c\x24", "x?x????xxx?xxxxx????xxx?xxxx", moduleBase, INT_MAX);
+//	DWORD oldProtection;
+//	VirtualProtect(addr, 2, PAGE_EXECUTE_READWRITE, &oldProtection);
+//	// Replace "je 0x18" with "je 0x2b" to bypass the check
+//	//*addr = 0x74;
+//	*addr = (char)(unsigned char)0xEB;
+//	*(addr + 1) = 0x27;
+//	FlushInstructionCache(GetCurrentProcess(), addr, 2);
+//	DWORD dummy;
+//	VirtualProtect(addr, 2, oldProtection, &dummy);
+//}
+
 void FCDOModule::StartupModule() {
-
-//#if !WITH_EDITOR
-
+	//verifyf(true == true, "");
+		//SUBSCRIBE_METHOD(FDebug::AssertFailed, [](auto& scope, FDebug self, const ANSICHAR* Expr, const ANSICHAR* File, int32 Line, const TCHAR* Format, ...)
+		//	{
+		//		scope.Cancel();
+		//	});
+		//patch_only_connect_to_conveyors();
 	//void AFGHologram::AddConstructDisqualifier(TSubclassOf<  UFGConstructDisqualifier > disqualifier) { }
 	//SUBSCRIBE_METHOD(AFGHologram::AddConstructDisqualifier, [](auto scope, AFGHologram* self, TSubclassOf<  UFGConstructDisqualifier > disqualifier)
 	//	{
 	//		scope.Cancel();
 	//	});
 	//virtual void ConfigureComponents(class AFGBuildable* inBuildable) const override;
-//	AFGConveyorAttachmentHologram* cah = GetMutableDefault<AFGConveyorAttachmentHologram>();
-//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::ConfigureComponents, cah, [](auto scope, const AFGConveyorAttachmentHologram* self, class AFGBuildable* inBuildable)
-//			{
-//			scope.Cancel();
-//			});
-//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CheckValidPlacement, cah, [](auto scope, AFGConveyorAttachmentHologram* self)
-//		{
-//			self->ResetConstructDisqualifiers();
-//			scope.Cancel();
-//		});
-//
-//	SUBSCRIBE_METHOD(UFGFactoryConnectionComponent::CanSnapTo, [](auto scope, const UFGFactoryConnectionComponent* self, UFGFactoryConnectionComponent* otherConnection)
-//	{
-//			self->ResetConstructDisqualifiers();
-//			scope.Override(true);
-//	});
-//	SUBSCRIBE_METHOD(UFGFactoryConnectionComponent::CanConnectTo, [](auto scope, const UFGFactoryConnectionComponent* self, UFGFactoryConnectionComponent* otherConnection)
-//		{
-//			self->ResetConstructDisqualifiers();
-//			scope.Override(true);
-//		});
-//#endif
+#if !WITH_EDITOR
+	AFGConveyorAttachmentHologram* cah = GetMutableDefault<AFGConveyorAttachmentHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::ConfigureComponents, cah, [](auto& scope, const AFGConveyorAttachmentHologram* self, AFGBuildable* inBuildable)
+			{
+			if (self->mSnappedConection)
+			{
+				auto snappedConveyor = Cast<AFGBuildableConveyorBase>(self->mSnappedConection->GetOwner());
+				if (snappedConveyor)
+				{
+					return;
+				}
+				AFGConveyorAttachmentHologram* hg = const_cast<AFGConveyorAttachmentHologram*>(self);
+
+				hg->mConnections.Empty();
+				hg->mSnappingConnectionIndex = -1;
+				hg->mSnappedConection->ClearConnection();
+				hg->mSnappedConection = nullptr;
+				UE_LOG(CDO_Log, Display, TEXT("hg->mSnappedConection = nullptr;"));
+			}
+			//snappedConn = nullptr;
+			//auto snapped = self->mSnappedConveyor;
+			////UE_LOG(CDO_Log, Display, TEXT("snapped->GetName(): %s"), snapped->GetName());
+			//	//auto snappedCB = Cast<AFGBuildableConveyorBase>(snapped);
+			//if (snapped)
+			//{
+			//	return;
+			//}
+				//scope.Cancel();
+			});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CheckValidPlacement, cah, [](auto scope, AFGConveyorAttachmentHologram* self)
+		{
+			self->ResetConstructDisqualifiers();
+			scope.Cancel();
+		});
+
+	AFGPipelineAttachmentHologram* pah = GetMutableDefault<AFGPipelineAttachmentHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineAttachmentHologram::CheckValidPlacement, pah, [](auto scope, AFGPipelineAttachmentHologram* self)
+		{
+			self->ResetConstructDisqualifiers();
+			scope.Cancel();
+		});
+	//SUBSCRIBE_METHOD(UFGFactoryConnectionComponent::CanSnapTo, [](auto scope, const UFGFactoryConnectionComponent* self, UFGFactoryConnectionComponent* otherConnection)
+	//{
+	//		//self->ResetConstructDisqualifiers();
+	//		scope.Override(true);
+	//});
+	//SUBSCRIBE_METHOD(UFGFactoryConnectionComponent::CanConnectTo, [](auto scope, const UFGFactoryConnectionComponent* self, UFGFactoryConnectionComponent* otherConnection)
+	//	{
+	//		//self->ResetConstructDisqualifiers();
+	//		scope.Override(true);
+	//	});
+#endif
 		//	{
 		//		self->mFineTuneRotationStep = 1;
 		//	});
