@@ -438,7 +438,7 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
                 }
             }
 
-        if (MyOutputConnection)
+        if (MyOutputConnection || MyInputConnection)
         {
             mTimer += dt;
             if (mTimer >= 1.f)
