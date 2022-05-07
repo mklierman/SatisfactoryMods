@@ -523,16 +523,18 @@ void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayRea
 {
     // Apply new Leader to the group if the group has more as 1 module (single loader)
     // EndPlay is here a better use. We should do this better only if it's Destroyed on EndPlay (is also in no case to late to can be invalid)
-    if (EndPlayReason == EEndPlayReason::Destroyed)
+    if (EndPlayReason == EEndPlayReason::Destroyed && GetGroupModules().Num() > 1)
     {
         GroupLeader->mNormalLoaderData.RemoveBalancer(this);
         GroupLeader->mGroupModules.Remove(this);
 
-        if(IsFilterModule())
+        if (IsFilterModule())
             for (TSubclassOf<UFGItemDescriptor> Item : mFilteredItems)
-                GroupLeader->mNormalLoaderData.RemoveBalancer(this, Item);
+                if (Item)
+                    GroupLeader->mNormalLoaderData.RemoveBalancer(this, Item);
 
-        if (IsLeader() && GetGroupModules().Num() > 1)
+
+        if (IsLeader())
         {
             for (ALBBuild_ModularLoadBalancer* LoadBalancer : GetGroupModules())
             {
