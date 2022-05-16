@@ -36,7 +36,12 @@
 #include "Buildables/FGBuildablePipeline.h"
 #include "Hologram/FGConveyorAttachmentHologram.h"
 #include "Misc/AssertionMacros.h"
+#include "Buildables/FGBuildableConveyorBelt.h"
 #include "FGGameState.h"
+#include "FGSplineMeshGenerationLibrary.h"
+#include "Components/SplineComponent.h"
+#include "Components/SplineMeshComponent.h"
+#include "FGInstancedSplineMeshComponent.h"
 #include "FGVehicleWheel.h"
 
 DEFINE_LOG_CATEGORY(CDO_Log);
@@ -102,47 +107,76 @@ void FCDOModule::StartupModule() {
 	//		scope.Cancel();
 	//	});
 	//virtual void ConfigureComponents(class AFGBuildable* inBuildable) const override;
-#if !WITH_EDITOR
-	AFGConveyorAttachmentHologram* cah = GetMutableDefault<AFGConveyorAttachmentHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::ConfigureComponents, cah, [](auto& scope, const AFGConveyorAttachmentHologram* self, AFGBuildable* inBuildable)
-			{
-			if (self->mSnappedConection)
-			{
-				auto snappedConveyor = Cast<AFGBuildableConveyorBase>(self->mSnappedConection->GetOwner());
-				if (snappedConveyor)
-				{
-					return;
-				}
-				AFGConveyorAttachmentHologram* hg = const_cast<AFGConveyorAttachmentHologram*>(self);
-
-				hg->mConnections.Empty();
-				hg->mSnappingConnectionIndex = -1;
-				hg->mSnappedConection->ClearConnection();
-				hg->mSnappedConection = nullptr;
-				UE_LOG(CDO_Log, Display, TEXT("hg->mSnappedConection = nullptr;"));
-			}
-			//snappedConn = nullptr;
-			//auto snapped = self->mSnappedConveyor;
-			////UE_LOG(CDO_Log, Display, TEXT("snapped->GetName(): %s"), snapped->GetName());
-			//	//auto snappedCB = Cast<AFGBuildableConveyorBase>(snapped);
-			//if (snapped)
-			//{
-			//	return;
-			//}
-				//scope.Cancel();
-			});
-	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CheckValidPlacement, cah, [](auto scope, AFGConveyorAttachmentHologram* self)
+//#if !WITH_EDITOR
+// 	static void BuildSplineMeshesInstanced(
+	//class USplineComponent* spline,
+	//	UStaticMesh* mesh,
+	//	float meshLength,
+	//	UFGInstancedSplineMeshComponent* splineInstances );
+	SUBSCRIBE_METHOD(UFGSplineMeshGenerationLibrary::BuildSplineMeshesInstanced, [](auto& scope, USplineComponent* spline,
+		UStaticMesh* mesh,
+		float meshLength,
+		UFGInstancedSplineMeshComponent* splineInstances)
 		{
-			self->ResetConstructDisqualifiers();
-			scope.Cancel();
+				FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
 		});
 
-	AFGPipelineAttachmentHologram* pah = GetMutableDefault<AFGPipelineAttachmentHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineAttachmentHologram::CheckValidPlacement, pah, [](auto scope, AFGPipelineAttachmentHologram* self)
-		{
-			self->ResetConstructDisqualifiers();
-			scope.Cancel();
-		});
+//#endif
+	//AFGBuildableConveyorBelt* cah = GetMutableDefault<AFGBuildableConveyorBelt>();
+	////virtual bool VerifyDefaults( FString& out_message )
+	////SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableConveyorBelt::VerifyDefaults, cah, [](auto& scope, AFGBuildableConveyorBelt* self, FString& out_message)
+	////	{
+	////		UE_LOG(CDO_Log, Display, TEXT("VerifyDefaults: %s"), scope.Result.ToString());
+	////	});
+
+	//AFGBuildable* bd = GetMutableDefault<AFGBuildable>();
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::ShouldSkipBuildEffect, bd, [](auto& scope, AFGBuildable* self)
+	//	{
+	//		scope.Override(true);
+	//	});
+
+	//UStaticMesh* GetSplineMesh() const { return mMesh; }
+
+	//AFGConveyorAttachmentHologram* cah = GetMutableDefault<AFGConveyorAttachmentHologram>();
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::ConfigureComponents, cah, [](auto& scope, const AFGConveyorAttachmentHologram* self, AFGBuildable* inBuildable)
+	//		{
+	//		if (self->mSnappedConection)
+	//		{
+	//			auto snappedConveyor = Cast<AFGBuildableConveyorBase>(self->mSnappedConection->GetOwner());
+	//			if (snappedConveyor)
+	//			{
+	//				return;
+	//			}
+	//			AFGConveyorAttachmentHologram* hg = const_cast<AFGConveyorAttachmentHologram*>(self);
+
+	//			hg->mConnections.Empty();
+	//			hg->mSnappingConnectionIndex = -1;
+	//			hg->mSnappedConection->ClearConnection();
+	//			hg->mSnappedConection = nullptr;
+	//			UE_LOG(CDO_Log, Display, TEXT("hg->mSnappedConection = nullptr;"));
+	//		}
+	//		//snappedConn = nullptr;
+	//		//auto snapped = self->mSnappedConveyor;
+	//		////UE_LOG(CDO_Log, Display, TEXT("snapped->GetName(): %s"), snapped->GetName());
+	//		//	//auto snappedCB = Cast<AFGBuildableConveyorBase>(snapped);
+	//		//if (snapped)
+	//		//{
+	//		//	return;
+	//		//}
+	//			//scope.Cancel();
+	//		});
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CheckValidPlacement, cah, [](auto scope, AFGConveyorAttachmentHologram* self)
+	//	{
+	//		self->ResetConstructDisqualifiers();
+	//		scope.Cancel();
+	//	});
+
+	//AFGPipelineAttachmentHologram* pah = GetMutableDefault<AFGPipelineAttachmentHologram>();
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineAttachmentHologram::CheckValidPlacement, pah, [](auto scope, AFGPipelineAttachmentHologram* self)
+	//	{
+	//		self->ResetConstructDisqualifiers();
+	//		scope.Cancel();
+	//	});
 	//SUBSCRIBE_METHOD(UFGFactoryConnectionComponent::CanSnapTo, [](auto scope, const UFGFactoryConnectionComponent* self, UFGFactoryConnectionComponent* otherConnection)
 	//{
 	//		//self->ResetConstructDisqualifiers();
@@ -153,7 +187,7 @@ void FCDOModule::StartupModule() {
 	//		//self->ResetConstructDisqualifiers();
 	//		scope.Override(true);
 	//	});
-#endif
+//#endif
 		//	{
 		//		self->mFineTuneRotationStep = 1;
 		//	});

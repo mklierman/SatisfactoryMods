@@ -10,6 +10,7 @@
 
 DEFINE_LOG_CATEGORY(LoadBalancers_Log);
 DEFINE_LOG_CATEGORY(LogGame);
+DEFINE_LOG_CATEGORY(LogBuilding);
 
 void FLBBalancerData::GetInputBalancers(TArray<ALBBuild_ModularLoadBalancer*>& Out)
 {

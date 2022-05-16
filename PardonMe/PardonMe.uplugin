@@ -1,17 +1,33 @@
 {
-	"FileVersion": 3,
-	"Version": 1,
-	"VersionName": "1.0",
-	"FriendlyName": "PardonMe",
-	"Description": "",
-	"Category": "Other",
-	"CreatedBy": "SirDigby",
-	"CreatedByURL": "",
-	"DocsURL": "",
-	"MarketplaceURL": "",
-	"SupportURL": "",
-	"CanContainContent": true,
-	"IsBetaVersion": false,
-	"IsExperimentalVersion": false,
-	"Installed": false
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0.0",
+  "SemVersion": "1.0.0",
+  "FriendlyName": "PardonMe",
+  "Description": "",
+  "Category": "Modding",
+  "CreatedBy": "SirDigby",
+  "CreatedByURL": "",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": false,
+  "Plugins": 
+		[
+			{
+				"Name": "SML",
+				"SemVersion": "^3.3.0",
+				"Enabled": true
+			}
+		],
+  "Modules": [
+    {
+      "Name": "PardonMe",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
 }

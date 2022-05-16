@@ -14,11 +14,21 @@
 #include "Configuration/ConfigManager.h"
 #include "Engine/Engine.h"
 #include "Configuration/Properties/ConfigPropertySection.h"
+#include "FGGameMode.h"
 
 DEFINE_LOG_CATEGORY(HoverPackPoleRange_Log);
 
 void FHoverPackPoleRangeModule::StartupModule() {
 #if !WITH_EDITOR
+	AFGGameMode* LocalGameMode = GetMutableDefault<AFGGameMode>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, [=](auto& scope, AFGGameMode* gm,
+		APlayerController* pc)
+		{
+			if (gm->HasAuthority() && !gm->IsMainMenuGameMode())
+			{
+				SetConfigValues();
+			}
+		});
 	//SetConfigValues();
 	//	AFGHoverPack* CDOHoverPack = GetMutableDefault<AFGHoverPack>();
 
@@ -52,28 +62,25 @@ void FHoverPackPoleRangeModule::StartupModule() {
 			auto HoverPack = Cast<AFGHoverPack>(other->GetOwner());
 			if (HoverPack)
 			{
-				auto config = FHPPR_ConfigStruct::GetActiveConfig();
-
 				FVector newConnectionLocation = self->GetOwner()->GetActorLocation();
 				FVector currentConnectionLocation = HoverPack->GetCurrentConnectionLocation();
 				FVector currentLocation = HoverPack->GetActorLocation();
-
 
 				float distanceToCurrentConnection = HoverPack->GetDistanceFromCurrentConnection();
 				float distanceToNewConnection = FVector::Distance(newConnectionLocation, currentConnectionLocation);
 
 				float currentRange = HoverPack->mPowerConnectionSearchRadius;
-				float newRange = config.Mk1 * 100;
+				float newRange = mMk1Range * 100;
 
 				FString newConnectionClass = self->GetOwner()->GetClass()->GetName();
 				UE_LOG(HoverPackPoleRange_Log, Display, TEXT("newConnectionClass: %s"), *newConnectionClass);
 				if (newConnectionClass == "Build_PowerPoleMk2_C" || newConnectionClass == "Build_PowerPoleWall_Mk2_C" || newConnectionClass == "Build_PowerPoleWallDouble_Mk2_C")
 				{
-					newRange = config.Mk2 * 100;
+					newRange = mMk2Range * 100;
 				}
 				else if (newConnectionClass == "Build_PowerPoleMk3_C" || newConnectionClass == "Build_PowerPoleWall_Mk3_C" || newConnectionClass == "Build_PowerPoleWallDouble_Mk3_C")
 				{
-					newRange = config.Mk3 * 100;
+					newRange = mMk3Range * 100;
 				}
 
 				float remainingRange = currentRange - distanceToCurrentConnection;
@@ -109,6 +116,7 @@ void FHoverPackPoleRangeModule::StartupModule() {
 
 void FHoverPackPoleRangeModule::SetConfigValues()
 {
+	UE_LOG(HoverPackPoleRange_Log, Display, TEXT("SetConfigValues"));
 	auto config = FHPPR_ConfigStruct::GetActiveConfig();
 	mMk1Range = config.Mk1;
 	mMk2Range = config.Mk2;
@@ -116,26 +124,19 @@ void FHoverPackPoleRangeModule::SetConfigValues()
 	mRailRange = config.Rails;
 	mElseRange = config.EverythingElse;
 
-	//ConstructorHelpers::FClassFinder<UModConfiguration>ModConfigClassFinder(TEXT("/HoverPackPoleRange/HPPR_Config.HPPR_Config'"));
 
-	//TSubclassOf<UModConfiguration> ModConfig = ModConfigClassFinder.Class;
 	////auto config = Cast<UModConfiguration>(ModConfig);
 
 
-	//	//UConfigManager* ConfigManager = GEngine->GetEngineSubsystem<UConfigManager>();
-	//	//FConfigId ConfigId{ "HoverPackPoleRange", "" };
-	//	//auto Config = ConfigManager->GetConfigurationById(ConfigId);
-	//	auto ConfigProperty = URuntimeBlueprintFunctionLibrary::GetModConfigurationPropertyByClass(ModConfig);
-	//	auto CPSection = Cast<UConfigPropertySection>(ConfigProperty);
-
-	//	//auto cSection = ConfigManager->GetConfigurationRootSection(ConfigId);
-	//	auto prop = CPSection->SectionProperties["Mk1"];
-
-	//	FScriptDelegate Delegate;
-	//	Delegate.BindUFunction(prop, FName("Mk1Updated"));
-
-	//	FOnPropertyValueChanged propChangedDelegate;
-	//	propChangedDelegate.Add(Delegate);
+	UConfigManager* ConfigManager = GEngine->GetEngineSubsystem<UConfigManager>();
+	FConfigId ConfigId{ "HoverPackPoleRange", "" };
+	auto Config = ConfigManager->GetConfigurationById(ConfigId);
+	auto ConfigProperty = URuntimeBlueprintFunctionLibrary::GetModConfigurationPropertyByClass(Config);
+	auto CPSection = Cast<UConfigPropertySection>(ConfigProperty);
+	auto prop = CPSection->SectionProperties["Mk1"];
+	FScriptDelegate Delegate;
+	Delegate.BindUFunction(this, "Mk1Updated");
+	prop->OnPropertyValueChanged.Add(Delegate);
 }
 
 void FHoverPackPoleRangeModule::Mk1Updated()
