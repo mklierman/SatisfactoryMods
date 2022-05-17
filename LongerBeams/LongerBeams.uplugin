@@ -1,8 +1,8 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.1.1",
-  "SemVersion": "1.1.1",
+  "VersionName": "1.1.5",
+  "SemVersion": "1.1.5",
   "FriendlyName": "Longer Beams",
   "Description": "Lets you build beams even longer",
   "Category": "Modding",
@@ -18,7 +18,7 @@
   "Plugins": [
     {
       "Name": "SML",
-      "SemVersion": "^3.3.0",
+      "SemVersion": "^3.3.1",
       "Enabled": true
     }
   ]

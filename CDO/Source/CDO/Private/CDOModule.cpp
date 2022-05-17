@@ -113,13 +113,7 @@ void FCDOModule::StartupModule() {
 	//	UStaticMesh* mesh,
 	//	float meshLength,
 	//	UFGInstancedSplineMeshComponent* splineInstances );
-	SUBSCRIBE_METHOD(UFGSplineMeshGenerationLibrary::BuildSplineMeshesInstanced, [](auto& scope, USplineComponent* spline,
-		UStaticMesh* mesh,
-		float meshLength,
-		UFGInstancedSplineMeshComponent* splineInstances)
-		{
-				FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
-		});
+
 
 //#endif
 	//AFGBuildableConveyorBelt* cah = GetMutableDefault<AFGBuildableConveyorBelt>();
