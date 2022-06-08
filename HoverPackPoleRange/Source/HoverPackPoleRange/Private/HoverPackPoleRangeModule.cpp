@@ -51,6 +51,8 @@ void FHoverPackPoleRangeModule::StartupModule() {
 			if (mAddedConnections.Contains(self) && mAddedConnections[self] == true)
 			{
 				//Loggit("OnPowerConnectionLocationUpdated");
+				//FString CurrentRailroadTrack = self->mCurrentRailroadTrack->GetName();
+				//Loggit("mCurrentRailroadTrack: " + CurrentRailroadTrack);
 				return;
 			}
 			scope.Cancel();
@@ -69,7 +71,7 @@ void FHoverPackPoleRangeModule::StartupModule() {
 
 	SUBSCRIBE_METHOD(AFGHoverPack::DisconnectFromCurrentPowerConnection, [=](auto& scope, AFGHoverPack* self)
 		{
-			if (mAllowRemove.Contains(self) && mAllowRemove[self] == true)
+			if ((mAllowRemove.Contains(self) && mAllowRemove[self] == true) || self->mPowerConnectionSearchTimer <= 0)
 			{
 				return;
 			}
@@ -80,7 +82,8 @@ void FHoverPackPoleRangeModule::StartupModule() {
 			{
 				return;
 			}
-
+			//FString newConnectionClass = self->mCurrentPowerConnection->GetOwner()->GetClass()->GetName();
+			//Loggit("Canceling DisconnectFromCurrentPowerConnection. Current mCurrentPowerConnection: " + newConnectionClass);
 			scope.Cancel();
 		});
 
@@ -89,7 +92,14 @@ void FHoverPackPoleRangeModule::StartupModule() {
 			auto HoverPack = Cast<AFGHoverPack>(other->GetOwner());
 			if (HoverPack)
 			{
+				bool isRailConnection = false;
+				FString newConnectionClass = self->GetOwner()->GetClass()->GetName();
 				FVector newConnectionLocation = self->GetOwner()->GetActorLocation();
+				if (newConnectionClass == "BP_RailroadSubsystem_C")
+				{
+					isRailConnection = true;
+
+				}
 				FVector currentConnectionLocation = HoverPack->GetCurrentConnectionLocation();
 				FVector currentLocation = HoverPack->GetActorLocation();
 
@@ -97,7 +107,7 @@ void FHoverPackPoleRangeModule::StartupModule() {
 				float distanceToNewConnection = FVector::Distance(newConnectionLocation, currentConnectionLocation);
 				float currentRange = HoverPack->mPowerConnectionSearchRadius;
 				float newRange = mHPSubsystem->mMk1Range * 100;
-				FString newConnectionClass = self->GetOwner()->GetClass()->GetName();
+				//FString newConnectionClass = self->GetOwner()->GetClass()->GetName();
 				//Loggit("newConnectionClass: " + newConnectionClass);
 
 				if (newConnectionClass == "Build_PowerPoleMk1_C" || newConnectionClass == "Build_PowerPoleWall_Mk1_C" || newConnectionClass == "Build_PowerPoleWallDouble_Mk1_C")
@@ -119,6 +129,7 @@ void FHoverPackPoleRangeModule::StartupModule() {
 				{
 					//Loggit("Rail");
 					newRange = mHPSubsystem->mRailRange * 100;
+					isRailConnection = true;
 				}
 				else
 				{
@@ -137,17 +148,16 @@ void FHoverPackPoleRangeModule::StartupModule() {
 					mAllowRemove.Add(HoverPack, false);
 					scope.Cancel();
 				}
-				else //if (currentRange <= newRange)
+				else //if (remainingRange <= newRange)
 				{
 					mAllowRemove.Add(HoverPack, true);
 					//Loggit("currentRange <= newRange");
 					//self->RemoveHiddenConnection(other);
 					//other->RemoveHiddenConnection(self);
-					HoverPack->DisconnectFromCurrentPowerConnection();
-					//if (isRail)
-					//{
-					//	HoverPack->SetCurrentRailroadTrack(nullptr);
-					//}
+					if (!isRailConnection)
+					{
+						HoverPack->DisconnectFromCurrentPowerConnection();
+					}
 					mAddedConnections.Add(HoverPack, true);
 					HoverPack->mPowerConnectionSearchRadius = newRange;
 					return;
