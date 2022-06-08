@@ -2,6 +2,7 @@
 #include "CL_CounterLimiter.h"
 #include "FGFactoryConnectionComponent.h"
 #include "FGInventoryLibrary.h"
+#include "CL_RCO.h"
 #include "FGIconLibrary.h"
 
 //DEFINE_LOG_CATEGORY(CounterLimiter_Log);
@@ -9,16 +10,14 @@
 void ACL_CounterLimiter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(ACL_CounterLimiter, inputConnection);
-	DOREPLIFETIME(ACL_CounterLimiter, outputConnection);
-	DOREPLIFETIME(ACL_CounterLimiter, OutputStageBuffer);
 	DOREPLIFETIME(ACL_CounterLimiter, DisplayIPM);
-	DOREPLIFETIME(ACL_CounterLimiter, InputBuffer);
+	DOREPLIFETIME(ACL_CounterLimiter, mPerMinuteLimitRate);
+	DOREPLIFETIME(ACL_CounterLimiter, OnUpdateDisplay);
 }
 
 ACL_CounterLimiter::ACL_CounterLimiter()
 {
-	//this->GetBufferInventory()->Resize(1);
+
 }
 
 
@@ -30,8 +29,6 @@ void ACL_CounterLimiter::BeginPlay()
 	{
 		this->mInputs.AddUnique(inputConnection);
 		this->mOutputs.AddUnique(outputConnection);
-		//this->GetBufferInventory()->Resize(1);
-		//this->mBufferInventory->Resize(1);
 		GetWorld()->GetTimerManager().SetTimer(ipmTimerHandle, this, &ACL_CounterLimiter::CalculateIPM, 60.f, true, 60.f);
 		SetThroughputLimit(mPerMinuteLimitRate);
 	}
@@ -118,12 +115,11 @@ bool ACL_CounterLimiter::Factory_GrabOutput_Implementation(UFGFactoryConnectionC
 
 float ACL_CounterLimiter::GetSecondsPerItem()
 {
-	return 1.0f/(mPerMinuteLimitRate/60.0f);
-}
-
-float ACL_CounterLimiter::GetSecondsSinceLastInput()
-{
-	return this->GetGameTimeSinceCreation() - mGameSecondsAtLastInput;
+	//if (mPerMinuteLimitRate == 0.f)
+	//{
+	//	return 0.f;
+	//}
+	return 1.0f / (mPerMinuteLimitRate / 60.0f);
 }
 
 void ACL_CounterLimiter::UpdateAttachedSigns()
@@ -194,33 +190,66 @@ void ACL_CounterLimiter::UpdateAttachedSigns()
 	}
 }
 
-int32 ACL_CounterLimiter::GetCurrentPerMinuteThroughput()
-{
-	return mCurrentPerMinuteThroughput;
-}
 
 void ACL_CounterLimiter::SetThroughputLimit(float itemsPerMinute)
 {
-	mPerMinuteLimitRate = itemsPerMinute;
+	if (HasAuthority())
+	{
+		mPerMinuteLimitRate = itemsPerMinute;
+		ForceNetUpdate();
+		GetWorld()->GetTimerManager().SetTimer(ThroughputTimerHandle, this, &ACL_CounterLimiter::StageItemForOutput, GetSecondsPerItem(), true);
+	}
+	else
+	{
+		mPerMinuteLimitRate = itemsPerMinute;
+		if (UCL_RCO* RCO = UCL_RCO::Get(GetWorld()))
+		{
+			RCO->Server_SetLimiterRate(this, itemsPerMinute);
+		}
+	}
+}
 
-	GetWorld()->GetTimerManager().SetTimer(ThroughputTimerHandle, this, &ACL_CounterLimiter::StageItemForOutput, GetSecondsPerItem(), true);
+float ACL_CounterLimiter::GetThroughputLimit()
+{
+	ForceNetUpdate();
+	return mPerMinuteLimitRate;
 }
 
 void ACL_CounterLimiter::CalculateIPM()
 {
-	//UE_LOG(CounterLimiter_Log, Display, TEXT("CalculateIPM - ItemCount: %f"), (float)ItemCount);
-	if (ItemCount > 0)
+	if (HasAuthority())
 	{
-		DisplayIPM = ((float)ItemCount / 60.f) * 60.f;
-		ItemCount = 0;
+		ForceNetUpdate();
+		UE_LOG(CounterLimiter_Log, Display, TEXT("CalculateIPM - ItemCount: %f"), (float)ItemCount);
+		if (ItemCount > 0)
+		{
+			DisplayIPM = ((float)ItemCount / 60.f) * 60.f;
+			ItemCount = 0;
+		}
+		else
+		{
+			DisplayIPM = 0.f;
+		}
+		//UE_LOG(CounterLimiter_Log, Display, TEXT("CalculateIPM - DisplayIPM: %f"), DisplayIPM);
+		ForceNetUpdate();
+		OnUpdateDisplay.Broadcast(DisplayIPM);
+		UpdateAttachedSigns();
+		mItemCounts.Reset();
 	}
 	else
 	{
-		DisplayIPM = 0.f;
+		if (UCL_RCO* RCO = UCL_RCO::Get(GetWorld()))
+		{
+			//UE_LOG(CounterLimiter_Log, Display, TEXT("Got RCO"));
+			RCO->Server_CalculateIPM(this);
+		}
 	}
+}
+
+void ACL_CounterLimiter::OnRep_SetDisplayIPM()
+{
+	ForceNetUpdate();
 	OnUpdateDisplay.Broadcast(DisplayIPM);
-	UpdateAttachedSigns();
-	mItemCounts.Reset();
 }
 
 void ACL_CounterLimiter::StageItemForOutput()

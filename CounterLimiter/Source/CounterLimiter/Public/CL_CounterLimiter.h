@@ -29,59 +29,59 @@ public:
 	virtual bool Factory_GrabOutput_Implementation(class UFGFactoryConnectionComponent* connection, FInventoryItem& out_item, float& out_OffsetBeyond, TSubclassOf< UFGItemDescriptor > type) override;
 
 	float GetSecondsPerItem();
-	float GetSecondsSinceLastInput();
 
 	//UFUNCTION(BlueprintImplementableEvent)
 	void UpdateAttachedSigns();
 
 
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Replicated)
 	FUpdateDisplay OnUpdateDisplay;
 
 	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
-	float mPerMinuteLimitRate;
+	float mPerMinuteLimitRate = -1.f;
 
-	UPROPERTY(BlueprintReadWrite, Replicated)
+	UPROPERTY(BlueprintReadWrite, SaveGame)
+	bool mIsFirstLoad = true;
+
+	UPROPERTY(BlueprintReadWrite)
 	UFGFactoryConnectionComponent* inputConnection;
 
-	UPROPERTY(BlueprintReadWrite, Replicated)
+	UPROPERTY(BlueprintReadWrite)
 	UFGFactoryConnectionComponent* outputConnection;
 
-	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
+	UPROPERTY(BlueprintReadWrite, SaveGame)
 	TArray<AFGBuildableWidgetSign*> mAttachedSigns;
 
 	TMap<TSubclassOf<class UFGItemDescriptor>, int32> mItemCounts;
 
-	UFUNCTION(BlueprintPure)
-	int32 GetCurrentPerMinuteThroughput();
-
-	FCriticalSection mOutputLock;
-
 	int32 ItemCount;
 
-	UPROPERTY(BlueprintReadWrite, Replicated)
+	UPROPERTY(BlueprintReadWrite)
 	UFGInventoryComponent* OutputStageBuffer;
 
-	UPROPERTY(BlueprintReadWrite, Replicated)
-		UFGInventoryComponent* InputBuffer;
+	UPROPERTY(BlueprintReadWrite)
+	UFGInventoryComponent* InputBuffer;
 
-	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
-	float DisplayIPM = -1;
+	UPROPERTY(BlueprintReadWrite, SaveGame, ReplicatedUsing = OnRep_SetDisplayIPM)
+	float DisplayIPM = -1.f;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void OnRep_SetDisplayIPM();
 
 	FTimerHandle ipmTimerHandle;
 	FTimerHandle ThroughputTimerHandle;
 
 	UFUNCTION(BlueprintCallable)
-		void SetThroughputLimit(float itemsPerMinute);
+	void SetThroughputLimit(float itemsPerMinute);
+
+
+	UFUNCTION(BlueprintPure)
+	float GetThroughputLimit();
 
 	UFUNCTION()
-		void CalculateIPM();
+	void CalculateIPM();
 
 	UFUNCTION()
-		void StageItemForOutput();
-
-private:
-	int32 mCurrentPerMinuteThroughput;
-	int32 mGameSecondsAtLastInput;
+	void StageItemForOutput();
 };
 
