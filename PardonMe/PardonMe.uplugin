@@ -1,8 +1,8 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.0.0",
-  "SemVersion": "1.0.0",
+  "VersionName": "1.0.1",
+  "SemVersion": "1.0.1",
   "FriendlyName": "PardonMe",
   "Description": "",
   "Category": "Modding",
@@ -15,14 +15,14 @@
   "IsBetaVersion": false,
   "IsExperimentalVersion": false,
   "Installed": false,
-  "Plugins": 
-		[
-			{
-				"Name": "SML",
-				"SemVersion": "^3.3.0",
-				"Enabled": true
-			}
-		],
+  "AcceptsAnyRemoteVersion": false,
+  "Plugins": [
+    {
+      "Name": "SML",
+      "SemVersion": "^3.3.2",
+      "Enabled": true
+    }
+  ],
   "Modules": [
     {
       "Name": "PardonMe",
