@@ -25,6 +25,8 @@ public:
 	virtual void Destroyed() override;
 	virtual bool TrySnapToActor(const FHitResult& hitResult) override;
 
+	virtual void Scroll(int32 delta) override;
+
 	virtual bool IsValidHitResult(const FHitResult& hitResult) const override;
 
 	void UnHighlightAll();

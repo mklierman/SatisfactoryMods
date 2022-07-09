@@ -47,6 +47,12 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 			ActiveGroupLeader = SnappedBalancer->GroupLeader;
 
 			HighlightAll(SnappedBalancer->GetGroupModules());
+			FRotator Rot = GetActorRotation();
+			Rot.Yaw += 180 * GetScrollRotateValue();
+
+			if(mSnappedAttachmentPoint && mLocalSnappedAttachmentPoint)
+				UE_LOG(LogTemp, Warning, TEXT("%s, %s, %d"), *mSnappedAttachmentPoint->Type->GetName(), *mLocalSnappedAttachmentPoint->Type->GetName(), 180 * GetScrollRotateValue());
+			SetActorRotation(Rot);
 		}
 	}
 	else
@@ -60,6 +66,16 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 	}
 
 	return SnapResult;
+}
+
+void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)
+{
+	if(GetSnappedBuilding())
+	{
+		SetScrollRotateValue(GetScrollRotateValue() + delta);
+	}
+	else 
+		Super::Scroll(delta);
 }
 
 bool ALBModularLoadBalancer_Hologram::IsValidHitResult(const FHitResult& hitResult) const
