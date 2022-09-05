@@ -17,7 +17,7 @@ void FConstructionPreferencesModule::StartupModule() {
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGConveyorLiftHologram::BeginPlay, hg, [](AFGConveyorLiftHologram* self)
 		{
 			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
-
+			
 			self->mStepHeight = ((float)config.ConveyorLiftStep * 100);
 			self->mMinimumHeight = ((float)config.ConveyorLiftHeight * 100);
 		});

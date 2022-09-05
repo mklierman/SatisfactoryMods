@@ -1,10 +1,10 @@
 {
   "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "1.2.3",
-  "SemVersion": "1.2.3",
+  "Version": 2,
+  "VersionName": "2.0.0",
+  "SemVersion": "2.0.0",
   "FriendlyName": "Crash Site Beacons",
-  "Description": "Places a beacon at every crash site.",
+  "Description": "Places a map marker at every crash site.",
   "Category": "Modding",
   "CreatedBy": "SirDigby",
   "CreatedByURL": "",
@@ -15,18 +15,19 @@
   "IsBetaVersion": false,
   "IsExperimentalVersion": false,
   "Installed": false,
+  "AcceptsAnyRemoteVersion": false,
+  "Plugins": [
+    {
+      "Name": "SML",
+      "SemVersion": "^3.3.2",
+      "Enabled": true
+    }
+  ],
   "Modules": [
     {
       "Name": "CrashSiteBeacons",
       "Type": "Runtime",
       "LoadingPhase": "Default"
-    }
-  ],
-  "Plugins": [
-    {
-      "Name": "SML",
-      "SemVersion": "^3.2.0",
-      "Enabled": true
     }
   ]
 }
