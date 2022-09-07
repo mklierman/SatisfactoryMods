@@ -68,7 +68,7 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 
 void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)
 {
-	if(GetSnappedBuilding())
+	if(GetSnappedBuilding() && Cast<ALBBuild_ModularLoadBalancer>(GetSnappedBuilding()))
 	{
 		SetScrollRotateValue(GetScrollRotateValue() + delta);
 	}
