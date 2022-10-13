@@ -5,11 +5,43 @@
 #include "Hologram/FGHologram.h"
 #include "Hologram/FGPoleHologram.h"
 #include "Equipment/FGBuildGunBuild.h"
+#include "Buildables/FGConveyorPoleStackable.h"
 #include "CP_ModConfigStruct.h"
 #include "Hologram/FGConveyorLiftHologram.h"
+#include "Hologram/FGConveyorPoleHologram.h"
 #include "CP_Subsystem.h"
+#include "FGBuildableSubsystem.h"
+#include "FGCharacterPlayer.h"
 
 DEFINE_LOG_CATEGORY(LogConstructionPreferences);
+
+void PrimaryFire(CallScope<void(*)(UFGBuildGunStateBuild*)>& scope, UFGBuildGunStateBuild* gm)
+{
+	UE_LOG(LogConstructionPreferences, Display, TEXT("UFGBuildGunStateBuild::PrimaryFire_Implementation"));
+
+	auto owner = Cast<AFGCharacterPlayer>(gm->GetBuildGun()->GetOwner());
+	if (owner)
+	{
+		auto locControlled = owner->IsLocallyControlled();
+		auto upgActor = gm->mUpgradedActor;
+		auto mHologram = gm->mHologram;
+		if (mHologram)
+		{
+			auto buildGun = gm->GetBuildGun();
+			auto inventory = buildGun->GetInventory();
+			mHologram->ValidatePlacementAndCost(inventory);
+			if (mHologram->CanTakeNextBuildStep())
+			{
+				auto canDoMultiStep = mHologram->DoMultiStepPlacement(false);
+				if (locControlled && canDoMultiStep)
+				{
+					UE_LOG(LogConstructionPreferences, Display, TEXT("DoMultiStep"));
+				}
+			}
+		}
+	}
+}
+
 void FConstructionPreferencesModule::StartupModule() {
 
 #if !WITH_EDITOR
@@ -17,37 +49,118 @@ void FConstructionPreferencesModule::StartupModule() {
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGConveyorLiftHologram::BeginPlay, hg, [](AFGConveyorLiftHologram* self)
 		{
 			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
-			
+
 			self->mStepHeight = ((float)config.ConveyorLiftStep * 100);
 			self->mMinimumHeight = ((float)config.ConveyorLiftHeight * 100);
 		});
-	//AFGConveyorBeltHologram* CBH = GetMutableDefault<AFGConveyorBeltHologram>();
-//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::SpawnChildren, CBH, [](auto scope, AFGConveyorBeltHologram* self, AActor* hologramOwner, FVector spawnLocation, APawn* hologramInstigator) {
-//UE_LOG(LogConstructionPreferences, Display, TEXT("AFGConveyorBeltHologram::SpawnChildren"));
-//		//UWorld* WorldObject = self->GetWorld();
-//		//USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
-//		//ACP_Subsystem* subsystem = SubsystemActorManager->GetSubsystemActor<ACP_Subsystem>();
-//		//auto recipe = subsystem->mConveyorPoleRecipe;
-//		//self->SpawnChildHologramFromRecipe(self, recipe, hologramOwner, spawnLocation, hologramInstigator);
-//		//scope.Cancel();
-//		});
-//
-//
-//	//virtual bool DoMultiStepPlacement(bool isInputFromARelease) override;
-//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::DoMultiStepPlacement, CBH, [](auto scope, AFGConveyorBeltHologram* self, bool isInputFromARelease)
-//		{
-//			UE_LOG(LogConstructionPreferences, Display, TEXT("AFGConveyorBeltHologram::DoMultiStepPlacement"));
-//			//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
-//			scope.Override(false);
-//		});
-//
-//	AFGPoleHologram* CPH = GetMutableDefault<AFGPoleHologram>();
-//	SUBSCRIBE_METHOD_VIRTUAL(AFGPoleHologram::DoMultiStepPlacement, CPH, [](auto scope, AFGPoleHologram* self, bool isInputFromARelease)
-//		{
-//			UE_LOG(LogConstructionPreferences, Display, TEXT("AFGPoleHologram::DoMultiStepPlacement"));
-//			//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
-//			scope.Override(false);
-//		});
+	AFGConveyorBeltHologram* CBH = GetMutableDefault<AFGConveyorBeltHologram>();
+	//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::SpawnChildren, CBH, [](auto scope, AFGConveyorBeltHologram* self, AActor* hologramOwner, FVector spawnLocation, APawn* hologramInstigator) {
+	//UE_LOG(LogConstructionPreferences, Display, TEXT("AFGConveyorBeltHologram::SpawnChildren"));
+	//		//UWorld* WorldObject = self->GetWorld();
+	//		//USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
+	//		//ACP_Subsystem* subsystem = SubsystemActorManager->GetSubsystemActor<ACP_Subsystem>();
+	//		//auto recipe = subsystem->mConveyorPoleRecipe;
+	//		//self->SpawnChildHologramFromRecipe(self, recipe, hologramOwner, spawnLocation, hologramInstigator);
+	//		//scope.Cancel();
+	//		});
+	//
+	//
+	//	//virtual bool DoMultiStepPlacement(bool isInputFromARelease) override;
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::DoMultiStepPlacement, CBH, [=](auto& scope, AFGConveyorBeltHologram* self, bool isInputFromARelease)
+		{
+			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
+			if (config.ConveyorPole == 1)
+			{
+				UE_LOG(LogConstructionPreferences, Display, TEXT("AFGConveyorBeltHologram::DoMultiStepPlacement"));
+				//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+				if (self->GetCurrentBuildStep() == ESplineHologramBuildStep::SHBS_AdjustPole)
+				{
+					UE_LOG(LogConstructionPreferences, Display, TEXT("ESplineHologramBuildStep::SHBS_AdjustPole"));
+					scope.Override(true);
+				}
+				else if (self->GetCurrentBuildStep() == ESplineHologramBuildStep::SHBS_PlacePoleOrSnapEnding)
+				{
+					UE_LOG(LogConstructionPreferences, Display, TEXT("ESplineHologramBuildStep::SHBS_PlacePoleOrSnapEnding"));
+					scope.Override(true);
+				}
+				else if (self->GetCurrentBuildStep() == ESplineHologramBuildStep::SHBS_FindStart)
+				{
+					UE_LOG(LogConstructionPreferences, Display, TEXT("ESplineHologramBuildStep::SHBS_FindStart"));
+				}
+			}
+		});
+
+
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::Scroll, CBH, [=](auto& scope, AFGConveyorBeltHologram* self, int32 delta)
+		{
+			auto pole = Cast<AFGConveyorPoleHologram>(self->mChildPoleHologram);
+			if (pole)
+			{
+				if (pole->mSnappedBuilding)
+				{
+					auto snappedPole = Cast<AFGConveyorPoleStackable>(pole->mSnappedBuilding);
+					if (snappedPole)
+					{
+						pole->ScrollRotate(delta, pole->GetRotationStep());
+					}
+				}
+			}
+		});
+//////
+	AFGPoleHologram* CPH = GetMutableDefault<AFGPoleHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPoleHologram::DoMultiStepPlacement, CPH, [](auto scope, AFGPoleHologram* self, bool isInputFromARelease)
+		{
+			UE_LOG(LogConstructionPreferences, Display, TEXT("AFGPoleHologram::DoMultiStepPlacement"));
+			//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+			scope.Override(true);
+		});
+
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPoleHologram::TrySnapToActor, CPH, [](auto& scope, AFGPoleHologram* self, const FHitResult& hitResult)
+		{
+			UE_LOG(LogConstructionPreferences, Display, TEXT("AFGPoleHologram::TrySnapToActor"));
+			auto convHG = Cast<AFGConveyorPoleHologram>(self);
+			if (convHG)
+			{
+				auto hitPole = Cast<AFGConveyorPoleStackable>(hitResult.Actor);
+				if (hitPole)
+				{
+					auto parentBelt = Cast<AFGConveyorBeltHologram>(self->mParent);
+					if (parentBelt)
+					{
+						int rotator = self->mSnapToGuideLines ? -1 : 1;
+						FVector startPos = parentBelt->mSnappedConnectionComponents[0]->GetConnectorLocation(false);
+						FVector startNormal = parentBelt->mSnappedConnectionComponents[0]->GetConnectorNormal();
+						FVector endPos = convHG->mSnapConnection->GetConnectorLocation(false);
+						FVector endNormal = convHG->mSnapConnection->GetConnectorNormal();
+						if (self->mSnapToGuideLines)
+						{
+							endPos = endPos.RotateAngleAxis(180, endPos);
+							endNormal = endNormal.RotateAngleAxis(180, endNormal);
+						}
+						parentBelt->AutoRouteSpline(startPos, startNormal, endPos, endNormal);
+						parentBelt->UpdateSplineComponent();
+						//FHitResult newHit = FHitResult(startPos, endPos);
+						//parentBelt->SetHologramLocationAndRotation(newHit);
+					}
+				}
+			}
+		});
+#endif
+	//-mSnapConnection	0x000002911e891f00 (Name = SnapOnly0)	UFGFactoryConnectionComponent *
+
+	//SUBSCRIBE_METHOD(AFGPoleHologram::SetPoleHeight, [](auto& scope, AFGPoleHologram* self, float height)
+	//	{
+	//		UE_LOG(LogConstructionPreferences, Display, TEXT("AFGPoleHologram::SetPoleHeight"));
+	//		//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+	//		scope.Cancel();
+	//	});
+
+	//void AFGBuildableSubsystem::GetNewNetConstructionID(FNetConstructionID & clientConstructionID) { }
+	//SUBSCRIBE_METHOD_AFTER(AFGBuildableSubsystem::GetNewNetConstructionID, [](AFGBuildableSubsystem* self, FNetConstructionID& clientConstructionID)
+	//	{
+	//		UE_LOG(LogConstructionPreferences, Display, TEXT("AFGBuildableSubsystem::GetNewNetConstructionID"));
+	//	});
+
 //	//virtual void GetSupportedScrollModes(TArray<EHologramScrollMode>*out_modes) const override;
 //	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::GetSupportedScrollModes, CBH, [](auto scope, const AFGConveyorBeltHologram* self, TArray<EHologramScrollMode>* out_modes)
 //		{
@@ -97,19 +210,23 @@ void FConstructionPreferencesModule::StartupModule() {
 	//		scope.Override(true);
 	//	});
 
-	//UFGBuildGunStateBuild* BG = GetMutableDefault<UFGBuildGunStateBuild>();
-	//virtual void PrimaryFire_Implementation() override;
-	//virtual void PrimaryFireRelease_Implementation() override;
-	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(UFGBuildGunStateBuild::PrimaryFire_Implementation, BG, [](UFGBuildGunStateBuild* self)
-	//	{
-	//		UE_LOG(LogConstructionPreferences, Display, TEXT("UFGBuildGunStateBuild::PrimaryFire_Implementation"));
-	//		FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
-	//	});
+	UFGBuildGunStateBuild* BG = GetMutableDefault<UFGBuildGunStateBuild>();
+	////virtual void PrimaryFire_Implementation() override;
+	////virtual void PrimaryFireRelease_Implementation() override;
+	//SUBSCRIBE_METHOD_VIRTUAL(UFGBuildGunStateBuild::PrimaryFire_Implementation, BG, &PrimaryFire)
 
-	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(UFGBuildGunStateBuild::PrimaryFireRelease_Implementation, BG, [](UFGBuildGunStateBuild* self)
+	//SUBSCRIBE_METHOD_VIRTUAL(UFGBuildGunStateBuild::PrimaryFireRelease_Implementation, BG, [=](auto& scope, UFGBuildGunStateBuild* self)
 	//	{
-	//		UE_LOG(LogConstructionPreferences, Display, TEXT("UFGBuildGunStateBuild::PrimaryFireRelease_Implementatio"));
-	//		FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+	//		UE_LOG(LogConstructionPreferences, Display, TEXT("UFGBuildGunStateBuild::PrimaryFireRelease_Implementation"));
+
+	//	});
+	//SUBSCRIBE_METHOD_AFTER(UFGBuildGunState::PrimaryFireRelease, [](UFGBuildGunState* self)
+	//	{
+	//		UE_LOG(LogConstructionPreferences, Display, TEXT("UFGBuildGunState::PrimaryFireRelease"));
+	//	});
+	//SUBSCRIBE_METHOD_AFTER(UFGBuildGunState::PrimaryFire, [](UFGBuildGunState* self)
+	//	{
+	//		UE_LOG(LogConstructionPreferences, Display, TEXT("UFGBuildGunState::PrimaryFire"));
 	//	});
 
 
@@ -125,7 +242,6 @@ void FConstructionPreferencesModule::StartupModule() {
 	//		}
 	//		//scope.Override(true);
 	//	});
-#endif
 }
 
 

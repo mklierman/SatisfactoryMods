@@ -17,6 +17,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void GenerateMapMarker(FString markerName, FVector_NetQuantize markerLocation);
 
+	//void OnDropPodOpen(CallScope<void(*)(AFGDropPod*)>& scope, AFGDropPod* DropPod);
+
 	UFUNCTION(BlueprintCallable)
 		void AddEnumType();
 

@@ -2,17 +2,27 @@
 
 #include "CoreMinimal.h"
 #include "Subsystem/ModSubsystem.h"
+#include "FGBuildableSubsystem.h"
 #include "Buildables/FGBuildable.h"
+#include "FGPlayerController.h"
+#include "FGFactoryColoringTypes.h"
+#include "FGColorInterface.h"
 #include "PersistentPaintablesCppSubSystem.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuildEffectStarted, AFGBuildable*, Buildable, AActor*, Actor);
 
 UCLASS()
 class APersistentPaintablesCppSubSystem : public AModSubsystem
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintAssignable, Category = "Build Effect")
-		FOnBuildEffectStarted OnBuildEffectStarted;
+
+	UFUNCTION(BlueprintCallable)
+		void SetCustomSwatchColor(uint8 ColorSlot, FLinearColor PrimaryColor, FLinearColor SecondaryColor);
+
+	UFUNCTION(BlueprintCallable, Category = "Persistent Paintables")
+		void ApplyCustomizationPreview(AFGBuildableSubsystem* buildableSubsystem, AFGBuildable* buildable, const FFactoryCustomizationData& previewData);
+
+	UFUNCTION(BlueprintCallable, Category = "Persistent Paintables")
+		TSubclassOf< class UFGItemDescriptor > GetBuildableDescriptor(AFGBuildable* buildable);
 };
 

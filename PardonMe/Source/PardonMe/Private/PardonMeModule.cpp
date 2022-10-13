@@ -5,6 +5,7 @@
 #include "AI/FGAISystem.h"
 #include "Creature/Enemy/FGCrabHatcher.h"
 #include "FGGameMode.h"
+#include "Creature/Actions/FGCreatureActionCharge.h"
 //#include "AI/FGEnemyController.h"
 
 void GameModePostLogin(CallScope<void(*)(AFGGameMode*, APlayerController*)>& scope, AFGGameMode* gm,
@@ -27,11 +28,15 @@ void FPardonMeModule::StartupModule() {
 	AFGGameMode* LocalGameMode = GetMutableDefault<AFGGameMode>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, &GameModePostLogin)
 
-	//SUBSCRIBE_METHOD(AFGEnemyController::AddNewAggroTarget, [](auto& scope, AFGEnemyController* self, const TScriptInterface< IFGAggroTargetInterface > target)
+	//	UFGCreatureAction* CAC = GetMutableDefault<UFGCreatureAction>();
+	//SUBSCRIBE_METHOD_VIRTUAL(UFGCreatureAction::InitializeAction, CAC [](auto& scope, UFGCreatureAction* self, AController* controller, APawn* pawn)
 	//{
-	//	scope.Cancel();
+	//		auto chargeAction = Cast<UFGCreatureActionCharge>(self);
+	//		if (chargeAction)
+	//		{
+	//			scope.Cancel();
+	//		}
 	//});
-
 #endif
 }
 

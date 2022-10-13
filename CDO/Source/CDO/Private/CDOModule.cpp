@@ -107,7 +107,7 @@ void FCDOModule::StartupModule() {
 	//		scope.Cancel();
 	//	});
 	//virtual void ConfigureComponents(class AFGBuildable* inBuildable) const override;
-//#if !WITH_EDITOR
+#if !WITH_EDITOR
 // 	static void BuildSplineMeshesInstanced(
 	//class USplineComponent* spline,
 	//	UStaticMesh* mesh,
@@ -115,7 +115,19 @@ void FCDOModule::StartupModule() {
 	//	UFGInstancedSplineMeshComponent* splineInstances );
 
 
-//#endif
+	//AFGFoundationHologram* fh = GetMutableDefault<AFGFoundationHologram>();
+	////virtual bool AFGFoundationHologram::TrySnapToActor(const FHitResult & hitResult) override;
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGFoundationHologram::TrySnapToActor, fh, [=](auto& scope, AFGFoundationHologram* self, const FHitResult& hitResult)
+	//{
+	//		auto res = scope(self, hitResult);
+	//		if (res)
+	//		{
+	//			UE_LOG(CDO_Log, Display, TEXT("Snapped to actor: %s"), *hitResult.GetActor()->GetName());
+	//		}
+	//	//UE_LOG(CDO_Log, Display, TEXT("VerifyDefaults: %s"), scope.Result.ToString());
+	//});
+
+#endif
 	//AFGBuildableConveyorBelt* cah = GetMutableDefault<AFGBuildableConveyorBelt>();
 	////virtual bool VerifyDefaults( FString& out_message )
 	////SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableConveyorBelt::VerifyDefaults, cah, [](auto& scope, AFGBuildableConveyorBelt* self, FString& out_message)

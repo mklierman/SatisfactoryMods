@@ -1,16 +1,16 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.0",
-	"SemVersion": "1.0.0",
+	"VersionName": "1.0.1",
+	"SemVersion": "1.0.1",
 	"FriendlyName": "Lower Space Giraffe-Tick-Penguin-Whale Thing Health",
 	"Description": "Lowers max health of Space Giraffe-Tick-Penguin-Whale Things",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
-	"CreatedByURL": "",
-	"DocsURL": "",
-	"MarketplaceURL": "",
-	"SupportURL": "",
+	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
+  	"DocsURL": "",
+  	"MarketplaceURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
@@ -18,7 +18,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-      		"SemVersion": "^3.3.0",
+      		"SemVersion": "^3.4.0",
 			"Enabled": true
 		}
 	]

@@ -68,12 +68,28 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 
 void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)
 {
+	Super::SetScrollMode(EHologramScrollMode::HSM_ROTATE);
 	if(GetSnappedBuilding() && Cast<ALBBuild_ModularLoadBalancer>(GetSnappedBuilding()))
 	{
-		SetScrollRotateValue(GetScrollRotateValue() + delta);
+		auto pContr = this->GetNetOwningPlayer()->GetPlayerController(GetWorld());
+		if (pContr && pContr->IsInputKeyDown(EKeys::LeftControl))
+		{
+			Super::Scroll(delta);
+		}
+		else if (pContr && pContr->IsInputKeyDown(EKeys::LeftShift))
+		{
+			Super::SetScrollMode(EHologramScrollMode::HSM_RAISE_LOWER);
+			Super::Scroll(delta);
+		}
+		else
+		{
+			SetScrollRotateValue(GetScrollRotateValue() + delta);
+		}
 	}
 	else
+	{
 		Super::Scroll(delta);
+	}
 }
 
 bool ALBModularLoadBalancer_Hologram::IsValidHitResult(const FHitResult& hitResult) const

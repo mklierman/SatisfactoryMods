@@ -33,8 +33,8 @@ void UStationNames_BPFL::AutoSetDockingStationName(AFGBuildableDockingStation* D
 	FString inventoryText = "Nothing";
 	if (firstItemIndex >= 0)
 	{
-		FInventoryStack invStack = invComp->GetStackFromIndex(firstItemIndex);
-		inventoryText = UFGItemDescriptor::GetItemName(invStack.Item.ItemClass.Get()).ToString();
+		//FInventoryStack invStack = invComp->GetStackFromIndex(firstItemIndex);
+		//inventoryText = UFGItemDescriptor::GetItemName(invStack.Item.ItemClass.Get()).ToString();
 		//inventoryText = invStack.Item.ItemClass.Get()->GetFName().ToString();
 		//inventoryText = FText::FromString(inventoryString);
 	}

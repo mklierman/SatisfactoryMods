@@ -1,16 +1,16 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.1",
-	"SemVersion": "1.0.1",
+	"VersionName": "1.0.2",
+	"SemVersion": "1.0.2",
 	"FriendlyName": "April Fools",
 	"Description": "Enables the April Fools event from 2021",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
-	"CreatedByURL": "",
+	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
 	"DocsURL": "",
 	"MarketplaceURL": "",
-	"SupportURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
@@ -19,7 +19,7 @@
 		[
 			{
 				"Name": "SML",
-				"SemVersion": "^3.2.0",
+				"SemVersion": "^3.4.0",
 				"Enabled": true
 			}
 		]

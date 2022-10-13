@@ -29,6 +29,7 @@ public:
 
 	virtual bool TryUpgrade(const FHitResult& hitresult) override;
 
+	virtual AActor* Construct(TArray< AActor* >& out_children, FNetConstructionID constructionID) override;
 private:
 	bool alreadyBuilt;
 

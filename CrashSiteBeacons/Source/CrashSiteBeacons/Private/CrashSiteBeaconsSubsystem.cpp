@@ -91,28 +91,30 @@ void ACrashSiteBeaconsSubSystem::AddEnumType()
 		}
 }
 
+void OnDropPodOpen(CallScope<void(*)(AFGDropPod*)>& scope, AFGDropPod* DropPod)
+{
+	auto mapManager = AFGMapManager::Get(DropPod->GetWorld());
+	TArray<FMapMarker> markers;
+	mapManager->GetMapMarkers(markers);
+	if (markers.Num() > 0)
+	{
+		FVector podLoc = DropPod->GetActorLocation();
+		for (auto marker : markers)
+		{
+			if (marker.Location.X == podLoc.X && marker.Location.Y == podLoc.Y && marker.Location.Z == podLoc.Z)
+			{
+				mapManager->RemoveMapMarker(marker);
+			}
+		}
+	}
+}
+
 
 void ACrashSiteBeaconsSubSystem::HookCrashSites()
 {
-	auto mapManager = AFGMapManager::Get(this);
-
-	SUBSCRIBE_METHOD_AFTER(AFGDropPod::Open, [=](AFGDropPod* self)
-	{
-			auto mapManager = AFGMapManager::Get(this);
-			TArray<FMapMarker> markers;
-			mapManager->GetMapMarkers(markers);
-			if (PodMarkers.Contains(self))
-			{
-				FVector podLoc = self->GetActorLocation();
-				for (auto marker : markers)
-				{
-					if (marker.Location.X == podLoc.X && marker.Location.Y == podLoc.Y && marker.Location.Z == podLoc.Z)
-					{
-						mapManager->RemoveMapMarker(marker);
-					}
-				}
-			}
-	});
+#if !WITH_EDITOR
+	SUBSCRIBE_METHOD(AFGDropPod::Open, &OnDropPodOpen)
+#endif
 }
 
 bool ACrashSiteBeaconsSubSystem::HasPodBeenLooted(AFGDropPod* pod)

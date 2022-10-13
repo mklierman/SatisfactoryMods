@@ -1,13 +1,22 @@
 // ILikeBanas
 
 #include "CDO_BPLib.h"
+#include "CDOModule.h"
 #include "AI/FGAISystem.h"
 #include "FGRailroadVehicleMovementComponent.h"
 #include "Equipment/FGResourceScanner.h"
 #include "Blueprint/UserWidget.h"
 #include "Patching/BlueprintHookHelper.h"
 #include "Patching/BlueprintHookManager.h"
+#include "WheeledVehicles/FGTargetPointLinkedList.h"
 #include "Hologram/FGConveyorLiftHologram.h"
+#include "FGSplineMeshGenerationLibrary.h"
+#include "FGInstancedSplineMeshComponent.h"
+#include "FGSplineMeshResources.h"
+#include "Components/SplineMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "SplineCustomVersion.h"
+#include "FGManta.h"
 
 
 //#include "ProxyInstancedStaticMeshComponent.h"
@@ -94,5 +103,79 @@ void UCDO_BPLib::MoveBuildable(AFGBuildable* inBuildable, FVector newLocation)
 		scene->SetMobility(EComponentMobility::Static);
 	}
 	RefreshMaterial(inBuildable);
+}
+
+void UCDO_BPLib::ShowVehiclePaths(UObject* WorldContextObj, UStaticMesh* mesh)
+{
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(WorldContextObj->GetWorld(), AFGDrivingTargetList::StaticClass(), FoundActors);
+	if (FoundActors.Num() > 0)
+	{
+		for (auto actor : FoundActors)
+		{
+			auto tpList = Cast< AFGDrivingTargetList>(actor);
+			if (tpList)
+			{
+				TArray< USplineMeshComponent* > meshPool;
+				meshPool.Empty();
+				tpList->CreatePath();
+				auto spline = tpList->GetPath();
+				if (spline)
+				{
+					UFGSplineMeshGenerationLibrary::BuildSplineMeshes(spline, spline->GetSplineLength(), mesh, 100, meshPool, [](USplineComponent* spline)
+						{
+							USplineMeshComponent* newComponent = NewObject< USplineMeshComponent >(spline->GetOwner(), USplineMeshComponent::StaticClass());
+							newComponent->SetupAttachment(spline);
+							newComponent->Mobility = EComponentMobility::Movable;
+							return newComponent;
+						});
+				}
+			}
+		}
+	}
+
+	//TArray<AActor*> FoundMActors;
+	//UGameplayStatics::GetAllActorsOfClass(WorldContextObj->GetWorld(), AFGManta::StaticClass(), FoundMActors);
+	//if (FoundActors.Num() > 0)
+	//{
+	//	for (auto actor : FoundMActors)
+	//	{
+	//		auto manta = Cast< AFGManta>(actor);
+	//		if (manta)
+	//		{
+	//			auto spline = manta->GetSpline();
+	//			UFGSplineMeshGenerationLibrary::BuildSplineMeshes(spline, spline->GetSplineLength(), mesh, 400, meshPool, [](USplineComponent* spline)
+	//				{
+	//					USplineMeshComponent* newComponent = NewObject< USplineMeshComponent >(spline->GetOwner(), USplineMeshComponent::StaticClass());
+
+	//					newComponent->SetupAttachment(spline);
+	//					newComponent->Mobility = EComponentMobility::Movable;
+
+	//					// Custom initialization steps
+
+	//					return newComponent;
+	//				});
+	//		}
+	//	}
+	//}
+}
+
+TArray<USplineComponent*> UCDO_BPLib::GetAllVehiclePathSplines(UObject* WorldContextObj)
+{
+	TArray<USplineComponent*> vehicleSplines;
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(WorldContextObj->GetWorld(), AFGDrivingTargetList::StaticClass(), FoundActors);
+	if (FoundActors.Num() > 0)
+	{
+		for (auto actor : FoundActors)
+		{
+			auto tpList = Cast< AFGDrivingTargetList>(actor);
+			if (tpList)
+			{
+				vehicleSplines.Add(tpList->GetPath());
+			}
+		}
+	}
+	return vehicleSplines;
 }
 

@@ -1,16 +1,16 @@
 {
   "FileVersion": 3,
   "Version": 2,
-  "VersionName": "2.0.0",
-  "SemVersion": "2.0.0",
+  "VersionName": "2.0.2",
+  "SemVersion": "2.0.2",
   "FriendlyName": "Crash Site Beacons",
   "Description": "Places a map marker at every crash site.",
   "Category": "Modding",
   "CreatedBy": "SirDigby",
-  "CreatedByURL": "",
+	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
   "DocsURL": "",
   "MarketplaceURL": "",
-  "SupportURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
   "CanContainContent": true,
   "IsBetaVersion": false,
   "IsExperimentalVersion": false,
@@ -19,7 +19,7 @@
   "Plugins": [
     {
       "Name": "SML",
-      "SemVersion": "^3.3.2",
+      "SemVersion": "^3.4.0",
       "Enabled": true
     }
   ],

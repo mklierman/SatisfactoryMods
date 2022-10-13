@@ -1,0 +1,27 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0.0",
+  "SemVersion": "1.0.0",
+  "FriendlyName": "VehiclePathTool",
+  "Description": "",
+  "Category": "Other",
+  "CreatedBy": "SirDigby",
+  "CreatedByURL": "",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": false,
+  "AcceptsAnyRemoteVersion": false,
+  "Plugins": [],
+  "Modules": [
+    {
+      "Name": "VehiclePathTool",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}

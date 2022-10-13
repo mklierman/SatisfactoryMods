@@ -7,6 +7,9 @@
 #include "AI/FGAISystem.h"
 #include "Buildables/FGBuildable.h"
 #include "FGRailroadVehicleMovementComponent.h"
+#include "FGInstancedSplineMeshComponent.h"
+#include "Components/SplineMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 
 
 #include "CDO_BPLib.generated.h"
@@ -25,9 +28,17 @@ class CDO_API UCDO_BPLib : public UBlueprintFunctionLibrary
 	static FOnWidgetCreated OnWidgetCreated;
 
 
+
 	UFUNCTION(BlueprinTCallable)
 		static void SetLiftProperties(float stepHeight, float minHeight);
 
 	UFUNCTION(BlueprintCallable)
 		static void MoveBuildable(AFGBuildable* inBuildable, FVector newLocation);
+
+
+	UFUNCTION(BlueprintCallable)
+		static void ShowVehiclePaths(UObject* WorldContextObj, UStaticMesh* mesh);
+
+	UFUNCTION(BlueprintCallable)
+		static TArray<USplineComponent*> GetAllVehiclePathSplines(UObject* WorldContextObj);
 };

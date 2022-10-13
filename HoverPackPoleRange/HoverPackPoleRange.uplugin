@@ -1,16 +1,16 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.0.2",
-  "SemVersion": "1.0.2",
+  "VersionName": "1.0.3",
+  "SemVersion": "1.0.3",
   "FriendlyName": "Expanded Hover Range",
   "Description": "Higher tier Power Poles give the Hover Pack a larger range",
   "Category": "Modding",
   "CreatedBy": "SirDigby",
-  "CreatedByURL": "",
-  "DocsURL": "",
-  "MarketplaceURL": "",
-  "SupportURL": "https://discord.gg/WM5KT7pVu8",
+	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
+  	"DocsURL": "",
+  	"MarketplaceURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
   "CanContainContent": true,
   "IsBetaVersion": false,
   "IsExperimentalVersion": false,
@@ -18,7 +18,7 @@
   "Plugins": [
     {
       "Name": "SML",
-      "SemVersion": "^3.3.1",
+      "SemVersion": "^3.4.0",
       "Enabled": true
     }
   ],

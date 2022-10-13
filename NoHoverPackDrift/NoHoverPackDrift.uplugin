@@ -1,0 +1,33 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0.0",
+  "SemVersion": "1.0.0",
+  "FriendlyName": "No Hover Pack Drift",
+  "Description": "Prevents Hover Pack from slowly drifting",
+  "Category": "Modding",
+  "CreatedBy": "SirDigby",
+  "CreatedByURL": "",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": false,
+  "AcceptsAnyRemoteVersion": false,
+  "Plugins": [
+    {
+      "Name": "SML",
+      "SemVersion": "^3.3.2",
+      "Enabled": true
+    }
+  ],
+  "Modules": [
+    {
+      "Name": "NoHoverPackDrift",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}

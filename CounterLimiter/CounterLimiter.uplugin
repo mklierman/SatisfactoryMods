@@ -1,16 +1,16 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.0.5",
-  "SemVersion": "1.0.5",
+  "VersionName": "1.0.6",
+  "SemVersion": "1.0.6",
   "FriendlyName": "Throughput Counter Limiter",
   "Description": "A conveyor belt attachment that counts and displays the actual item throughput per minute. Can optionally limit the number of items allowed per minute.",
   "Category": "Modding",
   "CreatedBy": "SirDigby",
-  "CreatedByURL": "",
+	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
   "DocsURL": "",
   "MarketplaceURL": "",
-  "SupportURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
   "CanContainContent": true,
   "IsBetaVersion": false,
   "IsExperimentalVersion": false,
@@ -19,7 +19,7 @@
   "Plugins": [
     {
       "Name": "SML",
-      "SemVersion": "^3.3.2",
+      "SemVersion": "^3.4.0",
       "Enabled": true
     }
   ],
