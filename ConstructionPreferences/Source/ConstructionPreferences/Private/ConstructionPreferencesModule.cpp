@@ -5,6 +5,8 @@
 #include "Hologram/FGHologram.h"
 #include "Hologram/FGPoleHologram.h"
 #include "Equipment/FGBuildGunBuild.h"
+#include "Hologram/FGWireHologram.h"
+#include "Holo_WireHologramBuildModes.h"
 #include "Buildables/FGConveyorPoleStackable.h"
 #include "CP_ModConfigStruct.h"
 #include "Hologram/FGConveyorLiftHologram.h"
@@ -45,6 +47,27 @@ void PrimaryFire(CallScope<void(*)(UFGBuildGunStateBuild*)>& scope, UFGBuildGunS
 void FConstructionPreferencesModule::StartupModule() {
 
 #if !WITH_EDITOR
+
+	//SUBSCRIBE_METHOD(AFGWireHologram::SetActiveAutomaticPoleHologram, [=](auto& scope, AFGWireHologram* self, class AFGPowerPoleHologram* poleHologram)
+	//	{
+	//		UE_LOG(LogConstructionPreferences, Display, TEXT("SetActiveAutomaticPoleHologram"));
+	//		auto castSelf = Cast< AHolo_WireHologramBuildModes>(self);
+	//		if (castSelf)
+	//		{
+	//			UE_LOG(LogConstructionPreferences, Display, TEXT("if (castSelf)"));
+	//			if (castSelf->AllowSetActiveHologram)
+	//			{
+	//				UE_LOG(LogConstructionPreferences, Display, TEXT("if (AllowSetActiveHologram)"));
+	//				return;
+	//			}
+	//			else
+	//			{
+	//				UE_LOG(LogConstructionPreferences, Display, TEXT("scope.Cancel();"));
+	//				scope.Cancel();
+	//			}
+	//		}
+	//	});
+
 	AFGConveyorLiftHologram* hg = GetMutableDefault<AFGConveyorLiftHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGConveyorLiftHologram::BeginPlay, hg, [](AFGConveyorLiftHologram* self)
 		{

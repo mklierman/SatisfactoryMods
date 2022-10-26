@@ -1,32 +1,34 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.3.1",
-  "SemVersion": "1.3.1",
+  "VersionName": "1.4.0",
+  "SemVersion": "1.4.0",
   "FriendlyName": "Infinite Zoop",
   "Description": "Adds a research tree in the MAM where you can improve your Zoop capacity",
   "Category": "Modding",
   "CreatedBy": "SirDigby",
-	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
-  	"DocsURL": "",
-  	"MarketplaceURL": "",
-	"SupportURL": "https://discord.gg/WM5KT7pVu8",
+  "CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "https://discord.gg/WM5KT7pVu8",
   "CanContainContent": true,
   "IsBetaVersion": false,
   "IsExperimentalVersion": false,
   "Installed": false,
+  "AcceptsAnyRemoteVersion": false,
+  "Plugins": [
+    {
+      "Name": "SML",
+      "SemVersion": "^3.4.0",
+      "Enabled": true,
+      "IsActive": false
+    }
+  ],
   "Modules": [
     {
       "Name": "InfiniteZoop",
       "Type": "Runtime",
       "LoadingPhase": "Default"
-    }
-  ],
-  "Plugins": [
-    {
-      "Name": "SML",
-      "SemVersion": "^3.4.0",
-      "Enabled": true
     }
   ]
 }

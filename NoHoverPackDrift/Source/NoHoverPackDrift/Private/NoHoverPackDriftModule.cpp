@@ -2,19 +2,21 @@
 #include "Equipment/FGHoverPack.h"
 #include "Equipment/FGEquipment.h"
 #include "Patching/NativeHookManager.h"
+#include "NoHoverPackDrift_ConfigStruct.h"
 #include "FGCharacterPlayer.h"
 
 void FNoHoverPackDriftModule::StartupModule() {
-	#if !WITH_EDITOR
 	AFGHoverPack* hpcdo = GetMutableDefault<AFGHoverPack>();
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGHoverPack::Tick, hpcdo, [](AFGHoverPack* self, float deltaTime)
 		{
 			if (self->GetCurrentHoverMode() == EHoverPackMode::HPM_Hover)
 			{
-				float vLength = self->GetInstigatorCharacter()->GetCharacterMovement()->Velocity.Size();
-				if (vLength > 0.0 && vLength < 15.0)
+				auto config = FNoHoverPackDrift_ConfigStruct::GetActiveConfig();
+				float vLength = abs(self->GetInstigatorCharacter()->GetCharacterMovement()->Velocity.Size());
+				if (vLength > 0.f && vLength < config.MinSpeed)
 				{
-					self->GetInstigatorCharacter()->GetCharacterMovement()->Velocity = FVector(0, 0, 0);
+					self->GetInstigatorCharacter()->GetCharacterMovement()->Velocity = FVector(0.f, 0.f, 0.f);
 				}
 			}
 		});

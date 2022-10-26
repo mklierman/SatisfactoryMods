@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Modules/ModuleManager.h"
+#include "Hologram/FGHologram.h"
 #include "InfiniteZoopSubsystem.h"
 
 
@@ -11,5 +12,7 @@ public:
 
 	virtual bool IsGameModule() const override { return true; }
 
-	//AInfiniteZoopSubsystem* zoopSubsystem;
+	void ScrollHologram(AFGHologram* self, int32 delta);
+
+	TMap<AFGHologram*, FIntVector> HologramsToZoop;
 };

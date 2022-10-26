@@ -12,13 +12,15 @@ class AInfiniteZoopSubsystem : public AModSubsystem
 public:
 	AInfiniteZoopSubsystem();
 
-	UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UPROPERTY(BlueprintReadWrite, replicated, Category = "Zoop Subsystem")
 	int currentZoopAmount = 12;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
-	bool zoopCorners = false;
+	//UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
+	//bool zoopCorners = false;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
-	int tempZoopAmount = 0;
+	//UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
+	//int tempZoopAmount = 0;
 };
 
