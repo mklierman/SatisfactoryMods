@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.3",
-	"SemVersion": "1.0.3",
+	"VersionName": "1.1.0",
+	"SemVersion": "1.1.0",
 	"FriendlyName": "Double Jump",
 	"Description": "Does what it says on the box, lets you jump twice in a row",
 	"Category": "Modding",

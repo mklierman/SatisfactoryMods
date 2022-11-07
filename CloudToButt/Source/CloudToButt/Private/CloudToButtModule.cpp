@@ -9,25 +9,25 @@
 DEFINE_LOG_CATEGORY(CTB_Log);
 
 void FCloudToButtModule::StartupModule() {
-#if !WITHEDITOR
-	SUBSCRIBE_METHOD_AFTER(UUserWidget::Construct, [](UUserWidget* self)
-		{
-			//UE_LOG(CTB_Log, Display, TEXT("UUserWidget::Construct"));
-			UWorld* WorldObject = self->GetWorld();
-			if (WorldObject)
-			{
-				USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
-				if (SubsystemActorManager)
-				{
-					ACTB_Subsystem* subsystem = SubsystemActorManager->GetSubsystemActor<ACTB_Subsystem>();
-					if (subsystem)
-					{
-						subsystem->OnWidgetConstruct.Broadcast(self);
-					}
-				}
-			}
-		});
-#endif
+//#if !WITHEDITOR
+//	SUBSCRIBE_METHOD_AFTER(UUserWidget::Construct, [](UUserWidget* self)
+//		{
+//			//UE_LOG(CTB_Log, Display, TEXT("UUserWidget::Construct"));
+//			UWorld* WorldObject = self->GetWorld();
+//			if (WorldObject)
+//			{
+//				USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
+//				if (SubsystemActorManager)
+//				{
+//					ACTB_Subsystem* subsystem = SubsystemActorManager->GetSubsystemActor<ACTB_Subsystem>();
+//					if (subsystem)
+//					{
+//						subsystem->OnWidgetConstruct.Broadcast(self);
+//					}
+//				}
+//			}
+//		});
+//#endif
 
 }
 

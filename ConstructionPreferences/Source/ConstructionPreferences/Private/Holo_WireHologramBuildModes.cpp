@@ -5,9 +5,15 @@
 #include "Hologram/FGPowerPoleWallHologram.h"
 #include "FGPlayerController.h"
 #include "Patching/NativeHookManager.h"
+#include "Subsystem/ModSubsystem.h"
+#include "Subsystem/SubsystemActorManager.h"
+#include "Buildables/FGBuildableFoundation.h"
+#include "Equipment/FGBuildGun.h"
+#include "Equipment/FGBuildGunBuild.h"
+#include "CP_Subsystem.h"
 
 
-#pragma optimize("", off)
+//#pragma optimize("", off)
 AHolo_WireHologramBuildModes::AHolo_WireHologramBuildModes()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -18,50 +24,95 @@ void AHolo_WireHologramBuildModes::BeginPlay()
 	GetRecipeManager();
 	if (HasAuthority())
 	{
+		USubsystemActorManager* SubsystemActorManager = this->GetWorld()->GetSubsystem<USubsystemActorManager>();
+		if (SubsystemActorManager)
+		{
+			ACP_Subsystem* subsystem = SubsystemActorManager->GetSubsystemActor<ACP_Subsystem>();
+			if (subsystem)
+			{
+				CP_Subsystem = subsystem;
+			}
+		}
+
+		ConstructionInstigator = GetConstructionInstigator();
+		RespawnChildPoleHolograms();
+		RespawnChildWallSocketHolograms();
+
+		
+		this->SetBuildMode(mDefaultBuildMode);
 		OnBuildModeChanged();
+
 	}
-//#if !WITH_EDITOR
-	//Hook void SetActiveAutomaticPoleHologram( class AFGPowerPoleHologram* poleHologram );
-//#endif
 
 	Super::BeginPlay();
 }
 
 void AHolo_WireHologramBuildModes::OnBuildModeChanged()
 {
-	//Super::OnBuildModeChanged();
+	Super::OnBuildModeChanged();
 	if (RecipeManager)
 	{
-		int32 PoleIndex = PoleBuildModes.Find(GetCurrentBuildMode());
 		TSubclassOf<UFGRecipe> PoleRecipe = DefaultPowerPoleRecipe;
-		if (PowerPoleRecipes.IsValidIndex(PoleIndex))
-		{
-			const TSubclassOf<UFGRecipe> SelectedPoleRecipe = PowerPoleRecipes[PoleIndex];
-			if (IsValid(SelectedPoleRecipe))
-			{
-				if (RecipeManager->IsRecipeAvailable(SelectedPoleRecipe))
-				{
-					PoleRecipe = SelectedPoleRecipe;
-				}
-			}
-		}
-
-		int32 WallIndex = WallBuildModes.Find(GetCurrentBuildMode());
 		TSubclassOf<UFGRecipe> WallSocketRecipe = DefaultWallSocketRecipe;
-		if (WallSocketRecipes.IsValidIndex(WallIndex))
+
+		if (!RecipeManager->IsRecipeAvailable(DefaultWallSocketRecipe))
 		{
-			const TSubclassOf<UFGRecipe> SelectedWallSocketRecipe = WallSocketRecipes[WallIndex];
-			if (IsValid(SelectedWallSocketRecipe))
+			for (auto bmode : WireBuildModes)
 			{
-				if (RecipeManager->IsRecipeAvailable(SelectedWallSocketRecipe))
+				if (bmode.IsWallSocket)
 				{
-					WallSocketRecipe = SelectedWallSocketRecipe;
+					if (RecipeManager->IsRecipeAvailable(bmode.Recipe))
+					{
+						WallSocketRecipe = bmode.Recipe;
+						mDefaultPowerPoleWallRecipe = WallSocketRecipe;
+						break;
+					}
 				}
 			}
 		}
 
-		mDefaultPowerPoleRecipe = PoleRecipe;
-		mDefaultPowerPoleWallRecipe = WallSocketRecipe;
+		auto currentBuildMode = GetCurrentBuildMode();
+		for (auto bm : WireBuildModes)
+		{
+			if (bm.BuildMode == currentBuildMode)
+			{
+				if (!bm.IsWallSocket)
+				{
+					const TSubclassOf<UFGRecipe> SelectedPoleRecipe = bm.Recipe;
+					if (IsValid(SelectedPoleRecipe))
+					{
+						if (RecipeManager->IsRecipeAvailable(SelectedPoleRecipe))
+						{
+							PoleRecipe = SelectedPoleRecipe;
+							if (GetActiveAutomaticPoleHologram())
+							{
+								CP_Subsystem->LastUsedPoleBuildMode = bm;
+							}
+						}
+					}
+				}
+				else
+				{
+					const TSubclassOf<UFGRecipe> SelectedWallSocketRecipe = bm.Recipe;
+					if (IsValid(SelectedWallSocketRecipe))
+					{
+						if (RecipeManager->IsRecipeAvailable(SelectedWallSocketRecipe))
+						{
+							WallSocketRecipe = SelectedWallSocketRecipe;
+							if (GetActiveAutomaticPoleHologram())
+							{
+								CP_Subsystem->LastUsedWallSockedBuildMode = bm;
+							}
+						}
+					}
+				}
+
+				mDefaultPowerPoleRecipe = PoleRecipe;
+				mDefaultPowerPoleWallRecipe = WallSocketRecipe;
+				break;
+			}
+		}
+
 		SwitchPoleType();
 	}
 }
@@ -71,32 +122,41 @@ void AHolo_WireHologramBuildModes::GetSupportedBuildModes_Implementation(TArray<
 	//Super::GetSupportedBuildModes_Implementation(out_buildmodes);
 	bool MustSnap = GetActiveAutomaticPoleHologram() != nullptr;
 	bool SnapToWallHolo = false;
+	bool SnappedToFoundation = false;
 	if (MustSnap)
 	{
 		SnapToWallHolo = Cast<AFGPowerPoleWallHologram>(GetActiveAutomaticPoleHologram()) != nullptr;
+		SnappedToFoundation = Cast<AFGBuildableFoundation>(GetActiveAutomaticPoleHologram()->GetSnappedBuilding()) != nullptr;
 	}
 
 	if (AFGRecipeManager* lRecipeManager = AFGRecipeManager::Get(GetWorld()))
 	{
+		out_buildmodes.Empty();
+
 		if (!SnapToWallHolo)
 		{
-			out_buildmodes.Empty();
-			for (int32 Idx = 0; Idx < PowerPoleRecipes.Num(); ++Idx)
+			for (auto bm : WireBuildModes)
 			{
-				if (PoleBuildModes.IsValidIndex(Idx) && lRecipeManager->IsRecipeAvailable(PowerPoleRecipes[Idx]))
+				if (!bm.IsWallSocket && lRecipeManager->IsRecipeAvailable(bm.Recipe))
 				{
-					out_buildmodes.AddUnique(PoleBuildModes[Idx]);
+					out_buildmodes.AddUnique(bm.BuildMode);
 				}
 			}
 		}
 		else
 		{
-			out_buildmodes.Empty();
-			for (int32 Idx = 0; Idx < WallSocketRecipes.Num(); ++Idx)
+			for (auto bm : WireBuildModes)
 			{
-				if (WallBuildModes.IsValidIndex(Idx) && lRecipeManager->IsRecipeAvailable(WallSocketRecipes[Idx]))
+				if (bm.IsWallSocket && lRecipeManager->IsRecipeAvailable(bm.Recipe))
 				{
-					out_buildmodes.AddUnique(WallBuildModes[Idx]);
+					if (SnappedToFoundation && !bm.IsDoubleWallSocket)
+					{
+						out_buildmodes.AddUnique(bm.BuildMode);
+					}
+					else if (!SnappedToFoundation)
+					{
+						out_buildmodes.AddUnique(bm.BuildMode);
+					}
 				}
 			}
 		}
@@ -117,7 +177,7 @@ void AHolo_WireHologramBuildModes::SwitchPoleType()
 		auto constInst = GetConstructionInstigator();
 
 
-		if (SnapToWallHolo && RecipeManager->IsRecipeAvailable(mDefaultPowerPoleWallRecipe))
+		if ((SnapToWallHolo && RecipeManager->IsRecipeAvailable(mDefaultPowerPoleWallRecipe)) || 1 == 1)
 		{
 			for (AFGHologram* HologramChild : GetHologramChildren())
 			{
@@ -135,7 +195,7 @@ void AHolo_WireHologramBuildModes::SwitchPoleType()
 		}
 
 
-		if (!SnapToWallHolo && RecipeManager->IsRecipeAvailable(mDefaultPowerPoleRecipe))
+		if ((!SnapToWallHolo && RecipeManager->IsRecipeAvailable(mDefaultPowerPoleRecipe)) || 1 == 1)
 		{
 			for (AFGHologram* HologramChild : GetHologramChildren())
 			{
@@ -167,4 +227,61 @@ void AHolo_WireHologramBuildModes::GetRecipeManager()
 		RecipeManager = AFGRecipeManager::Get(GetWorld());
 	}
 }
-#pragma optimize("", on)
+
+void AHolo_WireHologramBuildModes::RespawnChildPoleHolograms()
+{
+	if (CP_Subsystem->LastUsedPoleBuildMode.BuildMode)
+	{
+		this->mDefaultBuildMode = CP_Subsystem->LastUsedPoleBuildMode.BuildMode;
+		mDefaultPowerPoleRecipe = CP_Subsystem->LastUsedPoleBuildMode.Recipe;
+
+		auto spawnedHG = AFGHologram::SpawnChildHologramFromRecipe(this, mDefaultPowerPoleRecipe, ConstructionInstigator, FVector(), ConstructionInstigator);
+		mPowerPole = Cast<AFGPowerPoleHologram>(spawnedHG);
+		if (mPowerPole)
+		{
+			mPowerPole->SetDisabled(true);
+		}
+	}
+}
+
+void AHolo_WireHologramBuildModes::RespawnChildWallSocketHolograms()
+{
+	if (CP_Subsystem->LastUsedWallSockedBuildMode.BuildMode)
+	{
+		mDefaultPowerPoleWallRecipe = CP_Subsystem->LastUsedWallSockedBuildMode.Recipe;
+		DefaultWallSocketRecipe = CP_Subsystem->LastUsedWallSockedBuildMode.Recipe;
+		mPowerPoleWall = Cast<AFGPowerPoleWallHologram>(SpawnChildHologramFromRecipe(this, mDefaultPowerPoleWallRecipe, ConstructionInstigator, FVector(), ConstructionInstigator));
+		if (mPowerPoleWall)
+		{
+			mPowerPoleWall->SetDisabled(true);
+		}
+	}
+	else
+	{
+		SetSafeDefaultWallSocket();
+	}
+}
+
+void AHolo_WireHologramBuildModes::SetSafeDefaultWallSocket()
+{
+	if (!RecipeManager->IsRecipeAvailable(DefaultWallSocketRecipe))
+	{
+		for (auto bmode : WireBuildModes)
+		{
+			if (bmode.IsWallSocket)
+			{
+				if (RecipeManager->IsRecipeAvailable(bmode.Recipe))
+				{
+					mDefaultPowerPoleWallRecipe = bmode.Recipe;
+					mPowerPoleWall = Cast<AFGPowerPoleWallHologram>(SpawnChildHologramFromRecipe(this, mDefaultPowerPoleWallRecipe, ConstructionInstigator, FVector(), ConstructionInstigator));
+					if (mPowerPoleWall)
+					{
+						mPowerPoleWall->SetDisabled(true);
+					}
+					break;
+				}
+			}
+		}
+	}
+}
+//#pragma optimize("", on)

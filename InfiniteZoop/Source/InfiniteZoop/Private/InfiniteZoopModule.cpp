@@ -20,10 +20,11 @@
 
 
 DEFINE_LOG_CATEGORY(InfiniteZoop_Log);
-#if !WITH_EDITOR
-//#pragma optimize("", off)
+#pragma optimize("", off)
 void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 {
+	auto pc = Cast<AFGPlayerController>(self->GetWorld()->GetFirstPlayerController());
+	bool isShiftDown = pc->IsInputKeyDown(EKeys::LeftShift);
 	AFGFactoryBuildingHologram* Fhg = Cast<AFGFactoryBuildingHologram>(self);
 	if (Fhg)
 	{
@@ -36,38 +37,175 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 
 		if (Fhg->GetCurrentBuildMode() == Fhg->mBuildModeZoop)
 		{
-			if (abs(currentZoop.Y) > abs(currentZoop.X))
+			AFGFoundationHologram* foundation = Cast<AFGFoundationHologram>(self);
+			auto quat = self->GetActorQuat();
+			auto loc = self->GetActorLocation().ToOrientationQuat();
+			auto axisX = CalcPivotAxis(EAxis::X, pc->PlayerCameraManager->GetCameraRotation().Vector(), self->GetActorQuat());
+			auto axisY = CalcPivotAxis(EAxis::Y, pc->PlayerCameraManager->GetCameraRotation().Vector(), self->GetActorQuat());
+			if (foundation)
 			{
-				if (currentZoop.Y > 0)
+				if (abs(axisX.X) > abs(axisX.Y))
 				{
-					currentZoop.Y = currentZoop.Y + (1 * delta);
+					if (currentZoop.X == 0) //Handle starting from 0
+					{
+						if (axisX.X >= 0 && delta > 0)
+						{
+							currentZoop.X = 1;
+						}
+						else if (axisX.X < 0 && delta > 0)
+						{
+							currentZoop.X = -1;
+						}
+					}
+					else
+					{
+						if (currentZoop.X > 0)
+						{
+							currentZoop.X = currentZoop.X + (1 * delta);
+						}
+						else
+						{
+							currentZoop.X = (abs(currentZoop.X) + (1 * delta)) * -1;
+						}
+					}
 				}
-				else
+				if (abs(axisX.Y) > abs(axisX.X))
 				{
-					currentZoop.Y = (abs(currentZoop.Y) + (1 * delta)) * -1;
+					if (currentZoop.Y == 0) //Handle starting from 0
+					{
+						if (axisX.Y >= 0 && delta > 0)
+						{
+							currentZoop.Y = 1;
+						}
+						else if (axisX.Y < 0 && delta > 0)
+						{
+							currentZoop.Y = -1;
+						}
+					}
+					else
+					{
+						if (currentZoop.Y > 0)
+						{
+							currentZoop.Y = currentZoop.Y + (1 * delta);
+						}
+						else
+						{
+							currentZoop.Y = (abs(currentZoop.Y) + (1 * delta)) * -1;
+						}
+					}
 				}
+
+				/*if (abs(currentZoop.Y) > abs(currentZoop.X))
+				{
+					if (currentZoop.Y > 0)
+					{
+						currentZoop.Y = currentZoop.Y + (1 * delta);
+					}
+					else
+					{
+						currentZoop.Y = (abs(currentZoop.Y) + (1 * delta)) * -1;
+					}
+				}
+				else if (abs(currentZoop.Y) < abs(currentZoop.X))
+				{
+					if (currentZoop.X > 0)
+					{
+						currentZoop.X = currentZoop.X + (1 * delta);
+					}
+					else
+					{
+						currentZoop.X = (abs(currentZoop.X) + (1 * delta)) * -1;
+					}
+				}
+				else if (currentZoop.Z != 0)
+				{
+					if (currentZoop.Z > 0)
+					{
+						currentZoop.Z = currentZoop.Z + (1 * delta);
+					}
+					else
+					{
+						currentZoop.Z = (abs(currentZoop.Z) + (1 * delta)) * -1;
+					}
+				}*/
 			}
-			else if (abs(currentZoop.Y) < abs(currentZoop.X))
+			else if (auto wall = Cast<AFGWallHologram>(self))
 			{
-				if (currentZoop.X > 0)
+				if (abs(axisX.X) < abs(axisX.Y))
 				{
-					currentZoop.X = currentZoop.X + (1 * delta);
+
+					if (currentZoop.Z == 0) //Handle starting from 0
+					{
+						if (axisX.Z >= 0 && delta > 0)
+						{
+							currentZoop.Z = 1;
+						}
+						else if (axisX.Z < 0 && delta > 0)
+						{
+							currentZoop.Z = -1;
+						}
+					}
+					else
+					{
+						if (currentZoop.Z > 0)
+						{
+							currentZoop.Z = currentZoop.Z + (1 * delta);
+						}
+						else
+						{
+							currentZoop.Z = (abs(currentZoop.Z) + (1 * delta)) * -1;
+						}
+					}
 				}
-				else
+				if (abs(axisX.Y) < abs(axisX.X))
 				{
-					currentZoop.X = (abs(currentZoop.X) + (1 * delta)) * -1;
+
+					if (currentZoop.Y == 0) //Handle starting from 0
+					{
+						if (axisX.Y >= 0 && delta > 0)
+						{
+							currentZoop.Y = 1;
+						}
+						else if (axisX.Y < 0 && delta > 0)
+						{
+							currentZoop.Y = -1;
+						}
+					}
+					else
+					{
+						if (currentZoop.Y > 0)
+						{
+							currentZoop.Y = currentZoop.Y + (1 * delta);
+						}
+						else
+						{
+							currentZoop.Y = (abs(currentZoop.Y) + (1 * delta)) * -1;
+						}
+					}
 				}
-			}
-			else if (currentZoop.Z != 0)
-			{
-				if (currentZoop.Z > 0)
+
+				/*if (abs(currentZoop.Y) > abs(currentZoop.X))
 				{
-					currentZoop.Z = currentZoop.Z + (1 * delta);
+					if (currentZoop.X > 0)
+					{
+						currentZoop.X = currentZoop.X + (1 * delta);
+					}
+					else
+					{
+						currentZoop.X = (abs(currentZoop.X) + (1 * delta)) * -1;
+					}
 				}
-				else
+				else if (abs(currentZoop.Y) < abs(currentZoop.X))
 				{
-					currentZoop.Z = (abs(currentZoop.Z) + (1 * delta)) * -1;
-				}
+					if (currentZoop.Y > 0)
+					{
+						currentZoop.Y = currentZoop.Y + (1 * delta);
+					}
+					else
+					{
+						currentZoop.Y = (abs(currentZoop.Y) + (1 * delta)) * -1;
+					}
+				}*/
 			}
 		}
 		else 
@@ -93,6 +231,7 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 
 void FInfiniteZoopModule::StartupModule() {
 
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::SetZoopAmount, [=](auto& scope, AFGFactoryBuildingHologram* self, const FIntVector& Zoop)
 		{
 			auto baseHG = Cast<AFGHologram>(self);
@@ -233,7 +372,35 @@ void FInfiniteZoopModule::StartupModule() {
 
 #endif
 }
-//#pragma optimize("", on)
+
+FVector FInfiniteZoopModule::CalcPivotAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat)
+{
+	auto ProcessAxes = [&](const FVector& VAxis, const FVector& Axis1, const FVector& Axis2) -> FVector
+	{
+		int Inverted = FMath::Sign(VAxis.Z);
+		if (DesiredAxis == EAxis::Z) {
+			return Inverted * VAxis;
+		}
+		float Check1 = FVector(Axis1.X, Axis1.Y, 0.f).GetSafeNormal() | ViewVector;
+		float Check2 = FVector(Axis2.X, Axis2.Y, 0.f).GetSafeNormal() | ViewVector;
+		if (FMath::Abs(Check1) >= FMath::Abs(Check2)) {
+			return FMath::Sign(Check1) * ((DesiredAxis == EAxis::X) ? Axis1 : (Inverted * Axis2));
+		}
+		return FMath::Sign(Check2) * ((DesiredAxis == EAxis::X) ? Axis2 : (Inverted * -Axis1));
+	};
+
+	FVector XAxis = ActorQuat.GetAxisX();
+	FVector YAxis = ActorQuat.GetAxisY();
+	FVector ZAxis = ActorQuat.GetAxisZ();
+	if (FMath::Abs(ZAxis | FVector::UpVector) >= UE_HALF_SQRT_2) {
+		return ProcessAxes(ZAxis, XAxis, YAxis);
+	}
+	else if (FMath::Abs(YAxis | FVector::UpVector) >= UE_HALF_SQRT_2) {
+		return ProcessAxes(YAxis, ZAxis, XAxis);
+	}
+	return ProcessAxes(XAxis, YAxis, ZAxis);
+}
+#pragma optimize("", on)
 
 
 IMPLEMENT_GAME_MODULE(FInfiniteZoopModule, InfiniteZoop);

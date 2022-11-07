@@ -4,6 +4,7 @@
 #include "Subsystem/SubsystemActorManager.h"
 #include "Hologram/FGHologram.h"
 #include "Hologram/FGPoleHologram.h"
+#include "Hologram/FGConveyorPoleHologram.h"
 #include "Equipment/FGBuildGunBuild.h"
 #include "Hologram/FGWireHologram.h"
 #include "Holo_WireHologramBuildModes.h"
@@ -46,8 +47,6 @@ void PrimaryFire(CallScope<void(*)(UFGBuildGunStateBuild*)>& scope, UFGBuildGunS
 
 void FConstructionPreferencesModule::StartupModule() {
 
-#if !WITH_EDITOR
-
 	//SUBSCRIBE_METHOD(AFGWireHologram::SetActiveAutomaticPoleHologram, [=](auto& scope, AFGWireHologram* self, class AFGPowerPoleHologram* poleHologram)
 	//	{
 	//		UE_LOG(LogConstructionPreferences, Display, TEXT("SetActiveAutomaticPoleHologram"));
@@ -68,15 +67,19 @@ void FConstructionPreferencesModule::StartupModule() {
 	//		}
 	//	});
 
+#if !WITH_EDITOR
 	AFGConveyorLiftHologram* hg = GetMutableDefault<AFGConveyorLiftHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGConveyorLiftHologram::BeginPlay, hg, [](AFGConveyorLiftHologram* self)
 		{
 			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
-
+			UE_LOG(LogConstructionPreferences, Display, TEXT("Vanilla lift height = %f"), self->mMaximumHeight);
 			self->mStepHeight = ((float)config.ConveyorLiftStep * 100);
 			self->mMinimumHeight = ((float)config.ConveyorLiftHeight * 100);
+			self->mMaximumHeight = ((float)config.ConveyorLiftHeightMax * 100);
 		});
+
 	AFGConveyorBeltHologram* CBH = GetMutableDefault<AFGConveyorBeltHologram>();
+
 	//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::SpawnChildren, CBH, [](auto scope, AFGConveyorBeltHologram* self, AActor* hologramOwner, FVector spawnLocation, APawn* hologramInstigator) {
 	//UE_LOG(LogConstructionPreferences, Display, TEXT("AFGConveyorBeltHologram::SpawnChildren"));
 	//		//UWorld* WorldObject = self->GetWorld();
@@ -89,85 +92,85 @@ void FConstructionPreferencesModule::StartupModule() {
 	//
 	//
 	//	//virtual bool DoMultiStepPlacement(bool isInputFromARelease) override;
-	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::DoMultiStepPlacement, CBH, [=](auto& scope, AFGConveyorBeltHologram* self, bool isInputFromARelease)
-		{
-			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
-			if (config.ConveyorPole == 1)
-			{
-				UE_LOG(LogConstructionPreferences, Display, TEXT("AFGConveyorBeltHologram::DoMultiStepPlacement"));
-				//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
-				if (self->GetCurrentBuildStep() == ESplineHologramBuildStep::SHBS_AdjustPole)
-				{
-					UE_LOG(LogConstructionPreferences, Display, TEXT("ESplineHologramBuildStep::SHBS_AdjustPole"));
-					scope.Override(true);
-				}
-				else if (self->GetCurrentBuildStep() == ESplineHologramBuildStep::SHBS_PlacePoleOrSnapEnding)
-				{
-					UE_LOG(LogConstructionPreferences, Display, TEXT("ESplineHologramBuildStep::SHBS_PlacePoleOrSnapEnding"));
-					scope.Override(true);
-				}
-				else if (self->GetCurrentBuildStep() == ESplineHologramBuildStep::SHBS_FindStart)
-				{
-					UE_LOG(LogConstructionPreferences, Display, TEXT("ESplineHologramBuildStep::SHBS_FindStart"));
-				}
-			}
-		});
-
-
-	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::Scroll, CBH, [=](auto& scope, AFGConveyorBeltHologram* self, int32 delta)
-		{
-			auto pole = Cast<AFGConveyorPoleHologram>(self->mChildPoleHologram);
-			if (pole)
-			{
-				if (pole->mSnappedBuilding)
-				{
-					auto snappedPole = Cast<AFGConveyorPoleStackable>(pole->mSnappedBuilding);
-					if (snappedPole)
-					{
-						pole->ScrollRotate(delta, pole->GetRotationStep());
-					}
-				}
-			}
-		});
-//////
-	AFGPoleHologram* CPH = GetMutableDefault<AFGPoleHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGPoleHologram::DoMultiStepPlacement, CPH, [](auto scope, AFGPoleHologram* self, bool isInputFromARelease)
-		{
-			UE_LOG(LogConstructionPreferences, Display, TEXT("AFGPoleHologram::DoMultiStepPlacement"));
-			//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
-			scope.Override(true);
-		});
-
-	SUBSCRIBE_METHOD_VIRTUAL(AFGPoleHologram::TrySnapToActor, CPH, [](auto& scope, AFGPoleHologram* self, const FHitResult& hitResult)
-		{
-			UE_LOG(LogConstructionPreferences, Display, TEXT("AFGPoleHologram::TrySnapToActor"));
-			auto convHG = Cast<AFGConveyorPoleHologram>(self);
-			if (convHG)
-			{
-				auto hitPole = Cast<AFGConveyorPoleStackable>(hitResult.Actor);
-				if (hitPole)
-				{
-					auto parentBelt = Cast<AFGConveyorBeltHologram>(self->mParent);
-					if (parentBelt)
-					{
-						int rotator = self->mSnapToGuideLines ? -1 : 1;
-						FVector startPos = parentBelt->mSnappedConnectionComponents[0]->GetConnectorLocation(false);
-						FVector startNormal = parentBelt->mSnappedConnectionComponents[0]->GetConnectorNormal();
-						FVector endPos = convHG->mSnapConnection->GetConnectorLocation(false);
-						FVector endNormal = convHG->mSnapConnection->GetConnectorNormal();
-						if (self->mSnapToGuideLines)
-						{
-							endPos = endPos.RotateAngleAxis(180, endPos);
-							endNormal = endNormal.RotateAngleAxis(180, endNormal);
-						}
-						parentBelt->AutoRouteSpline(startPos, startNormal, endPos, endNormal);
-						parentBelt->UpdateSplineComponent();
-						//FHitResult newHit = FHitResult(startPos, endPos);
-						//parentBelt->SetHologramLocationAndRotation(newHit);
-					}
-				}
-			}
-		});
+//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::DoMultiStepPlacement, CBH, [=](auto& scope, AFGConveyorBeltHologram* self, bool isInputFromARelease)
+//		{
+//			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
+//			if (config.ConveyorPole == 1)
+//			{
+//				UE_LOG(LogConstructionPreferences, Display, TEXT("AFGConveyorBeltHologram::DoMultiStepPlacement"));
+//				//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+//				if (self->GetCurrentBuildStep() == ESplineHologramBuildStep::SHBS_AdjustPole)
+//				{
+//					UE_LOG(LogConstructionPreferences, Display, TEXT("ESplineHologramBuildStep::SHBS_AdjustPole"));
+//					scope.Override(true);
+//				}
+//				else if (self->GetCurrentBuildStep() == ESplineHologramBuildStep::SHBS_PlacePoleOrSnapEnding)
+//				{
+//					UE_LOG(LogConstructionPreferences, Display, TEXT("ESplineHologramBuildStep::SHBS_PlacePoleOrSnapEnding"));
+//					scope.Override(true);
+//				}
+//				else if (self->GetCurrentBuildStep() == ESplineHologramBuildStep::SHBS_FindStart)
+//				{
+//					UE_LOG(LogConstructionPreferences, Display, TEXT("ESplineHologramBuildStep::SHBS_FindStart"));
+//				}
+//			}
+//		});
+//
+//
+//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::Scroll, CBH, [=](auto& scope, AFGConveyorBeltHologram* self, int32 delta)
+//		{
+//			auto pole = Cast<AFGConveyorPoleHologram>(self->mChildPoleHologram);
+//			if (pole)
+//			{
+//				if (pole->mSnappedBuilding)
+//				{
+//					auto snappedPole = Cast<AFGConveyorPoleStackable>(pole->mSnappedBuilding);
+//					if (snappedPole)
+//					{
+//						pole->ScrollRotate(delta, pole->GetRotationStep());
+//					}
+//				}
+//			}
+//		});
+////////
+//	AFGPoleHologram* CPH = GetMutableDefault<AFGPoleHologram>();
+//	SUBSCRIBE_METHOD_VIRTUAL(AFGPoleHologram::DoMultiStepPlacement, CPH, [](auto scope, AFGPoleHologram* self, bool isInputFromARelease)
+//		{
+//			UE_LOG(LogConstructionPreferences, Display, TEXT("AFGPoleHologram::DoMultiStepPlacement"));
+//			//FDebug::DumpStackTraceToLog(ELogVerbosity::Display);
+//			scope.Override(true);
+//		});
+//
+//	SUBSCRIBE_METHOD_VIRTUAL(AFGPoleHologram::TrySnapToActor, CPH, [](auto& scope, AFGPoleHologram* self, const FHitResult& hitResult)
+//		{
+//			UE_LOG(LogConstructionPreferences, Display, TEXT("AFGPoleHologram::TrySnapToActor"));
+//			auto convHG = Cast<AFGConveyorPoleHologram>(self);
+//			if (convHG)
+//			{
+//				auto hitPole = Cast<AFGConveyorPoleStackable>(hitResult.Actor);
+//				if (hitPole)
+//				{
+//					auto parentBelt = Cast<AFGConveyorBeltHologram>(self->mParent);
+//					if (parentBelt)
+//					{
+//						int rotator = self->mSnapToGuideLines ? -1 : 1;
+//						FVector startPos = parentBelt->mSnappedConnectionComponents[0]->GetConnectorLocation(false);
+//						FVector startNormal = parentBelt->mSnappedConnectionComponents[0]->GetConnectorNormal();
+//						FVector endPos = convHG->mSnapConnection->GetConnectorLocation(false);
+//						FVector endNormal = convHG->mSnapConnection->GetConnectorNormal();
+//						if (self->mSnapToGuideLines)
+//						{
+//							endPos = endPos.RotateAngleAxis(180, endPos);
+//							endNormal = endNormal.RotateAngleAxis(180, endNormal);
+//						}
+//						parentBelt->AutoRouteSpline(startPos, startNormal, endPos, endNormal);
+//						parentBelt->UpdateSplineComponent();
+//						//FHitResult newHit = FHitResult(startPos, endPos);
+//						//parentBelt->SetHologramLocationAndRotation(newHit);
+//					}
+//				}
+//			}
+//		});
 #endif
 	//-mSnapConnection	0x000002911e891f00 (Name = SnapOnly0)	UFGFactoryConnectionComponent *
 

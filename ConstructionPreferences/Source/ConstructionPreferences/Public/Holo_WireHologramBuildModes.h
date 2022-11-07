@@ -4,7 +4,9 @@
 #include "GameFramework/Actor.h"
 #include "Hologram/FGWireHologram.h"
 #include "FGRecipeManager.h"
+#include "CP_Subsystem.h"
 #include "Holo_WireHologramBuildModes.generated.h"
+
 
 /**
  * 
@@ -24,25 +26,23 @@ public:
 	void SwitchPoleType();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Construction Preferences")
-		TArray<TSubclassOf<UFGRecipe>> PowerPoleRecipes;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Construction Preferences")
 		TSubclassOf<UFGRecipe> DefaultPowerPoleRecipe;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Construction Preferences")
-		TArray<TSubclassOf<UFGRecipe>> WallSocketRecipes;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Construction Preferences")
 		TSubclassOf<UFGRecipe> DefaultWallSocketRecipe;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Construction Preferences")
-		TArray<TSubclassOf<UFGHologramBuildModeDescriptor>> PoleBuildModes;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Construction Preferences")
-		TArray<TSubclassOf<UFGHologramBuildModeDescriptor>> WallBuildModes;
+		TArray<FWireBuildModeStruct> WireBuildModes;
 
 	void GetRecipeManager();
 
 	AFGRecipeManager* RecipeManager;
-	bool AllowSetActiveHologram;
+
+private:
+	ACP_Subsystem* CP_Subsystem;
+	APawn* ConstructionInstigator;
+
+	void RespawnChildPoleHolograms();
+	void RespawnChildWallSocketHolograms();
+	void SetSafeDefaultWallSocket();
 };

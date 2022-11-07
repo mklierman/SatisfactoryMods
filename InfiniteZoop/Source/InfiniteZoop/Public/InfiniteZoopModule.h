@@ -15,4 +15,6 @@ public:
 	void ScrollHologram(AFGHologram* self, int32 delta);
 
 	TMap<AFGHologram*, FIntVector> HologramsToZoop;
+
+	FVector CalcPivotAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat);
 };

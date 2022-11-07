@@ -37,15 +37,15 @@ TArray<UWidget*> UCTB_BPFL::GetAllWidgets(UUserWidget* Widget)
 
 void UCTB_BPFL::RegisterUserWidgetHook()
 {
-#if !WITHEDITOR
-	SUBSCRIBE_METHOD_AFTER(UUserWidget::Construct, [](UUserWidget* self)
-		{
-			//UWorld* WorldObject = self->GetWorld();
-			//USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
-			//ACTB_Subsystem* subsystem = SubsystemActorManager->GetSubsystemActor<ACTB_Subsystem>();
-
-			//subsystem->OnWidgetConstruct.Broadcast(self);
-		});
-#endif
+//#if !WITHEDITOR
+//	SUBSCRIBE_METHOD_AFTER(UUserWidget::Construct, [](UUserWidget* self)
+//		{
+//			//UWorld* WorldObject = self->GetWorld();
+//			//USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
+//			//ACTB_Subsystem* subsystem = SubsystemActorManager->GetSubsystemActor<ACTB_Subsystem>();
+//
+//			//subsystem->OnWidgetConstruct.Broadcast(self);
+//		});
+//#endif
 }
 

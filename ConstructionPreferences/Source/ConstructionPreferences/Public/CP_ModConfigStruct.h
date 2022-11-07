@@ -30,6 +30,9 @@ public:
     UPROPERTY(BlueprintReadWrite)
     float ConveyorLiftStep;
 
+    UPROPERTY(BlueprintReadWrite)
+    int32 ConveyorLiftHeightMax;
+
     /* Retrieves active configuration value and returns object of this struct containing it */
     static FCP_ModConfigStruct GetActiveConfig() {
         FCP_ModConfigStruct ConfigStruct{};
