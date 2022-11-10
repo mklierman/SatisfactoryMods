@@ -29,22 +29,35 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 	AFGFactoryBuildingHologram* Fhg = Cast<AFGFactoryBuildingHologram>(self);
 	if (Fhg)
 	{
+		AFGFoundationHologram* foundation = Cast<AFGFoundationHologram>(self);
+		AFGWallHologram* wall = Cast<AFGWallHologram>(self);
 		auto currentZoop = Fhg->mDesiredZoop;
 		if (currentZoop.IsZero())
 		{
-			HologramsToZoop.Remove(self);
+			if (wall)
+			{
+				HologramsToZoop.Remove(self);
+			}
+			if (foundation)
+			{
+				FoundationsBeingZooped[foundation]->inScrollMode = false;
+			}
 			return;
 		}
 
 		if (Fhg->GetCurrentBuildMode() == Fhg->mBuildModeZoop)
 		{
-			AFGFoundationHologram* foundation = Cast<AFGFoundationHologram>(self);
 			auto quat = self->GetActorQuat();
 			auto loc = self->GetActorLocation().ToOrientationQuat();
 			auto axisX = CalcPivotAxis(EAxis::X, pc->PlayerCameraManager->GetCameraRotation().Vector(), self->GetActorQuat());
 			auto axisY = CalcPivotAxis(EAxis::Y, pc->PlayerCameraManager->GetCameraRotation().Vector(), self->GetActorQuat());
 			if (foundation)
 			{
+				auto zStruct = FoundationsBeingZooped[foundation];
+				currentZoop.X = zStruct->X;
+				currentZoop.Y = zStruct->Y;
+				currentZoop.Z = zStruct->Z;
+
 				if (abs(axisX.X) > abs(axisX.Y))
 				{
 					if (currentZoop.X == 0) //Handle starting from 0
@@ -95,8 +108,12 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 						}
 					}
 				}
+
+				zStruct->X = currentZoop.X;
+				zStruct->Y = currentZoop.Y;
+				zStruct->Z = currentZoop.Z;
 			}
-			else if (auto wall = Cast<AFGWallHologram>(self))
+			else if (wall)
 			{
 				if (abs(axisX.X) < abs(axisX.Y))
 				{
@@ -154,7 +171,6 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 		}
 		else 
 		{
-			AFGFoundationHologram* foundation = Cast<AFGFoundationHologram>(self);
 			if (foundation && foundation->GetCurrentBuildMode() == foundation->mBuildModeVerticalZoop)
 			{
 				if (currentZoop.Z > 0)
@@ -167,8 +183,14 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 				}
 			}
 		}
-
-		HologramsToZoop.Add(self, currentZoop);
+		if (wall)
+		{
+			HologramsToZoop.Add(self, currentZoop);
+		}
+		else if (foundation)
+		{
+			FoundationsBeingZooped[foundation]->inScrollMode = true;
+		}
 		Fhg->SetZoopAmount(currentZoop);
 	}
 }
@@ -176,7 +198,9 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 bool FInfiniteZoopModule::SetZoopAmount(AFGFactoryBuildingHologram* self, const FIntVector& Zoop)
 {
 	auto baseHG = Cast<AFGHologram>(self);
-	if (baseHG)
+	AFGFoundationHologram* foundation = Cast<AFGFoundationHologram>(self);
+	AFGWallHologram* wall = Cast<AFGWallHologram>(self);
+	if (baseHG && wall)
 	{
 		auto newZoop = HologramsToZoop.Find(baseHG);
 		if (newZoop == nullptr || newZoop->IsZero())
@@ -185,7 +209,20 @@ bool FInfiniteZoopModule::SetZoopAmount(AFGFactoryBuildingHologram* self, const 
 		}
 		if (newZoop && Zoop != *newZoop)
 		{
-			return true;
+			return true; //scope.Cancel();
+		}
+	}
+	else if (foundation)
+	{
+		auto zStruct = FoundationsBeingZooped[foundation];
+		FIntVector newZoop = FIntVector(zStruct->X, zStruct->Y, zStruct->Z);
+		if (newZoop.IsZero() || !zStruct->inScrollMode)
+		{
+			return false;
+		}
+		if (zStruct->inScrollMode && (Zoop.X != newZoop.X || Zoop.Y != newZoop.Y || Zoop.Z != newZoop.Z))
+		{
+			return true; //scope.Cancel();
 		}
 	}
 	return false;
@@ -209,29 +246,25 @@ bool FInfiniteZoopModule::OnRep_DesiredZoop(AFGFactoryBuildingHologram* self)
 	{
 		if (IsZoopMode(fhg))
 		{
-			int index = GetStructIndex(fhg);
-			FZoopStruct* zStruct = index >= 0 ? FoundationsBeingZooped[index] : new FZoopStruct();
+			auto zStruct = GetStruct(fhg);
 
-			if (zStruct->FoundationHologram == nullptr || !zStruct->secondPassComplete)
+			if (!zStruct->secondPassComplete && !zStruct->inScrollMode)
 			{
 				return false;
 			}
 			else
 			{
-				if (index >= 0)
+				if (zStruct->secondPassComplete || zStruct->inScrollMode)
 				{
-					if (zStruct->secondPassComplete)
-					{
-						self->mDesiredZoop.X = zStruct->X;
-						self->mDesiredZoop.Y = zStruct->Y;
-						self->mDesiredZoop.Z = zStruct->Z;
-						//UE_LOG(InfiniteZoop_Log, Display, TEXT("OnRep_DesiredZoop: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
-						//self->OnRep_DesiredZoop();
+					self->mDesiredZoop.X = zStruct->X;
+					self->mDesiredZoop.Y = zStruct->Y;
+					self->mDesiredZoop.Z = zStruct->Z;
+					//UE_LOG(InfiniteZoop_Log, Display, TEXT("OnRep_DesiredZoop: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
+					//self->OnRep_DesiredZoop();
 
-						zStruct->firstPassComplete = false;
-						zStruct->secondPassComplete = false;
-						FoundationsBeingZooped[index] = zStruct;
-					}
+					zStruct->firstPassComplete = false;
+					zStruct->secondPassComplete = false;
+					FoundationsBeingZooped[fhg] = zStruct;
 				}
 				self->mBlockedZoopDirectionMask = (uint8)EHologramZoopDirections::HZD_None;
 				self->mDefaultBlockedZoopDirections = (uint8)EHologramZoopDirections::HZD_None;
@@ -243,15 +276,9 @@ bool FInfiniteZoopModule::OnRep_DesiredZoop(AFGFactoryBuildingHologram* self)
 
 void FInfiniteZoopModule::CreateDefaultFoundationZoop(AFGFoundationHologram* self, const FHitResult& hitResult)
 {
-	if (IsZoopMode(self))
+	if (IsZoopMode(self) && !FoundationsBeingZooped[self]->inScrollMode)
 	{
-		int index = GetStructIndex(self);
-		FZoopStruct* zStruct = index >= 0 ? FoundationsBeingZooped[index] : new FZoopStruct();
-
-		if (zStruct->FoundationHologram == nullptr)
-		{
-			zStruct->FoundationHologram = self;
-		}
+		auto zStruct = GetStruct(self);
 
 		//UE_LOG(InfiniteZoop_Log, Display, TEXT("CreateDefaultFoundationZoop: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
 		auto x = abs(self->mDesiredZoop.X);
@@ -304,15 +331,7 @@ void FInfiniteZoopModule::CreateDefaultFoundationZoop(AFGFoundationHologram* sel
 			zStruct->secondPassComplete = true;
 		}
 
-		if (index >= 0)
-		{
-			FoundationsBeingZooped[index] = zStruct;
-		}
-		else
-		{
-			FoundationsBeingZooped.Add(zStruct);
-		}
-
+		FoundationsBeingZooped[self] = zStruct;
 		self->OnRep_DesiredZoop();
 	}
 }
@@ -324,32 +343,28 @@ bool FInfiniteZoopModule::UpdateZoop(AFGFoundationHologram* self)
 	{
 		if (IsZoopMode(self))
 		{
-			int index = GetStructIndex(self);
-			FZoopStruct* zStruct = index >= 0 ? FoundationsBeingZooped[index] : new FZoopStruct();
+			auto zStruct = GetStruct(self);
 
-			if (zStruct->FoundationHologram == nullptr || !zStruct->secondPassComplete)
+			if (!zStruct->secondPassComplete && !zStruct->inScrollMode)
 			{
 				return false;
 			}
 			else
 			{
-				if (index >= 0)
+				if (zStruct->secondPassComplete || zStruct->inScrollMode)
 				{
-					if (zStruct->secondPassComplete)
-					{
-						self->mDesiredZoop.X = zStruct->X;
-						self->mDesiredZoop.Y = zStruct->Y;
-						self->mDesiredZoop.Z = zStruct->Z;
-						//UE_LOG(InfiniteZoop_Log, Display, TEXT("UpdateZoop: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
-						self->OnRep_DesiredZoop();
+					self->mDesiredZoop.X = zStruct->X;
+					self->mDesiredZoop.Y = zStruct->Y;
+					self->mDesiredZoop.Z = zStruct->Z;
+					//UE_LOG(InfiniteZoop_Log, Display, TEXT("UpdateZoop: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
+					self->OnRep_DesiredZoop();
 
-						zStruct->firstPassComplete = false;
-						zStruct->secondPassComplete = false;
-						//zStruct->X = 0;
-						//zStruct->Y = 0;
-						//zStruct->Z = 0;
-						FoundationsBeingZooped[index] = zStruct;
-					}
+					zStruct->firstPassComplete = false;
+					zStruct->secondPassComplete = false;
+					//zStruct->X = 0;
+					//zStruct->Y = 0;
+					//zStruct->Z = 0;
+					FoundationsBeingZooped[fhg] = zStruct;
 				}
 				self->mBlockedZoopDirectionMask = (uint8)EHologramZoopDirections::HZD_None;
 				self->mDefaultBlockedZoopDirections = (uint8)EHologramZoopDirections::HZD_None;
@@ -366,19 +381,15 @@ int32 FInfiniteZoopModule::GetBaseCostMultiplier(const AFGFactoryBuildingHologra
 	auto fhg = Cast< AFGFoundationHologram>(nonConst);
 	if (fhg)
 	{
-		int index = GetStructIndex(fhg);
-		FZoopStruct* zStruct = index >= 0 ? FoundationsBeingZooped[index] : new FZoopStruct();
-		if (zStruct->FoundationHologram)
-		{
-			auto x = abs(zStruct->X);
-			auto y = abs(zStruct->Y);
-			auto z = abs(zStruct->Z);
-			x = x > 0 ? x + 1 : 1;
-			y = y > 0 ? y + 1 : 1;
-			z = z > 0 ? z + 1 : 1;
-			auto result = (x * y * z);
-			return result;
-		}
+		auto zStruct = GetStruct(fhg);
+		auto x = abs(zStruct->X);
+		auto y = abs(zStruct->Y);
+		auto z = abs(zStruct->Z);
+		x = x > 0 ? x + 1 : 1;
+		y = y > 0 ? y + 1 : 1;
+		z = z > 0 ? z + 1 : 1;
+		auto result = (x * y * z);
+		return result;
 	}
 
 	//UE_LOG(InfiniteZoop_Log, Display, TEXT("GetBaseCostMultiplier: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
@@ -396,9 +407,8 @@ void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AAct
 {
 	if (IsZoopMode(self))
 	{
-		int index = GetStructIndex(self);
-		FZoopStruct* zStruct = index >= 0 ? FoundationsBeingZooped[index] : new FZoopStruct();
-		if (zStruct->FoundationHologram)
+		auto zStruct = GetStruct(self);
+		if (self)
 		{
 			self->mDesiredZoop.X = zStruct->X;
 			self->mDesiredZoop.Y = zStruct->Y;
@@ -412,50 +422,71 @@ void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AAct
 			//zStruct->X = 0;
 			//zStruct->Y = 0;
 			//zStruct->Z = 0;
-			FoundationsBeingZooped[index] = zStruct;
+			FoundationsBeingZooped[self] = zStruct;
 		}
 	}
 }
 
-int32 FInfiniteZoopModule::GetStructIndex(AFGFoundationHologram* self)
+FZoopStruct* FInfiniteZoopModule::GetStruct(AFGFoundationHologram* self)
 {
-	int index = -1;
-	for (int i = 0; i < FoundationsBeingZooped.Num(); i++)
+	FZoopStruct* zStruct = new FZoopStruct();
+	if (FoundationsBeingZooped.Contains(self))
 	{
-		FZoopStruct* zs = FoundationsBeingZooped[i];
-		if (zs->FoundationHologram && zs->FoundationHologram == self)
-		{
-			index = i;
-			break;
-		}
+		zStruct = FoundationsBeingZooped[self];
 	}
-	return index;
+	else
+	{
+		FoundationsBeingZooped.Add(self, zStruct);
+	}
+	return zStruct;
 }
 
 bool FInfiniteZoopModule::IsZoopMode(AFGFoundationHologram* self)
 {
 	auto vertMode = self->mBuildModeVerticalZoop;
-	TSubclassOf<UFGHologramBuildModeDescriptor> currentBuildMode;
-	auto owner = self->GetOwner();
-	if (owner)
-	{
-		auto bgun = Cast<AFGBuildGun>(owner);
-		if (bgun)
-		{
-			auto buildState = bgun->GetBuildGunStateFor(EBuildGunState::BGS_BUILD);
-			if (buildState)
-			{
-				auto bgBuild = Cast<UFGBuildGunStateBuild>(buildState);
-				if (bgBuild)
-				{
-					currentBuildMode = bgBuild->mCurrentHologramBuildMode;
-				}
-			}
-		}
-	}
-	if (currentBuildMode == vertMode)
+	//TSubclassOf<UFGHologramBuildModeDescriptor> currentBuildMode;
+	//auto owner = self->GetOwner();
+	//if (owner)
+	//{
+	//	auto bgun = Cast<AFGBuildGun>(owner);
+	//	if (bgun)
+	//	{
+	//		auto buildState = bgun->GetBuildGunStateFor(EBuildGunState::BGS_BUILD);
+	//		if (buildState)
+	//		{
+	//			auto bgBuild = Cast<UFGBuildGunStateBuild>(buildState);
+	//			if (bgBuild)
+	//			{
+	//				currentBuildMode = bgBuild->mCurrentHologramBuildMode;
+	//			}
+	//		}
+	//	}
+	//}
+	if (self->GetCurrentBuildMode() == vertMode)
 	{
 		return false;
+	}
+	return true;
+}
+
+bool FInfiniteZoopModule::BGSecondaryFire(UFGBuildGunStateBuild* self)
+{
+	if (auto foundation = Cast< AFGFoundationHologram>(self->GetHologram()))
+	{
+		auto zStruct = FoundationsBeingZooped[foundation];
+		if (zStruct->inScrollMode)
+		{
+			zStruct->inScrollMode = false;
+			return false;
+		}
+	}
+	else if (auto wall = Cast< AFGWallHologram>(self->GetHologram()))
+	{
+		if (HologramsToZoop.Contains(self->GetHologram()))
+		{
+			HologramsToZoop.Remove(self->GetHologram());
+			return false;
+		}
 	}
 	return true;
 }
@@ -483,12 +514,31 @@ void FInfiniteZoopModule::StartupModule() {
 		{
 			// Fix for incorrect # showing when 2D zooping
 			auto hg = self->GetHologram();
-			auto fbhg = Cast< AFGFactoryBuildingHologram>(hg);
-			if (fbhg)
+	auto fbhg = Cast< AFGFactoryBuildingHologram>(hg);
+	if (fbhg)
+	{
+		auto mult = fbhg->GetBaseCostMultiplier();
+		mult = mult > 0 ? mult - 1 : 0;
+		scope(self, (float)mult, maxZoop, zoopLocation);
+	}
+		});
+
+	SUBSCRIBE_METHOD(UFGBuildGunState::SecondaryFire, [=](auto& scope, UFGBuildGunState* self)
+		{
+			if (auto bgsb = Cast< UFGBuildGunStateBuild>(self))
 			{
-				auto mult = fbhg->GetBaseCostMultiplier();
-				mult = mult > 0 ? mult - 1 : 0;
-				scope(self, (float)mult, maxZoop, zoopLocation);
+				if (!BGSecondaryFire(bgsb))
+				{
+					scope.Cancel();
+				}
+			}
+		});
+	UFGBuildGunStateBuild* bgbCDO = GetMutableDefault<UFGBuildGunStateBuild>();
+	SUBSCRIBE_METHOD_VIRTUAL(UFGBuildGunStateBuild::SecondaryFire_Implementation, bgbCDO, [=](auto& scope, UFGBuildGunStateBuild* self)
+		{
+			if (!BGSecondaryFire(self))
+			{
+				scope.Cancel();
 			}
 		});
 

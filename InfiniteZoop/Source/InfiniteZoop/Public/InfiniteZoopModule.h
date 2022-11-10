@@ -9,7 +9,6 @@
 
 struct FZoopStruct
 {
-		AFGFoundationHologram* FoundationHologram = nullptr;
 		int32 X = 0;
 		int32 Y = 0;
 		int32 Z = 0;
@@ -46,13 +45,15 @@ public:
 
 	void ConstructZoop(AFGFoundationHologram* self, TArray<AActor*>& out_children);
 
-	int32 GetStructIndex(AFGFoundationHologram* self);
+	FZoopStruct* GetStruct(AFGFoundationHologram* self);
 
 	bool IsZoopMode(AFGFoundationHologram* self);
 
+	bool BGSecondaryFire(UFGBuildGunStateBuild* self);
+
 	TMap<AFGHologram*, FIntVector> HologramsToZoop;
 	TMap<AFGFoundationHologram*, FIntVector> CheckedFoundations;
-	TArray<FZoopStruct*> FoundationsBeingZooped;
+	TMap<AFGFoundationHologram*, FZoopStruct*> FoundationsBeingZooped;
 
 	FVector CalcPivotAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat);
 };
