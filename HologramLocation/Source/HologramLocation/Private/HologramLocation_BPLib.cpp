@@ -53,6 +53,11 @@ FTransform UHologramLocation_BPLib::GetLiftHologramTransform(AFGConveyorLiftHolo
     return clHologram->GetTopTransform();
 }
 
+float UHologramLocation_BPLib::GetLiftHeight(AFGConveyorLiftHologram* clHologram)
+{
+    return clHologram->GetHeight();
+}
+
 FString UHologramLocation_BPLib::FormatIntAsNumberString(int32 number, bool usePeriod)
 {
     int32 num = number;

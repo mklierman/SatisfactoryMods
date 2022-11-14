@@ -21,11 +21,68 @@
 
 
 DEFINE_LOG_CATEGORY(InfiniteZoop_Log);
-#pragma optimize("", off)
+//#pragma optimize("", off)
+int GetClosestZoopAngle(double angleToCheck)
+{
+	if (angleToCheck >= double(0.0) && angleToCheck < double(90.0))
+	{
+		double firstNum = 0.0;
+		double secondNum = 90.0;
+		if (abs(angleToCheck - firstNum) < abs(angleToCheck - secondNum))
+		{
+			return firstNum;
+		}
+		else
+		{
+			return secondNum;
+		}
+	}
+	else if (angleToCheck >= double(90.0) && angleToCheck < double(180.0))
+	{
+		double firstNum = 90.0;
+		double secondNum = 180.0;
+		if (abs(angleToCheck - firstNum) < abs(angleToCheck - secondNum))
+		{
+			return firstNum;
+		}
+		else
+		{
+			return secondNum;
+		}
+	}
+	else if (angleToCheck >= double(180.0) && angleToCheck < double(270.0))
+	{
+		double firstNum = 180.0;
+		double secondNum = 270.0;
+		if (abs(angleToCheck - firstNum) < abs(angleToCheck - secondNum))
+		{
+			return firstNum;
+		}
+		else
+		{
+			return secondNum;
+		}
+	}
+	else if (angleToCheck >= double(270.0) && angleToCheck <= double(360.0))
+	{
+		double firstNum = 270.0;
+		double secondNum = 360.0;
+		if (abs(angleToCheck - firstNum) < abs(angleToCheck - secondNum))
+		{
+			return firstNum;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	return -1;
+}
+
+
 void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 {
 	auto pc = Cast<AFGPlayerController>(self->GetWorld()->GetFirstPlayerController());
-	bool isShiftDown = pc->IsInputKeyDown(EKeys::LeftShift);
 	AFGFactoryBuildingHologram* Fhg = Cast<AFGFactoryBuildingHologram>(self);
 	if (Fhg)
 	{
@@ -47,26 +104,29 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 
 		if (Fhg->GetCurrentBuildMode() == Fhg->mBuildModeZoop)
 		{
-			auto quat = self->GetActorQuat();
-			auto loc = self->GetActorLocation().ToOrientationQuat();
-			auto axisX = CalcPivotAxis(EAxis::X, pc->PlayerCameraManager->GetCameraRotation().Vector(), self->GetActorQuat());
-			auto axisY = CalcPivotAxis(EAxis::Y, pc->PlayerCameraManager->GetCameraRotation().Vector(), self->GetActorQuat());
+			auto invRotation = roundf(self->GetActorRotation().GetInverse().Yaw);
 			if (foundation)
 			{
+				auto camInvRotator2 = pc->PlayerCameraManager->GetCameraRotation().Add(0, invRotation, 0).Yaw;
+				auto newAngle = fmod(camInvRotator2, 360);
+				if (newAngle < 0) newAngle += 360;
+				auto lookedAtZoopAxis = GetClosestZoopAngle(newAngle);
+				bool isXZoop = (lookedAtZoopAxis == 0 || lookedAtZoopAxis == 180);
+
 				auto zStruct = FoundationsBeingZooped[foundation];
 				currentZoop.X = zStruct->X;
 				currentZoop.Y = zStruct->Y;
 				currentZoop.Z = zStruct->Z;
 
-				if (abs(axisX.X) > abs(axisX.Y))
+				if (isXZoop)
 				{
 					if (currentZoop.X == 0) //Handle starting from 0
 					{
-						if (axisX.X >= 0 && delta > 0)
+						if (lookedAtZoopAxis == 0 && delta > 0)
 						{
 							currentZoop.X = 1;
 						}
-						else if (axisX.X < 0 && delta > 0)
+						else if (lookedAtZoopAxis == 180 && delta > 0)
 						{
 							currentZoop.X = -1;
 						}
@@ -83,15 +143,15 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 						}
 					}
 				}
-				if (abs(axisX.Y) > abs(axisX.X))
+				else
 				{
 					if (currentZoop.Y == 0) //Handle starting from 0
 					{
-						if (axisX.Y >= 0 && delta > 0)
+						if (lookedAtZoopAxis == 90 && delta > 0)
 						{
 							currentZoop.Y = 1;
 						}
-						else if (axisX.Y < 0 && delta > 0)
+						else if (lookedAtZoopAxis == 270 && delta > 0)
 						{
 							currentZoop.Y = -1;
 						}
@@ -109,22 +169,76 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 					}
 				}
 
+				//if ((abs(axisY.X) < abs(axisY.Y) && !IsRotated) || (IsRotated && abs(axisY.Y) < abs(axisY.X)))
+				//{
+				//	if (currentZoop.X == 0) //Handle starting from 0
+				//	{
+				//		if (axisY.X >= 0 && delta > 0)
+				//		{
+				//			currentZoop.X = 1;
+				//		}
+				//		else if (axisY.X < 0 && delta > 0)
+				//		{
+				//			currentZoop.X = -1;
+				//		}
+				//	}
+				//	else
+				//	{
+				//		if (currentZoop.X > 0)
+				//		{
+				//			currentZoop.X = currentZoop.X + (1 * delta);
+				//		}
+				//		else
+				//		{
+				//			currentZoop.X = (abs(currentZoop.X) + (1 * delta)) * -1;
+				//		}
+				//	}
+				//}
+				//if ((abs(axisY.Y) < abs(axisY.X) && !IsRotated) || (IsRotated && abs(axisY.X) > abs(axisY.Y)))
+				//{
+				//	if (currentZoop.Y == 0) //Handle starting from 0
+				//	{
+				//		if (axisY.Y >= 0 && delta > 0)
+				//		{
+				//			currentZoop.Y = 1;
+				//		}
+				//		else if (axisY.Y < 0 && delta > 0)
+				//		{
+				//			currentZoop.Y = -1;
+				//		}
+				//	}
+				//	else
+				//	{
+				//		if (currentZoop.Y > 0)
+				//		{
+				//			currentZoop.Y = currentZoop.Y + (1 * delta);
+				//		}
+				//		else
+				//		{
+				//			currentZoop.Y = (abs(currentZoop.Y) + (1 * delta)) * -1;
+				//		}
+				//	}
+				//}
+
 				zStruct->X = currentZoop.X;
 				zStruct->Y = currentZoop.Y;
 				zStruct->Z = currentZoop.Z;
 			}
 			else if (wall)
 			{
-				if (abs(axisX.X) < abs(axisX.Y))
+				auto quat = self->GetActorQuat();
+				auto camInvRotator = pc->PlayerCameraManager->GetCameraRotation().Add(0, invRotation, 0);
+				auto axisY = CalcPivotAxis(EAxis::Y, camInvRotator.Vector(), quat);
+				if (abs(axisY.X) < abs(axisY.Y))
 				{
 
 					if (currentZoop.Z == 0) //Handle starting from 0
 					{
-						if (axisX.Z >= 0 && delta > 0)
+						if (axisY.Z >= 0 && delta > 0)
 						{
 							currentZoop.Z = 1;
 						}
-						else if (axisX.Z < 0 && delta > 0)
+						else if (axisY.Z < 0 && delta > 0)
 						{
 							currentZoop.Z = -1;
 						}
@@ -141,16 +255,16 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 						}
 					}
 				}
-				if (abs(axisX.Y) < abs(axisX.X))
+				if (abs(axisY.Y) < abs(axisY.X))
 				{
 
 					if (currentZoop.Y == 0) //Handle starting from 0
 					{
-						if (axisX.Y >= 0 && delta > 0)
+						if (axisY.Y >= 0 && delta > 0)
 						{
 							currentZoop.Y = 1;
 						}
-						else if (axisX.Y < 0 && delta > 0)
+						else if (axisY.Y < 0 && delta > 0)
 						{
 							currentZoop.Y = -1;
 						}
@@ -336,44 +450,6 @@ void FInfiniteZoopModule::CreateDefaultFoundationZoop(AFGFoundationHologram* sel
 	}
 }
 
-bool FInfiniteZoopModule::UpdateZoop(AFGFoundationHologram* self)
-{
-	auto fhg = Cast< AFGFoundationHologram>(self);
-	if (fhg)
-	{
-		if (IsZoopMode(self))
-		{
-			auto zStruct = GetStruct(self);
-
-			if (!zStruct->secondPassComplete && !zStruct->inScrollMode)
-			{
-				return false;
-			}
-			else
-			{
-				if (zStruct->secondPassComplete || zStruct->inScrollMode)
-				{
-					self->mDesiredZoop.X = zStruct->X;
-					self->mDesiredZoop.Y = zStruct->Y;
-					self->mDesiredZoop.Z = zStruct->Z;
-					//UE_LOG(InfiniteZoop_Log, Display, TEXT("UpdateZoop: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
-					self->OnRep_DesiredZoop();
-
-					zStruct->firstPassComplete = false;
-					zStruct->secondPassComplete = false;
-					//zStruct->X = 0;
-					//zStruct->Y = 0;
-					//zStruct->Z = 0;
-					FoundationsBeingZooped[fhg] = zStruct;
-				}
-				self->mBlockedZoopDirectionMask = (uint8)EHologramZoopDirections::HZD_None;
-				self->mDefaultBlockedZoopDirections = (uint8)EHologramZoopDirections::HZD_None;
-			}
-		}
-	}
-	return true;
-}
-
 int32 FInfiniteZoopModule::GetBaseCostMultiplier(const AFGFactoryBuildingHologram* self)
 {
 
@@ -471,21 +547,25 @@ bool FInfiniteZoopModule::IsZoopMode(AFGFoundationHologram* self)
 
 bool FInfiniteZoopModule::BGSecondaryFire(UFGBuildGunStateBuild* self)
 {
-	if (auto foundation = Cast< AFGFoundationHologram>(self->GetHologram()))
+	auto hologram = self->GetHologram();
+	if (hologram)
 	{
-		auto zStruct = FoundationsBeingZooped[foundation];
-		if (zStruct->inScrollMode)
+		if (auto foundation = Cast<AFGFoundationHologram>(hologram))
 		{
-			zStruct->inScrollMode = false;
-			return false;
+			auto zStruct = FoundationsBeingZooped[foundation];
+			if (zStruct->inScrollMode)
+			{
+				zStruct->inScrollMode = false;
+				return false;
+			}
 		}
-	}
-	else if (auto wall = Cast< AFGWallHologram>(self->GetHologram()))
-	{
-		if (HologramsToZoop.Contains(self->GetHologram()))
+		else if (auto wall = Cast< AFGWallHologram>(hologram))
 		{
-			HologramsToZoop.Remove(self->GetHologram());
-			return false;
+			if (HologramsToZoop.Contains(hologram))
+			{
+				HologramsToZoop.Remove(hologram);
+				return false;
+			}
 		}
 	}
 	return true;
@@ -493,6 +573,7 @@ bool FInfiniteZoopModule::BGSecondaryFire(UFGBuildGunStateBuild* self)
 
 void FInfiniteZoopModule::StartupModule() {
 
+#if !WITH_EDITOR
 
 	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::OnRep_DesiredZoop, [=](auto& scope, AFGFactoryBuildingHologram* self)
 		{
@@ -514,13 +595,13 @@ void FInfiniteZoopModule::StartupModule() {
 		{
 			// Fix for incorrect # showing when 2D zooping
 			auto hg = self->GetHologram();
-	auto fbhg = Cast< AFGFactoryBuildingHologram>(hg);
-	if (fbhg)
-	{
-		auto mult = fbhg->GetBaseCostMultiplier();
-		mult = mult > 0 ? mult - 1 : 0;
-		scope(self, (float)mult, maxZoop, zoopLocation);
-	}
+			auto fbhg = Cast< AFGFactoryBuildingHologram>(hg);
+			if (fbhg)
+			{
+				auto mult = fbhg->GetBaseCostMultiplier();
+				mult = mult > 0 ? mult - 1 : 0;
+				scope(self, (float)mult, maxZoop, zoopLocation);
+			}
 		});
 
 	SUBSCRIBE_METHOD(UFGBuildGunState::SecondaryFire, [=](auto& scope, UFGBuildGunState* self)
@@ -534,13 +615,13 @@ void FInfiniteZoopModule::StartupModule() {
 			}
 		});
 	UFGBuildGunStateBuild* bgbCDO = GetMutableDefault<UFGBuildGunStateBuild>();
-	SUBSCRIBE_METHOD_VIRTUAL(UFGBuildGunStateBuild::SecondaryFire_Implementation, bgbCDO, [=](auto& scope, UFGBuildGunStateBuild* self)
-		{
-			if (!BGSecondaryFire(self))
-			{
-				scope.Cancel();
-			}
-		});
+	//SUBSCRIBE_METHOD_VIRTUAL(UFGBuildGunStateBuild::SecondaryFire_Implementation, bgbCDO, [=](auto& scope, UFGBuildGunStateBuild* self)
+	//	{
+	//		if (!BGSecondaryFire(self))
+	//		{
+	//			scope.Cancel();
+	//		}
+	//	});
 
 	AFGFactoryBuildingHologram* fbhgCDO = GetMutableDefault<AFGFactoryBuildingHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGFactoryBuildingHologram::GetBaseCostMultiplier, fbhgCDO, [=](auto& scope, const AFGFactoryBuildingHologram* self)
@@ -550,14 +631,6 @@ void FInfiniteZoopModule::StartupModule() {
 		});
 
 	AFGFoundationHologram* fhCDO = GetMutableDefault<AFGFoundationHologram>();
-
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGFoundationHologram::UpdateZoop, fhCDO, [=](auto& scope, AFGFoundationHologram* self)
-	//	{
-	//		if (!this->UpdateZoop(self))
-	//		{
-	//			scope.Cancel();
-	//		}
-	//	});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGFoundationHologram::ConstructZoop, fhCDO, [=](auto& scope, AFGFoundationHologram* self, TArray<AActor*>& out_children)
 		{
@@ -579,7 +652,14 @@ void FInfiniteZoopModule::StartupModule() {
 		{
 			if (self->CanBeZooped())
 			{
-				HologramsToZoop.Remove(self);
+				if (Cast<AFGWallHologram>(self))
+				{
+					HologramsToZoop.Remove(self);
+				}
+				else if (auto fhg = Cast<AFGFoundationHologram>(self))
+				{
+					FoundationsBeingZooped.Remove(fhg);
+				}
 			}
 		});
 
@@ -587,7 +667,14 @@ void FInfiniteZoopModule::StartupModule() {
 		{
 			if (self->CanBeZooped())
 			{
-				HologramsToZoop.Remove(self);
+				if (Cast<AFGWallHologram>(self))
+				{
+					HologramsToZoop.Remove(self);
+				}
+				else if (auto fhg = Cast<AFGFoundationHologram>(self))
+				{
+					FoundationsBeingZooped.Remove(fhg);
+				}
 			}
 		});
 
@@ -658,7 +745,6 @@ void FInfiniteZoopModule::StartupModule() {
 			}
 		});
 
-#if !WITH_EDITOR
 	AFGPillarHologram* pCDO = GetMutableDefault<AFGPillarHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGPillarHologram::BeginPlay, pCDO, [](auto scope, AFGPillarHologram* self)
 		{
@@ -710,7 +796,7 @@ FVector FInfiniteZoopModule::CalcPivotAxis(const EAxis::Type DesiredAxis, const 
 	}
 	return ProcessAxes(XAxis, YAxis, ZAxis);
 }
-#pragma optimize("", on)
+//#pragma optimize("", on)
 
 
 IMPLEMENT_GAME_MODULE(FInfiniteZoopModule, InfiniteZoop);

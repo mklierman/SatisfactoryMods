@@ -31,17 +31,11 @@ public:
 
 	void OnZoopUpdated(UFGBuildGunStateBuild* self, float currentZoop, float maxZoop, const FVector& zoopLocation);
 
-	void ApplyMaxZoopClamp(AFGFactoryBuildingHologram* self, FIntVector& Zoop);
-
-	void SetZoopFromHitResult(AFGFoundationHologram* self, const FHitResult& hitResult);
-
 	bool OnRep_DesiredZoop(AFGFactoryBuildingHologram* self);
 
 	int32 GetBaseCostMultiplier(const AFGFactoryBuildingHologram* self);
 
 	void CreateDefaultFoundationZoop(AFGFoundationHologram* self, const FHitResult& hitResult);
-
-	bool UpdateZoop(AFGFoundationHologram* self);
 
 	void ConstructZoop(AFGFoundationHologram* self, TArray<AActor*>& out_children);
 
@@ -52,7 +46,6 @@ public:
 	bool BGSecondaryFire(UFGBuildGunStateBuild* self);
 
 	TMap<AFGHologram*, FIntVector> HologramsToZoop;
-	TMap<AFGFoundationHologram*, FIntVector> CheckedFoundations;
 	TMap<AFGFoundationHologram*, FZoopStruct*> FoundationsBeingZooped;
 
 	FVector CalcPivotAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat);

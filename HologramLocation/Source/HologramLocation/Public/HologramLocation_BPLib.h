@@ -36,6 +36,9 @@ class HOLOGRAMLOCATION_API UHologramLocation_BPLib : public UBlueprintFunctionLi
 		static FTransform GetLiftHologramTransform(AFGConveyorLiftHologram* clHologram);
 
 	UFUNCTION(BlueprintCallable, Category = "HologramLocation")
+		static float GetLiftHeight(AFGConveyorLiftHologram* clHologram);
+
+	UFUNCTION(BlueprintCallable, Category = "HologramLocation")
 		static FString FormatIntAsNumberString(int32 number, bool usePeriod);
 
 	UFUNCTION(BlueprintCallable, Category = "HologramLocation")
