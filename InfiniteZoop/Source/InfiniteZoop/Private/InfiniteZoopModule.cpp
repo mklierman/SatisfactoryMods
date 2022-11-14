@@ -328,15 +328,18 @@ bool FInfiniteZoopModule::SetZoopAmount(AFGFactoryBuildingHologram* self, const 
 	}
 	else if (foundation)
 	{
-		auto zStruct = FoundationsBeingZooped[foundation];
-		FIntVector newZoop = FIntVector(zStruct->X, zStruct->Y, zStruct->Z);
-		if (newZoop.IsZero() || !zStruct->inScrollMode)
+		if (FoundationsBeingZooped.Num() > 0)
 		{
-			return false;
-		}
-		if (zStruct->inScrollMode && (Zoop.X != newZoop.X || Zoop.Y != newZoop.Y || Zoop.Z != newZoop.Z))
-		{
-			return true; //scope.Cancel();
+			auto zStruct = FoundationsBeingZooped[foundation];
+			FIntVector newZoop = FIntVector(zStruct->X, zStruct->Y, zStruct->Z);
+			if (newZoop.IsZero() || !zStruct->inScrollMode)
+			{
+				return false;
+			}
+			if (zStruct->inScrollMode && (Zoop.X != newZoop.X || Zoop.Y != newZoop.Y || Zoop.Z != newZoop.Z))
+			{
+				return true; //scope.Cancel();
+			}
 		}
 	}
 	return false;
@@ -573,8 +576,6 @@ bool FInfiniteZoopModule::BGSecondaryFire(UFGBuildGunStateBuild* self)
 
 void FInfiniteZoopModule::StartupModule() {
 
-#if !WITH_EDITOR
-
 	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::OnRep_DesiredZoop, [=](auto& scope, AFGFactoryBuildingHologram* self)
 		{
 			if (!this->OnRep_DesiredZoop(self))
@@ -599,10 +600,32 @@ void FInfiniteZoopModule::StartupModule() {
 			if (fbhg)
 			{
 				auto mult = fbhg->GetBaseCostMultiplier();
+				if (LastMultiplier.Num() > 0)
+				{
+					if (LastMultiplier.Contains(fbhg))
+					{
+						if (LastMultiplier[fbhg] == mult)
+						{
+							scope.Cancel();
+							return;
+						}
+						LastMultiplier[fbhg] = mult;
+					}
+					else
+					{
+						LastMultiplier.Add(fbhg, mult);
+					}
+				}
+				else
+				{
+					LastMultiplier.Add(fbhg, mult);
+				}
 				mult = mult > 0 ? mult - 1 : 0;
 				scope(self, (float)mult, maxZoop, zoopLocation);
 			}
 		});
+
+#if !WITH_EDITOR
 
 	SUBSCRIBE_METHOD(UFGBuildGunState::SecondaryFire, [=](auto& scope, UFGBuildGunState* self)
 		{
@@ -659,6 +682,17 @@ void FInfiniteZoopModule::StartupModule() {
 				else if (auto fhg = Cast<AFGFoundationHologram>(self))
 				{
 					FoundationsBeingZooped.Remove(fhg);
+				}
+
+				if (auto fbhg = Cast<AFGFactoryBuildingHologram>(self))
+				{
+					if (LastMultiplier.Num() > 0)
+					{
+						if (LastMultiplier.Contains(fbhg))
+						{
+							LastMultiplier.Remove(fbhg);
+						}
+					}
 				}
 			}
 		});

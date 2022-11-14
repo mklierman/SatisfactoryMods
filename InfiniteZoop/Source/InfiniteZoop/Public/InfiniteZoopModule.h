@@ -45,6 +45,7 @@ public:
 
 	bool BGSecondaryFire(UFGBuildGunStateBuild* self);
 
+	TMap< AFGFactoryBuildingHologram*, int32> LastMultiplier;
 	TMap<AFGHologram*, FIntVector> HologramsToZoop;
 	TMap<AFGFoundationHologram*, FZoopStruct*> FoundationsBeingZooped;
 
