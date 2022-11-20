@@ -1,16 +1,16 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.5.8",
-  "SemVersion": "1.5.8",
+  "VersionName": "1.5.10",
+  "SemVersion": "1.5.10",
   "FriendlyName": "Modular Load Balancers",
   "Description": "Modular buildable that can be snapped together to form load balancers of any size",
   "Category": "Modding",
   "CreatedBy": "SirDigby, Kyrium",
-	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
+  "CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
   "DocsURL": "",
   "MarketplaceURL": "",
-	"SupportURL": "https://discord.gg/WM5KT7pVu8",
+  "SupportURL": "https://discord.gg/WM5KT7pVu8",
   "CanContainContent": true,
   "IsBetaVersion": false,
   "IsExperimentalVersion": false,
@@ -19,7 +19,7 @@
   "Plugins": [
     {
       "Name": "SML",
-      "SemVersion": "^3.4.0",
+      "SemVersion": "^3.4.1",
       "Enabled": true
     }
   ],

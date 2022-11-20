@@ -1,8 +1,8 @@
 {
   "FileVersion": 3,
   "Version": 2,
-  "VersionName": "2.0.2",
-  "SemVersion": "2.0.2",
+  "VersionName": "2.0.3",
+  "SemVersion": "2.0.3",
   "FriendlyName": "Crash Site Beacons",
   "Description": "Places a map marker at every crash site.",
   "Category": "Modding",
@@ -19,7 +19,7 @@
   "Plugins": [
     {
       "Name": "SML",
-      "SemVersion": "^3.4.0",
+      "SemVersion": "^3.4.1",
       "Enabled": true
     }
   ],

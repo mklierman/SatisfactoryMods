@@ -8,6 +8,7 @@
 #include "FGFactoryConnectionComponent.h"
 #include "FGInventoryComponent.h"
 #include "Resources/FGNoneDescriptor.h"
+#include "Buildables/FGBuildableFactory.h"
 #include "LBBuild_ModularLoadBalancer.generated.h"
 
 UENUM(BlueprintType)
@@ -108,7 +109,7 @@ struct LOADBALANCERS_API FLBBalancerData
  *
  */
 UCLASS()
-class LOADBALANCERS_API ALBBuild_ModularLoadBalancer : public AFGBuildableConveyorAttachment
+class LOADBALANCERS_API ALBBuild_ModularLoadBalancer : public AFGBuildableFactory
 {
 	GENERATED_BODY()
 public:
@@ -122,6 +123,7 @@ public:
 	// End AActor interface
 
 	void SetupInventory();
+	UFGInventoryComponent* GetBufferInventory();
 
 	UFUNCTION()
 	void OnOutputItemRemoved( TSubclassOf<UFGItemDescriptor> itemClass, int32 numRemoved );
@@ -190,6 +192,9 @@ public:
 	// Dont need to be Saved > CAN SET BY CPP
 	UPROPERTY(Transient)
 	UFGFactoryConnectionComponent* MyInputConnection;
+
+	UPROPERTY(SaveGame)
+	UFGInventoryComponent* mBufferInventory;
 
 	/** What type is this loader? */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="ModularLoader")

@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Buildables/FGBuildableConveyorAttachment.h"
+#include "Buildables/FGBuildableFactory.h"
+#include "Buildables/FGBuildableAttachmentSplitter.h"
 #include "Buildables/FGBuildableWidgetSign.h"
 #include "CL_CounterLimiter.generated.h"
 
@@ -15,7 +17,7 @@ DECLARE_LOG_CATEGORY_EXTERN(CounterLimiter_Log, Display, All);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateDisplay, float, NewIPM);
 
 UCLASS()
-class COUNTERLIMITER_API ACL_CounterLimiter : public AFGBuildableConveyorAttachment
+class COUNTERLIMITER_API ACL_CounterLimiter : public AFGBuildableAttachmentSplitter
 {
 	GENERATED_BODY()
 public:
@@ -25,7 +27,7 @@ public:
 		void PostInitializeComponents() override;
 		virtual bool ShouldSave_Implementation() const override;
 
-	virtual void Factory_CollectInput_Implementation() override;
+	virtual void Factory_CollectInput_Implementation();
 	virtual bool Factory_GrabOutput_Implementation(class UFGFactoryConnectionComponent* connection, FInventoryItem& out_item, float& out_OffsetBeyond, TSubclassOf< UFGItemDescriptor > type) override;
 
 	float GetSecondsPerItem();

@@ -12,22 +12,22 @@ DEFINE_LOG_CATEGORY(CounterLimiter_Log);
 void FCounterLimiterModule::StartupModule() {
 #if !WITH_EDITOR
 	AFGStandaloneSignHologram* signHGCDO = GetMutableDefault<AFGStandaloneSignHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGStandaloneSignHologram::Construct, signHGCDO, [](AActor* constructedActor, AFGStandaloneSignHologram* self, TArray< AActor* >& out_children, FNetConstructionID netConstructionID)
-		{
-			AFGBuildable* snapped = self->GetSnappedBuilding();
-			if (snapped)
-			{
-				auto counterBuildable = Cast<ACL_CounterLimiter>(snapped);
-				if (counterBuildable)
-				{
-					AFGBuildableWidgetSign* widgetSign = Cast<AFGBuildableWidgetSign>(constructedActor);
-					if (widgetSign)
-					{
-						counterBuildable->mAttachedSigns.AddUnique(widgetSign);
-					}
-				}
-			}
-		});
+	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGStandaloneSignHologram::Construct, signHGCDO, [](AActor* constructedActor, AFGStandaloneSignHologram* self, TArray< AActor* >& out_children, FNetConstructionID netConstructionID)
+	//	{
+	//		AFGBuildable* snapped = self->GetSnappedBuilding();
+	//		if (snapped)
+	//		{
+	//			auto counterBuildable = Cast<ACL_CounterLimiter>(snapped);
+	//			if (counterBuildable)
+	//			{
+	//				AFGBuildableWidgetSign* widgetSign = Cast<AFGBuildableWidgetSign>(constructedActor);
+	//				if (widgetSign)
+	//				{
+	//					counterBuildable->mAttachedSigns.AddUnique(widgetSign);
+	//				}
+	//			}
+	//		}
+	//	});
 
 
 	AFGGameMode* LocalGameMode = GetMutableDefault<AFGGameMode>();

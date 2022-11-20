@@ -18,10 +18,11 @@
 #include "InfiniteZoop_ClientSubsystem.h"
 #include "Equipment/FGBuildGunBuild.h"
 #include "FGHologramBuildModeDescriptor.h"
+#include "FGRampHologram.h"
 
 
 DEFINE_LOG_CATEGORY(InfiniteZoop_Log);
-//#pragma optimize("", off)
+#pragma optimize("", off)
 int GetClosestZoopAngle(double angleToCheck)
 {
 	if (angleToCheck >= double(0.0) && angleToCheck < double(90.0))
@@ -168,57 +169,6 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 						}
 					}
 				}
-
-				//if ((abs(axisY.X) < abs(axisY.Y) && !IsRotated) || (IsRotated && abs(axisY.Y) < abs(axisY.X)))
-				//{
-				//	if (currentZoop.X == 0) //Handle starting from 0
-				//	{
-				//		if (axisY.X >= 0 && delta > 0)
-				//		{
-				//			currentZoop.X = 1;
-				//		}
-				//		else if (axisY.X < 0 && delta > 0)
-				//		{
-				//			currentZoop.X = -1;
-				//		}
-				//	}
-				//	else
-				//	{
-				//		if (currentZoop.X > 0)
-				//		{
-				//			currentZoop.X = currentZoop.X + (1 * delta);
-				//		}
-				//		else
-				//		{
-				//			currentZoop.X = (abs(currentZoop.X) + (1 * delta)) * -1;
-				//		}
-				//	}
-				//}
-				//if ((abs(axisY.Y) < abs(axisY.X) && !IsRotated) || (IsRotated && abs(axisY.X) > abs(axisY.Y)))
-				//{
-				//	if (currentZoop.Y == 0) //Handle starting from 0
-				//	{
-				//		if (axisY.Y >= 0 && delta > 0)
-				//		{
-				//			currentZoop.Y = 1;
-				//		}
-				//		else if (axisY.Y < 0 && delta > 0)
-				//		{
-				//			currentZoop.Y = -1;
-				//		}
-				//	}
-				//	else
-				//	{
-				//		if (currentZoop.Y > 0)
-				//		{
-				//			currentZoop.Y = currentZoop.Y + (1 * delta);
-				//		}
-				//		else
-				//		{
-				//			currentZoop.Y = (abs(currentZoop.Y) + (1 * delta)) * -1;
-				//		}
-				//	}
-				//}
 
 				zStruct->X = currentZoop.X;
 				zStruct->Y = currentZoop.Y;
@@ -555,6 +505,10 @@ bool FInfiniteZoopModule::BGSecondaryFire(UFGBuildGunStateBuild* self)
 	{
 		if (auto foundation = Cast<AFGFoundationHologram>(hologram))
 		{
+			if (Cast<AFGRampHologram>(hologram))
+			{
+				return true;
+			}
 			auto zStruct = FoundationsBeingZooped[foundation];
 			if (zStruct->inScrollMode)
 			{
@@ -576,8 +530,13 @@ bool FInfiniteZoopModule::BGSecondaryFire(UFGBuildGunStateBuild* self)
 
 void FInfiniteZoopModule::StartupModule() {
 
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::OnRep_DesiredZoop, [=](auto& scope, AFGFactoryBuildingHologram* self)
 		{
+			if (auto ramphg = Cast<AFGRampHologram>(self))
+			{
+				return;
+			}
 			if (!this->OnRep_DesiredZoop(self))
 			{
 				scope.Cancel();
@@ -586,6 +545,10 @@ void FInfiniteZoopModule::StartupModule() {
 
 	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::SetZoopAmount, [=](auto& scope, AFGFactoryBuildingHologram* self, const FIntVector& Zoop)
 		{
+			if (auto ramphg = Cast<AFGRampHologram>(self))
+			{
+				return;
+			}
 			if (this->SetZoopAmount(self, Zoop))
 			{
 				scope.Cancel();
@@ -599,6 +562,10 @@ void FInfiniteZoopModule::StartupModule() {
 			auto fbhg = Cast< AFGFactoryBuildingHologram>(hg);
 			if (fbhg)
 			{
+				if (auto ramphg = Cast<AFGRampHologram>(fbhg))
+				{
+					return;
+				}
 				auto mult = fbhg->GetBaseCostMultiplier();
 				if (LastMultiplier.Num() > 0)
 				{
@@ -625,7 +592,6 @@ void FInfiniteZoopModule::StartupModule() {
 			}
 		});
 
-#if !WITH_EDITOR
 
 	SUBSCRIBE_METHOD(UFGBuildGunState::SecondaryFire, [=](auto& scope, UFGBuildGunState* self)
 		{
@@ -649,6 +615,10 @@ void FInfiniteZoopModule::StartupModule() {
 	AFGFactoryBuildingHologram* fbhgCDO = GetMutableDefault<AFGFactoryBuildingHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGFactoryBuildingHologram::GetBaseCostMultiplier, fbhgCDO, [=](auto& scope, const AFGFactoryBuildingHologram* self)
 		{
+			if (auto ramphg = Cast<AFGRampHologram>(self))
+			{
+				return;
+			}
 			auto result = this->GetBaseCostMultiplier(self);
 			scope.Override(result);
 		});
@@ -668,6 +638,10 @@ void FInfiniteZoopModule::StartupModule() {
 	AFGHologram* hCDO = GetMutableDefault<AFGHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, hCDO, [=](auto scope, AFGHologram* self, int32 delta)
 		{
+			if (auto ramphg = Cast<AFGRampHologram>(self))
+			{
+				return;
+			}
 			this->ScrollHologram(self, delta);
 		});
 
@@ -830,7 +804,7 @@ FVector FInfiniteZoopModule::CalcPivotAxis(const EAxis::Type DesiredAxis, const 
 	}
 	return ProcessAxes(XAxis, YAxis, ZAxis);
 }
-//#pragma optimize("", on)
+#pragma optimize("", on)
 
 
 IMPLEMENT_GAME_MODULE(FInfiniteZoopModule, InfiniteZoop);

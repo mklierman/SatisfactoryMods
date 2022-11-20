@@ -51,6 +51,7 @@ void FLBBalancerData::SetFilterItemForBalancer(ALBBuild_ModularLoadBalancer* Bal
     {
         mFilterMap.Add(Item, FLBBalancerData_Filters(Balancer));
     }
+    Balancer->mBufferInventory->SetLocked(false);
 }
 
 void FLBBalancerData::RemoveBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> OldItem)
@@ -86,8 +87,14 @@ bool FLBBalancerData::HasItemFilterBalancer(TSubclassOf<UFGItemDescriptor> Item)
 
 ALBBuild_ModularLoadBalancer::ALBBuild_ModularLoadBalancer()
 {
-    this->mInventorySizeX = 2;
-    this->mInventorySizeY = 2;
+    if (!mBufferInventory)
+    {
+        mBufferInventory = UFGInventoryLibrary::CreateInventoryComponent(this, FName("mBufferInventory"));
+        mBufferInventory->Resize(4);
+    }
+    mBufferInventory->SetLocked(false);
+    //this->mInventorySizeX = 2;
+    //this->mInventorySizeY = 2;
 }
 
 void ALBBuild_ModularLoadBalancer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -118,6 +125,7 @@ void ALBBuild_ModularLoadBalancer::BeginPlay()
 
         if(MyOutputConnection && GetBufferInventory())
         {
+            mBufferInventory->SetLocked(false);
             int32 Index = MyOutputConnection->GetInventoryAccessIndex();
             if(GetBufferInventory()->IsIndexEmpty(Index))
                 MyOutputConnection->SetInventoryAccessIndex(-1);
@@ -164,7 +172,21 @@ void ALBBuild_ModularLoadBalancer::SetupInventory()
                 }
             }
         }
+        GetBufferInventory()->SetLocked(false);
     }
+}
+
+UFGInventoryComponent* ALBBuild_ModularLoadBalancer::GetBufferInventory()
+{
+    return mBufferInventory;
+    for (UActorComponent* ComponentsByClass : GetComponentsByClass(UFGInventoryComponent::StaticClass()))
+    {
+        if (UFGInventoryComponent* InventoryComponent = Cast<UFGInventoryComponent>(ComponentsByClass))
+        {
+            return InventoryComponent;
+        }
+    }
+    return nullptr;
 }
 
 void ALBBuild_ModularLoadBalancer::SetFilteredItem(TSubclassOf<UFGItemDescriptor> ItemClass)
@@ -180,6 +202,7 @@ void ALBBuild_ModularLoadBalancer::SetFilteredItem(TSubclassOf<UFGItemDescriptor
     {
         if (IsFilterModule() && GetBufferInventory())
         {
+            GetBufferInventory()->SetLocked(false);
             if(GroupLeader)
             {
                 if(mLoaderType == ELoaderType::Filter)
@@ -216,6 +239,7 @@ void ALBBuild_ModularLoadBalancer::RemoveFilteredItem(TSubclassOf<UFGItemDescrip
     {
         if (IsFilterModule() && GetBufferInventory())
         {
+            GetBufferInventory()->SetLocked(false);
             mFilteredItems.Remove(ItemClass);
             if(GroupLeader)
                 GroupLeader->mNormalLoaderData.RemoveBalancer(this, ItemClass);
@@ -607,6 +631,7 @@ void ALBBuild_ModularLoadBalancer::PostInitializeComponents()
             }
         }
     }
+    GetBufferInventory()->SetLocked(false);
 }
 
 void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()

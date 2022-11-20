@@ -1,4 +1,5 @@
 #include "CP_BPFL.h"
+#include "Buildables/FGBuildableWire.h"
 
 //void CP_BPFL::ExampleFunction() {}
 

@@ -7,6 +7,7 @@
 
 //DEFINE_LOG_CATEGORY(CounterLimiter_Log);
 
+#pragma optimize("", off)
 void ACL_CounterLimiter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -23,15 +24,27 @@ ACL_CounterLimiter::ACL_CounterLimiter()
 
 void ACL_CounterLimiter::BeginPlay()
 {
-	Super::BeginPlay();
 
 	if (HasAuthority())
 	{
+		//auto conns = this->GetConnectionComponents();
+		//for (auto con : conns)
+		//{
+		//	if (con->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
+		//	{
+
+		//	}
+		//}
 		this->mInputs.AddUnique(inputConnection);
 		this->mOutputs.AddUnique(outputConnection);
+		inputConnection->SetInventory(this->GetBufferInventory());
+		this->mInventorySizeX = 1;
+		this->mInventorySizeY = 1;
+		inputConnection->SetInventoryAccessIndex(0);
 		GetWorld()->GetTimerManager().SetTimer(ipmTimerHandle, this, &ACL_CounterLimiter::CalculateIPM, 60.f, true, 60.f);
 		SetThroughputLimit(mPerMinuteLimitRate);
 	}
+	Super::BeginPlay();
 }
 
 void ACL_CounterLimiter::PostInitializeComponents()
@@ -40,6 +53,14 @@ void ACL_CounterLimiter::PostInitializeComponents()
 
 	if (HasAuthority())
 	{
+		this->mInputs.AddUnique(inputConnection);
+		this->mOutputs.AddUnique(outputConnection);
+		inputConnection->SetInventory(this->GetBufferInventory());
+		this->mInventorySizeX = 1;
+		this->mInventorySizeY = 1;
+		inputConnection->SetInventoryAccessIndex(0);
+		GetWorld()->GetTimerManager().SetTimer(ipmTimerHandle, this, &ACL_CounterLimiter::CalculateIPM, 60.f, true, 60.f);
+		SetThroughputLimit(mPerMinuteLimitRate);
 		for (UActorComponent* ComponentsByClass : GetComponentsByClass(UFGInventoryComponent::StaticClass()))
 		{
 			if (UFGInventoryComponent* InventoryComponent = Cast<UFGInventoryComponent>(ComponentsByClass))
@@ -259,14 +280,14 @@ void ACL_CounterLimiter::StageItemForOutput()
 		int emptyBufferIndex = OutputStageBuffer->FindEmptyIndex();
 		if (emptyBufferIndex >= 0)
 		{
-			auto mBufferIndex = InputBuffer->GetFirstIndexWithItem();
+			auto mBufferIndex = GetBufferInventory()->GetFirstIndexWithItem();
 			if (mBufferIndex >= 0)
 			{
 				FInventoryStack Stack;
-				bool result = InputBuffer->GetStackFromIndex(mBufferIndex, Stack);
+				bool result = GetBufferInventory()->GetStackFromIndex(mBufferIndex, Stack);
 				if (result && Stack.HasItems())
 				{
-					InputBuffer->RemoveAllFromIndex(mBufferIndex);
+					GetBufferInventory()->RemoveAllFromIndex(mBufferIndex);
 					int numItems;
 					FInventoryItem OutItem;
 					UFGInventoryLibrary::BreakInventoryStack(Stack, numItems, OutItem);
@@ -279,3 +300,4 @@ void ACL_CounterLimiter::StageItemForOutput()
 		}
 	}
 }
+#pragma optimize("", on)
