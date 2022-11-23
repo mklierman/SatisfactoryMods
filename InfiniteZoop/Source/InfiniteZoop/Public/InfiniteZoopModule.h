@@ -16,6 +16,8 @@ struct FZoopStruct
 		bool firstPassComplete = false;
 		bool secondPassComplete = false;
 		bool inScrollMode = false;
+		EHologramMaterialState hgMaterialState1 = EHologramMaterialState::HMS_OK;
+		EHologramMaterialState hgMaterialState2 = EHologramMaterialState::HMS_OK;
 };
 
 DECLARE_LOG_CATEGORY_EXTERN(InfiniteZoop_Log, Display, All);
@@ -44,6 +46,8 @@ public:
 	bool IsZoopMode(AFGFoundationHologram* self);
 
 	bool BGSecondaryFire(UFGBuildGunStateBuild* self);
+
+	bool ValidatePlacementAndCost(AFGHologram* self, class UFGInventoryComponent* inventory);
 
 	TMap< AFGFactoryBuildingHologram*, int32> LastMultiplier;
 	TMap<AFGHologram*, FIntVector> HologramsToZoop;

@@ -12,6 +12,7 @@ DEFINE_LOG_CATEGORY(LoadBalancers_Log);
 DEFINE_LOG_CATEGORY(LogGame);
 DEFINE_LOG_CATEGORY(LogBuilding);
 
+//#pragma optimize("", off)
 void FLBBalancerData::GetInputBalancers(TArray<ALBBuild_ModularLoadBalancer*>& Out)
 {
     for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mConnectedInputs)
@@ -92,7 +93,9 @@ ALBBuild_ModularLoadBalancer::ALBBuild_ModularLoadBalancer()
         mBufferInventory = UFGInventoryLibrary::CreateInventoryComponent(this, FName("mBufferInventory"));
         mBufferInventory->Resize(4);
     }
-    mBufferInventory->SetLocked(false);
+#if !WITH_EDITOR
+   // mBufferInventory->SetLocked(false);
+#endif
     //this->mInventorySizeX = 2;
     //this->mInventorySizeY = 2;
 }
@@ -114,7 +117,7 @@ void ALBBuild_ModularLoadBalancer::BeginPlay()
         if(!GroupLeader)
             GroupLeader = this;
 
-        if(mFilteredItem)
+        if(mFilteredItem && mFilteredItem != UFGNoneDescriptor::StaticClass())
         {
             mFilteredItems.SetNum(1);
             mFilteredItems[0] = mFilteredItem;
@@ -454,14 +457,14 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
         if(GetBufferInventory()->GetSizeLinear() != mSlotsInBuffer)
             SetupInventory();
 
-        if(IsLeader())
-            if (IsFilterModule() && GetBufferInventory())
-            {
-                if (mFilteredItem != GetBufferInventory()->GetAllowedItemOnIndex(0))
-                {
-                    SetFilteredItem(mFilteredItem);
-                }
-            }
+        //if(IsLeader())
+        //    if (IsFilterModule() && GetBufferInventory())
+        //    {
+        //        if (mFilteredItem != GetBufferInventory()->GetAllowedItemOnIndex(0))
+        //        {
+        //           // SetFilteredItem(mFilteredItem);
+        //        }
+        //    }
 
         if (MyOutputConnection || MyInputConnection)
         {
@@ -711,3 +714,4 @@ bool ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Mo
     }
     return false;
 }
+//#pragma optimize("", on)

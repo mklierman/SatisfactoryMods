@@ -182,7 +182,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, BlueprintReadOnly, Replicated, SaveGame)
 	TArray<TSubclassOf<UFGItemDescriptor>> mFilteredItems = { UFGNoneDescriptor::StaticClass() };
 	
-	UPROPERTY(SaveGame)
+	UPROPERTY(Transient)
 	TSubclassOf<UFGItemDescriptor> mFilteredItem = { UFGNoneDescriptor::StaticClass() };
 
 	// Dont need to be Saved > CAN SET BY CPP

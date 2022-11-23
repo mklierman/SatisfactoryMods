@@ -313,8 +313,21 @@ bool FInfiniteZoopModule::OnRep_DesiredZoop(AFGFactoryBuildingHologram* self)
 	{
 		if (IsZoopMode(fhg))
 		{
-			auto zStruct = GetStruct(fhg);
+			self->SetMaterialState(self->GetHologramMaterialState());
 
+			auto zStruct = GetStruct(fhg);
+			if (zStruct->hgMaterialState1 == EHologramMaterialState::HMS_ERROR || zStruct->hgMaterialState2 == EHologramMaterialState::HMS_ERROR)
+			{
+				self->SetMaterialState(EHologramMaterialState::HMS_ERROR);
+			}
+			else if (zStruct->hgMaterialState1 == EHologramMaterialState::HMS_WARNING || zStruct->hgMaterialState2 == EHologramMaterialState::HMS_WARNING)
+			{
+				self->SetMaterialState(EHologramMaterialState::HMS_WARNING);
+			}
+			else
+			{
+				self->SetMaterialState(EHologramMaterialState::HMS_OK);
+			}
 			if (!zStruct->secondPassComplete && !zStruct->inScrollMode)
 			{
 				return false;
@@ -332,6 +345,20 @@ bool FInfiniteZoopModule::OnRep_DesiredZoop(AFGFactoryBuildingHologram* self)
 					zStruct->firstPassComplete = false;
 					zStruct->secondPassComplete = false;
 					FoundationsBeingZooped[fhg] = zStruct;
+					//auto material = self->GetHologramMaterialState();
+					//if (zStruct->hgMaterialState1 == EHologramMaterialState::HMS_ERROR || zStruct->hgMaterialState2 == EHologramMaterialState::HMS_ERROR)
+					//{
+					//	self->SetMaterialState(EHologramMaterialState::HMS_ERROR);
+					//}
+					//else if (zStruct->hgMaterialState1 == EHologramMaterialState::HMS_WARNING || zStruct->hgMaterialState2 == EHologramMaterialState::HMS_WARNING)
+					//{
+					//	self->SetMaterialState(EHologramMaterialState::HMS_WARNING);
+					//}
+					//else
+					//{
+					//	self->SetMaterialState(EHologramMaterialState::HMS_OK);
+					//}
+					//self->mIsChanged = true;
 				}
 				self->mBlockedZoopDirectionMask = (uint8)EHologramZoopDirections::HZD_None;
 				self->mDefaultBlockedZoopDirections = (uint8)EHologramZoopDirections::HZD_None;
@@ -392,10 +419,12 @@ void FInfiniteZoopModule::CreateDefaultFoundationZoop(AFGFoundationHologram* sel
 		if (!zStruct->firstPassComplete)
 		{
 			zStruct->firstPassComplete = true;
+			//zStruct->hgMaterialState1 = self->GetHologramMaterialState();
 		}
 		else
 		{
 			zStruct->secondPassComplete = true;
+			//zStruct->hgMaterialState2 = self->GetHologramMaterialState();
 		}
 
 		FoundationsBeingZooped[self] = zStruct;
@@ -448,6 +477,8 @@ void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AAct
 
 			zStruct->firstPassComplete = false;
 			zStruct->secondPassComplete = false;
+			//zStruct->hgMaterialState1 = EHologramMaterialState::HMS_OK;
+			//zStruct->hgMaterialState2 = EHologramMaterialState::HMS_OK;
 			//zStruct->X = 0;
 			//zStruct->Y = 0;
 			//zStruct->Z = 0;
@@ -523,6 +554,23 @@ bool FInfiniteZoopModule::BGSecondaryFire(UFGBuildGunStateBuild* self)
 				HologramsToZoop.Remove(hologram);
 				return false;
 			}
+		}
+	}
+	return true;
+}
+
+bool FInfiniteZoopModule::ValidatePlacementAndCost(AFGHologram* self, class UFGInventoryComponent* inventory)
+{
+	if (auto foundation = Cast<AFGFoundationHologram>(self))
+	{
+		if (FoundationsBeingZooped.Contains(foundation))
+		{
+			auto zStruct = FoundationsBeingZooped[foundation];
+			if (zStruct->secondPassComplete)
+			{
+				return true;
+			}
+			return false;
 		}
 	}
 	return true;
@@ -635,6 +683,15 @@ void FInfiniteZoopModule::StartupModule() {
 			this->CreateDefaultFoundationZoop(self, hitResult);
 		});
 
+	//void ValidatePlacementAndCost(class UFGInventoryComponent* inventory);
+	SUBSCRIBE_METHOD(AFGHologram::ValidatePlacementAndCost, [=](auto scope, AFGHologram* self, class UFGInventoryComponent* inventory)
+		{
+			if (!this->ValidatePlacementAndCost(self, inventory))
+			{
+				scope.Cancel();
+			}
+		});
+
 	AFGHologram* hCDO = GetMutableDefault<AFGHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, hCDO, [=](auto scope, AFGHologram* self, int32 delta)
 		{
@@ -708,6 +765,7 @@ void FInfiniteZoopModule::StartupModule() {
 					//UE_LOG(InfiniteZoop_Log, Display, TEXT("Zoop Corners: False"));
 					if (bhg && bhg->mMaxZoopAmount > 0)
 					{
+						bhg->SetMaterialState(EHologramMaterialState::HMS_OK);
 						if (clientSubsystem->tempZoopAmount > 0)
 						{
 							bhg->mMaxZoopAmount = clientSubsystem->tempZoopAmount - 1;

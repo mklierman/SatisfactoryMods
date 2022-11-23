@@ -35,12 +35,18 @@ void ACL_CounterLimiter::BeginPlay()
 
 		//	}
 		//}
-		this->mInputs.AddUnique(inputConnection);
-		this->mOutputs.AddUnique(outputConnection);
+		//this->mInputs.AddUnique(inputConnection);
+		//this->mOutputs.AddUnique(outputConnection);
+		//this->mInventorySizeX = 1;
+		//this->mInventorySizeY = 1;
+		InputBuffer->SetLocked(false);
+		InputBuffer->Resize(1);
 		inputConnection->SetInventory(this->GetBufferInventory());
-		this->mInventorySizeX = 1;
-		this->mInventorySizeY = 1;
+		inputConnection->GetInventory()->SetLocked(false);
+		OutputStageBuffer->SetLocked(false);
+		outputConnection->SetInventory(OutputStageBuffer);
 		inputConnection->SetInventoryAccessIndex(0);
+		outputConnection->SetInventoryAccessIndex(0);
 		GetWorld()->GetTimerManager().SetTimer(ipmTimerHandle, this, &ACL_CounterLimiter::CalculateIPM, 60.f, true, 60.f);
 		SetThroughputLimit(mPerMinuteLimitRate);
 	}
@@ -53,12 +59,16 @@ void ACL_CounterLimiter::PostInitializeComponents()
 
 	if (HasAuthority())
 	{
-		this->mInputs.AddUnique(inputConnection);
-		this->mOutputs.AddUnique(outputConnection);
+		//this->mInputs.AddUnique(inputConnection);
+		//this->mOutputs.AddUnique(outputConnection);
+		InputBuffer->SetLocked(false);
 		inputConnection->SetInventory(this->GetBufferInventory());
-		this->mInventorySizeX = 1;
-		this->mInventorySizeY = 1;
+		OutputStageBuffer->SetLocked(false);
+		outputConnection->SetInventory(OutputStageBuffer);
 		inputConnection->SetInventoryAccessIndex(0);
+		outputConnection->SetInventoryAccessIndex(0);
+		//this->mInventorySizeX = 1;
+		//this->mInventorySizeY = 1;
 		GetWorld()->GetTimerManager().SetTimer(ipmTimerHandle, this, &ACL_CounterLimiter::CalculateIPM, 60.f, true, 60.f);
 		SetThroughputLimit(mPerMinuteLimitRate);
 		for (UActorComponent* ComponentsByClass : GetComponentsByClass(UFGInventoryComponent::StaticClass()))
@@ -80,6 +90,7 @@ void ACL_CounterLimiter::Factory_CollectInput_Implementation()
 {
 	if (HasAuthority())
 	{
+		inputConnection->GetInventory()->SetLocked(false);
 		int emptyBufferIndex = InputBuffer->FindEmptyIndex();
 		if (emptyBufferIndex >= 0)
 		{
@@ -100,6 +111,7 @@ bool ACL_CounterLimiter::Factory_GrabOutput_Implementation(UFGFactoryConnectionC
 {
 	if (HasAuthority())
 	{
+		outputConnection->GetInventory()->SetLocked(false);
 		if (mPerMinuteLimitRate < 0)
 		{
 			StageItemForOutput();
@@ -211,6 +223,11 @@ void ACL_CounterLimiter::UpdateAttachedSigns()
 	}
 }
 
+UFGInventoryComponent* ACL_CounterLimiter::GetBufferInventory()
+{
+	return InputBuffer;
+}
+
 
 void ACL_CounterLimiter::SetThroughputLimit(float itemsPerMinute)
 {
@@ -280,21 +297,24 @@ void ACL_CounterLimiter::StageItemForOutput()
 		int emptyBufferIndex = OutputStageBuffer->FindEmptyIndex();
 		if (emptyBufferIndex >= 0)
 		{
-			auto mBufferIndex = GetBufferInventory()->GetFirstIndexWithItem();
-			if (mBufferIndex >= 0)
+			if (GetBufferInventory())
 			{
-				FInventoryStack Stack;
-				bool result = GetBufferInventory()->GetStackFromIndex(mBufferIndex, Stack);
-				if (result && Stack.HasItems())
+				auto mBufferIndex = GetBufferInventory()->GetFirstIndexWithItem();
+				if (mBufferIndex >= 0)
 				{
-					GetBufferInventory()->RemoveAllFromIndex(mBufferIndex);
-					int numItems;
-					FInventoryItem OutItem;
-					UFGInventoryLibrary::BreakInventoryStack(Stack, numItems, OutItem);
+					FInventoryStack Stack;
+					bool result = GetBufferInventory()->GetStackFromIndex(mBufferIndex, Stack);
+					if (result && Stack.HasItems())
+					{
+						GetBufferInventory()->RemoveAllFromIndex(mBufferIndex);
+						int numItems;
+						FInventoryItem OutItem;
+						UFGInventoryLibrary::BreakInventoryStack(Stack, numItems, OutItem);
 
-					float out_OffsetBeyond = 100.f;
-					//FInventoryStack Stack = UFGInventoryLibrary::MakeInventoryStack(1, OutItem);
-					OutputStageBuffer->AddStackToIndex(emptyBufferIndex, Stack, false);
+						float out_OffsetBeyond = 100.f;
+						//FInventoryStack Stack = UFGInventoryLibrary::MakeInventoryStack(1, OutItem);
+						OutputStageBuffer->AddStackToIndex(emptyBufferIndex, Stack, false);
+					}
 				}
 			}
 		}

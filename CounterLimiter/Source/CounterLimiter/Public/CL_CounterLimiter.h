@@ -17,7 +17,7 @@ DECLARE_LOG_CATEGORY_EXTERN(CounterLimiter_Log, Display, All);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateDisplay, float, NewIPM);
 
 UCLASS()
-class COUNTERLIMITER_API ACL_CounterLimiter : public AFGBuildableAttachmentSplitter
+class COUNTERLIMITER_API ACL_CounterLimiter : public AFGBuildableFactory
 {
 	GENERATED_BODY()
 public:
@@ -34,6 +34,8 @@ public:
 
 	//UFUNCTION(BlueprintImplementableEvent)
 	void UpdateAttachedSigns();
+
+	UFGInventoryComponent* GetBufferInventory();
 
 
 	UPROPERTY(BlueprintAssignable, Replicated)

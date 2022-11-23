@@ -8,8 +8,8 @@
 
 
 void FNoZFightingModule::StartupModule() {
-#if !WITH_EDITOR
 
+#if !WITH_EDITOR
 	AFGBuildable* bcdo = GetMutableDefault<AFGBuildable>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildable::OnConstruction, bcdo, [](AFGBuildable* self, const FTransform& transform)
 		{
@@ -20,7 +20,14 @@ void FNoZFightingModule::StartupModule() {
 				for (auto mesh : meshes)
 				{
 					auto sMesh = Cast<UStaticMeshComponent>(mesh);
-					float randomFloat = UKismetMathLibrary::RandomFloatInRange(-0.15, 0.15);
+					float randomFloat = UKismetMathLibrary::RandomFloatInRange(-1.25, 1.25);
+					sMesh->AddRelativeLocation(FVector(0.0, 0.0, randomFloat));
+				}
+				auto instances = buildFoundation->mInstanceHandles;
+				for (auto inst : instances)
+				{
+					auto sMesh = inst->GetInstanceComponent();
+					float randomFloat = UKismetMathLibrary::RandomFloatInRange(-1.25, 1.25);
 					sMesh->AddRelativeLocation(FVector(0.0, 0.0, randomFloat));
 				}
 			}
@@ -35,6 +42,13 @@ void FNoZFightingModule::StartupModule() {
 						auto sMesh = Cast<UStaticMeshComponent>(mesh);
 						float randomFloat = UKismetMathLibrary::RandomFloatInRange(-0.35, 0.35);
 						sMesh->AddRelativeLocation(FVector(randomFloat, 0.0, 0.0));
+					}
+					auto instances = buildWall->mInstanceHandles;
+					for (auto inst : instances)
+					{
+						auto sMesh = inst->GetInstanceComponent();
+						float randomFloat = UKismetMathLibrary::RandomFloatInRange(-0.35, 0.35);
+						sMesh->AddRelativeLocation(FVector(0.0, 0.0, randomFloat));
 					}
 				}
 			}
