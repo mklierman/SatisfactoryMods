@@ -21,7 +21,7 @@ enum class ELoaderType : uint8
 };
 
 class ALBBuild_ModularLoadBalancer;
-USTRUCT()
+USTRUCT(BlueprintType)
 struct LOADBALANCERS_API FLBBalancerData_Filters
 {
 	GENERATED_BODY()
@@ -72,7 +72,7 @@ struct TStructOpsTypeTraits< FLBBalancerIndexing > : public TStructOpsTypeTraits
 };
 
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct LOADBALANCERS_API FLBBalancerData
 {
 	GENERATED_BODY()
@@ -122,6 +122,12 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	// End AActor interface
 
+	//~ Begin IFGColorInterface
+	void SetCustomizationData_Native(const FFactoryCustomizationData& customizationData);
+	virtual void StartIsAimedAtForColor_Implementation(class AFGCharacterPlayer* byCharacter, bool isValid = true);
+	virtual void StopIsAimedAtForColor_Implementation(class AFGCharacterPlayer* byCharacter);
+	//~ End IFGColorInterface
+
 	void SetupInventory();
 	UFGInventoryComponent* GetBufferInventory();
 
@@ -132,6 +138,7 @@ public:
 	void ApplyGroupModule();
 
 	/** Is this module the Leader return true if yes */
+	UFUNCTION(BlueprintCallable, Category = "Modular Loader")
 	FORCEINLINE bool IsLeader() const { return GroupLeader == this; }
 
 	UFUNCTION(BlueprintCallable, Category="Modular Loader")
@@ -144,6 +151,7 @@ public:
 	void ApplyLeader();
 
 	/* Get ALL valid GroupModules */
+	UFUNCTION(BlueprintCallable, Category = "Modular Loader")
 	TArray<ALBBuild_ModularLoadBalancer*> GetGroupModules() const;
 
 	/* Try to send it on the next OverflowBalancer */
@@ -212,6 +220,14 @@ public:
 	// Execute Logic by Leader > Factory_CollectInput_Implementation
 	void Balancer_CollectInput();
 
+	/* All Loaders */
+	UPROPERTY(SaveGame)
+		FLBBalancerData mNormalLoaderData;
+
+	/** All our group modules */
+	UPROPERTY(Replicated)
+		TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mGroupModules;
+
 private:
 	/** Update our cached In and Outputs */
 	void UpdateCache();
@@ -221,13 +237,11 @@ private:
 	 */
 	bool CollectInput(ALBBuild_ModularLoadBalancer* Module);
 
-	/* All Loaders */
-	UPROPERTY(SaveGame)
-	FLBBalancerData mNormalLoaderData;
+	bool isLookedAtForColor = false;
 
-	/** All our group modules */
-	UPROPERTY(Replicated)
-	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mGroupModules;
+	//void ApplyCustomization(ALBBuild_ModularLoadBalancer* instigator, const FFactoryCustomizationData& customizationData);
+	void SetCustomization(ALBBuild_ModularLoadBalancer* instigator, const FFactoryCustomizationData& customizationData);
+
 
 	UPROPERTY(SaveGame)
 	float mTimer;

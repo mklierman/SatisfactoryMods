@@ -580,6 +580,46 @@ void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayRea
    Super::EndPlay(EndPlayReason);
 }
 
+void ALBBuild_ModularLoadBalancer::SetCustomizationData_Native(const FFactoryCustomizationData& customizationData)
+{
+    if (IsLeader())
+    {
+        SetCustomization(this, customizationData);
+    }
+    else if (isLookedAtForColor)
+    {
+        GroupLeader->SetCustomization(this, customizationData);
+    }
+    Super::SetCustomizationData_Native(customizationData); //Preview
+}
+
+void ALBBuild_ModularLoadBalancer::SetCustomization(ALBBuild_ModularLoadBalancer* instigator, const FFactoryCustomizationData& customizationData)
+{
+    if (IsLeader())
+    {
+        for (auto module : mGroupModules)
+        {
+            if (module != this && module != instigator)
+            {
+                module->SetCustomizationData_Native(customizationData);
+            }
+        }
+        Super::SetCustomizationData_Native(customizationData);
+    }
+}
+
+void ALBBuild_ModularLoadBalancer::StartIsAimedAtForColor_Implementation(AFGCharacterPlayer* byCharacter, bool isValid)
+{
+    Super::StartIsAimedAtForColor_Implementation(byCharacter, isValid);
+    isLookedAtForColor = true;
+}
+
+void ALBBuild_ModularLoadBalancer::StopIsAimedAtForColor_Implementation(AFGCharacterPlayer* byCharacter)
+{
+    Super::StopIsAimedAtForColor_Implementation(byCharacter);
+    isLookedAtForColor = false;
+}
+
 void ALBBuild_ModularLoadBalancer::OnOutputItemRemoved(TSubclassOf<UFGItemDescriptor> itemClass, int32 numRemoved)
 {
     if(MyOutputConnection && GetBufferInventory())
