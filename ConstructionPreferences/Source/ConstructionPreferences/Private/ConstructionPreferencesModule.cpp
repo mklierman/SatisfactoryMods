@@ -9,7 +9,9 @@
 #include "Hologram/FGWireHologram.h"
 #include "Holo_WireHologramBuildModes.h"
 #include "Buildables/FGConveyorPoleStackable.h"
+#include "Equipment/FGBuildGunDismantle.h"
 #include "CP_ModConfigStruct.h"
+#include "FGCharacterPlayer.h"
 #include "Hologram/FGConveyorLiftHologram.h"
 #include "Hologram/FGConveyorPoleHologram.h"
 #include "CP_Subsystem.h"
@@ -66,13 +68,18 @@ void FConstructionPreferencesModule::StartupModule() {
 	//			}
 	//		}
 	//	});
-
 #if !WITH_EDITOR
+	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [=](auto& scope, AFGCharacterPlayer* self)
+		{
+			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
+	float reachDist = config.ReachDistance;
+	scope.Override(reachDist);
+		});
+
 	AFGConveyorLiftHologram* hg = GetMutableDefault<AFGConveyorLiftHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGConveyorLiftHologram::BeginPlay, hg, [](AFGConveyorLiftHologram* self)
 		{
 			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
-			UE_LOG(LogConstructionPreferences, Display, TEXT("Vanilla lift height = %f"), self->mMaximumHeight);
 			self->mStepHeight = ((float)config.ConveyorLiftStep * 100);
 			self->mMinimumHeight = ((float)config.ConveyorLiftHeight * 100);
 			self->mMaximumHeight = ((float)config.ConveyorLiftHeightMax * 100);

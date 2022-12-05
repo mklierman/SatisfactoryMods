@@ -128,6 +128,8 @@ public:
 	virtual void StopIsAimedAtForColor_Implementation(class AFGCharacterPlayer* byCharacter);
 	//~ End IFGColorInterface
 
+	virtual EProductionStatus GetProductionIndicatorStatus() const override;
+
 	void SetupInventory();
 	UFGInventoryComponent* GetBufferInventory();
 

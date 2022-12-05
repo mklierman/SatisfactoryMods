@@ -1,8 +1,8 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.0.2",
-  "SemVersion": "1.0.2",
+  "VersionName": "1.0.3",
+  "SemVersion": "1.0.3",
   "FriendlyName": "Finer Foundation Rotation",
   "Description": "Lets you rotate foundations by 1 degree when using fine rotation",
   "Category": "Modding",

@@ -138,6 +138,11 @@ void ALBBuild_ModularLoadBalancer::BeginPlay()
     }
 }
 
+EProductionStatus ALBBuild_ModularLoadBalancer::GetProductionIndicatorStatus() const
+{
+    return EProductionStatus::IS_PRODUCING;
+}
+
 void ALBBuild_ModularLoadBalancer::SetupInventory()
 {
     if (GetBufferInventory())

@@ -33,6 +33,15 @@ public:
     UPROPERTY(BlueprintReadWrite)
     int32 ConveyorLiftHeightMax;
 
+    UPROPERTY(BlueprintReadWrite)
+    bool DisablePowerPoleBuildMode;
+
+    UPROPERTY(BlueprintReadWrite)
+    float ReachDistance;
+
+    UPROPERTY(BlueprintReadWrite)
+    float DismantleDelay;
+
     /* Retrieves active configuration value and returns object of this struct containing it */
     static FCP_ModConfigStruct GetActiveConfig() {
         FCP_ModConfigStruct ConfigStruct{};
