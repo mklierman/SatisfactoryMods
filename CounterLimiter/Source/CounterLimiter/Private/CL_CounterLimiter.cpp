@@ -4,10 +4,11 @@
 #include "FGInventoryLibrary.h"
 #include "CL_RCO.h"
 #include "FGIconLibrary.h"
+#include "Buildables/FGBuildableConveyorBelt.h"
 
 //DEFINE_LOG_CATEGORY(CounterLimiter_Log);
 
-#pragma optimize("", off)
+//#pragma optimize("", off)
 void ACL_CounterLimiter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -18,7 +19,6 @@ void ACL_CounterLimiter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 ACL_CounterLimiter::ACL_CounterLimiter()
 {
-
 }
 
 
@@ -51,6 +51,30 @@ void ACL_CounterLimiter::BeginPlay()
 		SetThroughputLimit(mPerMinuteLimitRate);
 	}
 	Super::BeginPlay();
+}
+
+void ACL_CounterLimiter::Dismantle_Implementation()
+{
+	auto inputLoc = inputConnection->GetConnection()->GetConnectorLocation();
+	auto outputLoc = outputConnection->GetConnection()->GetConnectorLocation();
+	if ((inputLoc - outputLoc).IsNearlyZero(1))
+	{
+		auto belt1Conn = inputConnection->GetConnection();
+		auto belt2Conn = outputConnection->GetConnection();
+		auto belt1 = Cast< AFGBuildableConveyorBelt>(belt1Conn->GetOuterBuildable());
+		auto belt2 = Cast< AFGBuildableConveyorBelt>(belt2Conn->GetOuterBuildable());
+		if (belt1 && belt2)
+		{
+			TArray< AFGBuildableConveyorBelt*> belts;
+			belts.Add(belt1);
+			belts.Add(belt2);
+			belt1Conn->ClearConnection();
+			belt2Conn->ClearConnection();
+			belt1Conn->SetConnection(belt2Conn);
+			AFGBuildableConveyorBelt::Merge(belts);
+		}
+	}
+	Super::Dismantle_Implementation();
 }
 
 void ACL_CounterLimiter::PostInitializeComponents()
@@ -320,4 +344,4 @@ void ACL_CounterLimiter::StageItemForOutput()
 		}
 	}
 }
-#pragma optimize("", on)
+//#pragma optimize("", on)

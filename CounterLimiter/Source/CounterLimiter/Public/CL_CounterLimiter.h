@@ -24,6 +24,7 @@ public:
 	ACL_CounterLimiter();
 
 		virtual void BeginPlay() override;
+		virtual void Dismantle_Implementation() override;
 		void PostInitializeComponents() override;
 		virtual bool ShouldSave_Implementation() const override;
 
@@ -87,5 +88,8 @@ public:
 
 	UFUNCTION()
 	void StageItemForOutput();
+
+private:
+	friend class AFGAttachmentSplitterHologram;
 };
 
