@@ -1,5 +1,5 @@
-$SMLPath = "C:\Code\SML_AHU\Plugins"
-$ModDir = "C:\Code\SatisfactoryMods"
+$SMLPath = "C:\Code\SF\SML\Plugins"
+$ModDir = "C:\Code\SF\SatisfactoryMods"
 
 function New-Sym-Link ($Link) {
     Remove-Item ($SMLPath + "\" + $Link) -ErrorAction SilentlyContinue -Recurse

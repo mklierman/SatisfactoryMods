@@ -10,6 +10,7 @@
 #include "Holo_WireHologramBuildModes.h"
 #include "Buildables/FGConveyorPoleStackable.h"
 #include "Equipment/FGBuildGunDismantle.h"
+#include "Equipment/FGHoverPack.h"
 #include "CP_ModConfigStruct.h"
 #include "FGCharacterPlayer.h"
 #include "Hologram/FGConveyorLiftHologram.h"
@@ -47,6 +48,27 @@ void PrimaryFire(CallScope<void(*)(UFGBuildGunStateBuild*)>& scope, UFGBuildGunS
 	}
 }
 
+//#pragma optimize("", off)
+float FConstructionPreferencesModule::GetUseDistance(AFGCharacterPlayer* self)
+{
+	FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
+	float reachDist = config.ReachDistance;
+	auto backEquip = self->mBackEquipmentSlot;
+	if (backEquip)
+	{
+		auto hp = Cast<AFGHoverPack>(backEquip->mEquipmentInSlot);
+		if (hp)
+		{
+			if (hp->mCurrentHoverMode == EHoverPackMode::HPM_Hover)
+			{
+				return 2000.0 + reachDist;
+			}
+		}
+	}
+	return reachDist;
+}
+//#pragma optimize("", on)
+
 void FConstructionPreferencesModule::StartupModule() {
 
 	//SUBSCRIBE_METHOD(AFGWireHologram::SetActiveAutomaticPoleHologram, [=](auto& scope, AFGWireHologram* self, class AFGPowerPoleHologram* poleHologram)
@@ -71,9 +93,7 @@ void FConstructionPreferencesModule::StartupModule() {
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [=](auto& scope, AFGCharacterPlayer* self)
 		{
-			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
-	float reachDist = config.ReachDistance;
-	scope.Override(reachDist);
+			scope.Override(GetUseDistance(self));
 		});
 
 	AFGConveyorLiftHologram* hg = GetMutableDefault<AFGConveyorLiftHologram>();
