@@ -336,9 +336,11 @@ bool FInfiniteZoopModule::OnRep_DesiredZoop(AFGFactoryBuildingHologram* self)
 			{
 				if (zStruct->secondPassComplete || zStruct->inScrollMode)
 				{
-					self->mDesiredZoop.X = zStruct->X;
-					self->mDesiredZoop.Y = zStruct->Y;
-					self->mDesiredZoop.Z = zStruct->Z;
+					auto maxZ = self->mMaxZoopAmount;
+					auto minZ = (self->mMaxZoopAmount * -1);
+					self->mDesiredZoop.X = FMath::Clamp(zStruct->X, minZ, maxZ);
+					self->mDesiredZoop.Y = FMath::Clamp(zStruct->Y, minZ, maxZ);
+					self->mDesiredZoop.Z = FMath::Clamp(zStruct->Z, minZ, maxZ);
 					//UE_LOG(InfiniteZoop_Log, Display, TEXT("OnRep_DesiredZoop: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
 					//self->OnRep_DesiredZoop();
 
@@ -468,9 +470,11 @@ void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AAct
 		auto zStruct = GetStruct(self);
 		if (self)
 		{
-			self->mDesiredZoop.X = zStruct->X;
-			self->mDesiredZoop.Y = zStruct->Y;
-			self->mDesiredZoop.Z = zStruct->Z;
+			auto maxZ = self->mMaxZoopAmount;
+			auto minZ = (self->mMaxZoopAmount * -1);
+			self->mDesiredZoop.X = FMath::Clamp(zStruct->X, minZ, maxZ);
+			self->mDesiredZoop.Y = FMath::Clamp(zStruct->Y, minZ, maxZ);
+			self->mDesiredZoop.Z = FMath::Clamp(zStruct->Z, minZ, maxZ);
 			//UE_LOG(InfiniteZoop_Log, Display, TEXT("ConstructZoop: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
 			self->OnRep_DesiredZoop();
 			//UE_LOG(InfiniteZoop_Log, Display, TEXT("ConstructZoop 2: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);

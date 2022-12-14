@@ -55,23 +55,32 @@ void ACL_CounterLimiter::BeginPlay()
 
 void ACL_CounterLimiter::Dismantle_Implementation()
 {
-	auto inputLoc = inputConnection->GetConnection()->GetConnectorLocation();
-	auto outputLoc = outputConnection->GetConnection()->GetConnectorLocation();
-	if ((inputLoc - outputLoc).IsNearlyZero(1))
+	if (inputConnection && outputConnection)
 	{
-		auto belt1Conn = inputConnection->GetConnection();
-		auto belt2Conn = outputConnection->GetConnection();
-		auto belt1 = Cast< AFGBuildableConveyorBelt>(belt1Conn->GetOuterBuildable());
-		auto belt2 = Cast< AFGBuildableConveyorBelt>(belt2Conn->GetOuterBuildable());
-		if (belt1 && belt2)
+		if (inputConnection->GetConnection() && outputConnection->GetConnection())
 		{
-			TArray< AFGBuildableConveyorBelt*> belts;
-			belts.Add(belt1);
-			belts.Add(belt2);
-			belt1Conn->ClearConnection();
-			belt2Conn->ClearConnection();
-			belt1Conn->SetConnection(belt2Conn);
-			AFGBuildableConveyorBelt::Merge(belts);
+			auto inputLoc = inputConnection->GetConnection()->GetConnectorLocation();
+			auto outputLoc = outputConnection->GetConnection()->GetConnectorLocation();
+			if ((inputLoc - outputLoc).IsNearlyZero(1))
+			{
+				auto belt1Conn = inputConnection->GetConnection();
+				auto belt2Conn = outputConnection->GetConnection();
+				if (belt1Conn && belt2Conn)
+				{
+					auto belt1 = Cast< AFGBuildableConveyorBelt>(belt1Conn->GetOuterBuildable());
+					auto belt2 = Cast< AFGBuildableConveyorBelt>(belt2Conn->GetOuterBuildable());
+					if (belt1 && belt2)
+					{
+						TArray< AFGBuildableConveyorBelt*> belts;
+						belts.Add(belt1);
+						belts.Add(belt2);
+						belt1Conn->ClearConnection();
+						belt2Conn->ClearConnection();
+						belt1Conn->SetConnection(belt2Conn);
+						AFGBuildableConveyorBelt::Merge(belts);
+					}
+				}
+			}
 		}
 	}
 	Super::Dismantle_Implementation();

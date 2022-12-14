@@ -604,7 +604,7 @@ void ALBBuild_ModularLoadBalancer::SetCustomization(ALBBuild_ModularLoadBalancer
     {
         for (auto module : mGroupModules)
         {
-            if (module != this && module != instigator)
+            if (module != nullptr && module != this && module != instigator)
             {
                 module->SetCustomizationData_Native(customizationData);
             }
@@ -679,7 +679,9 @@ void ALBBuild_ModularLoadBalancer::PostInitializeComponents()
             }
         }
     }
+#if !WITH_EDITOR
     GetBufferInventory()->SetLocked(false);
+#endif
 }
 
 void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()

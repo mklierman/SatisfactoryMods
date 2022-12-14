@@ -53,6 +53,11 @@ float FConstructionPreferencesModule::GetUseDistance(AFGCharacterPlayer* self)
 {
 	FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
 	float reachDist = config.ReachDistance;
+	if (reachDist == 250.f) //250 is default
+	{
+		return -1.f;
+	}
+
 	auto backEquip = self->mBackEquipmentSlot;
 	if (backEquip)
 	{
@@ -93,7 +98,11 @@ void FConstructionPreferencesModule::StartupModule() {
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [=](auto& scope, AFGCharacterPlayer* self)
 		{
-			scope.Override(GetUseDistance(self));
+			auto newDist = GetUseDistance(self);
+			if (newDist > 0)
+			{
+				scope.Override(newDist);
+			}
 		});
 
 	AFGConveyorLiftHologram* hg = GetMutableDefault<AFGConveyorLiftHologram>();

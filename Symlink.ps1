@@ -8,5 +8,9 @@ function New-Sym-Link ($Link) {
 
 $dir = Get-ChildItem $ModDir | Where-Object{$_.PSISContainer}
 foreach ($d in $dir){
-    New-Sym-Link($d.Name)
+    if ($d.Name -eq "VehiclePathTool")
+    {
+        Write-Output -$d.Name
+        New-Sym-Link($d.Name)
+    }
 }

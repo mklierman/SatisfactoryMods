@@ -1,8 +1,8 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.0.10",
-  "SemVersion": "1.0.10",
+  "VersionName": "1.0.11",
+  "SemVersion": "1.0.11",
   "FriendlyName": "Throughput Counter Limiter",
   "Description": "A conveyor belt attachment that counts and displays the actual item throughput per minute. Can optionally limit the number of items allowed per minute.",
   "Category": "Modding",

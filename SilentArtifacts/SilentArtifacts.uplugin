@@ -1,12 +1,12 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.7.4",
-  "SemVersion": "1.7.4",
-  "FriendlyName": "Modular Load Balancers",
-  "Description": "Modular buildable that can be snapped together to form load balancers of any size",
+  "VersionName": "1.0.1",
+  "SemVersion": "1.0.1",
+  "FriendlyName": "SilentArtifacts",
+  "Description": "",
   "Category": "Modding",
-  "CreatedBy": "SirDigby, Kyrium",
+  "CreatedBy": "SirDigby",
   "CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
   "DocsURL": "",
   "MarketplaceURL": "",
@@ -24,11 +24,5 @@
       "IsActive": false
     }
   ],
-  "Modules": [
-    {
-      "Name": "LoadBalancers",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ]
+  "Modules": []
 }
