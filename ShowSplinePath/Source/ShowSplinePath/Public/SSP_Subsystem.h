@@ -46,6 +46,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void HideAllMantaPaths(AActor* actor);
 
+	UFUNCTION(BlueprintCallable)
+		void ShowAllVehiclePaths(AActor* actor);
+	UFUNCTION(BlueprintCallable)
+		void HideAllVehiclePaths(AActor* actor);
+
 
 	UPROPERTY(BlueprintReadWrite)
 	UStaticMesh* splinePathMesh;

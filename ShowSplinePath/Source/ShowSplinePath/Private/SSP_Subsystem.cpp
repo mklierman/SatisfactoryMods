@@ -213,4 +213,30 @@ void ASSP_Subsystem::HideAllMantaPaths(AActor* actor)
 	}
 	MantaMeshPools.Empty();
 }
+void ASSP_Subsystem::ShowAllVehiclePaths(AActor* actor)
+{
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGDrivingTargetList::StaticClass(), FoundActors);
+	if (FoundActors.Num() > 0)
+	{
+		for (auto actor : FoundActors)
+		{
+			auto tpList = Cast< AFGDrivingTargetList>(actor);
+			tpList->SetPathVisible(true);
+		}
+	}
+}
+void ASSP_Subsystem::HideAllVehiclePaths(AActor* actor)
+{
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGDrivingTargetList::StaticClass(), FoundActors);
+	if (FoundActors.Num() > 0)
+	{
+		for (auto actor : FoundActors)
+		{
+			auto tpList = Cast< AFGDrivingTargetList>(actor);
+			tpList->SetPathVisible(false);
+		}
+	}
+}
 //#pragma optimize("", on)
