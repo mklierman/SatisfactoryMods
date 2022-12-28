@@ -4,6 +4,42 @@
 #include "Buildables/FGBuildableConveyorBelt.h"
 
 //#pragma optimize("", off)
+void ACL_Hologram::SetHologramLocationAndRotation(const FHitResult& hitResult)
+{
+        AActor* hitActor = hitResult.GetActor();
+        ACL_CounterLimiter* cl = Cast <ACL_CounterLimiter>(hitActor);
+        if (hitActor && cl)
+        {
+            FRotator addedRotation = FRotator(0, 0, 0);
+            if (this->GetRotationStep() != 0)
+            {
+                addedRotation.Yaw = this->GetScrollRotateValue();
+            }
+            if (hitResult.ImpactNormal == FVector(0, 0, -1))
+            {
+                SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, -200), cl->GetActorRotation() + addedRotation);
+                this->mSnappedBuilding = cl;
+                this->CheckValidPlacement();
+            }
+            else if (hitResult.ImpactNormal == FVector(0, 0, 1))
+            {
+                SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, 200), cl->GetActorRotation() + addedRotation);
+                this->mSnappedBuilding = cl;
+                this->CheckValidPlacement();
+            }
+            else
+            {
+                Super::SetHologramLocationAndRotation(hitResult);
+            }
+        }
+    else 
+        {
+        Super::SetHologramLocationAndRotation(hitResult);
+    }
+}
+//#pragma optimize("", on)
+
+//#pragma optimize("", off)
 void ACL_Hologram::ConfigureComponents(AFGBuildable* inBuildable) const
 {
 	Super::ConfigureComponents(inBuildable);

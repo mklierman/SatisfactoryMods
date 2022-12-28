@@ -9,5 +9,6 @@ class COUNTERLIMITER_API ACL_Hologram : public AFGConveyorAttachmentHologram
 {
 	GENERATED_BODY()
 public:
+	virtual void SetHologramLocationAndRotation(const FHitResult& hitResult) override;
 	virtual void ConfigureComponents(class AFGBuildable* inBuildable) const override;
 };
