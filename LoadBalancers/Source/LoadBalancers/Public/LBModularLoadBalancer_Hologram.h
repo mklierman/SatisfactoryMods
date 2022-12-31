@@ -28,6 +28,7 @@ public:
 	virtual void Scroll(int32 delta) override;
 
 	virtual bool IsValidHitResult(const FHitResult& hitResult) const override;
+	virtual void SetHologramLocationAndRotation(const FHitResult& hitResult) override;
 
 	void UnHighlightAll();
 

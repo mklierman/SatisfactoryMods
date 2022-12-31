@@ -4,7 +4,7 @@
 #include "LoadBalancersModule.h"
 
 //DEFINE_LOG_CATEGORY(LoadBalancers_Log);
-
+#pragma optimize("", off)
 void ALBModularLoadBalancer_Hologram::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -104,8 +104,69 @@ bool ALBModularLoadBalancer_Hologram::IsValidHitResult(const FHitResult& hitResu
 			mOutlineSubsystem->ClearOutlines();
 		}
 	}
+	AActor* hitActor = hitResult.GetActor();
+	ALBBuild_ModularLoadBalancer* cl = Cast <ALBBuild_ModularLoadBalancer>(hitActor);
+	if (hitActor && cl)
+	{
+		return true;
+	}
 
 	return SuperBool;
+}
+
+void ALBModularLoadBalancer_Hologram::SetHologramLocationAndRotation(const FHitResult& hitResult)
+{
+	AActor* hitActor = hitResult.GetActor();
+	ALBBuild_ModularLoadBalancer* HitBalancer = Cast <ALBBuild_ModularLoadBalancer>(hitActor);
+	if (hitActor && HitBalancer)
+	{
+		FRotator addedRotation = FRotator(0, 0, 0);
+		if (this->GetRotationStep() != 0)
+		{
+			addedRotation.Yaw = this->GetScrollRotateValue();
+		}
+		if (ActiveGroupLeader != HitBalancer->GroupLeader)
+		{
+			UnHighlightAll();
+		}
+
+		LastSnapped = HitBalancer;
+		ActiveGroupLeader = HitBalancer->GroupLeader;
+		HighlightAll(HitBalancer->GetGroupModules());
+
+		if (hitResult.ImpactNormal == FVector(0, 0, -1))
+		{
+			SetActorLocationAndRotation(HitBalancer->GetActorLocation() + FVector(0, 0, -200), HitBalancer->GetActorRotation() + addedRotation);
+			this->mSnappedBuilding = HitBalancer;
+			this->CheckValidPlacement();
+		}
+		else if (hitResult.ImpactNormal == FVector(0, 0, 1))
+		{
+			SetActorLocationAndRotation(HitBalancer->GetActorLocation() + FVector(0, 0, 200), HitBalancer->GetActorRotation() + addedRotation);
+			this->mSnappedBuilding = HitBalancer;
+			this->CheckValidPlacement();
+		}
+		else if (hitResult.ImpactNormal.Y < -0.5)
+		{
+			SetActorLocationAndRotation(HitBalancer->GetActorLocation() + FVector(74, -210, 0), HitBalancer->GetActorRotation() + addedRotation);
+			this->mSnappedBuilding = HitBalancer;
+			this->CheckValidPlacement();
+		}
+		else if (hitResult.ImpactNormal.Y > 0.5)
+		{
+			SetActorLocationAndRotation(HitBalancer->GetActorLocation() + FVector(-75, 210, 0), HitBalancer->GetActorRotation() + addedRotation);
+			this->mSnappedBuilding = HitBalancer;
+			this->CheckValidPlacement();
+		}
+		else
+		{
+			Super::SetHologramLocationAndRotation(hitResult);
+		}
+	}
+	else
+	{
+		Super::SetHologramLocationAndRotation(hitResult);
+	}
 }
 
 void ALBModularLoadBalancer_Hologram::UnHighlightAll()
@@ -152,3 +213,4 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 		}
 	}
 }
+#pragma optimize("", on)
