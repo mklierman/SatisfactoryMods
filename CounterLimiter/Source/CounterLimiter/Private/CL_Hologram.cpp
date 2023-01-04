@@ -4,6 +4,14 @@
 #include "Buildables/FGBuildableConveyorBelt.h"
 
 //#pragma optimize("", off)
+ACL_Hologram::ACL_Hologram()
+{
+}
+void ACL_Hologram::BeginPlay()
+{
+    Super::BeginPlay();
+
+}
 void ACL_Hologram::SetHologramLocationAndRotation(const FHitResult& hitResult)
 {
         AActor* hitActor = hitResult.GetActor();
@@ -13,7 +21,7 @@ void ACL_Hologram::SetHologramLocationAndRotation(const FHitResult& hitResult)
             FRotator addedRotation = FRotator(0, 0, 0);
             if (this->GetRotationStep() != 0)
             {
-                addedRotation.Yaw = this->GetScrollRotateValue();
+                addedRotation.Yaw = mRotationAmount;
             }
             if (hitResult.ImpactNormal == FVector(0, 0, -1))
             {
@@ -35,6 +43,38 @@ void ACL_Hologram::SetHologramLocationAndRotation(const FHitResult& hitResult)
     else 
         {
         Super::SetHologramLocationAndRotation(hitResult);
+    }
+}
+bool ACL_Hologram::IsValidHitResult(const FHitResult& hitResult) const
+{
+    AActor* hitActor = hitResult.GetActor();
+    ACL_CounterLimiter* cl = Cast <ACL_CounterLimiter>(hitActor);
+    if (hitActor && cl)
+    {
+        return true;
+    }
+    return Super::IsValidHitResult(hitResult);
+}
+void ACL_Hologram::Scroll(int32 delta)
+{
+    Super::SetScrollMode(EHologramScrollMode::HSM_ROTATE);
+    if (GetSnappedBuilding() && Cast<ACL_CounterLimiter>(GetSnappedBuilding()))
+    {
+        auto pContr = this->GetNetOwningPlayer()->GetPlayerController(GetWorld());
+        if (pContr && pContr->IsInputKeyDown(EKeys::LeftControl))
+        {
+            mRotationAmount += delta * 5;
+            SetScrollRotateValue(GetScrollRotateValue() + delta * 5);
+        }
+        else
+        {
+            mRotationAmount += delta * 45;
+            Super::Scroll(delta);
+        }
+    }
+    else
+    {
+        Super::Scroll(delta);
     }
 }
 //#pragma optimize("", on)
