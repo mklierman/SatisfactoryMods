@@ -4,7 +4,7 @@
 #include "LoadBalancersModule.h"
 
 //DEFINE_LOG_CATEGORY(LoadBalancers_Log);
-#pragma optimize("", off)
+//#pragma optimize("", off)
 void ALBModularLoadBalancer_Hologram::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -74,15 +74,18 @@ void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)
 		auto pContr = this->GetNetOwningPlayer()->GetPlayerController(GetWorld());
 		if (pContr && pContr->IsInputKeyDown(EKeys::LeftControl))
 		{
+			mRotationAmount += delta * 5;
 			Super::Scroll(delta);
 		}
 		else if (pContr && pContr->IsInputKeyDown(EKeys::LeftShift))
 		{
+			mRotationAmount += delta;
 			Super::SetScrollMode(EHologramScrollMode::HSM_RAISE_LOWER);
 			Super::Scroll(delta);
 		}
 		else
 		{
+			mRotationAmount += delta * 45;
 			SetScrollRotateValue(GetScrollRotateValue() + delta);
 		}
 	}
@@ -121,46 +124,39 @@ void ALBModularLoadBalancer_Hologram::SetHologramLocationAndRotation(const FHitR
 	if (hitActor && HitBalancer)
 	{
 		FRotator addedRotation = FRotator(0, 0, 0);
-		if (this->GetRotationStep() != 0)
+		if (mRotationAmount != 0)
 		{
-			addedRotation.Yaw = this->GetScrollRotateValue();
+			addedRotation.Yaw = mRotationAmount;
 		}
 		if (ActiveGroupLeader != HitBalancer->GroupLeader)
 		{
 			UnHighlightAll();
 		}
-
-		LastSnapped = HitBalancer;
-		ActiveGroupLeader = HitBalancer->GroupLeader;
-		HighlightAll(HitBalancer->GetGroupModules());
-
+		
 		if (hitResult.ImpactNormal == FVector(0, 0, -1))
 		{
 			SetActorLocationAndRotation(HitBalancer->GetActorLocation() + FVector(0, 0, -200), HitBalancer->GetActorRotation() + addedRotation);
 			this->mSnappedBuilding = HitBalancer;
+			LastSnapped = HitBalancer;
+			ActiveGroupLeader = HitBalancer->GroupLeader;
 			this->CheckValidPlacement();
 		}
 		else if (hitResult.ImpactNormal == FVector(0, 0, 1))
 		{
 			SetActorLocationAndRotation(HitBalancer->GetActorLocation() + FVector(0, 0, 200), HitBalancer->GetActorRotation() + addedRotation);
 			this->mSnappedBuilding = HitBalancer;
-			this->CheckValidPlacement();
-		}
-		else if (hitResult.ImpactNormal.Y < -0.5)
-		{
-			SetActorLocationAndRotation(HitBalancer->GetActorLocation() + FVector(74, -210, 0), HitBalancer->GetActorRotation() + addedRotation);
-			this->mSnappedBuilding = HitBalancer;
-			this->CheckValidPlacement();
-		}
-		else if (hitResult.ImpactNormal.Y > 0.5)
-		{
-			SetActorLocationAndRotation(HitBalancer->GetActorLocation() + FVector(-75, 210, 0), HitBalancer->GetActorRotation() + addedRotation);
-			this->mSnappedBuilding = HitBalancer;
+			LastSnapped = HitBalancer;
+			ActiveGroupLeader = HitBalancer->GroupLeader;
 			this->CheckValidPlacement();
 		}
 		else
 		{
 			Super::SetHologramLocationAndRotation(hitResult);
+		}
+
+		if (this->mSnappedBuilding)
+		{
+			HighlightAll(HitBalancer->GetGroupModules());
 		}
 	}
 	else
@@ -213,4 +209,4 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 		}
 	}
 }
-#pragma optimize("", on)
+//#pragma optimize("", on)

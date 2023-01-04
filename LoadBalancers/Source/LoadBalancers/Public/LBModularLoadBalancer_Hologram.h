@@ -54,6 +54,9 @@ public:
 
 	UPROPERTY(Transient)
 	ALBOutlineSubsystem* mOutlineSubsystem;
+
+private:
+	int mRotationAmount = 0;
 };
 
 
