@@ -8,6 +8,7 @@
 #include "LBBuild_ModularLoadBalancer.h"
 #include "LBOutlineSubsystem.h"
 #include "FGPlayerController.h"
+#include "FGAttachmentPoint.h"
 #include "LBModularLoadBalancer_Hologram.generated.h"
 
 /**
@@ -28,7 +29,6 @@ public:
 	virtual void Scroll(int32 delta) override;
 
 	virtual bool IsValidHitResult(const FHitResult& hitResult) const override;
-	virtual void SetHologramLocationAndRotation(const FHitResult& hitResult) override;
 
 	void UnHighlightAll();
 
@@ -54,9 +54,6 @@ public:
 
 	UPROPERTY(Transient)
 	ALBOutlineSubsystem* mOutlineSubsystem;
-
-private:
-	int mRotationAmount = 0;
 };
 
 

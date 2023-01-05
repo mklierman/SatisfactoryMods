@@ -1,6 +1,7 @@
 #include "LBModularLoadBalancer_Hologram.h"
 #include "FGColoredInstanceMeshProxy.h"
 #include "FGProductionIndicatorInstanceComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "LoadBalancersModule.h"
 
 //DEFINE_LOG_CATEGORY(LoadBalancers_Log);
@@ -74,18 +75,15 @@ void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)
 		auto pContr = this->GetNetOwningPlayer()->GetPlayerController(GetWorld());
 		if (pContr && pContr->IsInputKeyDown(EKeys::LeftControl))
 		{
-			mRotationAmount += delta * 5;
 			Super::Scroll(delta);
 		}
 		else if (pContr && pContr->IsInputKeyDown(EKeys::LeftShift))
 		{
-			mRotationAmount += delta;
 			Super::SetScrollMode(EHologramScrollMode::HSM_RAISE_LOWER);
 			Super::Scroll(delta);
 		}
 		else
 		{
-			mRotationAmount += delta * 45;
 			SetScrollRotateValue(GetScrollRotateValue() + delta);
 		}
 	}
@@ -115,54 +113,6 @@ bool ALBModularLoadBalancer_Hologram::IsValidHitResult(const FHitResult& hitResu
 	}
 
 	return SuperBool;
-}
-
-void ALBModularLoadBalancer_Hologram::SetHologramLocationAndRotation(const FHitResult& hitResult)
-{
-	AActor* hitActor = hitResult.GetActor();
-	ALBBuild_ModularLoadBalancer* HitBalancer = Cast <ALBBuild_ModularLoadBalancer>(hitActor);
-	if (hitActor && HitBalancer)
-	{
-		FRotator addedRotation = FRotator(0, 0, 0);
-		if (mRotationAmount != 0)
-		{
-			addedRotation.Yaw = mRotationAmount;
-		}
-		if (ActiveGroupLeader != HitBalancer->GroupLeader)
-		{
-			UnHighlightAll();
-		}
-		
-		if (hitResult.ImpactNormal == FVector(0, 0, -1))
-		{
-			SetActorLocationAndRotation(HitBalancer->GetActorLocation() + FVector(0, 0, -200), HitBalancer->GetActorRotation() + addedRotation);
-			this->mSnappedBuilding = HitBalancer;
-			LastSnapped = HitBalancer;
-			ActiveGroupLeader = HitBalancer->GroupLeader;
-			this->CheckValidPlacement();
-		}
-		else if (hitResult.ImpactNormal == FVector(0, 0, 1))
-		{
-			SetActorLocationAndRotation(HitBalancer->GetActorLocation() + FVector(0, 0, 200), HitBalancer->GetActorRotation() + addedRotation);
-			this->mSnappedBuilding = HitBalancer;
-			LastSnapped = HitBalancer;
-			ActiveGroupLeader = HitBalancer->GroupLeader;
-			this->CheckValidPlacement();
-		}
-		else
-		{
-			Super::SetHologramLocationAndRotation(hitResult);
-		}
-
-		if (this->mSnappedBuilding)
-		{
-			HighlightAll(HitBalancer->GetGroupModules());
-		}
-	}
-	else
-	{
-		Super::SetHologramLocationAndRotation(hitResult);
-	}
 }
 
 void ALBModularLoadBalancer_Hologram::UnHighlightAll()
