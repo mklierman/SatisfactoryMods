@@ -20,6 +20,7 @@ void ApplyColor(AFGBuildable* buildable, UClass* swatchClass, FFactoryCustomizat
 	{
 		buildable->mColorSlot = 255;
 		buildable->mDefaultSwatchCustomizationOverride = swatchClass;
+		buildable->Execute_SetCustomizationData(buildable, customizationData);
 		buildable->Execute_ApplyCustomizationData(buildable, customizationData);
 	}
 }
@@ -78,14 +79,14 @@ void FPersistentPaintablesModule::UpdateColor(AFGPipeNetwork* self, TSubclassOf<
 							{
 								if (auto owner = conn->mConnectedComponent->GetOwner())
 								{
-									if (auto junction = Cast<AFGBuildablePipelineJunction>(owner))
-									{
-										ApplyColor(junction, swatchClass, newData);
-									}
-									else if (auto pipeSupport = Cast<AFGBuildablePipelineSupport>(owner))
-									{
-										ApplyColor(pipeSupport, swatchClass, newData);
-									}
+									//if (auto junction = Cast<AFGBuildablePipelineJunction>(owner))
+									//{
+									//	ApplyColor(junction, swatchClass, newData);
+									//}
+									//else if (auto pipeSupport = Cast<AFGBuildablePipelineSupport>(owner))
+									//{
+									//	ApplyColor(pipeSupport, swatchClass, newData);
+									//}
 									//else if (auto newPipe = Cast<AFGBuildablePipeline>(owner)) // Might be connected to a pipe through a support
 									//{
 									//	auto supports = FindNearbySupports(pipe, conn);
@@ -238,33 +239,34 @@ void FPersistentPaintablesModule::UpdateColor(AFGPipeNetwork* self, TSubclassOf<
 
 void FPersistentPaintablesModule::StartTimer(AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
 {
-	FTimerHandle FluidColorTimerHandle;
-	if (self)
-	{
-		self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [&]() { this->UpdateColor(self, descriptor); }, 2.f, false, 2.f);
-	}
+	//FTimerHandle FluidColorTimerHandle;
+	//if (self)
+	//{
+	//	self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [&]() { this->UpdateColor(self, descriptor); }, 2.f, false, 2.f);
+	//}
 }
 
 #pragma optimize("", on)
 
 void FPersistentPaintablesModule::StartupModule() {
 
-	wallSupportClass = LoadObject<UClass>(nullptr, TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupportWall/Build_PipelineSupportWall.Build_PipelineSupportWall_C"));
-	wallHoleClass = LoadObject<UClass>(nullptr, TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupportWallHole/Build_PipelineSupportWallHole.Build_PipelineSupportWallHole_C"));
-	floorHoleClass = LoadObject<UClass>(nullptr, TEXT("/Game/FactoryGame/Buildable/Factory/FoundationPassthrough/Build_FoundationPassthrough_Pipe.Build_FoundationPassthrough_Pipe_C"));
-	swatchClass = LoadObject<UClass>(nullptr, TEXT("/Game/FactoryGame/Buildable/-Shared/Customization/Swatches/SwatchDesc_Custom.SwatchDesc_Custom_C"));
-
-#if !WITH_EDITOR
-	AFGBuildablePipeline* BuildablePipeline = GetMutableDefault<AFGBuildablePipeline>();
-	SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::UpdateFluidDescriptor, [=](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
-		{
-			if (self)
-			{
-				this->StartTimer(self, descriptor);
-			}
-		});
-		//SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::OnFullRebuildCompleted, &UpdateColor)
-#endif
+//	wallSupportClass = LoadObject<UClass>(nullptr, TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupportWall/Build_PipelineSupportWall.Build_PipelineSupportWall_C"));
+//	wallHoleClass = LoadObject<UClass>(nullptr, TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupportWallHole/Build_PipelineSupportWallHole.Build_PipelineSupportWallHole_C"));
+//	floorHoleClass = LoadObject<UClass>(nullptr, TEXT("/Game/FactoryGame/Buildable/Factory/FoundationPassthrough/Build_FoundationPassthrough_Pipe.Build_FoundationPassthrough_Pipe_C"));
+//	swatchClass = LoadObject<UClass>(nullptr, TEXT("/Game/FactoryGame/Buildable/-Shared/Customization/Swatches/SwatchDesc_Custom.SwatchDesc_Custom_C"));
+//
+//#if !WITH_EDITOR
+//	AFGBuildablePipeline* BuildablePipeline = GetMutableDefault<AFGBuildablePipeline>();
+//	SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::UpdateFluidDescriptor, [=](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
+//		{
+//			if (self)
+//			{
+//				//this->UpdateColor(self, descriptor);
+//				this->StartTimer(self, descriptor);
+//			}
+//		});
+//		//SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::OnFullRebuildCompleted, &UpdateColor)
+//#endif
 }
 
 

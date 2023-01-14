@@ -1,7 +1,71 @@
 #include "PersistentPaintablesCppSubSystem.h"
 #include "FGGameState.h"
 #include "FGBuildableSubsystem.h"
+#include "Hologram/FGHologram.h"
+#include "FGColorInterface.h"
+#include "Patching/NativeHookManager.h"
 #include "Buildables/FGBuildable.h"
+
+APersistentPaintablesCppSubSystem::APersistentPaintablesCppSubSystem()
+{
+
+}
+
+//#pragma optimize("", off)
+void APersistentPaintablesCppSubSystem::HookConstruct()
+{
+	if (HasAuthority())
+	{
+		//virtual AActor* Construct( TArray< AActor* >& out_children, FNetConstructionID constructionID );
+		//#if !WITH_EDITOR
+		SUBSCRIBE_METHOD_AFTER(AFGBuildableSubsystem::AddBuildable, [=](AFGBuildableSubsystem* self, class AFGBuildable* buildable)
+			{
+				if (buildable)
+				{
+					if (buildable->GetCanBeColored_Implementation())
+					{
+						if (PlayerCustomizationStructs.Num() > 0)
+						{
+							if (auto instigator = buildable->mBuildEffectInstignator)
+							{
+								for (auto custData : PlayerCustomizationStructs)
+								{
+									if (custData.CharacterPlayer && custData.CharacterPlayer == instigator)
+									{
+										buildable->SetCustomizationData_Implementation(custData.CustomizationData);
+										buildable->ApplyCustomizationData_Implementation(custData.CustomizationData);
+										return;
+									}
+								}
+							}
+						}
+					}
+				}
+			});
+		//SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::OnFullRebuildCompleted, &UpdateColor)
+//#endif
+	}
+}
+
+void APersistentPaintablesCppSubSystem::PaintBuildableConstructed(AFGBuildable* buildable)
+{
+		if (PlayerCustomizationStructs.Num() > 0)
+		{
+			if (auto instigator = buildable->mBuildEffectInstignator)
+			{
+				for (auto custData : PlayerCustomizationStructs)
+				{
+					if (custData.CharacterPlayer && custData.CharacterPlayer == instigator)
+					{
+						buildable->SetCustomizationData_Implementation(custData.CustomizationData);
+						buildable->ApplyCustomizationData_Implementation(custData.CustomizationData);
+						return;
+					}
+				}
+			}
+		}
+}
+//#pragma optimize("", on)
 
 void APersistentPaintablesCppSubSystem::SetCustomSwatchColor(uint8 ColorSlot, FLinearColor PColor, FLinearColor SColor)
 {
