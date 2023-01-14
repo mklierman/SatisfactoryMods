@@ -3,6 +3,11 @@
 #include "FGInstancedSplineMeshComponent.h"
 #include "FGSplineMeshResources.h"
 
+bool ASSP_Subsystem::GetHasAuthority()
+{
+	return HasAuthority();
+}
+
 //#pragma optimize("", off)
 bool ASSP_Subsystem::ShouldSave_Implementation() const
 {
@@ -90,7 +95,7 @@ void BuildSplineMeshes(
 
 void ASSP_Subsystem::HandlePathSplines(AFGDrivingTargetList* targetList, bool show)
 {
-	if (targetList)
+	if (HasAuthority() && targetList)
 	{
 		//targetList->SetPathVisible(show);
 		if (show)
@@ -130,7 +135,7 @@ void ASSP_Subsystem::HandlePathSplines(AFGDrivingTargetList* targetList, bool sh
 void ASSP_Subsystem::ShowTargetPath(AFGTargetPoint* targetPoint)
 {
 	auto targetList = targetPoint->GetOwningList();
-	if (targetList)
+	if (HasAuthority() && targetList)
 	{
 		targetList->SetPathVisible(true);
 		//HandlePathSplines(targetList, true);
@@ -140,7 +145,7 @@ void ASSP_Subsystem::ShowTargetPath(AFGTargetPoint* targetPoint)
 void ASSP_Subsystem::HideTargetPath(AFGTargetPoint* targetPoint)
 {
 	auto targetList = targetPoint->GetOwningList();
-	if (targetList)
+	if (HasAuthority() && targetList)
 	{
 		targetList->SetPathVisible(false);
 		//HandlePathSplines(targetList, false);
@@ -150,7 +155,7 @@ void ASSP_Subsystem::HideTargetPath(AFGTargetPoint* targetPoint)
 void ASSP_Subsystem::ToggleVehiclePath(AFGWheeledVehicle* vehicle)
 {
 	auto targetList = vehicle->GetTargetList();
-	if (targetList)
+	if (HasAuthority() && targetList)
 	{
 		HandlePathSplines(targetList, !targetList->IsPathVisible());
 	}
@@ -159,7 +164,7 @@ void ASSP_Subsystem::ShowInitialPaths(AActor* actor)
 {
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGDrivingTargetList::StaticClass(), FoundActors);
-	if (FoundActors.Num() > 0)
+	if (HasAuthority() && FoundActors.Num() > 0)
 	{
 		for (auto actor : FoundActors)
 		{
@@ -175,7 +180,7 @@ void ASSP_Subsystem::ShowAllMantaPaths(AActor* actor)
 {
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGManta::StaticClass(), FoundActors);
-	if (FoundActors.Num() > 0)
+	if (HasAuthority() && FoundActors.Num() > 0)
 	{
 		for (auto actor : FoundActors)
 		{
@@ -198,44 +203,53 @@ void ASSP_Subsystem::ShowAllMantaPaths(AActor* actor)
 }
 void ASSP_Subsystem::HideAllMantaPaths(AActor* actor)
 {
-	for (auto mantaPair : MantaMeshPools)
+	if (HasAuthority())
 	{
-
-		TArray<USplineMeshComponent*> meshPool = mantaPair.Value.MeshPool;
-		for (auto meshComp : meshPool)
+		for (auto mantaPair : MantaMeshPools)
 		{
-			if (meshComp && meshComp->IsRegistered())
+
+			TArray<USplineMeshComponent*> meshPool = mantaPair.Value.MeshPool;
+			for (auto meshComp : meshPool)
 			{
-				meshComp->UnregisterComponent();
+				if (meshComp && meshComp->IsRegistered())
+				{
+					meshComp->UnregisterComponent();
+				}
 			}
+			meshPool.Empty();
 		}
-		meshPool.Empty();
+		MantaMeshPools.Empty();
 	}
-	MantaMeshPools.Empty();
 }
 void ASSP_Subsystem::ShowAllVehiclePaths(AActor* actor)
 {
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGDrivingTargetList::StaticClass(), FoundActors);
-	if (FoundActors.Num() > 0)
+	if (HasAuthority())
 	{
-		for (auto actor : FoundActors)
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGDrivingTargetList::StaticClass(), FoundActors);
+		if (FoundActors.Num() > 0)
 		{
-			auto tpList = Cast< AFGDrivingTargetList>(actor);
-			tpList->SetPathVisible(true);
+			for (auto actor : FoundActors)
+			{
+				auto tpList = Cast< AFGDrivingTargetList>(actor);
+				tpList->SetPathVisible(true);
+			}
 		}
 	}
 }
 void ASSP_Subsystem::HideAllVehiclePaths(AActor* actor)
 {
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGDrivingTargetList::StaticClass(), FoundActors);
-	if (FoundActors.Num() > 0)
+	if (HasAuthority())
 	{
-		for (auto actor : FoundActors)
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGDrivingTargetList::StaticClass(), FoundActors);
+		if (FoundActors.Num() > 0)
 		{
-			auto tpList = Cast< AFGDrivingTargetList>(actor);
-			tpList->SetPathVisible(false);
+			for (auto actor : FoundActors)
+			{
+				auto tpList = Cast< AFGDrivingTargetList>(actor);
+				tpList->SetPathVisible(false);
+			}
 		}
 	}
 }

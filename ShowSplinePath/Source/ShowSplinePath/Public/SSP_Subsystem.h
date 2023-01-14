@@ -23,6 +23,7 @@ class SHOWSPLINEPATH_API ASSP_Subsystem : public AModSubsystem, public IFGSaveIn
 {
 	GENERATED_BODY()
 public:
+	bool GetHasAuthority();
 
 	virtual bool ShouldSave_Implementation() const override;
 
