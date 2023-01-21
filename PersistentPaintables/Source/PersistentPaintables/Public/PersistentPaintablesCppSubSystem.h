@@ -7,6 +7,15 @@
 #include "FGPlayerController.h"
 #include "FGFactoryColoringTypes.h"
 #include "FGColorInterface.h"
+#include "Resources/FGItemDescriptor.h"
+#include "Buildables/FGBuildablePipeline.h"
+#include "Buildables/FGBuildablePipelineJunction.h"
+#include "FGBuildablePipelineSupport.h"
+#include "Kismet\KismetSystemLibrary.h"
+#include "FGFluidIntegrantInterface.h"
+#include "FGPipeConnectionComponent.h"
+#include "AbstractInstanceManager.h"
+#include "FGPipeNetwork.h"
 #include "PersistentPaintablesCppSubSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -31,6 +40,23 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void HookConstruct();
+
+	UFUNCTION(BlueprintCallable)
+		void HookPipeNetwork();
+
+	UPROPERTY(EditDefaultsOnly)
+	UClass* wallSupportClass;
+	UPROPERTY(EditDefaultsOnly)
+	UClass* wallHoleClass;
+	UPROPERTY(EditDefaultsOnly)
+	UClass* floorHoleClass;
+	UPROPERTY(EditDefaultsOnly)
+	UClass* swatchClass;
+
+	UFUNCTION(BlueprintCallable)
+		void UpdateColor(AFGPipeNetwork* pipeNetwork);
+
+	void ApplyColor(AFGBuildable* buildable, UClass* inSwatchClass, FFactoryCustomizationData customizationData);
 
 
 	UFUNCTION(BlueprintCallable)
