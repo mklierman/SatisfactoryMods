@@ -56,6 +56,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void UpdateColor(AFGPipeNetwork* pipeNetwork);
 
+	void UpdateColorSingle(AFGBuildable* buildable, AFGPipeNetwork* pipeNetwork);
+
 	void ApplyColor(AFGBuildable* buildable, UClass* inSwatchClass, FFactoryCustomizationData customizationData);
 
 

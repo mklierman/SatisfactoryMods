@@ -92,11 +92,11 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 		auto currentZoop = Fhg->mDesiredZoop;
 		if (currentZoop.IsZero())
 		{
-			if (wall)
+			if (wall && HologramsToZoop.Num() > 0)
 			{
 				HologramsToZoop.Remove(self);
 			}
-			if (foundation)
+			if (foundation && FoundationsBeingZooped.Num() > 0 && FoundationsBeingZooped.Contains(foundation))
 			{
 				FoundationsBeingZooped[foundation]->inScrollMode = false;
 			}
@@ -372,7 +372,7 @@ bool FInfiniteZoopModule::OnRep_DesiredZoop(AFGFactoryBuildingHologram* self)
 
 void FInfiniteZoopModule::CreateDefaultFoundationZoop(AFGFoundationHologram* self, const FHitResult& hitResult)
 {
-	if (IsZoopMode(self) && !FoundationsBeingZooped[self]->inScrollMode)
+	if (IsZoopMode(self) && FoundationsBeingZooped.Num() > 0 && !FoundationsBeingZooped[self]->inScrollMode)
 	{
 		auto zStruct = GetStruct(self);
 
@@ -540,7 +540,7 @@ bool FInfiniteZoopModule::BGSecondaryFire(UFGBuildGunStateBuild* self)
 	{
 		if (auto foundation = Cast<AFGFoundationHologram>(hologram))
 		{
-			if (Cast<AFGRampHologram>(hologram))
+			if (Cast<AFGRampHologram>(hologram) || FoundationsBeingZooped.Num() <= 0)
 			{
 				return true;
 			}
@@ -606,7 +606,6 @@ void FInfiniteZoopModule::StartupModule() {
 				scope.Cancel();
 			}
 		});
-
 	SUBSCRIBE_METHOD(UFGBuildGunStateBuild::OnZoopUpdated, [=](auto& scope, UFGBuildGunStateBuild* self, float currentZoop, float maxZoop, const FVector& zoopLocation)
 		{
 			// Fix for incorrect # showing when 2D zooping
@@ -644,7 +643,6 @@ void FInfiniteZoopModule::StartupModule() {
 			}
 		});
 
-
 	SUBSCRIBE_METHOD(UFGBuildGunState::SecondaryFire, [=](auto& scope, UFGBuildGunState* self)
 		{
 			if (auto bgsb = Cast< UFGBuildGunStateBuild>(self))
@@ -670,6 +668,13 @@ void FInfiniteZoopModule::StartupModule() {
 			if (auto ramphg = Cast<AFGRampHologram>(self))
 			{
 				return;
+			}
+			if (auto fhg = Cast< AFGFoundationHologram>(self))
+			{
+				if (fhg->mBuildModeVerticalZoop == self->mCurrentBuildMode)
+				{
+					return;
+				}
 			}
 			auto result = this->GetBaseCostMultiplier(self);
 			scope.Override(result);
@@ -746,15 +751,14 @@ void FInfiniteZoopModule::StartupModule() {
 				}
 			}
 		});
-
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [](auto scope, AFGHologram* self)
 		{
 			if (self)
 			{
 				UWorld* world = self->GetWorld();
-				USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
-				AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
-				AInfiniteZoop_ClientSubsystem* clientSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoop_ClientSubsystem>();
+					USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
+					AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
+					AInfiniteZoop_ClientSubsystem* clientSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoop_ClientSubsystem>();
 
 				AFGWallHologram* Whg = Cast<AFGWallHologram>(self);
 				if (Whg)
@@ -801,13 +805,13 @@ void FInfiniteZoopModule::StartupModule() {
 				//}
 
 				AFGLadderHologram* ladderHG = Cast<AFGLadderHologram>(self);
-				if (ladderHG)
+				if (ladderHG && clientSubsystem)
 				{
 					if (clientSubsystem->tempZoopAmount > 0)
 					{
 						ladderHG->mMaxSegmentCount = clientSubsystem->tempZoopAmount - 1;
 					}
-					else
+					else if (zoopSubsystem)
 					{
 						ladderHG->mMaxSegmentCount = zoopSubsystem->currentZoopAmount - 1;
 					}

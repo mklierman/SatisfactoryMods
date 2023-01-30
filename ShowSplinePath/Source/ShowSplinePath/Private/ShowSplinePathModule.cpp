@@ -2,7 +2,7 @@
 
 //#pragma optimize("", off)
 void FShowSplinePathModule::StartupModule() {
-//#if !WITH_EDITOR
+#if !WITH_EDITOR
 	//void RemoveTargetPoint(class AFGTargetPoint* targetToRemove, bool updateList = true);
 	SUBSCRIBE_METHOD_AFTER(AFGVehicleSubsystem::UpdateTargetList, [=](AFGVehicleSubsystem* self, AFGDrivingTargetList* targetList)
 		{
@@ -79,7 +79,7 @@ void FShowSplinePathModule::StartupModule() {
 				}
 			}
 		});
-//#endif
+#endif
 }
 
 void FShowSplinePathModule::ShowPathSpline(AFGDrivingTargetList* targetList, ASSP_Subsystem* subsystem)
