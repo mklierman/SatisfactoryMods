@@ -22,7 +22,7 @@
 
 
 DEFINE_LOG_CATEGORY(InfiniteZoop_Log);
-#pragma optimize("", off)
+//#pragma optimize("", off)
 int GetClosestZoopAngle(double angleToCheck)
 {
 	if (angleToCheck >= double(0.0) && angleToCheck < double(90.0))
@@ -236,28 +236,28 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 		else 
 		{
 			//Vertical zoop is weird?
-			if (foundation && foundation->GetCurrentBuildMode() == foundation->mBuildModeVerticalZoop)
-			{
-				auto zStruct = FoundationsBeingZooped[foundation];
-				currentZoop.Z = zStruct->Z;
+			//if (foundation && foundation->GetCurrentBuildMode() == foundation->mBuildModeVerticalZoop)
+			//{
+			//	auto zStruct = FoundationsBeingZooped[foundation];
+			//	currentZoop.Z = zStruct->Z;
 
-				if (currentZoop.Z > 0)
-				{
-					currentZoop.Z = currentZoop.Z + (1 * delta);
-				}
-				else
-				{
-					currentZoop.Z = (abs(currentZoop.Z) + (1 * delta)) * -1;
-				}
+			//	if (currentZoop.Z > 0)
+			//	{
+			//		currentZoop.Z = currentZoop.Z + (1 * delta);
+			//	}
+			//	else
+			//	{
+			//		currentZoop.Z = (abs(currentZoop.Z) + (1 * delta)) * -1;
+			//	}
 
-				zStruct->Z = currentZoop.Z;
-			}
+			//	zStruct->Z = currentZoop.Z;
+			//}
 		}
 		if (wall)
 		{
 			HologramsToZoop.Add(self, currentZoop);
 		}
-		else if (foundation && FoundationsBeingZooped.Contains(foundation))
+		else if (foundation && FoundationsBeingZooped.Contains(foundation) && Fhg->GetCurrentBuildMode() == Fhg->mBuildModeZoop)
 		{
 			FoundationsBeingZooped[foundation]->inScrollMode = true;
 		}
@@ -611,7 +611,7 @@ bool FInfiniteZoopModule::ValidatePlacementAndCost(AFGHologram* self, class UFGI
 		if (FoundationsBeingZooped.Contains(foundation))
 		{
 			auto zStruct = FoundationsBeingZooped[foundation];
-			if (zStruct->secondPassComplete)
+			if (zStruct->secondPassComplete || zStruct->isVerticalZoop)
 			{
 				return true;
 			}
@@ -664,6 +664,7 @@ bool FInfiniteZoopModule::SetMaterialState(AFGHologram* self, EHologramMaterialS
 
 void FInfiniteZoopModule::StartupModule() {
 
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::OnRep_DesiredZoop, [=](auto& scope, AFGFactoryBuildingHologram* self)
 		{
 			if (auto ramphg = Cast<AFGRampHologram>(self))
@@ -778,6 +779,11 @@ void FInfiniteZoopModule::StartupModule() {
 			this->CreateDefaultFoundationZoop(self, hitResult);
 		});
 
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGFoundationHologram::CreateVerticalFoundationZoop, fhCDO, [=](AFGFoundationHologram* self, const FHitResult& hitResult)
+		{
+			this->CreateDefaultFoundationZoop(self, hitResult);
+		});
+
 	//void ValidatePlacementAndCost(class UFGInventoryComponent* inventory);
 	SUBSCRIBE_METHOD(AFGHologram::ValidatePlacementAndCost, [=](auto scope, AFGHologram* self, class UFGInventoryComponent* inventory)
 		{
@@ -805,7 +811,6 @@ void FInfiniteZoopModule::StartupModule() {
 			this->ScrollHologram(self, delta);
 		});
 
-#if !WITH_EDITOR
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Destroyed, hCDO, [=](auto& scope, AFGHologram* self)
 		{
 			if (self->CanBeZooped())
@@ -948,7 +953,7 @@ FVector FInfiniteZoopModule::CalcPivotAxis(const EAxis::Type DesiredAxis, const 
 	}
 	return ProcessAxes(XAxis, YAxis, ZAxis);
 }
-#pragma optimize("", on)
+//#pragma optimize("", on)
 
 
 IMPLEMENT_GAME_MODULE(FInfiniteZoopModule, InfiniteZoop);
