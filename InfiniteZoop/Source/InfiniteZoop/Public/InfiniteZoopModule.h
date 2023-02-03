@@ -16,6 +16,7 @@ struct FZoopStruct
 		bool firstPassComplete = false;
 		bool secondPassComplete = false;
 		bool inScrollMode = false;
+		bool isVerticalZoop = false;
 		EHologramMaterialState hgMaterialState1 = EHologramMaterialState::HMS_OK;
 		EHologramMaterialState hgMaterialState2 = EHologramMaterialState::HMS_OK;
 };
@@ -31,7 +32,7 @@ public:
 
 	bool SetZoopAmount(AFGFactoryBuildingHologram* self, const FIntVector& Zoop);
 
-	void OnZoopUpdated(UFGBuildGunStateBuild* self, float currentZoop, float maxZoop, const FVector& zoopLocation);
+	int32 OnZoopUpdated(UFGBuildGunStateBuild* self, float currentZoop, float maxZoop, const FVector& zoopLocation);
 
 	bool OnRep_DesiredZoop(AFGFactoryBuildingHologram* self);
 
@@ -43,11 +44,13 @@ public:
 
 	FZoopStruct* GetStruct(AFGFoundationHologram* self);
 
-	bool IsZoopMode(AFGFoundationHologram* self);
+	bool IsHorizontalZoopMode(AFGFoundationHologram* self);
 
 	bool BGSecondaryFire(UFGBuildGunStateBuild* self);
 
 	bool ValidatePlacementAndCost(AFGHologram* self, class UFGInventoryComponent* inventory);
+
+	bool SetMaterialState(AFGHologram* self, EHologramMaterialState state);
 
 	TMap< AFGFactoryBuildingHologram*, int32> LastMultiplier;
 	TMap<AFGHologram*, FIntVector> HologramsToZoop;
