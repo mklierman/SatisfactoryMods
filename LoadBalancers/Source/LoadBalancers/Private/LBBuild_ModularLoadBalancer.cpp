@@ -12,7 +12,7 @@ DEFINE_LOG_CATEGORY(LoadBalancers_Log);
 DEFINE_LOG_CATEGORY(LogGame);
 DEFINE_LOG_CATEGORY(LogBuilding);
 
-//#pragma optimize("", off)
+#pragma optimize("", off)
 void FLBBalancerData::GetInputBalancers(TArray<ALBBuild_ModularLoadBalancer*>& Out)
 {
     for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mConnectedInputs)
@@ -432,10 +432,12 @@ bool ALBBuild_ModularLoadBalancer::SendToNormalBalancer(FInventoryItem Item) con
         for(int i = 0; i < GroupLeader->mNormalLoaderData.mConnectedOutputs.Num(); i++)
         {
             TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer = GroupLeader->mNormalLoaderData.mConnectedOutputs.IsValidIndex(Indexing->mNormalIndex) ? GroupLeader->mNormalLoaderData.mConnectedOutputs[Indexing->mNormalIndex] : nullptr;
-            Indexing->mNormalIndex++;
 
-            if(!GroupLeader->mNormalLoaderData.mConnectedOutputs.IsValidIndex(Indexing->mNormalIndex))
+            Indexing->mNormalIndex++;
+            if (!GroupLeader->mNormalLoaderData.mConnectedOutputs.IsValidIndex(Indexing->mNormalIndex))
                 Indexing->mNormalIndex = 0;
+
+
 
             if(OverflowBalancer.IsValid())
             {
@@ -444,6 +446,8 @@ bool ALBBuild_ModularLoadBalancer::SendToNormalBalancer(FInventoryItem Item) con
                     if(OverflowBalancer->GetBufferInventory()->GetNumItems(Item.ItemClass) < mOverwriteSlotSize)
                     {
                         OverflowBalancer->GetBufferInventory()->AddItem(Item);
+
+
                         return true;
                     }
                 }
@@ -700,30 +704,58 @@ void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()
     {
         return;
     }
+    auto Indexing = GroupLeader->mNormalLoaderData.mInputIndex;
 
-    for (ALBBuild_ModularLoadBalancer* Balancer : Balancers)
+    if (Indexing)
     {
-        if(!Balancer->IsPendingKill())
+        if (Indexing == -1)
+            Indexing = 0;
+    }
+
+    if (GroupLeader->mNormalLoaderData.mConnectedInputs.Num() > 0)
+    {
+        for (int i = 0; i < GroupLeader->mNormalLoaderData.mConnectedInputs.Num(); i++)
         {
-            Balancer->Balancer_CollectInput();
+            TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer = GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(Indexing) ? GroupLeader->mNormalLoaderData.mConnectedInputs[Indexing] : nullptr;
+
+
+            if (OverflowBalancer.IsValid() && !OverflowBalancer->IsPendingKill())
+            {
+                if (CollectInput(OverflowBalancer.Get()))
+                {
+                    Indexing++;
+                    if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(Indexing))
+                        Indexing = 0;
+                }
+            }
         }
     }
+    GroupLeader->mNormalLoaderData.mInputIndex = Indexing;
+
+    //for (ALBBuild_ModularLoadBalancer* Balancer : Balancers)
+    //{
+    //    if(!Balancer->IsPendingKill())
+    //    {
+    //        Balancer->Balancer_CollectInput();
+    //    }
+    //}
 }
 
-void ALBBuild_ModularLoadBalancer::Balancer_CollectInput()
+bool ALBBuild_ModularLoadBalancer::Balancer_CollectInput()
 {
     if(!GroupLeader)
     {
-        return;
+        return false;
     }
 
     for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : GroupLeader->mNormalLoaderData.mConnectedInputs)
     {
         if(Balancer.IsValid())
         {
-            CollectInput(Balancer.Get());
+           return CollectInput(Balancer.Get());
         }
     }
+    return false;
 }
 
 bool ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Module)
@@ -761,4 +793,4 @@ bool ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Mo
     }
     return false;
 }
-//#pragma optimize("", on)
+#pragma optimize("", on)

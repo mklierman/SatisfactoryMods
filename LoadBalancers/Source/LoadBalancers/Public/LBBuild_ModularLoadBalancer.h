@@ -92,6 +92,9 @@ struct LOADBALANCERS_API FLBBalancerData
 	UPROPERTY(SaveGame)
 	TMap<TSubclassOf<UFGItemDescriptor>, FLBBalancerIndexing> mIndexMapping;
 
+	UPROPERTY(SaveGame)
+	int32 mInputIndex;
+
 	void GetInputBalancers(TArray<ALBBuild_ModularLoadBalancer*>& Out);
 
 	bool HasAnyValidFilter() const;
@@ -220,7 +223,7 @@ public:
 	uint8 mMaxFilterableItems = 1;
 
 	// Execute Logic by Leader > Factory_CollectInput_Implementation
-	void Balancer_CollectInput();
+	bool Balancer_CollectInput();
 
 	/* All Loaders */
 	UPROPERTY(SaveGame)

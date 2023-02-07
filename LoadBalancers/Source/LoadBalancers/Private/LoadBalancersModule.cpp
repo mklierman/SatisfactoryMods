@@ -24,7 +24,6 @@ void FLoadBalancersModule::StartupModule() {
 	// Hooking to register RCOs
 	AFGGameMode* LocalGameMode = GetMutableDefault<AFGGameMode>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, &GameModePostLogin)
-#endif
 		UFGAttachmentPointType* LocalAP = GetMutableDefault<UFGAttachmentPointType>();
 		SUBSCRIBE_METHOD_VIRTUAL(UFGAttachmentPointType::CanAttach, LocalAP, [=](auto& scope, const UFGAttachmentPointType* self, const struct FFGAttachmentPoint& point, const struct FFGAttachmentPoint& targetPoint)
 			{
@@ -40,6 +39,7 @@ void FLoadBalancersModule::StartupModule() {
 					}
 				}
 			});
+#endif
 }
 
 IMPLEMENT_GAME_MODULE(FLoadBalancersModule, LoadBalancers);
