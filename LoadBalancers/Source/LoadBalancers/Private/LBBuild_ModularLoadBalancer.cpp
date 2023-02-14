@@ -708,6 +708,9 @@ void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()
 
     if (Indexing)
     {
+        if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(Indexing))
+            Indexing = 0;
+
         if (Indexing == -1)
             Indexing = 0;
     }

@@ -5,7 +5,7 @@
 #include "LoadBalancersModule.h"
 
 //DEFINE_LOG_CATEGORY(LoadBalancers_Log);
-//#pragma optimize("", off)
+#pragma optimize("", off)
 void ALBModularLoadBalancer_Hologram::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -159,4 +159,4 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 		}
 	}
 }
-//#pragma optimize("", on)
+#pragma optimize("", on)

@@ -1,12 +1,12 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.7.9",
-  "SemVersion": "1.7.9",
-  "FriendlyName": "Modular Load Balancers",
-  "Description": "Modular buildable that can be snapped together to form load balancers of any size",
+  "VersionName": "1.0.0",
+  "SemVersion": "1.0.0",
+  "FriendlyName": "Search-it",
+  "Description": "Sets mouse focus on the Search box in the Build menu on open",
   "Category": "Modding",
-  "CreatedBy": "SirDigby, Kyrium",
+  "CreatedBy": "SirDigby",
   "CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
   "DocsURL": "",
   "MarketplaceURL": "",
@@ -24,11 +24,5 @@
       "IsActive": false
     }
   ],
-  "Modules": [
-    {
-      "Name": "LoadBalancers",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ]
+  "Modules": []
 }
