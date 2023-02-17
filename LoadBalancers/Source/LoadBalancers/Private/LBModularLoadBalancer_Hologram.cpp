@@ -117,10 +117,22 @@ bool ALBModularLoadBalancer_Hologram::IsValidHitResult(const FHitResult& hitResu
 
 void ALBModularLoadBalancer_Hologram::UnHighlightAll()
 {
-	if (mOutlineSubsystem)
+	for (auto actor : mHighlightedActors)
 	{
-		mOutlineSubsystem->ClearOutlines(true);
+		auto comp = actor->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass());
+		if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(comp))
+		{
+			mesh->SetMaterial(0, mMainMaterial);
+			mesh->SetMaterial(1, mSecondaryMaterial);
+			mesh->SetInstanced(false);
+			mesh->SetInstanced(true);
+		}
 	}
+	mHighlightedActors.Empty();
+	//if (mOutlineSubsystem)
+	//{
+	//	mOutlineSubsystem->ClearOutlines(true);
+	//}
 }
 
 void ALBModularLoadBalancer_Hologram::ConfigureActor(AFGBuildable* inBuildable) const
@@ -152,10 +164,19 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 		mOutlineSubsystem->SetOutlineColor(mHoloColor, true);
 		for (ALBBuild_ModularLoadBalancer* OutlineActor : actorsToOutline)
 		{
-			if (mOutlineSubsystem)
+			auto comp = OutlineActor->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass());
+			if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(comp))
+			{
+				mesh->SetMaterial(0, mHoloMaterial);
+				mesh->SetMaterial(1, mHoloMaterial);
+				mesh->SetInstanced(false);
+				mesh->SetInstanced(true);
+				mHighlightedActors.Add(OutlineActor);
+			}
+			/*if (mOutlineSubsystem)
 			{
 				mOutlineSubsystem->CreateOutline(OutlineActor, true);
-			}
+			}*/
 		}
 	}
 }

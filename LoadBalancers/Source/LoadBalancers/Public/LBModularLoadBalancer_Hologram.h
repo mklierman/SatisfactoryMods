@@ -46,6 +46,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Holo")
 	UMaterialInterface* mHoloMaterial;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Holo")
+		UMaterialInterface* mMainMaterial;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Holo")
+		UMaterial* mSecondaryMaterial;
+
+	TArray< AActor*> mHighlightedActors;
+
 	UPROPERTY(EditDefaultsOnly, Category="Holo")
 	FLinearColor mHoloColor = FLinearColor(.5f, .5f, .5f, 1.f);
 
@@ -54,6 +62,8 @@ public:
 
 	UPROPERTY(Transient)
 	ALBOutlineSubsystem* mOutlineSubsystem;
+
+
 };
 
 
