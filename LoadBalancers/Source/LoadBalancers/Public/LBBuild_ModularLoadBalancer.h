@@ -95,6 +95,9 @@ struct LOADBALANCERS_API FLBBalancerData
 	UPROPERTY(SaveGame)
 	int32 mInputIndex;
 
+	UPROPERTY(SaveGame)
+		TMap<TSubclassOf<UFGItemDescriptor>, int32> mFilterInputMap;
+
 	void GetInputBalancers(TArray<ALBBuild_ModularLoadBalancer*>& Out);
 
 	bool HasAnyValidFilter() const;

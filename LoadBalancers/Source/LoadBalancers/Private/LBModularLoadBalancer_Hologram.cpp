@@ -161,7 +161,7 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 
 	if (ActiveGroupLeader)
 	{
-		mOutlineSubsystem->SetOutlineColor(mHoloColor, true);
+		//mOutlineSubsystem->SetOutlineColor(mHoloColor, true);
 		for (ALBBuild_ModularLoadBalancer* OutlineActor : actorsToOutline)
 		{
 			auto comp = OutlineActor->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass());

@@ -135,6 +135,13 @@ void ALBBuild_ModularLoadBalancer::BeginPlay()
         }
 
         ApplyGroupModule();
+        for (auto item : GroupLeader->mNormalLoaderData.mFilterMap)
+        {
+            if (item.Key != UFGNoneDescriptor::StaticClass() && !GroupLeader->mNormalLoaderData.mFilterInputMap.Contains(item.Key))
+            {
+                GroupLeader->mNormalLoaderData.mFilterInputMap.Add(item.Key);
+            }
+        }
     }
 }
 
@@ -218,6 +225,7 @@ void ALBBuild_ModularLoadBalancer::SetFilteredItem(TSubclassOf<UFGItemDescriptor
                     TSubclassOf<UFGItemDescriptor> OldItem = mFilteredItems[0];
                     mFilteredItems[0] = ItemClass;
                     GroupLeader->mNormalLoaderData.RemoveBalancer(this, OldItem);
+                    GroupLeader->mNormalLoaderData.mFilterInputMap.Add(ItemClass, 0);
                 }
                 else
                 {
@@ -729,6 +737,28 @@ void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()
                     Indexing++;
                     if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(Indexing))
                         Indexing = 0;
+                }
+                else if (GroupLeader->mNormalLoaderData.HasAnyValidFilter())
+                {
+                    for (auto filterInputIdx : GroupLeader->mNormalLoaderData.mFilterInputMap)
+                    {
+                        auto FilterIndexing = filterInputIdx.Value;
+                        if (FilterIndexing)
+                        {
+                            if (FilterIndexing == -1)
+                                FilterIndexing = 0;
+                        }
+                        TWeakObjectPtr<ALBBuild_ModularLoadBalancer> FilterBalancer = GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(FilterIndexing) ? GroupLeader->mNormalLoaderData.mConnectedInputs[FilterIndexing] : nullptr;
+                        if (FilterBalancer.IsValid() && !FilterBalancer->IsPendingKill())
+                        {
+                            CollectInput(FilterBalancer.Get());
+                            FilterIndexing++;
+                            if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(FilterIndexing))
+                                FilterIndexing = 0;
+
+                            GroupLeader->mNormalLoaderData.mFilterInputMap[filterInputIdx.Key] = FilterIndexing;
+                        }
+                    }
                 }
             }
         }
