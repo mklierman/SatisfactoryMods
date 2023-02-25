@@ -1,8 +1,8 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.0.1",
-  "SemVersion": "1.0.1",
+  "VersionName": "1.0.2",
+  "SemVersion": "1.0.2",
   "FriendlyName": "No Z-Fighting",
   "Description": "Prevents foundations and walls from Z-fighting (flickering)",
   "Category": "Modding",
@@ -15,11 +15,13 @@
   "IsBetaVersion": false,
   "IsExperimentalVersion": false,
   "Installed": false,
+  "AcceptsAnyRemoteVersion": false,
   "Plugins": [
     {
       "Name": "SML",
       "SemVersion": "^3.4.1",
-      "Enabled": true
+      "Enabled": true,
+      "IsActive": false
     }
   ],
   "Modules": [

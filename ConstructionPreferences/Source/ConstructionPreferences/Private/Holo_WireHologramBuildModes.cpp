@@ -215,7 +215,7 @@ void AHolo_WireHologramBuildModes::SwitchPoleType()
 
 		if (MustSnap)
 		{
-			SetActiveAutomaticPoleHologram(SnapToWallHolo ? mPowerPoleWall : mPowerPole);
+			//SetActiveAutomaticPoleHologram(SnapToWallHolo ? mPowerPoleWall : mPowerPole);
 		}
 	}
 }
