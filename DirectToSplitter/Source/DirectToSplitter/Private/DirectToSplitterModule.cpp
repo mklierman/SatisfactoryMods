@@ -1,5 +1,6 @@
 #include "DirectToSplitterModule.h"
 #include "DTS_ConfigStruct.h"
+#include "Registry/ModContentRegistry.h"
 
 //#pragma optimize("", off)
 void FDirectToSplitterModule::StartupModule() {
@@ -31,6 +32,8 @@ void FDirectToSplitterModule::StartupModule() {
 
 void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram* self, bool& retflag)
 {
+
+
 	retflag = true;
 	auto className = self->mBuildClass.Get()->GetName();
 	if (className != "Build_ConveyorAttachmentMerger_C" && className != "Build_ConveyorAttachmentSplitter_C")
@@ -46,11 +49,23 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 		{
 			return;
 		}
-		auto name = self->mSnappedConection->GetOuterBuildable()->GetName();
-		if (name.Contains("Build_StorageContainerMk2_C"))
+		auto snappedBuildable = self->mSnappedConection->GetOuterBuildable();
+		
+		if (snappedBuildable->mDecoratorClass)
+		{
+			auto name = snappedBuildable->mDecoratorClass->GetName();
+			if (name.Equals("Deco_StorageContainerMk2_C"))
+			{
+				return;
+			}
+		}
+
+		auto modRegistry = AModContentRegistry::Get(self->GetWorld());
+		if (!modRegistry->IsRecipeVanilla(snappedBuildable->GetBuiltWithRecipe()))
 		{
 			return;
 		}
+		
 		self->ResetConstructDisqualifiers();
 		retflag = false;
 		auto offset = FDTS_ConfigStruct::GetActiveConfig().SnapOffset * 100.f;

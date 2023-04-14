@@ -11,7 +11,9 @@
 #include "Buildables/FGBuildableAttachmentSplitter.h"
 #include "Buildables/FGBuildableSplitterSmart.h"
 #include "Hologram/FGPipelineAttachmentHologram.h"
+#include "FGConstructDisqualifier.h"
 #include "Buildables/FGBuildableConveyorLift.h"
+#include "SnapOnDisqualifier.h"
 
 struct ConveyorAttachmentInfo
 {
