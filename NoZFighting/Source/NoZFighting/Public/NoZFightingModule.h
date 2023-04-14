@@ -8,6 +8,7 @@
 #include "CoreMinimal.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Modules/ModuleManager.h"
+#include "NoZFighting_ConfigStruct.h"
 
 class FNoZFightingModule : public FDefaultGameModuleImpl {
 public:

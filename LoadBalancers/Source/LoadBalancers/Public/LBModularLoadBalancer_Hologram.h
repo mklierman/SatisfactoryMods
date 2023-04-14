@@ -11,6 +11,23 @@
 #include "FGAttachmentPoint.h"
 #include "LBModularLoadBalancer_Hologram.generated.h"
 
+
+struct PriorityQueue
+{
+	explicit PriorityQueue(int32 InPriority);
+
+	int32 Priority;
+};
+
+struct PriorityQueuePredicate
+{
+	bool operator()(const PriorityQueue& A, const PriorityQueue& B) const
+	{
+		// Inverted compared to std::priority_queue - higher priorities float to the top
+		return A.Priority > B.Priority;
+	}
+};
+
 /**
  *
  */
@@ -51,6 +68,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Holo")
 		UMaterial* mSecondaryMaterial;
+	UPROPERTY(EditDefaultsOnly, Category = "Holo")
+		UMaterial* mSymbolMaterial;
 
 	TArray< AActor*> mHighlightedActors;
 
@@ -75,5 +94,16 @@ class LOADBALANCERS_API UFGCDHasOverflow : public UFGConstructDisqualifier
 	UFGCDHasOverflow()
 	{
 		mDisqfualifyingText = FText::FromString(TEXT("Only one Overflow module can be attached"));
+	}
+};
+
+UCLASS()
+class LOADBALANCERS_API UFGCDHasPriorityInput : public UFGConstructDisqualifier
+{
+	GENERATED_BODY()
+
+		UFGCDHasPriorityInput()
+	{
+		mDisqfualifyingText = FText::FromString(TEXT("Only one Priority Input module can be attached"));
 	}
 };

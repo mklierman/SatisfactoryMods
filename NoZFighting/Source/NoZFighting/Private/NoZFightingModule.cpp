@@ -32,11 +32,14 @@ void FNoZFightingModule::OnConstruction(AFGBuildable* self, const FTransform& tr
 	auto buildFoundation = Cast<AFGBuildableFoundation>(self);
 	if (buildFoundation)
 	{
+		auto config = FNoZFighting_ConfigStruct::GetActiveConfig();
+		auto min = config.FoundationMin;
+		auto max = config.FoundationMax;
 		auto meshes = self->GetComponentsByClass(UStaticMeshComponent::StaticClass());
 		for (auto mesh : meshes)
 		{
 			auto sMesh = Cast<UStaticMeshComponent>(mesh);
-			float randomFloat = UKismetMathLibrary::RandomFloatInRange(-1.25, 1.25);
+			float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
 			sMesh->AddRelativeLocation(FVector(0.0, 0.0, randomFloat));
 		}
 	}
@@ -45,11 +48,14 @@ void FNoZFightingModule::OnConstruction(AFGBuildable* self, const FTransform& tr
 		auto buildWall = Cast<AFGBuildableWall>(self);
 		if (buildWall)
 		{
+			auto config = FNoZFighting_ConfigStruct::GetActiveConfig();
+			auto min = config.WallMin;
+			auto max = config.WallMax;
 			auto meshes = self->GetComponentsByClass(UStaticMeshComponent::StaticClass());
 			for (auto mesh : meshes)
 			{
 				auto sMesh = Cast<UStaticMeshComponent>(mesh);
-				float randomFloat = UKismetMathLibrary::RandomFloatInRange(-0.35, 0.35);
+				float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
 				sMesh->AddRelativeLocation(FVector(randomFloat, 0.0, 0.0));
 			}
 		}
@@ -64,12 +70,18 @@ void FNoZFightingModule::SetInstanced(AAbstractInstanceManager* manager, AActor*
 	auto buildFoundation = Cast<AFGBuildableFoundation>(OwnerActor);
 	if (buildFoundation)
 	{
-		float randomFloat = UKismetMathLibrary::RandomFloatInRange(-1.05, 1.05);
+		auto config = FNoZFighting_ConfigStruct::GetActiveConfig();
+		auto min = config.FoundationMin;
+		auto max = config.FoundationMax;
+		float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
 		ptr->PositionOffset = FVector(0, 0, randomFloat);
 	}
 	else if (auto buildWall = Cast<AFGBuildableWall>(OwnerActor))
 	{
-		float randomFloat = UKismetMathLibrary::RandomFloatInRange(-0.15, 0.15);
+		auto config = FNoZFighting_ConfigStruct::GetActiveConfig();
+		auto min = config.WallMin;
+		auto max = config.WallMax;
+		float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
 		ptr->PositionOffset = FVector(randomFloat, 0, 0);
 		ptr->bApplyRandomOffsetOnInstance = true;
 	}

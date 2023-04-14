@@ -124,6 +124,7 @@ void ALBModularLoadBalancer_Hologram::UnHighlightAll()
 		{
 			mesh->SetMaterial(0, mMainMaterial);
 			mesh->SetMaterial(1, mSecondaryMaterial);
+			mesh->SetMaterial(2, mSymbolMaterial);
 			mesh->SetInstanced(false);
 			mesh->SetInstanced(true);
 		}
