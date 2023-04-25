@@ -75,5 +75,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<FPlayerCustomizationStruct> PlayerCustomizationStructs;
+
+	void AddBuildable(AFGBuildableSubsystem* self, class AFGBuildable* buildable);
 };
 

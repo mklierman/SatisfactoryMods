@@ -20,27 +20,7 @@ void APersistentPaintablesCppSubSystem::HookConstruct()
 		//virtual AActor* Construct( TArray< AActor* >& out_children, FNetConstructionID constructionID );
 		SUBSCRIBE_METHOD_AFTER(AFGBuildableSubsystem::AddBuildable, [=](AFGBuildableSubsystem* self, class AFGBuildable* buildable)
 			{
-				if (buildable)
-				{
-					if (buildable->GetCanBeColored_Implementation())
-					{
-						if (PlayerCustomizationStructs.Num() > 0)
-						{
-							if (auto instigator = buildable->mBuildEffectInstignator)
-							{
-								for (auto custData : PlayerCustomizationStructs)
-								{
-									if (custData.CharacterPlayer && custData.CharacterPlayer == instigator && custData.CustomizationData.SwatchDesc)
-									{
-										buildable->SetCustomizationData_Implementation(custData.CustomizationData);
-										buildable->ApplyCustomizationData_Implementation(custData.CustomizationData);
-										return;
-									}
-								}
-							}
-						}
-					}
-				}
+				AddBuildable(self, buildable);
 			});
 		//SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::OnFullRebuildCompleted, &UpdateColor)
 	}
@@ -277,7 +257,6 @@ void APersistentPaintablesCppSubSystem::PaintBuildableConstructed(AFGBuildable* 
 			}
 		}
 }
-#pragma optimize("", on)
 
 void APersistentPaintablesCppSubSystem::SetCustomSwatchColor(uint8 ColorSlot, FLinearColor PColor, FLinearColor SColor)
 {
@@ -314,3 +293,30 @@ TSubclassOf<class UFGItemDescriptor> APersistentPaintablesCppSubSystem::GetBuild
 {
 	return buildable->GetBuiltWithDescriptor();
 }
+
+void APersistentPaintablesCppSubSystem::AddBuildable(AFGBuildableSubsystem* self, AFGBuildable* buildable)
+{
+	if (buildable)
+	{
+		if (buildable->GetCanBeColored_Implementation())
+		{
+			if (PlayerCustomizationStructs.Num() > 0)
+			{
+				if (auto instigator = buildable->mBuildEffectInstignator)
+				{
+					for (auto custData : PlayerCustomizationStructs)
+					{
+						if (custData.CharacterPlayer && custData.CustomizationData.SwatchDesc && custData.CharacterPlayer == instigator && custData.CustomizationData.SwatchDesc)
+						{
+							buildable->SetCustomizationData_Implementation(custData.CustomizationData);
+							buildable->ApplyCustomizationData_Implementation(custData.CustomizationData);
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+#pragma optimize("", on)
