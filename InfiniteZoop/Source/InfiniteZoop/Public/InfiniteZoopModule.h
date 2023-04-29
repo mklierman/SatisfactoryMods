@@ -56,4 +56,8 @@ public:
 	TMap<AFGFoundationHologram*, FZoopStruct*> FoundationsBeingZooped;
 
 	FVector CalcPivotAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat);
+
+	void SetSubsystemZoopAmounts(int x, int y, int z, bool isFoundation, UWorld* world, AFGHologram* hologram);
+
+	AInfiniteZoopSubsystem* zoopSubsystem;
 };

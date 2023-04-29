@@ -17,6 +17,18 @@ public:
 	UPROPERTY(BlueprintReadWrite, replicated, Category = "Zoop Subsystem")
 	int currentZoopAmount = 12;
 
+	UPROPERTY(BlueprintReadWrite, replicated, Category = "Zoop Subsystem")
+		int xAmount = -1;
+	UPROPERTY(BlueprintReadWrite, replicated, Category = "Zoop Subsystem")
+		int yAmount = -1;
+	UPROPERTY(BlueprintReadWrite, replicated, Category = "Zoop Subsystem")
+		int zAmount = -1;
+	UPROPERTY(BlueprintReadWrite, replicated, Category = "Zoop Subsystem")
+		bool isFoundation = true;
+	UPROPERTY(BlueprintReadWrite, replicated, Category = "Zoop Subsystem")
+		bool needsUpdate = true;
+
+	void SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop);
 	//UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
 	//bool zoopCorners = false;
 
