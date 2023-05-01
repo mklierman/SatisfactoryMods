@@ -12,14 +12,26 @@ void AInfiniteZoopSubsystem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(AInfiniteZoopSubsystem, currentZoopAmount);
 }
 
-void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop)
+void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop, APawn* owner)
 {
+	if (!owner)
+	{
+		return;
+	}
+
+	FZoopAmountStruct zStruct;
+	if (ZoopAmountStructs.Num() > 0 && ZoopAmountStructs.Contains(owner))
+	{
+		zStruct = ZoopAmountStructs[owner];
+	}
+	zStruct.isFoundation = foundation;
 	if (foundation && verticalZoop)
 	{
-		xAmount = -1;
-		zAmount = -1;
-		yAmount = -1;
-		needsUpdate = true;
+		zStruct.xAmount = -1;
+		zStruct.zAmount = -1;
+		zStruct.yAmount = -1;
+		zStruct.needsUpdate = true;
+		ZoopAmountStructs.Add(owner, zStruct);
 		return;
 	}
 	if (x == xAmount && y == yAmount && z == zAmount && foundation == isFoundation)
@@ -28,10 +40,11 @@ void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool found
 	}
 	else
 	{
-		xAmount = x;
-		yAmount = y;
-		zAmount = z;
-		isFoundation = foundation;
-		needsUpdate = true;
+		zStruct.xAmount = x;
+		zStruct.yAmount = y;
+		zStruct.zAmount = z;
+		zStruct.isFoundation = foundation;
+		zStruct.needsUpdate = true;
 	}
+	ZoopAmountStructs.Add(owner, zStruct);
 }

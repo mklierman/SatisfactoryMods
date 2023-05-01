@@ -279,7 +279,7 @@ bool FInfiniteZoopModule::SetZoopAmount(AFGFactoryBuildingHologram* self, const 
 	}
 	else if (foundation)
 	{
-		if (FoundationsBeingZooped.Num() > 0)
+		if (FoundationsBeingZooped.Num() > 0 && FoundationsBeingZooped.Contains(foundation))
 		{
 			auto zStruct = FoundationsBeingZooped[foundation];
 			FIntVector newZoop = FIntVector(zStruct->X, zStruct->Y, zStruct->Z);
@@ -891,7 +891,7 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 	}
 	if (!isZoopMode)
 	{
-		zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode);
+		zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode, hologram->GetConstructionInstigator());
 		return;
 	}
 	int newX = FMath::Abs(x);
@@ -914,7 +914,8 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 		newX = -1;
 		newY = -1;
 	}
-	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode);
+	
+	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, hologram->GetConstructionInstigator());
 }
 //#pragma optimize("", on)
 

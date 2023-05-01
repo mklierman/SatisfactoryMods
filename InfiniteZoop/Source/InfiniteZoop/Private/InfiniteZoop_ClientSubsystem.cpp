@@ -16,6 +16,30 @@ AInfiniteZoop_ClientSubsystem* AInfiniteZoop_ClientSubsystem::Get(UObject* world
 	}
 	return nullptr;
 }
+
+void AInfiniteZoop_ClientSubsystem::SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop)
+{
+	if (foundation && verticalZoop)
+	{
+		xAmount = -1;
+		zAmount = -1;
+		yAmount = -1;
+		needsUpdate = true;
+		return;
+	}
+	if (x == xAmount && y == yAmount && z == zAmount && foundation == isFoundation)
+	{
+		needsUpdate = false;
+	}
+	else
+	{
+		xAmount = x;
+		yAmount = y;
+		zAmount = z;
+		isFoundation = foundation;
+		needsUpdate = true;
+	}
+}
 //
 //bool AInfiniteZoop_ClientSubsystem::ShouldSave_Implementation() const
 //{
