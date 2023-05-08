@@ -31,6 +31,7 @@ public:
 	virtual void Factory_CollectInput_Implementation();
 	virtual bool Factory_GrabOutput_Implementation(class UFGFactoryConnectionComponent* connection, FInventoryItem& out_item, float& out_OffsetBeyond, TSubclassOf< UFGItemDescriptor > type) override;
 
+
 	float GetSecondsPerItem();
 
 	//UFUNCTION(BlueprintImplementableEvent)
@@ -88,6 +89,16 @@ public:
 
 	UFUNCTION()
 	void StageItemForOutput();
+
+	//FIN Functions
+	UFUNCTION()
+		void netFunc_SetThroughputLimit(float newLimit);
+
+	UFUNCTION()
+		float netFunc_GetThroughputLimit();
+
+	UFUNCTION()
+		float netFunc_GetCurrentIPM();
 
 private:
 	friend class AFGAttachmentSplitterHologram;

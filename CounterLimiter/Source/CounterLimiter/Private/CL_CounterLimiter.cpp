@@ -61,7 +61,7 @@ void ACL_CounterLimiter::Dismantle_Implementation()
 		{
 			auto inputLoc = inputConnection->GetConnection()->GetConnectorLocation();
 			auto outputLoc = outputConnection->GetConnection()->GetConnectorLocation();
-			if ((inputLoc - outputLoc).IsNearlyZero(1))
+			if ((inputLoc - outputLoc).IsNearlyZero(0.01))
 			{
 				auto belt1Conn = inputConnection->GetConnection();
 				auto belt2Conn = outputConnection->GetConnection();
@@ -352,5 +352,17 @@ void ACL_CounterLimiter::StageItemForOutput()
 			}
 		}
 	}
+}
+void ACL_CounterLimiter::netFunc_SetThroughputLimit(float newLimit)
+{
+	SetThroughputLimit(newLimit);
+}
+float ACL_CounterLimiter::netFunc_GetThroughputLimit()
+{
+	return GetThroughputLimit();
+}
+float ACL_CounterLimiter::netFunc_GetCurrentIPM()
+{
+	return DisplayIPM;
 }
 //#pragma optimize("", on)

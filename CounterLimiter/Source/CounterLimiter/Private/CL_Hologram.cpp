@@ -23,13 +23,13 @@ void ACL_Hologram::SetHologramLocationAndRotation(const FHitResult& hitResult)
             {
                 addedRotation.Yaw = mRotationAmount;
             }
-            if (hitResult.ImpactNormal == FVector(0, 0, -1))
+            if (hitResult.ImpactNormal.Z <= -0.75)
             {
                 SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, -200), cl->GetActorRotation() + addedRotation);
                 this->mSnappedBuilding = cl;
                 this->CheckValidPlacement();
             }
-            else if (hitResult.ImpactNormal == FVector(0, 0, 1))
+            else if (hitResult.ImpactNormal.Z >= 0.75)
             {
                 SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, 200), cl->GetActorRotation() + addedRotation);
                 this->mSnappedBuilding = cl;
@@ -79,7 +79,7 @@ void ACL_Hologram::Scroll(int32 delta)
 }
 //#pragma optimize("", on)
 
-//#pragma optimize("", off)
+#pragma optimize("", off)
 void ACL_Hologram::ConfigureComponents(AFGBuildable* inBuildable) const
 {
 	Super::ConfigureComponents(inBuildable);
@@ -90,32 +90,35 @@ void ACL_Hologram::ConfigureComponents(AFGBuildable* inBuildable) const
 		if (cl)
 		{
 			TArray< AFGBuildableConveyorBelt* > Belts = AFGBuildableConveyorBelt::Split(mSnappedConveyor, mSnappedConveyorOffset, false);
-			for (auto Belt : Belts)
-			{
-                if (!Belt->GetConnection0()->IsConnected())
+            if (Belts.Num() > 0)
+            {
+                for (auto Belt : Belts)
                 {
-                    if (Belt->GetConnection0()->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
+                    if (Belt->GetConnection0() && !Belt->GetConnection0()->IsConnected())
                     {
-                        Belt->GetConnection0()->SetConnection(cl->outputConnection);
+                        if (Belt->GetConnection0()->GetDirection() == EFactoryConnectionDirection::FCD_INPUT && !cl->outputConnection->GetConnection())
+                        {
+                            Belt->GetConnection0()->SetConnection(cl->outputConnection);
+                        }
+                        else if (Belt->GetConnection0()->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT && !cl->inputConnection->GetConnection())
+                        {
+                            Belt->GetConnection0()->SetConnection(cl->inputConnection);
+                        }
                     }
-                    else if (Belt->GetConnection0()->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
+                    else if (Belt->GetConnection1() && !Belt->GetConnection1()->IsConnected() && !cl->outputConnection->GetConnection())
                     {
-                        Belt->GetConnection0()->SetConnection(cl->inputConnection);
+                        if (Belt->GetConnection1()->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
+                        {
+                            Belt->GetConnection1()->SetConnection(cl->outputConnection);
+                        }
+                        else if (Belt->GetConnection1()->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT && !cl->inputConnection->GetConnection())
+                        {
+                            Belt->GetConnection1()->SetConnection(cl->inputConnection);
+                        }
                     }
                 }
-                else if (!Belt->GetConnection1()->IsConnected())
-                {
-                    if (Belt->GetConnection1()->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
-                    {
-                        Belt->GetConnection1()->SetConnection(cl->outputConnection);
-                    }
-                    else if (Belt->GetConnection1()->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
-                    {
-                        Belt->GetConnection1()->SetConnection(cl->inputConnection);
-                    }
-                }
-			}
+            }
 		}
 	}
 }
-//#pragma optimize("", on)
+#pragma optimize("", on)
