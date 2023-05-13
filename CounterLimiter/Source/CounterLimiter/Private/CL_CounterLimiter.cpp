@@ -264,18 +264,21 @@ UFGInventoryComponent* ACL_CounterLimiter::GetBufferInventory()
 
 void ACL_CounterLimiter::SetThroughputLimit(float itemsPerMinute)
 {
-	if (HasAuthority())
+	if (mPerMinuteLimitRate != itemsPerMinute)
 	{
-		mPerMinuteLimitRate = itemsPerMinute;
-		ForceNetUpdate();
-		GetWorld()->GetTimerManager().SetTimer(ThroughputTimerHandle, this, &ACL_CounterLimiter::StageItemForOutput, GetSecondsPerItem(), true);
-	}
-	else
-	{
-		mPerMinuteLimitRate = itemsPerMinute;
-		if (UCL_RCO* RCO = UCL_RCO::Get(GetWorld()))
+		if (HasAuthority())
 		{
-			RCO->Server_SetLimiterRate(this, itemsPerMinute);
+			mPerMinuteLimitRate = itemsPerMinute;
+			ForceNetUpdate();
+			GetWorld()->GetTimerManager().SetTimer(ThroughputTimerHandle, this, &ACL_CounterLimiter::StageItemForOutput, GetSecondsPerItem(), true);
+		}
+		else
+		{
+			mPerMinuteLimitRate = itemsPerMinute;
+			if (UCL_RCO* RCO = UCL_RCO::Get(GetWorld()))
+			{
+				RCO->Server_SetLimiterRate(this, itemsPerMinute);
+			}
 		}
 	}
 }
@@ -284,6 +287,11 @@ float ACL_CounterLimiter::GetThroughputLimit()
 {
 	ForceNetUpdate();
 	return mPerMinuteLimitRate;
+}
+
+float ACL_CounterLimiter::GetCurrentIPM()
+{
+	return DisplayIPM;
 }
 
 void ACL_CounterLimiter::CalculateIPM()
@@ -363,6 +371,6 @@ float ACL_CounterLimiter::netFunc_GetThroughputLimit()
 }
 float ACL_CounterLimiter::netFunc_GetCurrentIPM()
 {
-	return DisplayIPM;
+	return GetCurrentIPM();
 }
 //#pragma optimize("", on)

@@ -84,6 +84,10 @@ public:
 	UFUNCTION(BlueprintPure)
 	float GetThroughputLimit();
 
+	UFUNCTION(BlueprintPure)
+		float GetCurrentIPM();
+
+
 	UFUNCTION()
 	void CalculateIPM();
 
