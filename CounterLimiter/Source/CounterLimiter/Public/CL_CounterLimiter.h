@@ -78,7 +78,7 @@ public:
 	FTimerHandle ThroughputTimerHandle;
 
 	UFUNCTION(BlueprintCallable)
-	void SetThroughputLimit(float itemsPerMinute);
+	void SetThroughputLimit(float itemsPerMinute, bool bypassCheck = false);
 
 
 	UFUNCTION(BlueprintPure)

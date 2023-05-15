@@ -48,7 +48,7 @@ void ACL_CounterLimiter::BeginPlay()
 		inputConnection->SetInventoryAccessIndex(0);
 		outputConnection->SetInventoryAccessIndex(0);
 		GetWorld()->GetTimerManager().SetTimer(ipmTimerHandle, this, &ACL_CounterLimiter::CalculateIPM, 60.f, true, 60.f);
-		SetThroughputLimit(mPerMinuteLimitRate);
+		SetThroughputLimit(mPerMinuteLimitRate, true);
 	}
 	Super::BeginPlay();
 }
@@ -262,9 +262,9 @@ UFGInventoryComponent* ACL_CounterLimiter::GetBufferInventory()
 }
 
 
-void ACL_CounterLimiter::SetThroughputLimit(float itemsPerMinute)
+void ACL_CounterLimiter::SetThroughputLimit(float itemsPerMinute, bool bypassCheck)
 {
-	if (mPerMinuteLimitRate != itemsPerMinute)
+	if (mPerMinuteLimitRate != itemsPerMinute || bypassCheck)
 	{
 		if (HasAuthority())
 		{
