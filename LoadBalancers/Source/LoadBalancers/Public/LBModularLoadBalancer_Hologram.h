@@ -11,23 +11,6 @@
 #include "FGAttachmentPoint.h"
 #include "LBModularLoadBalancer_Hologram.generated.h"
 
-
-struct PriorityQueue
-{
-	explicit PriorityQueue(int32 InPriority);
-
-	int32 Priority;
-};
-
-struct PriorityQueuePredicate
-{
-	bool operator()(const PriorityQueue& A, const PriorityQueue& B) const
-	{
-		// Inverted compared to std::priority_queue - higher priorities float to the top
-		return A.Priority > B.Priority;
-	}
-};
-
 /**
  *
  */
@@ -37,6 +20,8 @@ class LOADBALANCERS_API ALBModularLoadBalancer_Hologram : public AFGFactoryHolog
 {
 	GENERATED_BODY()
 public:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	virtual void BeginPlay() override;
 
 	virtual AActor* Construct(TArray< AActor* >& out_children, FNetConstructionID netConstructionID) override;

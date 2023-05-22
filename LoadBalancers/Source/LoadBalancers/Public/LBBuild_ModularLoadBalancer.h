@@ -136,6 +136,8 @@ public:
 
 	virtual EProductionStatus GetProductionIndicatorStatus() const override;
 
+	int32 GetNumItems(UFGInventoryComponent* bufferInventory, TSubclassOf< UFGItemDescriptor > itemClass) const;
+
 	void SetupInventory();
 	UFGInventoryComponent* GetBufferInventory();
 

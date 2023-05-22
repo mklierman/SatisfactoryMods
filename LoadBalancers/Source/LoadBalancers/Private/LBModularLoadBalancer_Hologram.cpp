@@ -5,7 +5,14 @@
 #include "LoadBalancersModule.h"
 
 //DEFINE_LOG_CATEGORY(LoadBalancers_Log);
-#pragma optimize("", off)
+//#pragma optimize("", off)
+
+// Build step
+
+// Step 1 - placement
+// Step 2 - Stretch along axis player is looking in 1m increments until collision with line trace
+// Step 2.5 - If collided with snap point don't go past it
+
 void ALBModularLoadBalancer_Hologram::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -72,13 +79,15 @@ void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)
 	Super::SetScrollMode(EHologramScrollMode::HSM_ROTATE);
 	if(GetSnappedBuilding() && Cast<ALBBuild_ModularLoadBalancer>(GetSnappedBuilding()))
 	{
-		auto pContr = this->GetNetOwningPlayer()->GetPlayerController(GetWorld());
-		if (pContr && pContr->IsInputKeyDown(EKeys::LeftControl))
+		auto contr = Cast<APlayerController>(GetConstructionInstigator()->GetController());
+		if (contr && contr->IsInputKeyDown(EKeys::LeftControl))
 		{
+			UE_LOG(LoadBalancers_Log, Display, TEXT("LeftControl"));
 			Super::Scroll(delta);
 		}
-		else if (pContr && pContr->IsInputKeyDown(EKeys::LeftShift))
+		else if (contr && contr->IsInputKeyDown(EKeys::LeftShift))
 		{
+			UE_LOG(LoadBalancers_Log, Display, TEXT("LeftShift"));
 			Super::SetScrollMode(EHologramScrollMode::HSM_RAISE_LOWER);
 			Super::Scroll(delta);
 		}
@@ -92,6 +101,7 @@ void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)
 		Super::Scroll(delta);
 	}
 }
+
 
 bool ALBModularLoadBalancer_Hologram::IsValidHitResult(const FHitResult& hitResult) const
 {
@@ -181,4 +191,4 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 		}
 	}
 }
-#pragma optimize("", on)
+//#pragma optimize("", on)

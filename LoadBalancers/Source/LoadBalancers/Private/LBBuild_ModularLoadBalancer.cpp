@@ -354,7 +354,7 @@ bool ALBBuild_ModularLoadBalancer::SendToOverflowBalancer(FInventoryItem Item) c
             {
                 if(OverflowBalancer->GetBufferInventory())
                 {
-                    if(OverflowBalancer->GetBufferInventory()->GetNumItems(Item.ItemClass) < mOverwriteSlotSize)
+                    if(GetNumItems(OverflowBalancer->GetBufferInventory(), Item.ItemClass) < mOverwriteSlotSize)
                     {
                         OverflowBalancer->GetBufferInventory()->AddItem(Item);
                         return true;
@@ -403,7 +403,7 @@ bool ALBBuild_ModularLoadBalancer::SendToFilterBalancer(FInventoryItem Item) con
                 {
                     if(OverflowBalancer->GetBufferInventory())
                     {
-                        if(OverflowBalancer->GetBufferInventory()->GetNumItems(Item.ItemClass) < mOverwriteSlotSize)
+                        if(GetNumItems(OverflowBalancer->GetBufferInventory(), Item.ItemClass) < mOverwriteSlotSize)
                         {
                             OverflowBalancer->GetBufferInventory()->AddItem(Item);
                             return true;
@@ -451,11 +451,9 @@ bool ALBBuild_ModularLoadBalancer::SendToNormalBalancer(FInventoryItem Item) con
             {
                 if(OverflowBalancer->GetBufferInventory())
                 {
-                    if(OverflowBalancer->GetBufferInventory()->GetNumItems(Item.ItemClass) < mOverwriteSlotSize)
+                    if(GetNumItems(OverflowBalancer->GetBufferInventory(), Item.ItemClass) < mOverwriteSlotSize)
                     {
                         OverflowBalancer->GetBufferInventory()->AddItem(Item);
-
-
                         return true;
                     }
                 }
@@ -463,6 +461,23 @@ bool ALBBuild_ModularLoadBalancer::SendToNormalBalancer(FInventoryItem Item) con
         }
     }
     return false;
+}
+
+int32 ALBBuild_ModularLoadBalancer::GetNumItems(UFGInventoryComponent* bufferInventory, TSubclassOf< UFGItemDescriptor > itemClass) const
+{
+    TArray< FInventoryStack > out_stacks;
+    bufferInventory->GetInventoryStacks(out_stacks);
+    if (out_stacks.Num() > 0)
+    {
+        for (auto stack : out_stacks)
+        {
+            if (stack.Item.GetItemClass() == itemClass && stack.HasItems())
+            {
+                return stack.NumItems;
+            }
+        }
+    }
+    return 0;
 }
 
 void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
