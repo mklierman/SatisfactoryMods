@@ -112,6 +112,7 @@ void FConstructionPreferencesModule::StartupModule() {
 			self->mStepHeight = ((float)config.ConveyorLiftStep * 100);
 			self->mMinimumHeight = ((float)config.ConveyorLiftHeight * 100);
 			self->mMaximumHeight = ((float)config.ConveyorLiftHeightMax * 100);
+			self->mJointMesh = nullptr;
 		});
 
 	AFGConveyorBeltHologram* CBH = GetMutableDefault<AFGConveyorBeltHologram>();
@@ -272,7 +273,7 @@ void FConstructionPreferencesModule::StartupModule() {
 	//		scope.Override(true);
 	//	});
 
-	UFGBuildGunStateBuild* BG = GetMutableDefault<UFGBuildGunStateBuild>();
+	//UFGBuildGunStateBuild* BG = GetMutableDefault<UFGBuildGunStateBuild>();
 	////virtual void PrimaryFire_Implementation() override;
 	////virtual void PrimaryFireRelease_Implementation() override;
 	//SUBSCRIBE_METHOD_VIRTUAL(UFGBuildGunStateBuild::PrimaryFire_Implementation, BG, &PrimaryFire)
