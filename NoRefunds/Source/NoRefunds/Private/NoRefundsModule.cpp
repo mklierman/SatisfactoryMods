@@ -1,10 +1,13 @@
 #include "NoRefundsModule.h"
 #include "Equipment/FGBuildGunDismantle.h"
 #include "Patching/NativeHookManager.h"
+#include "Equipment/FGChainsaw.h"
+#include "FGFoliageLibrary.h"
+#include "NR_ConfigStruct.h"
 
 //#pragma optimize("", off)
 void FNoRefundsModule::StartupModule() {
-
+#if !WITH_EDITOR
 	TArray< FInventoryStack > refund = TArray< FInventoryStack >();
 	SUBSCRIBE_METHOD(UFGBuildGunStateDismantle::GetDismantleRefund, [=](auto& scope, const UFGBuildGunStateDismantle* self)
 		{
@@ -12,7 +15,17 @@ void FNoRefundsModule::StartupModule() {
 			refund = AllowDismantleRefund(refund);
 			scope.Override(refund);
 		});
-#if !WITH_EDITOR
+
+
+	SUBSCRIBE_METHOD_AFTER(UFGFoliageLibrary::CheckInventorySpaceAndGetStacks, [=](auto& scope, class AFGCharacterPlayer* character, class UHierarchicalInstancedStaticMeshComponent* meshComponent, TArray<struct FInventoryStack>& out_inventoryStacks)
+		{
+			auto config = FNR_ConfigStruct::GetActiveConfig();
+			bool shouldPreventFoliage = config.Foliage;
+			if (shouldPreventFoliage)
+			{
+				out_inventoryStacks.Empty();
+			}
+		});
 #endif
 }
 
