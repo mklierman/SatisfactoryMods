@@ -129,14 +129,20 @@ void ALBModularLoadBalancer_Hologram::UnHighlightAll()
 {
 	for (auto actor : mHighlightedActors)
 	{
-		auto comp = actor->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass());
-		if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(comp))
+		if (actor)
 		{
-			mesh->SetMaterial(0, mMainMaterial);
-			mesh->SetMaterial(1, mSecondaryMaterial);
-			mesh->SetMaterial(2, mSymbolMaterial);
-			mesh->SetInstanced(false);
-			mesh->SetInstanced(true);
+			auto comp = actor->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass());
+			if (comp)
+			{
+				if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(comp))
+				{
+					mesh->SetMaterial(0, mMainMaterial);
+					mesh->SetMaterial(1, mSecondaryMaterial);
+					mesh->SetMaterial(2, mSymbolMaterial);
+					mesh->SetInstanced(false);
+					mesh->SetInstanced(true);
+				}
+			}
 		}
 	}
 	mHighlightedActors.Empty();

@@ -523,7 +523,7 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
 
     if (MyInputConnection)
     {
-        if (GroupLeader->mNormalLoaderData.mConnectedInputs.Num() > 0)
+        if (GroupLeader->mNormalLoaderData.mConnectedInputs.Num() > 0 && this)
         {
             if (GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this) && !MyInputConnection->IsConnected())
             {
