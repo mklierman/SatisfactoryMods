@@ -30,8 +30,10 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UPROPERTY(BlueprintReadWrite, replicated)
-		TMap<APawn*, FZoopAmountStruct> ZoopAmountStructs;
+	UPROPERTY(BlueprintReadWrite)
+	TMap<APawn*, FZoopAmountStruct> ZoopAmountStructs;
+
+	FCriticalSection* csection;
 
 	UPROPERTY(BlueprintReadWrite, replicated, Category = "Zoop Subsystem")
 	int currentZoopAmount = 12;

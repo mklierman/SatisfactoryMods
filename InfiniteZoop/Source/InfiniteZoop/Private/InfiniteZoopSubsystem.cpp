@@ -3,6 +3,7 @@
 AInfiniteZoopSubsystem::AInfiniteZoopSubsystem()
 {
     ReplicationPolicy = ESubsystemReplicationPolicy::SpawnOnServer_Replicate;
+	csection = new FCriticalSection();
 }
 
 void AInfiniteZoopSubsystem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -14,11 +15,12 @@ void AInfiniteZoopSubsystem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 
 void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop, APawn* owner)
 {
+	FScopeLock scopelock(csection);
 	if (!owner)
 	{
+		ZoopAmountStructs.Remove(owner);
 		return;
 	}
-
 	FZoopAmountStruct zStruct;
 	if (ZoopAmountStructs.Num() > 0 && ZoopAmountStructs.Contains(owner))
 	{
@@ -36,6 +38,10 @@ void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool found
 	}
 	if (x == xAmount && y == yAmount && z == zAmount && foundation == isFoundation)
 	{
+		zStruct.xAmount = -1;
+		zStruct.zAmount = -1;
+		zStruct.yAmount = -1;
+		zStruct.isFoundation = foundation;
 		needsUpdate = false;
 	}
 	else
@@ -47,4 +53,5 @@ void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool found
 		zStruct.needsUpdate = true;
 	}
 	ZoopAmountStructs.Add(owner, zStruct);
+	scopelock.Unlock();
 }

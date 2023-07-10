@@ -22,7 +22,7 @@
 #include "FGRampHologram.h"
 
 
-DEFINE_LOG_CATEGORY(InfiniteZoop_Log);
+//DEFINE_LOG_CATEGORY(InfiniteZoop_Log);
 //#pragma optimize("", off)
 int GetClosestZoopAngle(double angleToCheck)
 {
@@ -104,7 +104,7 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 			return;
 		}
 
-		if (Fhg->GetCurrentBuildMode() == Fhg->mBuildModeZoop)
+		if (Fhg->IsCurrentBuildMode(Fhg->mBuildModeZoop))
 		{
 			auto invRotation = roundf(self->GetActorRotation().GetInverse().Yaw);
 			if (foundation)
@@ -236,7 +236,7 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 		}
 		else
 		{
-			if (foundation && foundation->GetCurrentBuildMode() == foundation->mBuildModeVerticalZoop)
+			if (foundation && foundation->IsCurrentBuildMode(foundation->mBuildModeVerticalZoop))
 			{
 				if (currentZoop.Z > 0)
 				{
@@ -252,7 +252,7 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 		{
 			HologramsToZoop.Add(self, currentZoop);
 		}
-		else if (foundation && FoundationsBeingZooped.Contains(foundation) && Fhg->GetCurrentBuildMode() == Fhg->mBuildModeZoop)
+		else if (foundation && FoundationsBeingZooped.Contains(foundation) && Fhg->IsCurrentBuildMode(Fhg->mBuildModeZoop))
 		{
 			FoundationsBeingZooped[foundation]->inScrollMode = true;
 		}
@@ -516,7 +516,7 @@ FZoopStruct* FInfiniteZoopModule::GetStruct(AFGFoundationHologram* self)
 bool FInfiniteZoopModule::IsZoopMode(AFGFoundationHologram* self)
 {
 	auto vertMode = self->mBuildModeVerticalZoop;
-	if (self->GetCurrentBuildMode() == vertMode)
+	if (self->IsCurrentBuildMode(vertMode))
 	{
 		return false;
 	}
@@ -663,7 +663,7 @@ void FInfiniteZoopModule::StartupModule() {
 			}
 	if (auto fhg = Cast< AFGFoundationHologram>(self))
 	{
-		if (fhg->mBuildModeVerticalZoop == self->mCurrentBuildMode)
+		if (self->IsCurrentBuildMode(fhg->mBuildModeVerticalZoop))
 		{
 			return;
 		}
@@ -676,18 +676,18 @@ void FInfiniteZoopModule::StartupModule() {
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGFoundationHologram::ConstructZoop, fhCDO, [=](auto& scope, AFGFoundationHologram* self, TArray<AActor*>& out_children)
 		{
-			this->ConstructZoop(self, out_children);
+			ConstructZoop(self, out_children);
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGFoundationHologram::CreateDefaultFoundationZoop, fhCDO, [=](AFGFoundationHologram* self, const FHitResult& hitResult)
 		{
-			this->CreateDefaultFoundationZoop(self, hitResult);
+			CreateDefaultFoundationZoop(self, hitResult);
 		});
 
 	//void ValidatePlacementAndCost(class UFGInventoryComponent* inventory);
 	SUBSCRIBE_METHOD(AFGHologram::ValidatePlacementAndCost, [=](auto scope, AFGHologram* self, class UFGInventoryComponent* inventory)
 		{
-			if (!this->ValidatePlacementAndCost(self, inventory))
+			if (!ValidatePlacementAndCost(self, inventory))
 			{
 				scope.Cancel();
 			}
@@ -731,7 +731,7 @@ void FInfiniteZoopModule::StartupModule() {
 			}
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::OnBuildModeChanged, hCDO, [=](auto& scope, AFGHologram* self)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::OnBuildModeChanged, hCDO, [=](auto& scope, AFGHologram* self, TSubclassOf<UFGHologramBuildModeDescriptor> buildMode)
 		{
 			if (self->CanBeZooped())
 			{
@@ -871,11 +871,11 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 		{
 			auto vertMode = fhg->mBuildModeVerticalZoop;
 			auto zoopMode = fhg->mBuildModeZoop;
-			if (fhg->GetCurrentBuildMode() == vertMode || fhg->GetCurrentBuildMode() == zoopMode)
+			if (fhg->IsCurrentBuildMode(vertMode) || fhg->IsCurrentBuildMode(zoopMode))
 			{
 				isZoopMode = true;
 			}
-			isVerticalMode = fhg->GetCurrentBuildMode() == vertMode;
+			isVerticalMode = fhg->IsCurrentBuildMode(vertMode);
 		}
 	}
 	else
@@ -883,7 +883,7 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 		if (auto whg = Cast<AFGWallHologram>(hologram))
 		{
 			auto zoopMode = whg->mBuildModeZoop;
-			if (whg->GetCurrentBuildMode() == zoopMode)
+			if (whg->IsCurrentBuildMode(zoopMode))
 			{
 				isZoopMode = true;
 			}

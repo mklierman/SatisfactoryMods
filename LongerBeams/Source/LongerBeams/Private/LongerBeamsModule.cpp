@@ -39,7 +39,7 @@ void FLongerBeamsModule::StartupModule()
 			}
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::OnBuildModeChanged, hCDO, [=](auto& scope, AFGHologram* self)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::OnBuildModeChanged, hCDO, [=](auto& scope, AFGHologram* self, TSubclassOf<UFGHologramBuildModeDescriptor> buildMode)
 		{
 			if (auto beamhg = Cast<AFGBeamHologram>(self))
 			{
