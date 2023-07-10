@@ -8,7 +8,6 @@
 #include "Equipment/FGEquipment.h"
 #include "FGCharacterPlayer.h"
 #include "HPPR_ConfigStruct.h"
-#include "Util/RuntimeBlueprintFunctionLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Configuration/ConfigProperty.h"
 #include "Configuration/ConfigManager.h"

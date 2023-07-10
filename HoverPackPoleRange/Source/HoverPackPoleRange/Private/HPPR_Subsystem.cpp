@@ -9,7 +9,6 @@
 #include "Equipment/FGEquipment.h"
 #include "FGCharacterPlayer.h"
 #include "HPPR_ConfigStruct.h"
-#include "Util/RuntimeBlueprintFunctionLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Configuration/ConfigProperty.h"
 #include "Configuration/ConfigManager.h"
@@ -75,32 +74,33 @@ void AHPPR_Subsystem::SetConfigValues()
 	UConfigManager* ConfigManager = GEngine->GetEngineSubsystem<UConfigManager>();
 	FConfigId ConfigId{ "HoverPackPoleRange", "" };
 	auto Config = ConfigManager->GetConfigurationById(ConfigId);
-	auto ConfigProperty = URuntimeBlueprintFunctionLibrary::GetModConfigurationPropertyByClass(Config);
-	auto CPSection = Cast<UConfigPropertySection>(ConfigProperty);
+	//TODO: Fix this
+	//auto ConfigProperty = URuntimeBlueprintFunctionLibrary::GetModConfigurationPropertyByClass(Config);
+	//auto CPSection = Cast<UConfigPropertySection>(ConfigProperty);
 
-	auto mk1Prop = CPSection->SectionProperties["Mk1"];
-	auto mk2Prop = CPSection->SectionProperties["Mk2"];
-	auto mk3Prop = CPSection->SectionProperties["Mk3"];
-	auto railProp = CPSection->SectionProperties["Rails"];
-	auto elseProp = CPSection->SectionProperties["EverythingElse"];
+	//auto mk1Prop = CPSection->SectionProperties["Mk1"];
+	//auto mk2Prop = CPSection->SectionProperties["Mk2"];
+	//auto mk3Prop = CPSection->SectionProperties["Mk3"];
+	//auto railProp = CPSection->SectionProperties["Rails"];
+	//auto elseProp = CPSection->SectionProperties["EverythingElse"];
 
-	FScriptDelegate mk1Delegate;
-	mk1Delegate.BindUFunction(this, "Mk1Updated");
-	mk1Prop->OnPropertyValueChanged.AddUnique(mk1Delegate);
+	//FScriptDelegate mk1Delegate;
+	//mk1Delegate.BindUFunction(this, "Mk1Updated");
+	//mk1Prop->OnPropertyValueChanged.AddUnique(mk1Delegate);
 
-	FScriptDelegate mk2Delegate;
-	mk2Delegate.BindUFunction(this, "Mk2Updated");
-	mk2Prop->OnPropertyValueChanged.AddUnique(mk2Delegate);
+	//FScriptDelegate mk2Delegate;
+	//mk2Delegate.BindUFunction(this, "Mk2Updated");
+	//mk2Prop->OnPropertyValueChanged.AddUnique(mk2Delegate);
 
-	FScriptDelegate mk3Delegate;
-	mk3Delegate.BindUFunction(this, "Mk3Updated");
-	mk3Prop->OnPropertyValueChanged.AddUnique(mk3Delegate);
+	//FScriptDelegate mk3Delegate;
+	//mk3Delegate.BindUFunction(this, "Mk3Updated");
+	//mk3Prop->OnPropertyValueChanged.AddUnique(mk3Delegate);
 
-	FScriptDelegate railsDelegate;
-	railsDelegate.BindUFunction(this, "RailsUpdated");
-	railProp->OnPropertyValueChanged.AddUnique(railsDelegate);
+	//FScriptDelegate railsDelegate;
+	//railsDelegate.BindUFunction(this, "RailsUpdated");
+	//railProp->OnPropertyValueChanged.AddUnique(railsDelegate);
 
-	FScriptDelegate elseDelegate;
-	elseDelegate.BindUFunction(this, "EverythingElseUpdated");
-	elseProp->OnPropertyValueChanged.AddUnique(elseDelegate);
+	//FScriptDelegate elseDelegate;
+	//elseDelegate.BindUFunction(this, "EverythingElseUpdated");
+	//elseProp->OnPropertyValueChanged.AddUnique(elseDelegate);
 }

@@ -9,15 +9,15 @@
 void FNoRefundsModule::StartupModule() {
 #if !WITH_EDITOR
 	TArray< FInventoryStack > refund = TArray< FInventoryStack >();
-	SUBSCRIBE_METHOD(UFGBuildGunStateDismantle::GetDismantleRefund, [=](auto& scope, const UFGBuildGunStateDismantle* self)
-		{
-			TArray< FInventoryStack > refund = scope(self);
-			refund = AllowDismantleRefund(refund);
-			scope.Override(refund);
-		});
+	//SUBSCRIBE_METHOD(UFGBuildGunStateDismantle::GetDismantleRefund, [=](auto& scope, const UFGBuildGunStateDismantle* self, bool noBuildCostEnabled)
+	//	{
+	//		TArray< FInventoryStack > refund = scope(self);
+	//		refund = AllowDismantleRefund(refund);
+	//		scope.Override(refund);
+	//	});
 
 
-	SUBSCRIBE_METHOD_AFTER(UFGFoliageLibrary::CheckInventorySpaceAndGetStacks, [=](auto& scope, class AFGCharacterPlayer* character, class UHierarchicalInstancedStaticMeshComponent* meshComponent, TArray<struct FInventoryStack>& out_inventoryStacks)
+	SUBSCRIBE_METHOD_AFTER(UFGFoliageLibrary::CheckInventorySpaceAndGetStacks, [=](auto& scope, AFGCharacterPlayer* character, UHierarchicalInstancedStaticMeshComponent* meshComponent, TArrayView< uint32 > randomSeeds, TArray<struct FInventoryStack>& out_inventoryStacks)
 		{
 			auto config = FNR_ConfigStruct::GetActiveConfig();
 			bool shouldPreventFoliage = config.Foliage;

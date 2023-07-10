@@ -39,129 +39,129 @@ void AHolo_WireHologramBuildModes::BeginPlay()
 		RespawnChildWallSocketHolograms();
 
 		
-		this->SetBuildMode(mDefaultBuildMode);
-		OnBuildModeChanged();
+		//this->SetBuildMode(mDefaultBuildMode);
+		//OnBuildModeChanged();
 
 	}
 
 	Super::BeginPlay();
 }
 
-void AHolo_WireHologramBuildModes::OnBuildModeChanged()
-{
-	Super::OnBuildModeChanged();
-	if (RecipeManager)
-	{
-		TSubclassOf<UFGRecipe> PoleRecipe = DefaultPowerPoleRecipe;
-		TSubclassOf<UFGRecipe> WallSocketRecipe = DefaultWallSocketRecipe;
+//void AHolo_WireHologramBuildModes::OnBuildModeChanged()
+//{
+//	//Super::OnBuildModeChanged();
+//	//if (RecipeManager)
+//	//{
+//	//	TSubclassOf<UFGRecipe> PoleRecipe = DefaultPowerPoleRecipe;
+//	//	TSubclassOf<UFGRecipe> WallSocketRecipe = DefaultWallSocketRecipe;
+//
+//	//	if (!RecipeManager->IsRecipeAvailable(DefaultWallSocketRecipe))
+//	//	{
+//	//		for (auto bmode : WireBuildModes)
+//	//		{
+//	//			if (bmode.IsWallSocket)
+//	//			{
+//	//				if (RecipeManager->IsRecipeAvailable(bmode.Recipe))
+//	//				{
+//	//					WallSocketRecipe = bmode.Recipe;
+//	//					mDefaultPowerPoleWallRecipe = WallSocketRecipe;
+//	//					break;
+//	//				}
+//	//			}
+//	//		}
+//	//	}
+//
+//	//	auto currentBuildMode = GetCurrentBuildMode();
+//	//	for (auto bm : WireBuildModes)
+//	//	{
+//	//		if (bm.BuildMode == currentBuildMode)
+//	//		{
+//	//			if (!bm.IsWallSocket)
+//	//			{
+//	//				const TSubclassOf<UFGRecipe> SelectedPoleRecipe = bm.Recipe;
+//	//				if (IsValid(SelectedPoleRecipe))
+//	//				{
+//	//					if (RecipeManager->IsRecipeAvailable(SelectedPoleRecipe))
+//	//					{
+//	//						PoleRecipe = SelectedPoleRecipe;
+//	//						if (GetActiveAutomaticPoleHologram())
+//	//						{
+//	//							CP_Subsystem->LastUsedPoleBuildMode = bm;
+//	//						}
+//	//					}
+//	//				}
+//	//			}
+//	//			else
+//	//			{
+//	//				const TSubclassOf<UFGRecipe> SelectedWallSocketRecipe = bm.Recipe;
+//	//				if (IsValid(SelectedWallSocketRecipe))
+//	//				{
+//	//					if (RecipeManager->IsRecipeAvailable(SelectedWallSocketRecipe))
+//	//					{
+//	//						WallSocketRecipe = SelectedWallSocketRecipe;
+//	//						if (GetActiveAutomaticPoleHologram())
+//	//						{
+//	//							CP_Subsystem->LastUsedWallSockedBuildMode = bm;
+//	//						}
+//	//					}
+//	//				}
+//	//			}
+//
+//	//			mDefaultPowerPoleRecipe = PoleRecipe;
+//	//			mDefaultPowerPoleWallRecipe = WallSocketRecipe;
+//	//			break;
+//	//		}
+//	//	}
+//
+//	//	SwitchPoleType();
+//	//}
+//}
 
-		if (!RecipeManager->IsRecipeAvailable(DefaultWallSocketRecipe))
-		{
-			for (auto bmode : WireBuildModes)
-			{
-				if (bmode.IsWallSocket)
-				{
-					if (RecipeManager->IsRecipeAvailable(bmode.Recipe))
-					{
-						WallSocketRecipe = bmode.Recipe;
-						mDefaultPowerPoleWallRecipe = WallSocketRecipe;
-						break;
-					}
-				}
-			}
-		}
-
-		auto currentBuildMode = GetCurrentBuildMode();
-		for (auto bm : WireBuildModes)
-		{
-			if (bm.BuildMode == currentBuildMode)
-			{
-				if (!bm.IsWallSocket)
-				{
-					const TSubclassOf<UFGRecipe> SelectedPoleRecipe = bm.Recipe;
-					if (IsValid(SelectedPoleRecipe))
-					{
-						if (RecipeManager->IsRecipeAvailable(SelectedPoleRecipe))
-						{
-							PoleRecipe = SelectedPoleRecipe;
-							if (GetActiveAutomaticPoleHologram())
-							{
-								CP_Subsystem->LastUsedPoleBuildMode = bm;
-							}
-						}
-					}
-				}
-				else
-				{
-					const TSubclassOf<UFGRecipe> SelectedWallSocketRecipe = bm.Recipe;
-					if (IsValid(SelectedWallSocketRecipe))
-					{
-						if (RecipeManager->IsRecipeAvailable(SelectedWallSocketRecipe))
-						{
-							WallSocketRecipe = SelectedWallSocketRecipe;
-							if (GetActiveAutomaticPoleHologram())
-							{
-								CP_Subsystem->LastUsedWallSockedBuildMode = bm;
-							}
-						}
-					}
-				}
-
-				mDefaultPowerPoleRecipe = PoleRecipe;
-				mDefaultPowerPoleWallRecipe = WallSocketRecipe;
-				break;
-			}
-		}
-
-		SwitchPoleType();
-	}
-}
-
-void AHolo_WireHologramBuildModes::GetSupportedBuildModes_Implementation(TArray<TSubclassOf<UFGHologramBuildModeDescriptor>>& out_buildmodes) const
-{
-	//Super::GetSupportedBuildModes_Implementation(out_buildmodes);
-	bool MustSnap = GetActiveAutomaticPoleHologram() != nullptr;
-	bool SnapToWallHolo = false;
-	bool SnappedToFoundation = false;
-	if (MustSnap)
-	{
-		SnapToWallHolo = Cast<AFGPowerPoleWallHologram>(GetActiveAutomaticPoleHologram()) != nullptr;
-		SnappedToFoundation = Cast<AFGBuildableFoundation>(GetActiveAutomaticPoleHologram()->GetSnappedBuilding()) != nullptr;
-	}
-
-	if (AFGRecipeManager* lRecipeManager = AFGRecipeManager::Get(GetWorld()))
-	{
-		out_buildmodes.Empty();
-
-		if (!SnapToWallHolo)
-		{
-			for (auto bm : WireBuildModes)
-			{
-				if (!bm.IsWallSocket && lRecipeManager->IsRecipeAvailable(bm.Recipe))
-				{
-					out_buildmodes.AddUnique(bm.BuildMode);
-				}
-			}
-		}
-		else
-		{
-			for (auto bm : WireBuildModes)
-			{
-				if (bm.IsWallSocket && lRecipeManager->IsRecipeAvailable(bm.Recipe))
-				{
-					if (SnappedToFoundation && !bm.IsDoubleWallSocket)
-					{
-						out_buildmodes.AddUnique(bm.BuildMode);
-					}
-					else if (!SnappedToFoundation)
-					{
-						out_buildmodes.AddUnique(bm.BuildMode);
-					}
-				}
-			}
-		}
-	}
-}
+//void AHolo_WireHologramBuildModes::GetSupportedBuildModes_Implementation(TArray<TSubclassOf<UFGHologramBuildModeDescriptor>>& out_buildmodes) const
+//{
+//	//Super::GetSupportedBuildModes_Implementation(out_buildmodes);
+//	bool MustSnap = GetActiveAutomaticPoleHologram() != nullptr;
+//	bool SnapToWallHolo = false;
+//	bool SnappedToFoundation = false;
+//	if (MustSnap)
+//	{
+//		SnapToWallHolo = Cast<AFGPowerPoleWallHologram>(GetActiveAutomaticPoleHologram()) != nullptr;
+//		SnappedToFoundation = Cast<AFGBuildableFoundation>(GetActiveAutomaticPoleHologram()->GetSnappedBuilding()) != nullptr;
+//	}
+//
+//	if (AFGRecipeManager* lRecipeManager = AFGRecipeManager::Get(GetWorld()))
+//	{
+//		out_buildmodes.Empty();
+//
+//		if (!SnapToWallHolo)
+//		{
+//			for (auto bm : WireBuildModes)
+//			{
+//				if (!bm.IsWallSocket && lRecipeManager->IsRecipeAvailable(bm.Recipe))
+//				{
+//					out_buildmodes.AddUnique(bm.BuildMode);
+//				}
+//			}
+//		}
+//		else
+//		{
+//			for (auto bm : WireBuildModes)
+//			{
+//				if (bm.IsWallSocket && lRecipeManager->IsRecipeAvailable(bm.Recipe))
+//				{
+//					if (SnappedToFoundation && !bm.IsDoubleWallSocket)
+//					{
+//						out_buildmodes.AddUnique(bm.BuildMode);
+//					}
+//					else if (!SnappedToFoundation)
+//					{
+//						out_buildmodes.AddUnique(bm.BuildMode);
+//					}
+//				}
+//			}
+//		}
+//	}
+//}
 
 void AHolo_WireHologramBuildModes::SwitchPoleType()
 {
@@ -209,7 +209,7 @@ void AHolo_WireHologramBuildModes::SwitchPoleType()
 			mPowerPole = Cast<AFGPowerPoleHologram>(spawnedHG);
 			if (mPowerPole)
 			{
-				mPowerPole->SetDisabled(true);
+				//mPowerPole->SetDisabled(true);
 			}
 		}
 
@@ -239,7 +239,7 @@ void AHolo_WireHologramBuildModes::RespawnChildPoleHolograms()
 		mPowerPole = Cast<AFGPowerPoleHologram>(spawnedHG);
 		if (mPowerPole)
 		{
-			mPowerPole->SetDisabled(true);
+		//	mPowerPole->SetDisabled(true);
 		}
 	}
 }

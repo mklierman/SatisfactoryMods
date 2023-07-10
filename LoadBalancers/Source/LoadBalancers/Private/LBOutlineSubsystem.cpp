@@ -128,7 +128,7 @@ void ALBOutlineSubsystem::ClearOutlines(bool Multicast)
 
 void ALBOutlineSubsystem::SetOutlineColor(FLinearColor Color, bool Multicast)
 {
-	if (Multicast)
+	/*if (Multicast)
 	{
 		if (HasAuthority())
 		{
@@ -155,7 +155,7 @@ void ALBOutlineSubsystem::SetOutlineColor(FLinearColor Color, bool Multicast)
 			mGameUserSettings->SetDismantleHologramColour(UKismetMathLibrary::Conv_LinearColorToVector(Color));
 			mGameUserSettings->ApplyHologramColoursToCollectionParameterInstance(GetWorld());
 		}
-	}
+	}*/
 }
 
 void ALBOutlineSubsystem::ResetOutlineColor(bool Multicast)

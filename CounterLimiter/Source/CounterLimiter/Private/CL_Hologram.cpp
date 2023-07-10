@@ -57,7 +57,7 @@ bool ACL_Hologram::IsValidHitResult(const FHitResult& hitResult) const
 }
 void ACL_Hologram::Scroll(int32 delta)
 {
-    Super::SetScrollMode(EHologramScrollMode::HSM_ROTATE);
+    //Super::SetScrollMode(EHologramScrollMode::HSM_ROTATE);
     if (GetSnappedBuilding() && Cast<ACL_CounterLimiter>(GetSnappedBuilding()))
     {
         auto pContr = this->GetNetOwningPlayer()->GetPlayerController(GetWorld());

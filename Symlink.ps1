@@ -1,4 +1,4 @@
-$SMLPath = "C:\Code\SatisfactoryModLoader-Dev\Mods"
+$SMLPath = "C:\Code\SF\SML_Dev\SatisfactoryModLoader\Mods"
 $ModDir = "C:\Code\SF\SatisfactoryMods"
 
 function New-Sym-Link ($Link) {

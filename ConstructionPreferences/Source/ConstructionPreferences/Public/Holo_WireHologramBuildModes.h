@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Hologram/FGWireHologram.h"
+#include "Hologram/FGBuildableHologram.h"
 #include "FGRecipeManager.h"
 #include "CP_Subsystem.h"
 #include "Holo_WireHologramBuildModes.generated.h"
@@ -20,8 +21,8 @@ public:
 	AHolo_WireHologramBuildModes();
 
 	virtual void BeginPlay() override;
-	virtual void OnBuildModeChanged() override;
-	virtual void GetSupportedBuildModes_Implementation(TArray<TSubclassOf<UFGHologramBuildModeDescriptor>>& out_buildmodes) const override;
+	//virtual void OnBuildModeChanged(TSubclassOf<UFGHologramBuildModeDescriptor> buildMode) override;
+	//virtual void GetSupportedBuildModes_Implementation(TArray<TSubclassOf<UFGHologramBuildModeDescriptor>>& out_buildmodes) const override;
 
 	void SwitchPoleType();
 
