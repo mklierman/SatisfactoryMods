@@ -731,28 +731,29 @@ void FInfiniteZoopModule::StartupModule() {
 			}
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::OnBuildModeChanged, hCDO, [=](auto& scope, AFGHologram* self, TSubclassOf<UFGHologramBuildModeDescriptor> buildMode)
-		{
-			if (self->CanBeZooped())
-			{
-				if (Cast<AFGWallHologram>(self))
-				{
-					HologramsToZoop.Remove(self);
-				}
-				else if (auto fhg = Cast<AFGFoundationHologram>(self))
-				{
-					FoundationsBeingZooped.Remove(fhg);
+	//TODO Figure out how to do this differently
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::OnBuildModeChanged, hCDO, [=](auto& scope, AFGHologram* self, TSubclassOf<UFGHologramBuildModeDescriptor> buildMode)
+	//	{
+	//		if (self->CanBeZooped())
+	//		{
+	//			if (Cast<AFGWallHologram>(self))
+	//			{
+	//				HologramsToZoop.Remove(self);
+	//			}
+	//			else if (auto fhg = Cast<AFGFoundationHologram>(self))
+	//			{
+	//				FoundationsBeingZooped.Remove(fhg);
 
-					fhg->mDesiredZoop.X = 0;
-					fhg->mDesiredZoop.Y = 0;
-					fhg->mDesiredZoop.Z = 0;
-					fhg->SetZoopAmount(FIntVector(0, 0, 0));
-					fhg->UpdateZoop();
-				}
+	//				fhg->mDesiredZoop.X = 0;
+	//				fhg->mDesiredZoop.Y = 0;
+	//				fhg->mDesiredZoop.Z = 0;
+	//				fhg->SetZoopAmount(FIntVector(0, 0, 0));
+	//				fhg->UpdateZoop();
+	//			}
 
-			}
-			SetSubsystemZoopAmounts(-1, -1, -1, true, self->GetWorld(), self);
-		});
+	//		}
+	//		SetSubsystemZoopAmounts(-1, -1, -1, true, self->GetWorld(), self);
+	//	});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [](auto scope, AFGHologram* self)
 		{
 			if (self)
