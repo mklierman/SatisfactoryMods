@@ -7,25 +7,31 @@ public class DestructibleDeposits : ModuleRules
     public DestructibleDeposits(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        bLegacyPublicIncludePaths = false;
 
-		PublicDependencyModuleNames.AddRange(new string[] {
+        //SML transitive dependencies
+        PublicDependencyModuleNames.AddRange(new[] {
+            "Json",
+            "Projects",
+            "NetCore",
+            "EnhancedInput",
+            "GameplayTags"
+        });
+
+        PrivateDependencyModuleNames.AddRange(new[] {
+            "RenderCore",
+            "EngineSettings"
+        });
+
+        PublicDependencyModuleNames.AddRange(new string[] { "FactoryGame" });
+
+        //FactoryGame transitive dependencies
+        PublicDependencyModuleNames.AddRange(new[] {
             "Core", "CoreUObject",
             "Engine",
             "InputCore",
-            "OnlineSubsystem", "OnlineSubsystemUtils", "OnlineSubsystemNULL",
-            "SignificanceManager",
-            "PhysX", "APEX", "PhysXVehicles", "ApexDestruction",
-            "AkAudio",
-            "ReplicationGraph",
-            "UMG",
-            "AIModule",
-            "NavigationSystem",
-            "AssetRegistry",
-            "GameplayTasks",
-            "AnimGraphRuntime",
-            "Slate", "SlateCore",
-            "Json"
-            });
+            "SlateCore", "Slate", "UMG",
+        });
 
 
         if (Target.Type == TargetRules.TargetType.Editor) {

@@ -1,4 +1,4 @@
-$SMLPath = "C:\Code\SF\SML\Plugins"
+$SMLPath = "C:\Code\SatisfactoryModLoader-Dev\Mods"
 $ModDir = "C:\Code\SF\SatisfactoryMods"
 
 function New-Sym-Link ($Link) {
@@ -8,9 +8,6 @@ function New-Sym-Link ($Link) {
 
 $dir = Get-ChildItem $ModDir | Where-Object{$_.PSISContainer}
 foreach ($d in $dir){
-    if ($d.Name -eq "VehiclePathTool")
-    {
         Write-Output -$d.Name
         New-Sym-Link($d.Name)
-    }
 }
