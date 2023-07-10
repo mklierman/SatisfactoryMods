@@ -133,6 +133,7 @@ public:
 	virtual void StartIsAimedAtForColor_Implementation(class AFGCharacterPlayer* byCharacter, bool isValid = true);
 	virtual void StopIsAimedAtForColor_Implementation(class AFGCharacterPlayer* byCharacter);
 	//~ End IFGColorInterface
+	virtual bool ShouldSave_Implementation() const override;
 
 	virtual EProductionStatus GetProductionIndicatorStatus() const override;
 

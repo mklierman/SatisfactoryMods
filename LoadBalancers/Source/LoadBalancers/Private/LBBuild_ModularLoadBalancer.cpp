@@ -13,6 +13,7 @@ DEFINE_LOG_CATEGORY(LogGame);
 DEFINE_LOG_CATEGORY(LogBuilding);
 
 #pragma optimize("", off)
+
 void FLBBalancerData::GetInputBalancers(TArray<ALBBuild_ModularLoadBalancer*>& Out)
 {
     for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mConnectedInputs)
@@ -650,6 +651,11 @@ void ALBBuild_ModularLoadBalancer::StopIsAimedAtForColor_Implementation(AFGChara
 {
     Super::StopIsAimedAtForColor_Implementation(byCharacter);
     isLookedAtForColor = false;
+}
+
+bool ALBBuild_ModularLoadBalancer::ShouldSave_Implementation() const
+{
+    return true;
 }
 
 void ALBBuild_ModularLoadBalancer::OnOutputItemRemoved(TSubclassOf<UFGItemDescriptor> itemClass, int32 numRemoved)
