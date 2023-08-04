@@ -2,9 +2,9 @@ using UnrealBuildTool;
 using System.IO;
 using System;
 
-public class VehiclePathTool : ModuleRules
+public class InfiniteNudge : ModuleRules
 {
-    public VehiclePathTool(ReadOnlyTargetRules Target) : base(Target)
+    public InfiniteNudge(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         bLegacyPublicIncludePaths = false;

@@ -18,6 +18,7 @@
 #include "CP_Subsystem.h"
 #include "FGBuildableSubsystem.h"
 #include "FGCharacterPlayer.h"
+#include "Equipment/FGBuildGun.h"
 
 DEFINE_LOG_CATEGORY(LogConstructionPreferences);
 
@@ -53,7 +54,7 @@ float FConstructionPreferencesModule::GetUseDistance(AFGCharacterPlayer* self)
 {
 	FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
 	float reachDist = config.ReachDistance;
-	if (reachDist == 250.f) //250 is default
+	if (reachDist <= 250.f) //250 is default
 	{
 		return -1.f;
 	}
@@ -105,6 +106,18 @@ void FConstructionPreferencesModule::StartupModule() {
 			}
 		});
 
+	SUBSCRIBE_METHOD(AFGBuildGun::GetBuildGunRange, [=](auto& scope, const AFGBuildGun* self)
+		{
+			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
+			float reachDist = config.ReachDistance;
+			auto bg = const_cast<AFGBuildGun*>(self);
+			auto defaultRange = bg->GetDefaultBuildGunRange();
+			//if (reachDist > defaultRange && reachDist > bg->mBuildDistanceMax)
+			//{
+			scope.Override(bg->mBuildDistanceMax + reachDist);
+			//}
+		});
+
 	AFGConveyorLiftHologram* hg = GetMutableDefault<AFGConveyorLiftHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGConveyorLiftHologram::BeginPlay, hg, [](AFGConveyorLiftHologram* self)
 		{
@@ -114,6 +127,9 @@ void FConstructionPreferencesModule::StartupModule() {
 			self->mMaximumHeight = ((float)config.ConveyorLiftHeightMax * 100);
 			self->mJointMesh = nullptr;
 		});
+
+	//float GetBuildGunRange() const;
+
 
 	AFGConveyorBeltHologram* CBH = GetMutableDefault<AFGConveyorBeltHologram>();
 

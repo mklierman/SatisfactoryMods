@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.0",
-	"SemVersion": "1.1.0",
+	"VersionName": "1.1.1",
+	"SemVersion": "1.1.1",
 	"FriendlyName": "Just Pause",
 	"Description": "Pause button goes brrr",
 	"Category": "Modding",
@@ -18,7 +18,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-        	"SemVersion": "^3.4.0",
+        	"SemVersion": "^3.5.0",
 			"Enabled": true
 		}
 	]
