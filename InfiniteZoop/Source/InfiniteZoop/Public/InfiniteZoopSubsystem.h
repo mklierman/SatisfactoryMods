@@ -33,7 +33,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	TMap<APawn*, FZoopAmountStruct> ZoopAmountStructs;
 
-	FCriticalSection* csection;
+	mutable FCriticalSection* csection;
 
 	UPROPERTY(BlueprintReadWrite, replicated, Category = "Zoop Subsystem")
 	int currentZoopAmount = 12;
@@ -49,7 +49,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
 		bool needsUpdate = true;
 
-	void SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop, APawn* owner);
+	void SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop, APawn* owner, FCriticalSection* lockObj);
 	//UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
 	//bool zoopCorners = false;
 

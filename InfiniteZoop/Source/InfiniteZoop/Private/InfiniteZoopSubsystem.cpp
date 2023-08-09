@@ -13,45 +13,47 @@ void AInfiniteZoopSubsystem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(AInfiniteZoopSubsystem, currentZoopAmount);
 }
 
-void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop, APawn* owner)
+void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop, APawn* owner, FCriticalSection* lockObj)
 {
-	FScopeLock scopelock(csection);
-	if (!owner)
+	if (lockObj->TryLock())
 	{
-		ZoopAmountStructs.Remove(owner);
-		return;
-	}
-	FZoopAmountStruct zStruct;
-	if (ZoopAmountStructs.Num() > 0 && ZoopAmountStructs.Contains(owner))
-	{
-		zStruct = ZoopAmountStructs[owner];
-	}
-	zStruct.isFoundation = foundation;
-	if (foundation && verticalZoop)
-	{
-		zStruct.xAmount = -1;
-		zStruct.zAmount = -1;
-		zStruct.yAmount = -1;
-		zStruct.needsUpdate = true;
+		if (!owner)
+		{
+			ZoopAmountStructs.Remove(owner);
+			return;
+		}
+		FZoopAmountStruct zStruct;
+		if (ZoopAmountStructs.Num() > 0 && ZoopAmountStructs.Contains(owner))
+		{
+			zStruct = ZoopAmountStructs[owner];
+		}
+		zStruct.isFoundation = foundation;
+		if (foundation && verticalZoop)
+		{
+			zStruct.xAmount = -1;
+			zStruct.zAmount = -1;
+			zStruct.yAmount = -1;
+			zStruct.needsUpdate = true;
+			ZoopAmountStructs.Add(owner, zStruct);
+			return;
+		}
+		if (x == xAmount && y == yAmount && z == zAmount && foundation == isFoundation)
+		{
+			zStruct.xAmount = -1;
+			zStruct.zAmount = -1;
+			zStruct.yAmount = -1;
+			zStruct.isFoundation = foundation;
+			needsUpdate = false;
+		}
+		else
+		{
+			zStruct.xAmount = x;
+			zStruct.yAmount = y;
+			zStruct.zAmount = z;
+			zStruct.isFoundation = foundation;
+			zStruct.needsUpdate = true;
+		}
 		ZoopAmountStructs.Add(owner, zStruct);
-		return;
+		lockObj->Unlock();
 	}
-	if (x == xAmount && y == yAmount && z == zAmount && foundation == isFoundation)
-	{
-		zStruct.xAmount = -1;
-		zStruct.zAmount = -1;
-		zStruct.yAmount = -1;
-		zStruct.isFoundation = foundation;
-		needsUpdate = false;
-	}
-	else
-	{
-		zStruct.xAmount = x;
-		zStruct.yAmount = y;
-		zStruct.zAmount = z;
-		zStruct.isFoundation = foundation;
-		zStruct.needsUpdate = true;
-	}
-	ZoopAmountStructs.Add(owner, zStruct);
-	scopelock.Unlock();
 }

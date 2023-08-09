@@ -60,4 +60,5 @@ public:
 	void SetSubsystemZoopAmounts(int x, int y, int z, bool isFoundation, UWorld* world, AFGHologram* hologram);
 
 	AInfiniteZoopSubsystem* zoopSubsystem;
+	FCriticalSection* lockObj;
 };

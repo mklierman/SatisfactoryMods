@@ -534,11 +534,14 @@ bool FInfiniteZoopModule::BGSecondaryFire(UFGBuildGunStateBuild* self)
 			{
 				return true;
 			}
-			auto zStruct = FoundationsBeingZooped[foundation];
-			if (zStruct->inScrollMode)
+			if (FoundationsBeingZooped.Contains(foundation))
 			{
-				zStruct->inScrollMode = false;
-				return false;
+				auto zStruct = FoundationsBeingZooped[foundation];
+				if (zStruct->inScrollMode)
+				{
+					zStruct->inScrollMode = false;
+					return false;
+				}
 			}
 		}
 		else if (auto wall = Cast< AFGWallHologram>(hologram))
@@ -573,7 +576,7 @@ bool FInfiniteZoopModule::ValidatePlacementAndCost(AFGHologram* self, class UFGI
 }
 
 void FInfiniteZoopModule::StartupModule() {
-
+	lockObj = new FCriticalSection();
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::OnRep_DesiredZoop, [=](auto& scope, AFGFactoryBuildingHologram* self)
 		{
@@ -639,7 +642,7 @@ void FInfiniteZoopModule::StartupModule() {
 		{
 			if (auto bgsb = Cast< UFGBuildGunStateBuild>(self))
 			{
-				if (!BGSecondaryFire(bgsb))
+				if (bgsb && !BGSecondaryFire(bgsb))
 				{
 					scope.Cancel();
 				}
@@ -892,7 +895,7 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 	}
 	if (!isZoopMode)
 	{
-		zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode, hologram->GetConstructionInstigator());
+		zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
 		return;
 	}
 	int newX = FMath::Abs(x);
@@ -916,7 +919,7 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 		newY = -1;
 	}
 	
-	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, hologram->GetConstructionInstigator());
+	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
 }
 //#pragma optimize("", on)
 
