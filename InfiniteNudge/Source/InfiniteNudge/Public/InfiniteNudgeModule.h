@@ -17,4 +17,7 @@ public:
 	FVector NudgeTowardsWorldDirection(AFGHologram* self, const FVector& Direction);
 
 	float savedNudgeDistance;
+
+	float LeftCtrlNudgeAmount = 20.f;
+	float LeftAltNudgeAmount = 50.f;
 };

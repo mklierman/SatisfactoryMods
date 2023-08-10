@@ -1,34 +1,34 @@
 {
-  "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "1.0.0",
-  "SemVersion": "1.0.0",
-  "FriendlyName": "InfiniteNudge",
-  "Description": "Nudge all the way",
-  "Category": "Modding",
-  "CreatedBy": "SirDigby",
-  "CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
-  "DocsURL": "",
-  "MarketplaceURL": "",
-  "SupportURL": "https://discord.gg/WM5KT7pVu8",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "IsExperimentalVersion": false,
-  "Installed": false,
-  "AcceptsAnyRemoteVersion": false,
-  "Plugins": [
-    {
-      "Name": "SML",
-      "SemVersion": "^3.5.0",
-      "Enabled": true,
-      "IsActive": false
-    }
-  ],
-  "Modules": [
-    {
-      "Name": "InfiniteNudge",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ]
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.1.0",
+	"SemVersion": "1.1.0",
+	"FriendlyName": "Infinite Nudge",
+	"Description": "Nudge all the way",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
+	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"AcceptsAnyRemoteVersion": false,
+	"Plugins": [
+		{
+			"Name": "SML",
+			"SemVersion": "^3.5.0",
+			"Enabled": true,
+			"IsActive": false
+		}
+	],
+	"Modules": [
+		{
+			"Name": "InfiniteNudge",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
 }

@@ -1,11 +1,35 @@
 #include "InfiniteNudgeModule.h"
+#include "InfiniteNudge_ConfigurationStruct.h"
 
 #pragma optimize("", off)
 void FInfiniteNudgeModule::StartupModule() {
-#if !WITH_EDITOR
+
 	AFGHologram* bh = GetMutableDefault<AFGHologram>();
+	//ENudgeFailReason AFGHologram::NudgeHologram(const FVector& NudgeInput, const FHitResult& HitResult){ return ENudgeFailReason(); }
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::NudgeHologram, bh, [=](auto scope, const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
+		{
+			auto hg = const_cast<AFGHologram*>(self);
+			auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
+			if (contr && contr->IsInputKeyDown(EKeys::LeftControl))
+			{
+				hg->mDefaultNudgeDistance = LeftCtrlNudgeAmount;
+			}
+			else if (contr && contr->IsInputKeyDown(EKeys::LeftAlt))
+			{
+				hg->mDefaultNudgeDistance = LeftAltNudgeAmount;
+			}
+			else
+			{
+				hg->mDefaultNudgeDistance = 100.0;
+			}
+		});
+
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGHologram::BeginPlay, bh, [=](AFGHologram* self)
 		{
+			auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig();
+			LeftCtrlNudgeAmount = (float)config.LeftCtrlNudgeAmount;
+			LeftAltNudgeAmount = (float)config.LeftAltNudgeAmount;
+
 			self->mCanNudgeHologram = true;
 			self->mCanLockHologram = true;
 			self->mMaxNudgeDistance = 50000.0;
@@ -35,6 +59,7 @@ void FInfiniteNudgeModule::StartupModule() {
 	//	virtual ENudgeFailReason NudgeTowardsWorldDirection(const FVector & Direction);
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::AddNudgeOffset, bh, [=](auto& scope, AFGHologram* self, const FVector& Direction)
 		{
+			auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig();
 			FVector newVector = FVector(0.0, 0.0, 0.0);
 			auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
 			if (contr && contr->IsInputKeyDown(EKeys::LeftShift) && contr->IsInputKeyDown(EKeys::Up))
@@ -44,11 +69,11 @@ void FInfiniteNudgeModule::StartupModule() {
 				//FVector nV = FVector(0.0, 0.0, 100.0);
 				if (contr->IsInputKeyDown(EKeys::LeftControl))
 				{
-					newVector.Z = newVector.Z / 2;
+					newVector.Z = LeftCtrlNudgeAmount;
 				}
 				else if (contr->IsInputKeyDown(EKeys::LeftAlt))
 				{
-					newVector.Z = newVector.Z / 10;
+					newVector.Z = LeftAltNudgeAmount;
 				}
 				ENudgeFailReason fr = scope(self, newVector);
 				scope.Override(fr);
@@ -61,11 +86,11 @@ void FInfiniteNudgeModule::StartupModule() {
 				//FVector neV = FVector(0.0, 0.0, -100.0);
 				if (contr->IsInputKeyDown(EKeys::LeftControl))
 				{
-					newVector.Z = newVector.Z / 2;
+					newVector.Z = LeftCtrlNudgeAmount * -1;
 				}
 				else if (contr->IsInputKeyDown(EKeys::LeftAlt))
 				{
-					newVector.Z = newVector.Z / 10;
+					newVector.Z = LeftAltNudgeAmount * -1;
 				}
 				ENudgeFailReason fr = scope(self, newVector);
 				scope.Override(fr);
@@ -95,6 +120,8 @@ void FInfiniteNudgeModule::StartupModule() {
 		});
 
 	//virtual ENudgeFailReason NudgeHologram( const FVector& NudgeInput, const FHitResult& HitResult );
+	// 
+	///Hooking this causes weird bugs. Need to find another spot?
 	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::SetNudgeOffset, bh, [=](auto& scope, AFGHologram* self, const FVector& NewNudgeOffset)
 	//	{
 	//		savedNudgeDistance = self->mDefaultNudgeDistance;
@@ -120,6 +147,7 @@ void FInfiniteNudgeModule::StartupModule() {
 	//			self->ScrollRotate(delta, 1);
 	//		}
 	//	});
+#if !WITH_EDITOR
 #endif
 }
 
