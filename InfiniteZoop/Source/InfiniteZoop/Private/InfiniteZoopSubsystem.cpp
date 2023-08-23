@@ -19,7 +19,6 @@ void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool found
 	{
 		if (!owner)
 		{
-			ZoopAmountStructs.Remove(owner);
 			return;
 		}
 		FZoopAmountStruct zStruct;

@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.6.6",
-	"SemVersion": "1.6.6",
+	"VersionName": "1.6.8",
+	"SemVersion": "1.6.8",
 	"FriendlyName": "Infinite Zoop",
 	"Description": "Adds a research tree in the MAM where you can improve your Zoop capacity",
 	"Category": "Modding",

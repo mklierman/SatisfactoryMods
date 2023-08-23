@@ -89,6 +89,7 @@ void ACL_Hologram::ConfigureComponents(AFGBuildable* inBuildable) const
 		auto cl = Cast< ACL_CounterLimiter>(inBuildable);
 		if (cl)
 		{
+            auto beltCustomizationData = mSnappedConveyor->Execute_GetCustomizationData(mSnappedConveyor);
 			TArray< AFGBuildableConveyorBelt* > Belts = AFGBuildableConveyorBelt::Split(mSnappedConveyor, mSnappedConveyorOffset, false);
             if (Belts.Num() > 0)
             {
@@ -116,6 +117,7 @@ void ACL_Hologram::ConfigureComponents(AFGBuildable* inBuildable) const
                             Belt->GetConnection1()->SetConnection(cl->inputConnection);
                         }
                     }
+                    Belt->Execute_SetCustomizationData(Belt, beltCustomizationData);
                 }
             }
 		}

@@ -862,11 +862,8 @@ FVector FInfiniteZoopModule::CalcPivotAxis(const EAxis::Type DesiredAxis, const 
 
 void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFoundation, UWorld* world, AFGHologram* hologram)
 {
-	if (!zoopSubsystem)
-	{
-		USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
-		zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
-	}
+	USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
+	AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
 	bool isZoopMode = false;
 	bool isVerticalMode = false;
 	if (isFoundation)
