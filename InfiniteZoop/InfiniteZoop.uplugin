@@ -1,34 +1,34 @@
 {
-  "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "1.6.1",
-  "SemVersion": "1.6.1",
-  "FriendlyName": "Infinite Zoop",
-  "Description": "Adds a research tree in the MAM where you can improve your Zoop capacity",
-  "Category": "Modding",
-  "CreatedBy": "SirDigby",
-  "CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
-  "DocsURL": "",
-  "MarketplaceURL": "",
-  "SupportURL": "https://discord.gg/WM5KT7pVu8",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "IsExperimentalVersion": false,
-  "Installed": false,
-  "AcceptsAnyRemoteVersion": false,
-  "Plugins": [
-    {
-      "Name": "SML",
-      "SemVersion": "^3.4.1",
-      "Enabled": true,
-      "IsActive": false
-    }
-  ],
-  "Modules": [
-    {
-      "Name": "InfiniteZoop",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ]
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.6.8",
+	"SemVersion": "1.6.8",
+	"FriendlyName": "Infinite Zoop",
+	"Description": "Adds a research tree in the MAM where you can improve your Zoop capacity",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
+	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"AcceptsAnyRemoteVersion": false,
+	"Plugins": [
+		{
+			"Name": "SML",
+			"SemVersion": "^3.5.0",
+			"Enabled": true,
+			"IsActive": false
+		}
+	],
+	"Modules": [
+		{
+			"Name": "InfiniteZoop",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
 }

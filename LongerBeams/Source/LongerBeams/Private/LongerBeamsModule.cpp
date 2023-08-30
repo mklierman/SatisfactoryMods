@@ -39,16 +39,16 @@ void FLongerBeamsModule::StartupModule()
 			}
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::OnBuildModeChanged, hCDO, [=](auto& scope, AFGHologram* self)
-		{
-			if (auto beamhg = Cast<AFGBeamHologram>(self))
-			{
-				if (ScrollingBeams.Contains(beamhg))
-				{
-					ScrollingBeams.Remove(beamhg);
-				}
-			}
-		});
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::OnBuildModeChanged, hCDO, [=](auto& scope, AFGHologram* self, TSubclassOf<UFGHologramBuildModeDescriptor> buildMode)
+	//	{
+	//		if (auto beamhg = Cast<AFGBeamHologram>(self))
+	//		{
+	//			if (ScrollingBeams.Contains(beamhg))
+	//			{
+	//				ScrollingBeams.Remove(beamhg);
+	//			}
+	//		}
+	//	});
 
 	AFGHologram* bhCDO = GetMutableDefault<AFGBeamHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBeamHologram::SetHologramLocationAndRotation, bhCDO, [=](auto& scope, AFGBeamHologram* self, const FHitResult& hitResult)

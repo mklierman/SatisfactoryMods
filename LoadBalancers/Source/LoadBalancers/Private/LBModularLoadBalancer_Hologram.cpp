@@ -76,7 +76,7 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 
 void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)
 {
-	Super::SetScrollMode(EHologramScrollMode::HSM_ROTATE);
+	//Super::SetScrollMode(EHologramScrollMode::HSM_ROTATE);
 	if(GetSnappedBuilding() && Cast<ALBBuild_ModularLoadBalancer>(GetSnappedBuilding()))
 	{
 		auto contr = Cast<APlayerController>(GetConstructionInstigator()->GetController());
@@ -88,7 +88,7 @@ void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)
 		else if (contr && contr->IsInputKeyDown(EKeys::LeftShift))
 		{
 			UE_LOG(LoadBalancers_Log, Display, TEXT("LeftShift"));
-			Super::SetScrollMode(EHologramScrollMode::HSM_RAISE_LOWER);
+			//Super::SetScrollMode(EHologramScrollMode::HSM_RAISE_LOWER);
 			Super::Scroll(delta);
 		}
 		else

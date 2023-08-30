@@ -1,8 +1,8 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.8.2",
-  "SemVersion": "1.8.2",
+  "VersionName": "1.8.3",
+  "SemVersion": "1.8.3",
   "FriendlyName": "Modular Load Balancers",
   "Description": "Modular buildable that can be snapped together to form load balancers of any size",
   "Category": "Modding",
@@ -19,9 +19,8 @@
   "Plugins": [
     {
       "Name": "SML",
-      "SemVersion": "^3.4.1",
-      "Enabled": true,
-      "IsActive": false
+      "SemVersion": "^3.5.0",
+      "Enabled": true
     }
   ],
   "Modules": [

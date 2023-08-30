@@ -166,7 +166,7 @@ void ASSP_Subsystem::ShowInitialPaths(AActor* actor)
 	UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGDrivingTargetList::StaticClass(), FoundActors);
 	if (HasAuthority() && FoundActors.Num() > 0)
 	{
-		for (auto actor : FoundActors)
+		for (AActor* actor : FoundActors)
 		{
 			auto tpList = Cast< AFGDrivingTargetList>(actor);
 			if (tpList && tpList->mIsPathVisible)
