@@ -1,0 +1,34 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0.0",
+  "SemVersion": "1.0.0",
+  "FriendlyName": "Zippier",
+  "Description": "Configure Zipline speeds",
+  "Category": "Modding",
+  "CreatedBy": "SirDigby",
+  "CreatedByURL": "",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": false,
+  "AcceptsAnyRemoteVersion": false,
+  "Plugins": [
+    {
+      "Name": "SML",
+      "SemVersion": "^3.5.0",
+      "Enabled": true,
+      "IsActive": false
+    }
+  ],
+  "Modules": [
+    {
+      "Name": "Zippier",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}
