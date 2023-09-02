@@ -71,15 +71,24 @@ void ACL_CounterLimiter::Dismantle_Implementation()
 					auto belt2 = Cast< AFGBuildableConveyorBelt>(belt2Conn->GetOuterBuildable());
 					if (belt1 && belt2)
 					{
-						auto belt1CustomizationData = belt1->Execute_GetCustomizationData(belt1);
-						TArray< AFGBuildableConveyorBelt*> belts;
-						belts.Add(belt1);
-						belts.Add(belt2);
-						belt1Conn->ClearConnection();
-						belt2Conn->ClearConnection();
-						belt1Conn->SetConnection(belt2Conn);
-						auto newBelt = AFGBuildableConveyorBelt::Merge(belts);
-						newBelt->Execute_SetCustomizationData(newBelt, belt1CustomizationData);
+						if (belt1->GetSpeed() == belt2->GetSpeed())
+						{
+							auto belt1CustomizationData = belt1->Execute_GetCustomizationData(belt1);
+							TArray< AFGBuildableConveyorBelt*> belts;
+							belts.Add(belt1);
+							belts.Add(belt2);
+							belt1Conn->ClearConnection();
+							belt2Conn->ClearConnection();
+							belt1Conn->SetConnection(belt2Conn);
+							auto newBelt = AFGBuildableConveyorBelt::Merge(belts);
+							newBelt->Execute_SetCustomizationData(newBelt, belt1CustomizationData);
+						}
+						else
+						{
+							belt1Conn->ClearConnection();
+							belt2Conn->ClearConnection();
+							belt1Conn->SetConnection(belt2Conn);
+						}
 					}
 				}
 			}
