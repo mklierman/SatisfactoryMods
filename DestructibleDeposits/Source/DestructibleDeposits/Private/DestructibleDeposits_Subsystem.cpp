@@ -4,14 +4,14 @@
 
 ADestructibleDeposits_Subsystem::ADestructibleDeposits_Subsystem()
 {
-#if !WITH_EDITOR
-	RadialDamage.BindUFunction(this, "OnTakeRadialDamage");
-	AFGResourceDeposit* rdCDO = GetMutableDefault<AFGResourceDeposit>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGResourceDeposit::BeginPlay, rdCDO, [=](auto& scope, AFGResourceDeposit* self)
-		{
-			self->OnTakeRadialDamage.Add(RadialDamage);
-		});
-#endif
+//#if !WITH_EDITOR
+//	RadialDamage.BindUFunction(this, "OnTakeRadialDamage");
+//	AFGResourceDeposit* rdCDO = GetMutableDefault<AFGResourceDeposit>();
+//	SUBSCRIBE_METHOD_VIRTUAL(AFGResourceDeposit::BeginPlay, rdCDO, [=](auto& scope, AFGResourceDeposit* self)
+//		{
+//			self->OnTakeRadialDamage.Add(RadialDamage);
+//		});
+//#endif
 }
 
 void ADestructibleDeposits_Subsystem::OnTakeRadialDamage(AActor* actor)
