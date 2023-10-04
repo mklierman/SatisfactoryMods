@@ -32,7 +32,7 @@ void FInfiniteNudgeModule::StartupModule() {
 
 			self->mCanNudgeHologram = true;
 			self->mCanLockHologram = true;
-			self->mMaxNudgeDistance = 50000.0;
+			self->mMaxNudgeDistance = 5000000.0;
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::CanNudgeHologram, bh, [=](auto& scope, const AFGHologram* self)
