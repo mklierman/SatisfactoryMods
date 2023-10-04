@@ -16,6 +16,8 @@ public:
 
 	FVector NudgeTowardsWorldDirection(AFGHologram* self, const FVector& Direction);
 
+	void RotateLockedHologram(AFGHologram* self, int32 delta);
+
 	float savedNudgeDistance;
 
 	float LeftCtrlNudgeAmount = 20.f;

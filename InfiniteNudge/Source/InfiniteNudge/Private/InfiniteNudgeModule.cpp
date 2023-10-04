@@ -1,7 +1,7 @@
 #include "InfiniteNudgeModule.h"
 #include "InfiniteNudge_ConfigurationStruct.h"
 
-#pragma optimize("", off)
+//#pragma optimize("", off)
 void FInfiniteNudgeModule::StartupModule() {
 
 	AFGHologram* bh = GetMutableDefault<AFGHologram>();
@@ -140,13 +140,13 @@ void FInfiniteNudgeModule::StartupModule() {
 	//		}
 	//	});
 
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, bh, [=](auto& scope, AFGHologram* self, int32 delta)
-	//	{
-	//		if (self->IsHologramLocked())
-	//		{
-	//			self->ScrollRotate(delta, 1);
-	//		}
-	//	});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, bh, [=](auto& scope, AFGHologram* self, int32 delta)
+		{
+			if (self->IsHologramLocked())
+			{
+				RotateLockedHologram(self, delta);
+			}
+		});
 #if !WITH_EDITOR
 #endif
 }
@@ -155,7 +155,38 @@ FVector FInfiniteNudgeModule::NudgeTowardsWorldDirection(AFGHologram* self, cons
 {
 	return Direction;
 }
-#pragma optimize("", on)
+
+void FInfiniteNudgeModule::RotateLockedHologram(AFGHologram* self, int32 delta)
+{
+	auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
+	//auto newRotation = self->GetActorRotation();
+	auto newRotation = FRotator(0,0,0);
+	int rotationAmount = 15 * delta;
+
+	// Set Fine Rotation
+	if (contr && contr->IsInputKeyDown(EKeys::LeftControl) || contr->IsInputKeyDown(EKeys::RightControl))
+	{
+		rotationAmount = 1 * delta;
+	}
+
+	if (contr->IsInputKeyDown(EKeys::LeftShift))
+	{
+		//Rotate Pitch
+		newRotation.Pitch = newRotation.Pitch + rotationAmount;
+	}
+	else if (contr->IsInputKeyDown(EKeys::RightShift))
+	{
+		//Rotate Roll
+		newRotation.Roll = newRotation.Roll + rotationAmount;
+	}
+	else
+	{
+		//Rotate Yaw
+		newRotation.Yaw = newRotation.Yaw + rotationAmount;
+	}
+	self->AddActorLocalRotation(newRotation);
+}
+//#pragma optimize("", on)
 
 
 IMPLEMENT_GAME_MODULE(FInfiniteNudgeModule, InfiniteNudge);
