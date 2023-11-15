@@ -5,6 +5,7 @@
 #include "CL_RCO.h"
 #include "FGIconLibrary.h"
 #include "Buildables/FGBuildableConveyorBelt.h"
+#include <Net/UnrealNetwork.h>
 
 //DEFINE_LOG_CATEGORY(CounterLimiter_Log);
 
@@ -174,14 +175,14 @@ bool ACL_CounterLimiter::Factory_GrabOutput_Implementation(UFGFactoryConnectionC
 				UFGInventoryLibrary::BreakInventoryStack(Stack, numItems, out_item);
 				ItemCount++;
 
-				if (mItemCounts.Contains(out_item.ItemClass))
+				if (mItemCounts.Contains(out_item.GetItemClass()))
 				{
-					int32 newValue = *mItemCounts.Find(out_item.ItemClass) + 1;
-					mItemCounts[out_item.ItemClass] = newValue;
+					int32 newValue = *mItemCounts.Find(out_item.GetItemClass()) + 1;
+					mItemCounts[out_item.GetItemClass()] = newValue;
 				}
 				else
 				{
-					mItemCounts.Add(out_item.ItemClass, 1);
+					mItemCounts.Add(out_item.GetItemClass(), 1);
 				}
 			}
 		}

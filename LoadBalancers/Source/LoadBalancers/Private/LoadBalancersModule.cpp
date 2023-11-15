@@ -20,10 +20,10 @@ void GameModePostLogin(CallScope<void(*)(AFGGameMode*, APlayerController*)>& sco
 }
 
 void FLoadBalancersModule::StartupModule() {
-#if !WITH_EDITOR
 	// Hooking to register RCOs
+#if !WITH_EDITOR
 	AFGGameMode* LocalGameMode = GetMutableDefault<AFGGameMode>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, &GameModePostLogin)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, &GameModePostLogin);
 		UFGAttachmentPointType* LocalAP = GetMutableDefault<UFGAttachmentPointType>();
 		SUBSCRIBE_METHOD_VIRTUAL(UFGAttachmentPointType::CanAttach, LocalAP, [=](auto& scope, const UFGAttachmentPointType* self, const struct FFGAttachmentPoint& point, const struct FFGAttachmentPoint& targetPoint)
 			{

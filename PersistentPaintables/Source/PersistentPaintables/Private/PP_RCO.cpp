@@ -1,4 +1,5 @@
 #include "PP_RCO.h"
+#include <Net/UnrealNetwork.h>
 
 void UPP_RCO::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

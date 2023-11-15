@@ -10,14 +10,16 @@ struct FNoHoverPackDrift_ConfigStruct {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite)
-    float MinSpeed;
+    float MinSpeed {};
 
     /* Retrieves active configuration value and returns object of this struct containing it */
-    static FNoHoverPackDrift_ConfigStruct GetActiveConfig() {
+    static FNoHoverPackDrift_ConfigStruct GetActiveConfig(UObject* WorldContext) {
         FNoHoverPackDrift_ConfigStruct ConfigStruct{};
         FConfigId ConfigId{"NoHoverPackDrift", ""};
-        UConfigManager* ConfigManager = GEngine->GetEngineSubsystem<UConfigManager>();
-        ConfigManager->FillConfigurationStruct(ConfigId, FDynamicStructInfo{FNoHoverPackDrift_ConfigStruct::StaticStruct(), &ConfigStruct});
+        if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContext, EGetWorldErrorMode::ReturnNull)) {
+            UConfigManager* ConfigManager = World->GetGameInstance()->GetSubsystem<UConfigManager>();
+            ConfigManager->FillConfigurationStruct(ConfigId, FDynamicStructInfo{FNoHoverPackDrift_ConfigStruct::StaticStruct(), &ConfigStruct});
+        }
         return ConfigStruct;
     }
 };

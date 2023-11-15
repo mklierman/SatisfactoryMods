@@ -37,7 +37,7 @@ void FPipeTunerModule::StartupModule() {
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildablePipeline::BeginPlay, plCDO, [=](AFGBuildablePipeline* self)
 		{
 
-			auto ModConfig = FPipeTuner_ConfigStruct::GetActiveConfig();
+			FPipeTuner_ConfigStruct ModConfig = FPipeTuner_ConfigStruct::GetActiveConfig(self->GetWorld());
 			float mk2mult = ModConfig.Mk2PipeVolumeMultiplier;
 			float mk1mult = ModConfig.Mk1PipeVolumeMultiplier;
 			FFluidBox::OVERFILL_USED_FOR_PRESSURE_PCT = ModConfig.OverfillPressurePercent;
@@ -58,7 +58,7 @@ void FPipeTunerModule::StartupModule() {
 		});
 
 	AFGGameMode* LocalGameMode = GetMutableDefault<AFGGameMode>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, &GameModePostLogin)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, &GameModePostLogin);
 
 
 	AFGPipelineAttachmentHologram* pah = GetMutableDefault<AFGPipelineAttachmentHologram>();
@@ -67,7 +67,7 @@ void FPipeTunerModule::StartupModule() {
 			auto pumphg = Cast< AFGPipelinePumpHologram>(self);
 			if (pumphg)
 			{
-				auto ModConfig = FPipeTuner_ConfigStruct::GetActiveConfig();
+				FPipeTuner_ConfigStruct ModConfig = FPipeTuner_ConfigStruct::GetActiveConfig(self->GetWorld());
 				pumphg->mMaxTraversalDistance = ModConfig.PumpTraversalDistance * 100;
 				pumphg->mMaxJunctionRecursions = ModConfig.PumpJunctionRecursions;
 				pumphg->mOffsetEstimationBinaryDivisionCount = ModConfig.PumpOffsetEstimationCount;

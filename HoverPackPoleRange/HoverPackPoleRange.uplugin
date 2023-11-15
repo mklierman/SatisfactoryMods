@@ -1,8 +1,8 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.0.5",
-  "SemVersion": "1.0.5",
+  "VersionName": "1.0.6",
+  "SemVersion": "1.0.6",
   "FriendlyName": "Expanded Hover Range",
   "Description": "Higher tier Power Poles give the Hover Pack a larger range",
   "Category": "Modding",
@@ -18,7 +18,7 @@
   "Plugins": [
     {
       "Name": "SML",
-      "SemVersion": "^3.5.0",
+      "SemVersion": "^3.6.0",
       "Enabled": true
     }
   ],

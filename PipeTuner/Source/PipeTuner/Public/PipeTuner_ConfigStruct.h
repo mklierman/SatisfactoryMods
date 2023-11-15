@@ -10,35 +10,37 @@ struct FPipeTuner_ConfigStruct {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite)
-    float Mk1PipeVolumeMultiplier;
+    float Mk1PipeVolumeMultiplier {};
 
     UPROPERTY(BlueprintReadWrite)
-    float Mk2PipeVolumeMultiplier;
+    float Mk2PipeVolumeMultiplier {};
 
     UPROPERTY(BlueprintReadWrite)
-    float OverfillPercent;
+    float OverfillPercent {};
 
     UPROPERTY(BlueprintReadWrite)
-    float OverfillPressurePercent;
+    float OverfillPressurePercent {};
 
     UPROPERTY(BlueprintReadWrite)
-    float PressureLossPercent;
+    float PressureLossPercent {};
 
     UPROPERTY(BlueprintReadWrite)
-    int32 PumpTraversalDistance;
+    int32 PumpTraversalDistance {};
 
     UPROPERTY(BlueprintReadWrite)
-    int32 PumpJunctionRecursions;
+    int32 PumpJunctionRecursions {};
 
     UPROPERTY(BlueprintReadWrite)
-    int32 PumpOffsetEstimationCount;
+    int32 PumpOffsetEstimationCount {};
 
     /* Retrieves active configuration value and returns object of this struct containing it */
-    static FPipeTuner_ConfigStruct GetActiveConfig() {
+    static FPipeTuner_ConfigStruct GetActiveConfig(UObject* WorldContext) {
         FPipeTuner_ConfigStruct ConfigStruct{};
         FConfigId ConfigId{"PipeTuner", ""};
-        UConfigManager* ConfigManager = GEngine->GetEngineSubsystem<UConfigManager>();
-        ConfigManager->FillConfigurationStruct(ConfigId, FDynamicStructInfo{FPipeTuner_ConfigStruct::StaticStruct(), &ConfigStruct});
+        if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContext, EGetWorldErrorMode::ReturnNull)) {
+            UConfigManager* ConfigManager = World->GetGameInstance()->GetSubsystem<UConfigManager>();
+            ConfigManager->FillConfigurationStruct(ConfigId, FDynamicStructInfo{FPipeTuner_ConfigStruct::StaticStruct(), &ConfigStruct});
+        }
         return ConfigStruct;
     }
 };

@@ -60,7 +60,7 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 			}
 		}
 
-		auto modRegistry = AModContentRegistry::Get(self->GetWorld());
+		auto modRegistry = UModContentRegistry::Get(self->GetWorld());
 		if (!modRegistry->IsRecipeVanilla(snappedBuildable->GetBuiltWithRecipe()))
 		{
 			return;
@@ -68,7 +68,7 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 		
 		self->ResetConstructDisqualifiers();
 		retflag = false;
-		auto offset = FDTS_ConfigStruct::GetActiveConfig().SnapOffset * 100.f;
+		auto offset = FDTS_ConfigStruct::GetActiveConfig(self->GetWorld()).SnapOffset * 100.f;
 
 		auto compLocation = self->mSnappedConection->GetConnectorLocation();
 		

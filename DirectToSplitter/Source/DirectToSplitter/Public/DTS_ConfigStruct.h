@@ -10,14 +10,16 @@ struct FDTS_ConfigStruct {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite)
-    float SnapOffset;
+    float SnapOffset {};
 
     /* Retrieves active configuration value and returns object of this struct containing it */
-    static FDTS_ConfigStruct GetActiveConfig() {
+    static FDTS_ConfigStruct GetActiveConfig(UObject* WorldContext) {
         FDTS_ConfigStruct ConfigStruct{};
         FConfigId ConfigId{"DirectToSplitter", ""};
-        UConfigManager* ConfigManager = GEngine->GetEngineSubsystem<UConfigManager>();
-        ConfigManager->FillConfigurationStruct(ConfigId, FDynamicStructInfo{FDTS_ConfigStruct::StaticStruct(), &ConfigStruct});
+        if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContext, EGetWorldErrorMode::ReturnNull)) {
+            UConfigManager* ConfigManager = World->GetGameInstance()->GetSubsystem<UConfigManager>();
+            ConfigManager->FillConfigurationStruct(ConfigId, FDynamicStructInfo{FDTS_ConfigStruct::StaticStruct(), &ConfigStruct});
+        }
         return ConfigStruct;
     }
 };

@@ -26,35 +26,35 @@ void AHPPR_Subsystem::Loggit(FString myString)
 
 void AHPPR_Subsystem::Mk1Updated()
 {
-	auto ModConfig = FHPPR_ConfigStruct::GetActiveConfig();
+	auto ModConfig = FHPPR_ConfigStruct::GetActiveConfig(this->GetWorld());
 	mMk1Range = ModConfig.Mk1;
 	//Loggit("mk1");
 }
 
 void AHPPR_Subsystem::Mk2Updated()
 {
-	auto ModConfig = FHPPR_ConfigStruct::GetActiveConfig();
+	auto ModConfig = FHPPR_ConfigStruct::GetActiveConfig(this->GetWorld());
 	mMk2Range = ModConfig.Mk2;
 	//Loggit("mk2");
 }
 
 void AHPPR_Subsystem::Mk3Updated()
 {
-	auto ModConfig = FHPPR_ConfigStruct::GetActiveConfig();
+	auto ModConfig = FHPPR_ConfigStruct::GetActiveConfig(this->GetWorld());
 	mMk3Range = ModConfig.Mk3;
 	//Loggit("mk3");
 }
 
 void AHPPR_Subsystem::RailsUpdated()
 {
-	auto ModConfig = FHPPR_ConfigStruct::GetActiveConfig();
+	auto ModConfig = FHPPR_ConfigStruct::GetActiveConfig(this->GetWorld());
 	mRailRange = ModConfig.Rails;
 	//Loggit("rails");
 }
 
 void AHPPR_Subsystem::EverythingElseUpdated()
 {
-	auto ModConfig = FHPPR_ConfigStruct::GetActiveConfig();
+	auto ModConfig = FHPPR_ConfigStruct::GetActiveConfig(this->GetWorld());
 	mElseRange = ModConfig.EverythingElse;
 	//Loggit("else");
 }
@@ -64,16 +64,16 @@ void AHPPR_Subsystem::SetConfigValues()
 	debugLogging = true;
 	//Loggit("SetConfigValues");
 
-	auto ModConfig = FHPPR_ConfigStruct::GetActiveConfig();
+	auto ModConfig = FHPPR_ConfigStruct::GetActiveConfig(this->GetWorld());
 	mMk1Range = ModConfig.Mk1;
 	mMk2Range = ModConfig.Mk2;
 	mMk3Range = ModConfig.Mk3;
 	mRailRange = ModConfig.Rails;
 	mElseRange = ModConfig.EverythingElse;
 
-	UConfigManager* ConfigManager = GEngine->GetEngineSubsystem<UConfigManager>();
-	FConfigId ConfigId{ "HoverPackPoleRange", "" };
-	auto Config = ConfigManager->GetConfigurationById(ConfigId);
+	//UConfigManager* ConfigManager = GEngine->GetEngineSubsystem<UConfigManager>();
+	//FConfigId ConfigId{ "HoverPackPoleRange", "" };
+	//auto Config = ConfigManager->GetConfigurationById(ConfigId);
 	//TODO: Fix this
 	//auto ConfigProperty = URuntimeBlueprintFunctionLibrary::GetModConfigurationPropertyByClass(Config);
 	//auto CPSection = Cast<UConfigPropertySection>(ConfigProperty);

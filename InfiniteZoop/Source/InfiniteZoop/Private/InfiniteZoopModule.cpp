@@ -495,6 +495,12 @@ void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AAct
 			//zStruct->Y = 0;
 			//zStruct->Z = 0;
 			FoundationsBeingZooped[self] = zStruct;
+
+			//auto buildClass = Cast<AFGBuildable>(self->GetBuildClass());
+			//bool savedValue = buildClass->ShouldSkipBuildEffect();
+			//buildClass->mSkipBuildEffect = true;
+			//Run construct
+			//buildClass->mSkipBuildEffect = savedValue;
 		}
 	}
 }

@@ -1,4 +1,5 @@
 #include "InfiniteZoopSubsystem.h"
+#include <Net/UnrealNetwork.h>
 
 AInfiniteZoopSubsystem::AInfiniteZoopSubsystem()
 {

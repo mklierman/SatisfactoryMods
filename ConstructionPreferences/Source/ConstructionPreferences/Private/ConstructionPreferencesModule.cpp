@@ -19,40 +19,41 @@
 #include "FGBuildableSubsystem.h"
 #include "FGCharacterPlayer.h"
 #include "Equipment/FGBuildGun.h"
+#include "Hologram/FGBlueprintHologram.h"
 
 DEFINE_LOG_CATEGORY(LogConstructionPreferences);
 
-void PrimaryFire(CallScope<void(*)(UFGBuildGunStateBuild*)>& scope, UFGBuildGunStateBuild* gm)
-{
-	UE_LOG(LogConstructionPreferences, Display, TEXT("UFGBuildGunStateBuild::PrimaryFire_Implementation"));
-
-	auto owner = Cast<AFGCharacterPlayer>(gm->GetBuildGun()->GetOwner());
-	if (owner)
-	{
-		auto locControlled = owner->IsLocallyControlled();
-		auto upgActor = gm->mUpgradedActor;
-		auto mHologram = gm->mHologram;
-		if (mHologram)
-		{
-			auto buildGun = gm->GetBuildGun();
-			auto inventory = buildGun->GetInventory();
-			mHologram->ValidatePlacementAndCost(inventory);
-			if (mHologram->CanTakeNextBuildStep())
-			{
-				auto canDoMultiStep = mHologram->DoMultiStepPlacement(false);
-				if (locControlled && canDoMultiStep)
-				{
-					UE_LOG(LogConstructionPreferences, Display, TEXT("DoMultiStep"));
-				}
-			}
-		}
-	}
-}
+//void PrimaryFire(CallScope<void(*)(UFGBuildGunStateBuild*)>& scope, UFGBuildGunStateBuild* gm)
+//{
+//	UE_LOG(LogConstructionPreferences, Display, TEXT("UFGBuildGunStateBuild::PrimaryFire_Implementation"));
+//
+//	auto owner = Cast<AFGCharacterPlayer>(gm->GetBuildGun()->GetOwner());
+//	if (owner)
+//	{
+//		auto locControlled = owner->IsLocallyControlled();
+//		auto upgActor = gm->mUpgradedActor;
+//		auto mHologram = gm->mHologram;
+//		if (mHologram)
+//		{
+//			auto buildGun = gm->GetBuildGun();
+//			auto inventory = buildGun->GetInventory();
+//			mHologram->ValidatePlacementAndCost(inventory);
+//			if (mHologram->CanTakeNextBuildStep())
+//			{
+//				auto canDoMultiStep = mHologram->DoMultiStepPlacement(false);
+//				if (locControlled && canDoMultiStep)
+//				{
+//					UE_LOG(LogConstructionPreferences, Display, TEXT("DoMultiStep"));
+//				}
+//			}
+//		}
+//	}
+//}
 
 //#pragma optimize("", off)
 float FConstructionPreferencesModule::GetUseDistance(AFGCharacterPlayer* self)
 {
-	FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
+	FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig(self->GetWorld());
 	float reachDist = config.ReachDistance;
 	if (reachDist <= 250.f) //250 is default
 	{
@@ -108,7 +109,7 @@ void FConstructionPreferencesModule::StartupModule() {
 
 	SUBSCRIBE_METHOD(AFGBuildGun::GetBuildGunRange, [=](auto& scope, const AFGBuildGun* self)
 		{
-			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
+			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig(self->GetWorld());
 			float reachDist = config.ReachDistance;
 			auto bg = const_cast<AFGBuildGun*>(self);
 			auto defaultRange = bg->GetDefaultBuildGunRange();
@@ -121,12 +122,23 @@ void FConstructionPreferencesModule::StartupModule() {
 	AFGConveyorLiftHologram* hg = GetMutableDefault<AFGConveyorLiftHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGConveyorLiftHologram::BeginPlay, hg, [](AFGConveyorLiftHologram* self)
 		{
-			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
+			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig(self->GetWorld());
 			self->mStepHeight = ((float)config.ConveyorLiftStep * 100);
 			self->mMinimumHeight = ((float)config.ConveyorLiftHeight * 100);
 			self->mMaximumHeight = ((float)config.ConveyorLiftHeightMax * 100);
 			self->mJointMesh = nullptr;
 		});
+
+
+#endif
+	//AFGBlueprintHologram* bphg = GetMutableDefault<AFGBlueprintHologram>();
+	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBlueprintHologram::Construct, bphg, [](AActor* returnValue, AFGBlueprintHologram* self, TArray< AActor* >& out_children, FNetConstructionID NetConstructionID)
+	//	{
+	//		for (auto child : out_children)
+	//		{
+	//			child->Destroy();
+	//		}
+	//	});
 
 	//float GetBuildGunRange() const;
 
@@ -224,7 +236,6 @@ void FConstructionPreferencesModule::StartupModule() {
 //				}
 //			}
 //		});
-#endif
 	//-mSnapConnection	0x000002911e891f00 (Name = SnapOnly0)	UFGFactoryConnectionComponent *
 
 	//SUBSCRIBE_METHOD(AFGPoleHologram::SetPoleHeight, [](auto& scope, AFGPoleHologram* self, float height)

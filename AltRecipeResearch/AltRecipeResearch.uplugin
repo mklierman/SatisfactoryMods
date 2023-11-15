@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.2",
-	"SemVersion": "1.0.2",
+	"VersionName": "1.0.3",
+	"SemVersion": "1.0.3",
 	"FriendlyName": "Alternate Recipe Research",
 	"Description": "Adds research trees to the MAM where you can research Alternate Recipes",
 	"Category": "Modding",
@@ -26,7 +26,7 @@
 		[
 			{
 				"Name": "SML",
-				"SemVersion": "^3.5.0",
+				"SemVersion": "^3.6.0",
 				"Enabled": true
 			}
 		]

@@ -15,7 +15,7 @@ void FZippierModule::StartupModule() {
 
 void FZippierModule::SetZiplineStuff(UFGCharacterMovementComponent* movementComp)
 {
-	FZippier_ConfigStruct config = FZippier_ConfigStruct::GetActiveConfig();
+	auto config = FZippier_ConfigStruct::GetActiveConfig(movementComp->GetWorld());
 	movementComp->mZiplineSpeed = config.ZiplineBaseSpeed;
 	movementComp->mZiplineSprintSpeed = config.ZiplineSprintSpeed;
 	movementComp->mZiplineContinuousTravelMaxAngle = config.ZiplineCheckAngle;

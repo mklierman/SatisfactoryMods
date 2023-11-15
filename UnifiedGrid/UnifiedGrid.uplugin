@@ -1,8 +1,8 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.0.12",
-  "SemVersion": "1.0.12",
+  "VersionName": "1.0.13",
+  "SemVersion": "1.0.13",
   "FriendlyName": "UnifiedGrid",
   "Description": "Easily build foundations from anywhere on the map that align with each other",
   "Category": "Modding",
@@ -18,7 +18,7 @@
   "Plugins": [
     {
       "Name": "SML",
-      "SemVersion": "^3.5.0",
+      "SemVersion": "^3.6.0",
       "Enabled": true
     }
   ],

@@ -17,15 +17,15 @@ void FNoRefundsModule::StartupModule() {
 	//	});
 
 
-	SUBSCRIBE_METHOD_AFTER(UFGFoliageLibrary::CheckInventorySpaceAndGetStacks, [=](auto& scope, AFGCharacterPlayer* character, UHierarchicalInstancedStaticMeshComponent* meshComponent, TArrayView< uint32 > randomSeeds, TArray<struct FInventoryStack>& out_inventoryStacks)
-		{
-			auto config = FNR_ConfigStruct::GetActiveConfig();
-			bool shouldPreventFoliage = config.Foliage;
-			if (shouldPreventFoliage)
-			{
-				out_inventoryStacks.Empty();
-			}
-		});
+	//SUBSCRIBE_METHOD_AFTER(UFGFoliageLibrary::CheckInventorySpaceAndGetStacks, [=](auto& scope, AFGCharacterPlayer* character, UHierarchicalInstancedStaticMeshComponent* meshComponent, TArrayView< uint32 > randomSeeds, TArray<struct FInventoryStack>& out_inventoryStacks)
+	//	{
+	//		auto config = FNR_ConfigStruct::GetActiveConfig();
+	//		bool shouldPreventFoliage = config.Foliage;
+	//		if (shouldPreventFoliage)
+	//		{
+	//			out_inventoryStacks.Empty();
+	//		}
+	//	});
 #endif
 }
 

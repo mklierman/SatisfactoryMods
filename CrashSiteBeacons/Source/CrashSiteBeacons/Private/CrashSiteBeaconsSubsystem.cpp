@@ -113,7 +113,7 @@ void OnDropPodOpen(CallScope<void(*)(AFGDropPod*)>& scope, AFGDropPod* DropPod)
 void ACrashSiteBeaconsSubSystem::HookCrashSites()
 {
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD(AFGDropPod::Open, &OnDropPodOpen)
+	SUBSCRIBE_METHOD(AFGDropPod::Open, &OnDropPodOpen);
 #endif
 }
 

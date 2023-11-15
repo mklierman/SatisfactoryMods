@@ -54,7 +54,6 @@ void APersistentPaintablesCppSubSystem::HookPipeNetwork()
 	if (HasAuthority())
 	{
 #if !WITH_EDITOR
-#endif
 		//void AddFluidIntegrant(class IFGFluidIntegrantInterface* fluidIntegrant);
 		//AFGBuildablePipeline* BuildablePipeline = GetMutableDefault<AFGBuildablePipeline>();
 		SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::UpdateFluidDescriptor, [=](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
@@ -91,6 +90,7 @@ void APersistentPaintablesCppSubSystem::HookPipeNetwork()
 					//this->UpdateColor(self);
 				}
 			});
+#endif
 	}
 }
 

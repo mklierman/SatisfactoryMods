@@ -10,26 +10,28 @@ struct FZippier_ConfigStruct {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite)
-    float ZiplineBaseSpeed;
+    float ZiplineBaseSpeed {};
 
     UPROPERTY(BlueprintReadWrite)
-    float ZiplineSprintSpeed;
+    float ZiplineSprintSpeed {};
 
     UPROPERTY(BlueprintReadWrite)
-    float ZiplineUpSpeedMult;
+    float ZiplineUpSpeedMult {};
 
     UPROPERTY(BlueprintReadWrite)
-    float ZiplineDownSpeedMult;
+    float ZiplineDownSpeedMult {};
 
     UPROPERTY(BlueprintReadWrite)
-    float ZiplineCheckAngle;
+    float ZiplineCheckAngle {};
 
     /* Retrieves active configuration value and returns object of this struct containing it */
-    static FZippier_ConfigStruct GetActiveConfig() {
+    static FZippier_ConfigStruct GetActiveConfig(UObject* WorldContext) {
         FZippier_ConfigStruct ConfigStruct{};
         FConfigId ConfigId{"Zippier", ""};
-        UConfigManager* ConfigManager = GEngine->GetEngineSubsystem<UConfigManager>();
-        ConfigManager->FillConfigurationStruct(ConfigId, FDynamicStructInfo{FZippier_ConfigStruct::StaticStruct(), &ConfigStruct});
+        if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContext, EGetWorldErrorMode::ReturnNull)) {
+            UConfigManager* ConfigManager = World->GetGameInstance()->GetSubsystem<UConfigManager>();
+            ConfigManager->FillConfigurationStruct(ConfigId, FDynamicStructInfo{FZippier_ConfigStruct::StaticStruct(), &ConfigStruct});
+        }
         return ConfigStruct;
     }
 };

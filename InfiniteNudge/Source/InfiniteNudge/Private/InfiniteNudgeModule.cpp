@@ -4,6 +4,7 @@
 //#pragma optimize("", off)
 void FInfiniteNudgeModule::StartupModule() {
 
+#if !WITH_EDITOR
 	AFGHologram* bh = GetMutableDefault<AFGHologram>();
 	//ENudgeFailReason AFGHologram::NudgeHologram(const FVector& NudgeInput, const FHitResult& HitResult){ return ENudgeFailReason(); }
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::NudgeHologram, bh, [=](auto scope, const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
@@ -26,7 +27,7 @@ void FInfiniteNudgeModule::StartupModule() {
 
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGHologram::BeginPlay, bh, [=](AFGHologram* self)
 		{
-			auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig();
+			auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
 			LeftCtrlNudgeAmount = (float)config.LeftCtrlNudgeAmount;
 			LeftAltNudgeAmount = (float)config.LeftAltNudgeAmount;
 
@@ -59,7 +60,7 @@ void FInfiniteNudgeModule::StartupModule() {
 	//	virtual ENudgeFailReason NudgeTowardsWorldDirection(const FVector & Direction);
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::AddNudgeOffset, bh, [=](auto& scope, AFGHologram* self, const FVector& Direction)
 		{
-			auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig();
+			auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
 			FVector newVector = FVector(0.0, 0.0, 0.0);
 			auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
 			if (contr && contr->IsInputKeyDown(EKeys::LeftShift) && contr->IsInputKeyDown(EKeys::Up))
@@ -147,7 +148,6 @@ void FInfiniteNudgeModule::StartupModule() {
 				RotateLockedHologram(self, delta);
 			}
 		});
-#if !WITH_EDITOR
 #endif
 }
 
@@ -164,7 +164,7 @@ void FInfiniteNudgeModule::RotateLockedHologram(AFGHologram* self, int32 delta)
 	int rotationAmount = 15 * delta;
 
 	// Set Fine Rotation
-	if (contr && contr->IsInputKeyDown(EKeys::LeftControl) || contr->IsInputKeyDown(EKeys::RightControl))
+	if (contr && (contr->IsInputKeyDown(EKeys::LeftControl) || contr->IsInputKeyDown(EKeys::RightControl)))
 	{
 		rotationAmount = 1 * delta;
 	}

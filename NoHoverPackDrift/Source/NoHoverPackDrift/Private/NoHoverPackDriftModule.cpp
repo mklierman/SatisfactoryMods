@@ -21,7 +21,7 @@ void FNoHoverPackDriftModule::StopDrift(AFGHoverPack* self, float deltaTime)
 	if (self->GetCurrentHoverMode() == EHoverPackMode::HPM_Hover)
 	{
 		float dTime = deltaTime;
-		auto config = FNoHoverPackDrift_ConfigStruct::GetActiveConfig();
+		auto config = FNoHoverPackDrift_ConfigStruct::GetActiveConfig(self->GetWorld());
 		float vLength = abs(self->GetInstigatorCharacter()->GetCharacterMovement()->Velocity.Size());
 		if (vLength > 0.f && vLength < config.MinSpeed)
 		{

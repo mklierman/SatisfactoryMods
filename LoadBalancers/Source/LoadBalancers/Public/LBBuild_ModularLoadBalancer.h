@@ -142,11 +142,15 @@ public:
 	void SetupInventory();
 	UFGInventoryComponent* GetBufferInventory();
 
+	void InitializeModule();
+
 	UFUNCTION()
 	void OnOutputItemRemoved( TSubclassOf<UFGItemDescriptor> itemClass, int32 numRemoved );
 
 	/** Apply this module to the group (Called on BeginPlay should not need to call again) */
 	void ApplyGroupModule();
+
+	void RemoveGroupModule();
 
 	/** Is this module the Leader return true if yes */
 	UFUNCTION(BlueprintCallable, Category = "Modular Loader")

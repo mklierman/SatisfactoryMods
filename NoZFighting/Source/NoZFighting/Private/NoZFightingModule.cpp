@@ -32,7 +32,7 @@ void FNoZFightingModule::OnConstruction(AFGBuildable* self, const FTransform& tr
 	auto buildFoundation = Cast<AFGBuildableFoundation>(self);
 	if (buildFoundation)
 	{
-		auto config = FNoZFighting_ConfigStruct::GetActiveConfig();
+		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(self->GetWorld());
 		auto min = config.FoundationMin;
 		auto max = config.FoundationMax;
 		auto meshes = self->GetComponentsByClass(UStaticMeshComponent::StaticClass());
@@ -48,7 +48,7 @@ void FNoZFightingModule::OnConstruction(AFGBuildable* self, const FTransform& tr
 		auto buildWall = Cast<AFGBuildableWall>(self);
 		if (buildWall)
 		{
-			auto config = FNoZFighting_ConfigStruct::GetActiveConfig();
+			auto config = FNoZFighting_ConfigStruct::GetActiveConfig(self->GetWorld());
 			auto min = config.WallMin;
 			auto max = config.WallMax;
 			auto meshes = self->GetComponentsByClass(UStaticMeshComponent::StaticClass());
@@ -70,7 +70,7 @@ void FNoZFightingModule::SetInstanced(AAbstractInstanceManager* manager, AActor*
 	auto buildFoundation = Cast<AFGBuildableFoundation>(OwnerActor);
 	if (buildFoundation)
 	{
-		auto config = FNoZFighting_ConfigStruct::GetActiveConfig();
+		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
 		auto min = config.FoundationMin;
 		auto max = config.FoundationMax;
 		float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
@@ -78,7 +78,7 @@ void FNoZFightingModule::SetInstanced(AAbstractInstanceManager* manager, AActor*
 	}
 	else if (auto buildWall = Cast<AFGBuildableWall>(OwnerActor))
 	{
-		auto config = FNoZFighting_ConfigStruct::GetActiveConfig();
+		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
 		auto min = config.WallMin;
 		auto max = config.WallMax;
 		float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);

@@ -13,7 +13,7 @@ void FDaisyChainEverythingModule::StartupModule() {
 	AFGBuildable* bCDO = GetMutableDefault<AFGBuildable>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildable::BeginPlay, bCDO, []( AFGBuildable* self)
 		{
-			auto config = FDCE_ConfigurationStruct::GetActiveConfig();
+			auto config = FDCE_ConfigurationStruct::GetActiveConfig(self->GetWorld());
 			auto IgnorePowerPoles = config.IgnorePowerPolesBool;
 			if (IgnorePowerPoles)
 			{

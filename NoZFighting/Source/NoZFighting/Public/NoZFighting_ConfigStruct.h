@@ -10,23 +10,25 @@ struct FNoZFighting_ConfigStruct {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite)
-    float FoundationMin;
+    float FoundationMin {};
 
     UPROPERTY(BlueprintReadWrite)
-    float FoundationMax;
+    float FoundationMax {};
 
     UPROPERTY(BlueprintReadWrite)
-    float WallMin;
+    float WallMin {};
 
     UPROPERTY(BlueprintReadWrite)
-    float WallMax;
+    float WallMax {};
 
     /* Retrieves active configuration value and returns object of this struct containing it */
-    static FNoZFighting_ConfigStruct GetActiveConfig() {
+    static FNoZFighting_ConfigStruct GetActiveConfig(UObject* WorldContext) {
         FNoZFighting_ConfigStruct ConfigStruct{};
         FConfigId ConfigId{"NoZFighting", ""};
-        UConfigManager* ConfigManager = GEngine->GetEngineSubsystem<UConfigManager>();
-        ConfigManager->FillConfigurationStruct(ConfigId, FDynamicStructInfo{FNoZFighting_ConfigStruct::StaticStruct(), &ConfigStruct});
+        if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContext, EGetWorldErrorMode::ReturnNull)) {
+            UConfigManager* ConfigManager = World->GetGameInstance()->GetSubsystem<UConfigManager>();
+            ConfigManager->FillConfigurationStruct(ConfigId, FDynamicStructInfo{FNoZFighting_ConfigStruct::StaticStruct(), &ConfigStruct});
+        }
         return ConfigStruct;
     }
 };

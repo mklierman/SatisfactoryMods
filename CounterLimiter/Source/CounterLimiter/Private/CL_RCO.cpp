@@ -2,6 +2,7 @@
 
 
 #include "CL_RCO.h"
+#include <Net/UnrealNetwork.h>
 
 
 void UCL_RCO::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -1,8 +1,10 @@
 #include "LBModularLoadBalancer_Hologram.h"
 #include "FGColoredInstanceMeshProxy.h"
 #include "FGProductionIndicatorInstanceComponent.h"
+#include "Hologram/FGBuildableHologram.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "LoadBalancersModule.h"
+#include <Net/UnrealNetwork.h>
 
 //DEFINE_LOG_CATEGORY(LoadBalancers_Log);
 //#pragma optimize("", off)

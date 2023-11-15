@@ -3,6 +3,7 @@
 #include "FGUnlockSubsystem.h"
 #include "Equipment/FGBuildGunBuild.h"
 #include "Hologram/FGPowerPoleWallHologram.h"
+#include "Hologram/FGPowerPoleHologram.h"
 #include "FGPlayerController.h"
 #include "Patching/NativeHookManager.h"
 #include "Subsystem/ModSubsystem.h"

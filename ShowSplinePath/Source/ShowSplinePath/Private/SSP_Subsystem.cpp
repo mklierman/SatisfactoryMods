@@ -1,7 +1,5 @@
 #include "SSP_Subsystem.h"
 #include "FGSplineMeshGenerationLibrary.h"
-#include "FGInstancedSplineMeshComponent.h"
-#include "FGSplineMeshResources.h"
 
 bool ASSP_Subsystem::GetHasAuthority()
 {

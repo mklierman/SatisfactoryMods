@@ -58,7 +58,7 @@ bool AHologram_PrimaryFoundation::TryUpgrade(const FHitResult& hitresult)
 
 AActor* AHologram_PrimaryFoundation::Construct(TArray<AActor*>& out_children, FNetConstructionID constructionID)
 {
-	auto config = FUnifiedGrid_ConfigStruct::GetActiveConfig();
+	auto config = FUnifiedGrid_ConfigStruct::GetActiveConfig(this->GetWorld());
 	
 	int alignmentHeight = config.AlignmentHeight;
 	int extraHeight = config.AdditionalHeight;

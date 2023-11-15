@@ -64,7 +64,7 @@ void FLongerBeamsModule::StartupModule()
 			auto pc = Cast<AFGPlayerController>(self->GetWorld()->GetFirstPlayerController());
 			if (!pc->IsInputKeyDown(EKeys::LeftShift) && pc->IsInputKeyDown(EKeys::LeftControl))
 			{
-				auto config = FLongerBeams_ConfigStruct::GetActiveConfig();
+				auto config = FLongerBeams_ConfigStruct::GetActiveConfig(self->GetWorld());
 				auto rotAmount = config.RotationAmount;
 				scope.Override(rotAmount);
 			}
@@ -102,7 +102,7 @@ void FLongerBeamsModule::ScrollHologram(AFGBeamHologram* self, int32 delta)
 	}
 	else if (pc->IsInputKeyDown(EKeys::LeftShift) && pc->IsInputKeyDown(EKeys::LeftControl))
 	{
-		auto config = FLongerBeams_ConfigStruct::GetActiveConfig();
+		auto config = FLongerBeams_ConfigStruct::GetActiveConfig(self->GetWorld());
 		auto length = config.ScrollAmount * 100;
 		self->SetCurrentLength(currentLength + (delta * length));
 	}

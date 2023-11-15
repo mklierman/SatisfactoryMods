@@ -10,44 +10,46 @@ struct FCP_ModConfigStruct {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite)
-    int32 PowerPole;
+    int32 PowerPole {};
 
     UPROPERTY(BlueprintReadWrite)
-    int32 WallSocket;
+    int32 WallSocket {};
 
     UPROPERTY(BlueprintReadWrite)
-    int32 ConveyorPole;
+    int32 ConveyorPole {};
 
     UPROPERTY(BlueprintReadWrite)
-    int32 PipePole;
+    int32 PipePole {};
 
     UPROPERTY(BlueprintReadWrite)
-    int32 HyperPole;
+    int32 HyperPole {};
 
     UPROPERTY(BlueprintReadWrite)
-    int32 ConveyorLiftHeight;
+    int32 ConveyorLiftHeight {};
 
     UPROPERTY(BlueprintReadWrite)
-    float ConveyorLiftStep;
+    float ConveyorLiftStep {};
 
     UPROPERTY(BlueprintReadWrite)
-    int32 ConveyorLiftHeightMax;
+    int32 ConveyorLiftHeightMax {};
 
     UPROPERTY(BlueprintReadWrite)
-    bool DisablePowerPoleBuildMode;
+    bool DisablePowerPoleBuildMode {};
 
     UPROPERTY(BlueprintReadWrite)
-    float ReachDistance;
+    float ReachDistance {};
 
     UPROPERTY(BlueprintReadWrite)
-    float DismantleDelay;
+    float DismantleDelay {};
 
     /* Retrieves active configuration value and returns object of this struct containing it */
-    static FCP_ModConfigStruct GetActiveConfig() {
+    static FCP_ModConfigStruct GetActiveConfig(UObject* WorldContext) {
         FCP_ModConfigStruct ConfigStruct{};
         FConfigId ConfigId{"ConstructionPreferences", ""};
-        UConfigManager* ConfigManager = GEngine->GetEngineSubsystem<UConfigManager>();
-        ConfigManager->FillConfigurationStruct(ConfigId, FDynamicStructInfo{FCP_ModConfigStruct::StaticStruct(), &ConfigStruct});
+        if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContext, EGetWorldErrorMode::ReturnNull)) {
+            UConfigManager* ConfigManager = World->GetGameInstance()->GetSubsystem<UConfigManager>();
+            ConfigManager->FillConfigurationStruct(ConfigId, FDynamicStructInfo{FCP_ModConfigStruct::StaticStruct(), &ConfigStruct});
+        }
         return ConfigStruct;
     }
 };
