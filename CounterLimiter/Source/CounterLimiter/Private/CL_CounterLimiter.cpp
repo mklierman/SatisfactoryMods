@@ -311,7 +311,7 @@ void ACL_CounterLimiter::CalculateIPM()
 	if (HasAuthority())
 	{
 		ForceNetUpdate();
-		UE_LOG(CounterLimiter_Log, Display, TEXT("CalculateIPM - ItemCount: %f"), (float)ItemCount);
+		//UE_LOG(CounterLimiter_Log, Display, TEXT("CalculateIPM - ItemCount: %f"), (float)ItemCount);
 		if (ItemCount > 0)
 		{
 			DisplayIPM = ((float)ItemCount / 60.f) * 60.f;

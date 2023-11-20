@@ -1,33 +1,35 @@
 {
-  "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "1.2.6",
-  "SemVersion": "1.2.6",
-  "FriendlyName": "Throughput Counter Limiter",
-  "Description": "A conveyor belt attachment that counts and displays the actual item throughput per minute. Can optionally limit the number of items allowed per minute.",
-  "Category": "Modding",
-  "CreatedBy": "SirDigby",
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.2.7",
+	"SemVersion": "1.2.7",
+	"FriendlyName": "Throughput Counter Limiter",
+	"Description": "A conveyor belt attachment that counts and displays the actual item throughput per minute. Can optionally limit the number of items allowed per minute.",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
 	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
-  "DocsURL": "",
-  "MarketplaceURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
 	"SupportURL": "https://discord.gg/WM5KT7pVu8",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "IsExperimentalVersion": false,
-  "Installed": false,
-  "AcceptsAnyRemoteVersion": false,
-  "Plugins": [
-    {
-      "Name": "SML",
-      "SemVersion": "^3.6.0",
-      "Enabled": true
-    }
-  ],
-  "Modules": [
-    {
-      "Name": "CounterLimiter",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ]
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"AcceptsAnyRemoteVersion": false,
+	"Plugins": [
+		{
+			"Name": "SML",
+			"SemVersion": "^3.6.0",
+			"Enabled": true,
+			"BasePlugin": false
+		}
+	],
+	"Modules": [
+		{
+			"Name": "CounterLimiter",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"RemoteVersionRange": ""
 }
