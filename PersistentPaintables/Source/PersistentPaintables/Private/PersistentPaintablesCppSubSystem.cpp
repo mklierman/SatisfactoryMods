@@ -1,26 +1,57 @@
 #include "PersistentPaintablesCppSubSystem.h"
 #include "FGGameState.h"
 #include "FGBuildableSubsystem.h"
-#include "Hologram/FGHologram.h"
+#include "Hologram/FGBuildableHologram.h"
 #include "FGColorInterface.h"
 #include "Patching/NativeHookManager.h"
 #include "Buildables/FGBuildable.h"
 
+//#pragma optimize("", off)
 APersistentPaintablesCppSubSystem::APersistentPaintablesCppSubSystem()
 {
-
+	
 }
 
-#pragma optimize("", off)
+void APersistentPaintablesCppSubSystem::BeginPlay()
+{
+	if (HasAuthority())
+	{
+		TArray<FPlayerCustomizationStruct> newStructs;
+		PlayerCustomizationStructs = newStructs;
+	}
+	Super::BeginPlay();
+}
+
+void APersistentPaintablesCppSubSystem::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	//if (ConstructHook.IsValid())
+	//{
+	//	UNSUBSCRIBE_METHOD(AFGBuildableHologram::Construct, ConstructHook);
+	//}
+	Super::EndPlay(EndPlayReason);
+}
+
+
 void APersistentPaintablesCppSubSystem::HookConstruct()
 {
 #if !WITH_EDITOR
 	if (HasAuthority())
 	{
 		//virtual AActor* Construct( TArray< AActor* >& out_children, FNetConstructionID constructionID );
-		SUBSCRIBE_METHOD_AFTER(AFGBuildableSubsystem::AddBuildable, [=](AFGBuildableSubsystem* self, class AFGBuildable* buildable)
+		//SUBSCRIBE_METHOD_AFTER(AFGBuildableSubsystem::AddBuildable, [=](AFGBuildableSubsystem* self, class AFGBuildable* buildable)
+		//	{
+		//		//AddBuildable(buildable);
+		//	});
+
+		AFGBuildableHologram* hg = GetMutableDefault<AFGBuildableHologram>();
+		ConstructHook = SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, hg, [=](auto& returnActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID constructionID)
 			{
-				AddBuildable(self, buildable);
+				//AActor* actor = const_cast<AActor*>(returnActor);
+				AFGBuildable* buildable = Cast< AFGBuildable>(returnActor);
+				if (buildable)
+				{
+					AddBuildable(buildable);
+				}
 			});
 		//SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::OnFullRebuildCompleted, &UpdateColor)
 	}
@@ -51,47 +82,47 @@ TArray<AActor*> FindNearbySupports(AFGBuildable* pipe, UFGPipeConnectionComponen
 
 void APersistentPaintablesCppSubSystem::HookPipeNetwork()
 {
-	if (HasAuthority())
-	{
-#if !WITH_EDITOR
-		//void AddFluidIntegrant(class IFGFluidIntegrantInterface* fluidIntegrant);
-		//AFGBuildablePipeline* BuildablePipeline = GetMutableDefault<AFGBuildablePipeline>();
-		SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::UpdateFluidDescriptor, [=](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
-			{
-				if (self && IsInGameThread())
-				{
-					//FTimerHandle FluidColorTimerHandle;
-					//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
-					this->UpdateColor(self);
-				}
-			});
-		SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::AddFluidIntegrant, [=](AFGPipeNetwork* self, class IFGFluidIntegrantInterface* fluidIntegrant)
-			{
-				if (self && IsInGameThread())
-				{
-					auto pipeBase = Cast<UFGPipeConnectionComponentBase>(fluidIntegrant);
-					if (pipeBase && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_CONSUMER && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_PRODUCER)
-					{
-						auto pipeCons = fluidIntegrant->GetPipeConnections();
-						if (pipeCons.Num() > 0)
-						{
-							if (auto owner = pipeCons[0]->GetOwner())
-							{
-								if (auto buildable = Cast<AFGBuildable>(owner))
-								{
-									UpdateColorSingle(buildable, self);
-								}
-							}
-						}
-					}
-					
-					//FTimerHandle FluidColorTimerHandle;
-					//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
-					//this->UpdateColor(self);
-				}
-			});
-#endif
-	}
+//	if (HasAuthority())
+//	{
+//		//void AddFluidIntegrant(class IFGFluidIntegrantInterface* fluidIntegrant);
+//		//AFGBuildablePipeline* BuildablePipeline = GetMutableDefault<AFGBuildablePipeline>();
+//		SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::UpdateFluidDescriptor, [=](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
+//			{
+//				if (self && IsInGameThread())
+//				{
+//					//FTimerHandle FluidColorTimerHandle;
+//					//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
+//					this->UpdateColor(self);
+//				}
+//			});
+//		SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::AddFluidIntegrant, [=](AFGPipeNetwork* self, class IFGFluidIntegrantInterface* fluidIntegrant)
+//			{
+//				if (self && IsInGameThread())
+//				{
+//					auto pipeBase = Cast<UFGPipeConnectionComponentBase>(fluidIntegrant);
+//					if (pipeBase && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_CONSUMER && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_PRODUCER)
+//					{
+//						auto pipeCons = fluidIntegrant->GetPipeConnections();
+//						if (pipeCons.Num() > 0)
+//						{
+//							if (auto owner = pipeCons[0]->GetOwner())
+//							{
+//								if (auto buildable = Cast<AFGBuildable>(owner))
+//								{
+//									UpdateColorSingle(buildable, self);
+//								}
+//							}
+//						}
+//					}
+//					
+//					//FTimerHandle FluidColorTimerHandle;
+//					//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
+//					//this->UpdateColor(self);
+//				}
+//			});
+//#if !WITH_EDITOR
+//#endif
+//	}
 }
 
 void APersistentPaintablesCppSubSystem::UpdateColor(AFGPipeNetwork* pipeNetwork)
@@ -294,19 +325,19 @@ TSubclassOf<class UFGItemDescriptor> APersistentPaintablesCppSubSystem::GetBuild
 	return buildable->GetBuiltWithDescriptor();
 }
 
-void APersistentPaintablesCppSubSystem::AddBuildable(AFGBuildableSubsystem* self, AFGBuildable* buildable)
+void APersistentPaintablesCppSubSystem::AddBuildable(AFGBuildable* buildable)
 {
 	if (buildable)
 	{
 		if (buildable->GetCanBeColored_Implementation())
 		{
-			if (PlayerCustomizationStructs.Num() > 0)
+			if (!PlayerCustomizationStructs.IsEmpty())
 			{
 				if (auto instigator = buildable->mBuildEffectInstignator)
 				{
-					for (auto custData : PlayerCustomizationStructs)
+					for (FPlayerCustomizationStruct custData : PlayerCustomizationStructs)
 					{
-						if (custData.CharacterPlayer && custData.CustomizationData.SwatchDesc && custData.CharacterPlayer == instigator && custData.CustomizationData.SwatchDesc)
+						if (custData.CharacterPlayer && custData.CustomizationData.IsInitialized() && custData.CharacterPlayer == instigator)
 						{
 							buildable->SetCustomizationData_Implementation(custData.CustomizationData);
 							buildable->ApplyCustomizationData_Implementation(custData.CustomizationData);
@@ -319,4 +350,4 @@ void APersistentPaintablesCppSubSystem::AddBuildable(AFGBuildableSubsystem* self
 	}
 }
 
-#pragma optimize("", on)
+//#pragma optimize("", on)

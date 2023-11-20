@@ -1,21 +1,23 @@
 #pragma once
 
-#include "Modules/ModuleManager.h"
-#include "FGPipeNetwork.h"
-#include "Resources/FGItemDescriptor.h"
+#include "AbstractInstanceManager.h"
 #include "Buildables/FGBuildable.h"
-#include "Resources/FGItemDescriptor.h"
-#include "Patching/NativeHookManager.h"
 #include "Buildables/FGBuildablePipeline.h"
-#include "PersistentPaintablesCppSubSystem.h"
-#include "FGFluidIntegrantInterface.h"
 #include "Buildables/FGBuildablePipelineJunction.h"
 #include "FGBuildablePipelineSupport.h"
-#include "Subsystem/SubsystemActorManager.h"
+#include "FGFluidIntegrantInterface.h"
 #include "FGPipeConnectionComponent.h"
-#include "Kismet\KismetSystemLibrary.h"
-#include "AbstractInstanceManager.h"
 #include "FGPipeNetwork.h"
+#include "Hologram/FGBuildableHologram.h"
+#include "Kismet\KismetSystemLibrary.h"
+#include "Modules/ModuleManager.h"
+#include "Patching/NativeHookManager.h"
+#include "PersistentPaintablesCppSubSystem.h"
+#include "Resources/FGItemDescriptor.h"
+#include "AbstractInstanceManager.h"
+#include "Subsystem/ModSubsystem.h"
+#include "Subsystem/SubsystemActorManager.h"
+#include "PersistentPaintables_ConfigStruct.h"
 
 //USTRUCT()
 //struct FPipeColorStruct
@@ -29,6 +31,7 @@
 class FPersistentPaintablesModule : public FDefaultGameModuleImpl {
 public:
 	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
 
 	virtual bool IsGameModule() const override { return true; }
 
@@ -36,14 +39,27 @@ public:
 	UClass* wallHoleClass;
 	UClass* floorHoleClass;
 	UClass* swatchClass;
+	UClass* subsystemClass;
+
+	FDelegateHandle ConstructHook;
 
 	//TArray<PipeColorStruct> PipesToColor;
 
 	UFUNCTION()
-		void UpdateColor(AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor);
+	void UpdateColor(AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor);
+
+	void UpdateNetworkColor(AFGPipeNetwork* pipeNetwork);
+
+	void UpdateColorSingle(AFGBuildable* buildable, AFGPipeNetwork* pipeNetwork);
 
 	UFUNCTION()
-		void StartTimer(AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor);
+	void StartTimer(AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor);
 
 	void ApplyColor(AFGBuildable* buildable, UClass* inSwatchClass, FFactoryCustomizationData customizationData);
+
+	void AddBuildable(class AFGBuildable* buildable);
+
+	void HookPipes();
+
+	TArray<AActor*> FindNearbySupports(AFGBuildable* pipe, UFGPipeConnectionComponentBase* pipeConn);
 };

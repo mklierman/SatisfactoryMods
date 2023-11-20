@@ -1,21 +1,21 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Subsystem/ModSubsystem.h"
-#include "FGBuildableSubsystem.h"
+#include "AbstractInstanceManager.h"
 #include "Buildables/FGBuildable.h"
-#include "FGPlayerController.h"
-#include "FGFactoryColoringTypes.h"
-#include "FGColorInterface.h"
-#include "Resources/FGItemDescriptor.h"
 #include "Buildables/FGBuildablePipeline.h"
 #include "Buildables/FGBuildablePipelineJunction.h"
+#include "CoreMinimal.h"
 #include "FGBuildablePipelineSupport.h"
-#include "Kismet\KismetSystemLibrary.h"
+#include "FGBuildableSubsystem.h"
+#include "FGColorInterface.h"
+#include "FGFactoryColoringTypes.h"
 #include "FGFluidIntegrantInterface.h"
 #include "FGPipeConnectionComponent.h"
-#include "AbstractInstanceManager.h"
 #include "FGPipeNetwork.h"
+#include "FGPlayerController.h"
+#include "Kismet\KismetSystemLibrary.h"
+#include "Resources/FGItemDescriptor.h"
+#include "Subsystem/ModSubsystem.h"
 #include "PersistentPaintablesCppSubSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -38,6 +38,11 @@ class APersistentPaintablesCppSubSystem : public AModSubsystem
 public:
 	APersistentPaintablesCppSubSystem();
 
+	void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+
+
 	UFUNCTION(BlueprintCallable)
 		void HookConstruct();
 
@@ -54,7 +59,7 @@ public:
 	UClass* swatchClass;
 
 	UFUNCTION(BlueprintCallable)
-		void UpdateColor(AFGPipeNetwork* pipeNetwork);
+	void UpdateColor(AFGPipeNetwork* pipeNetwork);
 
 	void UpdateColorSingle(AFGBuildable* buildable, AFGPipeNetwork* pipeNetwork);
 
@@ -76,6 +81,8 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	TArray<FPlayerCustomizationStruct> PlayerCustomizationStructs;
 
-	void AddBuildable(AFGBuildableSubsystem* self, class AFGBuildable* buildable);
+	void AddBuildable(class AFGBuildable* buildable);
+
+	FDelegateHandle ConstructHook;
 };
 
