@@ -1,34 +1,36 @@
 {
-  "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "1.2.2",
-  "SemVersion": "1.2.2",
-  "FriendlyName": "No Z-Fighting",
-  "Description": "Prevents foundations and walls from Z-fighting (flickering)",
-  "Category": "Modding",
-  "CreatedBy": "SirDigby",
-  "CreatedByURL": "",
-  "DocsURL": "",
-  "MarketplaceURL": "",
-  "SupportURL": "",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "IsExperimentalVersion": false,
-  "Installed": false,
-  "AcceptsAnyRemoteVersion": false,
-  "Plugins": [
-    {
-      "Name": "SML",
-      "SemVersion": "^3.6.0",
-      "Enabled": true,
-      "IsActive": false
-    }
-  ],
-  "Modules": [
-    {
-      "Name": "NoZFighting",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ]
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.2.3",
+	"SemVersion": "1.2.3",
+	"FriendlyName": "No Z-Fighting",
+	"Description": "Prevents foundations and walls from Z-fighting (flickering)",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"AcceptsAnyRemoteVersion": false,
+	"Plugins": [
+		{
+			"Name": "SML",
+			"SemVersion": "^3.6.0",
+			"Enabled": true,
+			"IsActive": false,
+			"BasePlugin": false
+		}
+	],
+	"Modules": [
+		{
+			"Name": "NoZFighting",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"RemoteVersionRange": ""
 }

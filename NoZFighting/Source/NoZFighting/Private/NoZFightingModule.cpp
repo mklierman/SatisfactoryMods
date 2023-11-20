@@ -29,10 +29,15 @@ void FNoZFightingModule::StartupModule() {
 
 void FNoZFightingModule::OnConstruction(AFGBuildable* self, const FTransform& transform)
 {
+	if (self->GetWorld()->GetName() == "FactoryBlueprintWorld")
+	{
+		return;
+	}
 	auto buildFoundation = Cast<AFGBuildableFoundation>(self);
 	if (buildFoundation)
 	{
-		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(self->GetWorld());
+		auto ic = self->GetInstigatorController();
+		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(buildFoundation->GetWorld());
 		auto min = config.FoundationMin;
 		auto max = config.FoundationMax;
 		auto meshes = self->GetComponentsByClass(UStaticMeshComponent::StaticClass());
@@ -48,7 +53,8 @@ void FNoZFightingModule::OnConstruction(AFGBuildable* self, const FTransform& tr
 		auto buildWall = Cast<AFGBuildableWall>(self);
 		if (buildWall)
 		{
-			auto config = FNoZFighting_ConfigStruct::GetActiveConfig(self->GetWorld());
+			auto ic = self->GetInstigatorController();
+			auto config = FNoZFighting_ConfigStruct::GetActiveConfig(buildWall->GetWorld());
 			auto min = config.WallMin;
 			auto max = config.WallMax;
 			auto meshes = self->GetComponentsByClass(UStaticMeshComponent::StaticClass());
