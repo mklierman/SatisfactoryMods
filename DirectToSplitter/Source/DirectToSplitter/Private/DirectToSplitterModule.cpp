@@ -2,11 +2,11 @@
 #include "DTS_ConfigStruct.h"
 #include "Registry/ModContentRegistry.h"
 
-//#pragma optimize("", off)
+#pragma optimize("", off)
 void FDirectToSplitterModule::StartupModule() {
-#if !WITH_EDITOR
 	AFGConveyorAttachmentHologram* cah = GetMutableDefault<AFGConveyorAttachmentHologram>();
 
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::ConfigureComponents, cah, [=](auto& scope, const AFGConveyorAttachmentHologram* self, AFGBuildable* inBuildable)
 		{
 			bool shouldCancel;
@@ -60,11 +60,18 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 			}
 		}
 
-		auto modRegistry = UModContentRegistry::Get(self->GetWorld());
-		if (!modRegistry->IsRecipeVanilla(snappedBuildable->GetBuiltWithRecipe()))
-		{
-			return;
-		}
+		//Currently broken
+		//auto modRegistry = UModContentRegistry::Get(self->GetWorld());
+		//if (!modRegistry->IsRecipeVanilla(snappedBuildable->GetBuiltWithRecipe()))
+		//{
+		//	return;
+		//}
+
+		//auto pathName = snappedBuildable->GetBuiltWithRecipe()->GetPathName();
+		//if (!pathName.Contains("FactoryGame"))
+		//{
+		//	return;
+		//}
 		
 		self->ResetConstructDisqualifiers();
 		retflag = false;
@@ -219,6 +226,6 @@ void FDirectToSplitterModule::HGConstruct(AFGBuildableHologram* hg, AActor* buil
 	}
 }
 
-//#pragma optimize("", on)
+#pragma optimize("", on)
 
 IMPLEMENT_GAME_MODULE(FDirectToSplitterModule, DirectToSplitter);
