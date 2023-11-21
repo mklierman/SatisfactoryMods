@@ -60,4 +60,6 @@ public:
 	void SetSubsystemZoopAmounts(int x, int y, int z, bool isFoundation, UWorld* world, AFGHologram* hologram);
 
 	FCriticalSection* lockObj;
+
+	void CheckBuildEffects(const AFGFactoryBuildingHologram* fbHolo, class AFGBuildable* inBuildable);
 };

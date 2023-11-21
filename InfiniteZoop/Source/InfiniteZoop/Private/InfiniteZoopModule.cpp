@@ -19,11 +19,12 @@
 #include "Equipment/FGBuildGunBuild.h"
 #include "Buildables/FGBuildableFoundation.h"
 #include "FGHologramBuildModeDescriptor.h"
+#include "InfiniteZoop_ConfigurationStruct.h"
 #include "FGRampHologram.h"
 
 
 //DEFINE_LOG_CATEGORY(InfiniteZoop_Log);
-//#pragma optimize("", off)
+#pragma optimize("", off)
 int GetClosestZoopAngle(double angleToCheck)
 {
 	if (angleToCheck >= double(0.0) && angleToCheck < double(90.0))
@@ -496,11 +497,7 @@ void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AAct
 			//zStruct->Z = 0;
 			FoundationsBeingZooped[self] = zStruct;
 
-			//auto buildClass = Cast<AFGBuildable>(self->GetBuildClass());
-			//bool savedValue = buildClass->ShouldSkipBuildEffect();
-			//buildClass->mSkipBuildEffect = true;
-			//Run construct
-			//buildClass->mSkipBuildEffect = savedValue;
+
 		}
 	}
 }
@@ -581,9 +578,40 @@ bool FInfiniteZoopModule::ValidatePlacementAndCost(AFGHologram* self, class UFGI
 	return true;
 }
 
-void FInfiniteZoopModule::StartupModule() {
+void FInfiniteZoopModule::CheckBuildEffects(const AFGFactoryBuildingHologram* fbHolo, class AFGBuildable* inBuildable)
+{
+	auto x = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.X), 1, 999);
+	auto y = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Y), 1, 999);
+	auto z = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Z), 1, 999);
+	auto total = x * y * z;
+	if (total > 10)
+	{
+		auto config = FInfiniteZoop_ConfigurationStruct::GetActiveConfig(fbHolo->GetWorld());
+		if (config.BuildEffects.SkipEffects && total > config.BuildEffects.SkipAfterAmount)
+		{
+			inBuildable->mSkipBuildEffect = true;
+		}
+	}
+}
+
+void FInfiniteZoopModule::StartupModule() 
+{
 	lockObj = new FCriticalSection();
+
+	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::ConfigureActor, bhg, [=](auto& scope, const AFGBuildableHologram* self, class AFGBuildable* inBuildable)
+		{
+			if (self->CanBeZooped())
+			{
+				auto fbHolo = Cast<AFGFactoryBuildingHologram>(self);
+				if (fbHolo)
+				{
+					CheckBuildEffects(fbHolo, inBuildable);
+				}
+			}
+		});
 #if !WITH_EDITOR
+
 	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::OnRep_DesiredZoop, [=](auto& scope, AFGFactoryBuildingHologram* self)
 		{
 			if (auto ramphg = Cast<AFGRampHologram>(self))
@@ -924,7 +952,7 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 	
 	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
 }
-//#pragma optimize("", on)
+#pragma optimize("", on)
 
 
 IMPLEMENT_GAME_MODULE(FInfiniteZoopModule, InfiniteZoop);

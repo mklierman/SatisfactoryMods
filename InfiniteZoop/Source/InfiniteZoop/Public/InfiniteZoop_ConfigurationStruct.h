@@ -4,19 +4,35 @@
 #include "Engine/Engine.h"
 #include "InfiniteZoop_ConfigurationStruct.generated.h"
 
+struct FInfiniteZoop_ConfigurationStruct_BuildEffects;
+
+USTRUCT(BlueprintType)
+struct FInfiniteZoop_ConfigurationStruct_BuildEffects {
+    GENERATED_BODY()
+public:
+    UPROPERTY(BlueprintReadWrite)
+    bool SkipEffects{};
+
+    UPROPERTY(BlueprintReadWrite)
+    int32 SkipAfterAmount{};
+};
+
 /* Struct generated from Mod Configuration Asset '/InfiniteZoop/InfiniteZoop_Configuration' */
 USTRUCT(BlueprintType)
 struct FInfiniteZoop_ConfigurationStruct {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite)
-    bool CheatMode {};
+    bool CheatMode{};
 
     UPROPERTY(BlueprintReadWrite)
-    bool Ladders {};
+    bool Ladders{};
 
     UPROPERTY(BlueprintReadWrite)
-    bool Corners {};
+    bool Corners{};
+
+    UPROPERTY(BlueprintReadWrite)
+    FInfiniteZoop_ConfigurationStruct_BuildEffects BuildEffects{};
 
     /* Retrieves active configuration value and returns object of this struct containing it */
     static FInfiniteZoop_ConfigurationStruct GetActiveConfig(UObject* WorldContext) {
