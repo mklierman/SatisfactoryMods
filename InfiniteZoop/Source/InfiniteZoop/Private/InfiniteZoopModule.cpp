@@ -24,7 +24,7 @@
 
 
 //DEFINE_LOG_CATEGORY(InfiniteZoop_Log);
-#pragma optimize("", off)
+//#pragma optimize("", off)
 int GetClosestZoopAngle(double angleToCheck)
 {
 	if (angleToCheck >= double(0.0) && angleToCheck < double(90.0))
@@ -580,9 +580,9 @@ bool FInfiniteZoopModule::ValidatePlacementAndCost(AFGHologram* self, class UFGI
 
 void FInfiniteZoopModule::CheckBuildEffects(const AFGFactoryBuildingHologram* fbHolo, class AFGBuildable* inBuildable)
 {
-	auto x = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.X), 1, 999);
-	auto y = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Y), 1, 999);
-	auto z = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Z), 1, 999);
+	auto x = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.X), 1, 99999);
+	auto y = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Y), 1, 99999);
+	auto z = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Z), 1, 99999);
 	auto total = x * y * z;
 	if (total > 10)
 	{
@@ -596,6 +596,7 @@ void FInfiniteZoopModule::CheckBuildEffects(const AFGFactoryBuildingHologram* fb
 
 void FInfiniteZoopModule::StartupModule() 
 {
+#if !WITH_EDITOR
 	lockObj = new FCriticalSection();
 
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
@@ -610,7 +611,6 @@ void FInfiniteZoopModule::StartupModule()
 				}
 			}
 		});
-#if !WITH_EDITOR
 
 	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::OnRep_DesiredZoop, [=](auto& scope, AFGFactoryBuildingHologram* self)
 		{
@@ -952,7 +952,7 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 	
 	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
 }
-#pragma optimize("", on)
+//#pragma optimize("", on)
 
 
 IMPLEMENT_GAME_MODULE(FInfiniteZoopModule, InfiniteZoop);
