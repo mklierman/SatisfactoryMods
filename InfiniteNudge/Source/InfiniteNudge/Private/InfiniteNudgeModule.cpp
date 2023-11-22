@@ -1,10 +1,27 @@
 #include "InfiniteNudgeModule.h"
+#include "Hologram/FGBuildableHologram.h"
+#include "Hologram/FGResourceExtractorHologram.h"
 #include "InfiniteNudge_ConfigurationStruct.h"
 
 //#pragma optimize("", off)
+
+void DoNudge(UFGBuildGunStateBuild* self, const FInputActionValue& actionValue)
+{
+	auto holo = self->GetHologram();
+	auto canNudge = holo->CanNudgeHologram();
+	auto locked = holo->IsHologramLocked();
+	auto disabled = holo->IsDisabled();
+	auto target = holo->GetNudgeHologramTarget();
+	auto bg = self->GetBuildGun();
+	auto hr = bg->GetHitResult();
+	auto res = target->NudgeHologram(actionValue.Get<FVector>(), hr);
+	self->OnHologramNudgeFailedDelegate.Broadcast(holo, res);
+}
+
 void FInfiniteNudgeModule::StartupModule() {
 
 #if !WITH_EDITOR
+
 	AFGHologram* bh = GetMutableDefault<AFGHologram>();
 	//ENudgeFailReason AFGHologram::NudgeHologram(const FVector& NudgeInput, const FHitResult& HitResult){ return ENudgeFailReason(); }
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::NudgeHologram, bh, [=](auto scope, const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
@@ -25,6 +42,24 @@ void FInfiniteNudgeModule::StartupModule() {
 			}
 		});
 
+	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::CanNudgeHologram, bhg, [=](auto& scope, const AFGBuildableHologram* self)
+	//	{
+	//		scope.Override(true);
+	//	});
+
+	//AFGResourceExtractorHologram* rehg = GetMutableDefault<AFGResourceExtractorHologram>();
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGResourceExtractorHologram::CanNudgeHologram, rehg, [=](auto& scope, const AFGResourceExtractorHologram* self)
+	//	{
+	//		scope.Override(true);
+	//	});
+
+
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::GetNudgeHologramTarget, bh, [=](auto& scope, AFGHologram* self)
+	//	{
+	//		scope.Override(self);
+	//	});
+
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGHologram::BeginPlay, bh, [=](AFGHologram* self)
 		{
 			auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
@@ -36,10 +71,10 @@ void FInfiniteNudgeModule::StartupModule() {
 			self->mMaxNudgeDistance = 5000000.0;
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::CanNudgeHologram, bh, [=](auto& scope, const AFGHologram* self)
-		{
-			scope.Override(true);
-		});
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::CanNudgeHologram, bh, [=](auto& scope, const AFGHologram* self)
+	//	{
+	//		scope.Override(true);
+	//	});
 
 	//const FVector& GetNudgeOffset() const { return mHologramNudgeOffset; }
 	SUBSCRIBE_METHOD(AFGHologram::LockHologramPosition, [=](auto scope, AFGHologram* self, bool lock)
