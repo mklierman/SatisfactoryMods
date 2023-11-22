@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Hologram/FGResourceExtractorHologram.h"
-#include "InfiniteNudge_ResExtractorHolo.generated.h"
+#include "Hologram/FGWaterPumpHologram.h"
+#include "InfiniteNudge_WaterPumpHolo.generated.h"
 
 UCLASS()
-class INFINITENUDGE_API AInfiniteNudge_ResExtractorHolo :  public AFGResourceExtractorHologram
+class INFINITENUDGE_API AInfiniteNudge_WaterPumpHolo :  public AFGWaterPumpHologram
 {
 	GENERATED_BODY()
 public:
