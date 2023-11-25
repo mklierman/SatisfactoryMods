@@ -76,6 +76,15 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 	return SnapResult;
 }
 
+bool ALBModularLoadBalancer_Hologram::CanNudgeHologram() const
+{
+	if (this->IsHologramLocked() && this->IsDisabled() == false)
+	{
+		return true;
+	}
+	return Super::CanNudgeHologram();
+}
+
 void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)
 {
 	//Super::SetScrollMode(EHologramScrollMode::HSM_ROTATE);

@@ -737,7 +737,12 @@ void FInfiniteZoopModule::StartupModule()
 			{
 				return;
 			}
-	this->ScrollHologram(self, delta);
+			if (self->IsHologramLocked())
+			{
+				return;
+			}
+
+			this->ScrollHologram(self, delta);
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Destroyed, hCDO, [=](auto& scope, AFGHologram* self)

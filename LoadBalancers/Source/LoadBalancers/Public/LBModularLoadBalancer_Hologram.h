@@ -27,6 +27,7 @@ public:
 	virtual AActor* Construct(TArray< AActor* >& out_children, FNetConstructionID netConstructionID) override;
 	virtual void Destroyed() override;
 	virtual bool TrySnapToActor(const FHitResult& hitResult) override;
+	virtual bool CanNudgeHologram() const override;
 
 	virtual void Scroll(int32 delta) override;
 
