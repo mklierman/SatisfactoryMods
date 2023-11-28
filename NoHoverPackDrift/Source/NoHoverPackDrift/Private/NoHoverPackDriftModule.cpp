@@ -15,7 +15,7 @@ void FNoHoverPackDriftModule::StartupModule() {
 #endif
 }
 
-#pragma optimize("", off)
+//#pragma optimize("", off)
 void FNoHoverPackDriftModule::StopDrift(AFGHoverPack* self, float deltaTime)
 {
 	if (self->GetCurrentHoverMode() == EHoverPackMode::HPM_Hover)
@@ -29,7 +29,7 @@ void FNoHoverPackDriftModule::StopDrift(AFGHoverPack* self, float deltaTime)
 		}
 	}
 }
-#pragma optimize("", on)
+//#pragma optimize("", on)
 
 
 IMPLEMENT_GAME_MODULE(FNoHoverPackDriftModule, NoHoverPackDrift);
