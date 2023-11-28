@@ -1,12 +1,12 @@
 #include "SSP_Subsystem.h"
 #include "FGSplineMeshGenerationLibrary.h"
 
+#pragma optimize("", off)
 bool ASSP_Subsystem::GetHasAuthority()
 {
 	return HasAuthority();
 }
 
-//#pragma optimize("", off)
 bool ASSP_Subsystem::ShouldSave_Implementation() const
 {
     return true;
@@ -251,4 +251,4 @@ void ASSP_Subsystem::HideAllVehiclePaths(AActor* actor)
 		}
 	}
 }
-//#pragma optimize("", on)
+#pragma optimize("", on)
