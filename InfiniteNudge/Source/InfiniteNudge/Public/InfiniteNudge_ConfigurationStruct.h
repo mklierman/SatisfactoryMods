@@ -10,10 +10,19 @@ struct FInfiniteNudge_ConfigurationStruct {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite)
-    int32 LeftCtrlNudgeAmount {};
+    int32 LeftCtrlNudgeAmount{};
 
     UPROPERTY(BlueprintReadWrite)
-    int32 LeftAltNudgeAmount {};
+    int32 LeftAltNudgeAmount{};
+
+    UPROPERTY(BlueprintReadWrite)
+    int32 LargeNudgeAmount{};
+
+    UPROPERTY(BlueprintReadWrite)
+    float TinyRotateAmount{};
+
+    UPROPERTY(BlueprintReadWrite)
+    float SmallRotateAmount{};
 
     /* Retrieves active configuration value and returns object of this struct containing it */
     static FInfiniteNudge_ConfigurationStruct GetActiveConfig(UObject* WorldContext) {

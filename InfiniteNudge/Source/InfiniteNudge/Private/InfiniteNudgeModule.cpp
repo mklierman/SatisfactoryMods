@@ -2,8 +2,12 @@
 #include "Hologram/FGBuildableHologram.h"
 #include "Hologram/FGResourceExtractorHologram.h"
 #include "InfiniteNudge_ConfigurationStruct.h"
+#include "FGPlayerController.h"
+#include "Hologram/FGPipeAttachmentHologram.h"
+#include "Hologram/FGWireHologram.h"
+#include "FGInputLibrary.h"
 
-//#pragma optimize("", off)
+#pragma optimize("", off)
 
 void DoNudge(UFGBuildGunStateBuild* self, const FInputActionValue& actionValue)
 {
@@ -20,29 +24,31 @@ void DoNudge(UFGBuildGunStateBuild* self, const FInputActionValue& actionValue)
 
 void FInfiniteNudgeModule::StartupModule() {
 
-#if !WITH_EDITOR
 
+#if !WITH_EDITOR
 	AFGHologram* bh = GetMutableDefault<AFGHologram>();
 	//ENudgeFailReason AFGHologram::NudgeHologram(const FVector& NudgeInput, const FHitResult& HitResult){ return ENudgeFailReason(); }
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::NudgeHologram, bh, [=](auto scope, const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
 		{
-			auto hg = const_cast<AFGHologram*>(self);
-			auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
-			if (contr && contr->IsInputKeyDown(EKeys::LeftControl))
-			{
-				hg->mDefaultNudgeDistance = LeftCtrlNudgeAmount;
-			}
-			else if (contr && contr->IsInputKeyDown(EKeys::LeftAlt))
-			{
-				hg->mDefaultNudgeDistance = LeftAltNudgeAmount;
-			}
-			else
-			{
-				hg->mDefaultNudgeDistance = 100.0;
-			}
+			NudgeHologram(self, NudgeInput, HitResult);
+		});
+
+
+	AFGGenericBuildableHologram* gbh = GetMutableDefault<AFGGenericBuildableHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGGenericBuildableHologram::NudgeHologram, gbh, [=](auto scope, const AFGGenericBuildableHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
+		{
+			NudgeGenericHologram(self, NudgeInput, HitResult);
 		});
 
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
+
+	//AFGPipeAttachmentHologram* pahg = GetMutableDefault<AFGPipeAttachmentHologram>();
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::CanNudgeHologram, pahg, [=](auto scope, const AFGPipeAttachmentHologram* self)
+	//	{
+	//		DebugChecker();
+	//		scope.Override(true);
+	//	});
+
 	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::CanNudgeHologram, bhg, [=](auto& scope, const AFGBuildableHologram* self)
 	//	{
 	//		scope.Override(true);
@@ -62,13 +68,16 @@ void FInfiniteNudgeModule::StartupModule() {
 
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGHologram::BeginPlay, bh, [=](AFGHologram* self)
 		{
-			auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
-			LeftCtrlNudgeAmount = (float)config.LeftCtrlNudgeAmount;
-			LeftAltNudgeAmount = (float)config.LeftAltNudgeAmount;
-
 			self->mCanNudgeHologram = true;
 			self->mCanLockHologram = true;
-			self->mMaxNudgeDistance = 5000000.0;
+			self->mMaxNudgeDistance = 50000;
+		});
+
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGGenericBuildableHologram::BeginPlay, bh, [=](AFGGenericBuildableHologram* self)
+		{
+			self->mCanNudgeHologram = true;
+			self->mCanLockHologram = true;
+			self->mMaxNudgeDistance = 50000;
 		});
 
 	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::CanNudgeHologram, bh, [=](auto& scope, const AFGHologram* self)
@@ -92,67 +101,15 @@ void FInfiniteNudgeModule::StartupModule() {
 			//hg->mHologramNudgeOffset.Y = 0;
 			//hg->mHologramNudgeOffset.Z = 0;
 		});
-	//	virtual ENudgeFailReason NudgeTowardsWorldDirection(const FVector & Direction);
+
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::AddNudgeOffset, bh, [=](auto& scope, AFGHologram* self, const FVector& Direction)
 		{
-			auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
-			FVector newVector = FVector(0.0, 0.0, 0.0);
-			auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
-			if (contr && contr->IsInputKeyDown(EKeys::LeftShift) && contr->IsInputKeyDown(EKeys::Up))
+			FVector newVector = AddNudgeOffset(self, Direction);
+			if (newVector.X != 0 || newVector.Y != 0 || newVector.Z != 0)
 			{
-				newVector.Z = 100;
-				//FVector newV = NudgeTowardsWorldDirection(self, Direction);
-				//FVector nV = FVector(0.0, 0.0, 100.0);
-				if (contr->IsInputKeyDown(EKeys::LeftControl))
-				{
-					newVector.Z = LeftCtrlNudgeAmount;
-				}
-				else if (contr->IsInputKeyDown(EKeys::LeftAlt))
-				{
-					newVector.Z = LeftAltNudgeAmount;
-				}
 				ENudgeFailReason fr = scope(self, newVector);
 				scope.Override(fr);
-				//ENudgeFailReason fr = scope(self, nV);
-				//scope.Override(ENudgeFailReason::NFR_Success);
 			}
-			else if (contr && contr->IsInputKeyDown(EKeys::LeftShift) && contr->IsInputKeyDown(EKeys::Down))
-			{
-				newVector.Z = -100;
-				//FVector neV = FVector(0.0, 0.0, -100.0);
-				if (contr->IsInputKeyDown(EKeys::LeftControl))
-				{
-					newVector.Z = LeftCtrlNudgeAmount * -1;
-				}
-				else if (contr->IsInputKeyDown(EKeys::LeftAlt))
-				{
-					newVector.Z = LeftAltNudgeAmount * -1;
-				}
-				ENudgeFailReason fr = scope(self, newVector);
-				scope.Override(fr);
-				//	ENudgeFailReason fr = scope(self, neV);
-				//	scope.Override(ENudgeFailReason::NFR_Success);
-			}
-			//else
-			//{
-			//	newVector.X = Direction.X;
-			//	newVector.Y = Direction.Y;
-			//	if (contr && contr->IsInputKeyDown(EKeys::LeftControl))
-			//	{
-			//		newVector.X = Direction.X / 2;
-			//		newVector.Y = Direction.Y / 2;
-			//		ENudgeFailReason fr = scope(self, newVector);
-			//		scope.Override(fr);
-			//	}
-			//	else if (contr && contr->IsInputKeyDown(EKeys::LeftAlt))
-			//	{
-			//		newVector.X = Direction.X / 10;
-			//		newVector.Y = Direction.Y / 10;
-			//		ENudgeFailReason fr = scope(self, newVector);
-			//		scope.Override(fr);
-			//	}
-			//}
-			//self->mDefaultNudgeDistance = savedNudgeDistance;
 		});
 
 	//virtual ENudgeFailReason NudgeHologram( const FVector& NudgeInput, const FHitResult& HitResult );
@@ -180,6 +137,7 @@ void FInfiniteNudgeModule::StartupModule() {
 		{
 			if (self->IsHologramLocked())
 			{
+				//DebugChecker();
 				RotateLockedHologram(self, delta);
 			}
 		});
@@ -191,37 +149,292 @@ FVector FInfiniteNudgeModule::NudgeTowardsWorldDirection(AFGHologram* self, cons
 	return Direction;
 }
 
+void FInfiniteNudgeModule::NudgeHologram(const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
+{
+	auto hg = const_cast<AFGHologram*>(self);
+	auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
+	if (contr)
+	{
+		auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
+		auto TinyNudgeAmount = (float)config.LeftCtrlNudgeAmount;
+		auto SmallNudgeAmount = (float)config.LeftAltNudgeAmount;
+		auto LargeNudgeAmount = (float)config.LargeNudgeAmount;
+
+		FKey TinyNudgeKey;
+		FKey SmallNudgeKey;
+		FKey LargeNudgeKey;
+		TArray<FKey> ModifierKeys;
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.BigNudge", LargeNudgeKey, ModifierKeys);
+
+		if (TinyNudgeKey.IsValid() && contr->IsInputKeyDown(TinyNudgeKey))
+		{
+			hg->mDefaultNudgeDistance = TinyNudgeAmount;
+		}
+		else if (SmallNudgeKey.IsValid() && contr->IsInputKeyDown(SmallNudgeKey))
+		{
+			hg->mDefaultNudgeDistance = SmallNudgeAmount;
+		}
+		else if (LargeNudgeKey.IsValid() && contr->IsInputKeyDown(LargeNudgeKey))
+		{
+			hg->mDefaultNudgeDistance = LargeNudgeAmount;
+		}
+		else
+		{
+			hg->mDefaultNudgeDistance = 100.0;
+		}
+	}
+}
+
+void FInfiniteNudgeModule::NudgeGenericHologram(const AFGGenericBuildableHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
+{
+
+	auto hg = const_cast<AFGGenericBuildableHologram*>(self);
+	auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
+	if (contr)
+	{
+		auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
+		auto TinyNudgeAmount = (float)config.LeftCtrlNudgeAmount;
+		auto SmallNudgeAmount = (float)config.LeftAltNudgeAmount;
+		auto LargeNudgeAmount = (float)config.LargeNudgeAmount;
+
+		FKey TinyNudgeKey;
+		FKey SmallNudgeKey;
+		FKey LargeNudgeKey;
+		TArray<FKey> ModifierKeys;
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.BigNudge", LargeNudgeKey, ModifierKeys);
+
+		if (TinyNudgeKey.IsValid() && contr->IsInputKeyDown(TinyNudgeKey))
+		{
+			hg->mDefaultNudgeDistance = TinyNudgeAmount;
+		}
+		else if (SmallNudgeKey.IsValid() && contr->IsInputKeyDown(SmallNudgeKey))
+		{
+			hg->mDefaultNudgeDistance = SmallNudgeAmount;
+		}
+		else if (LargeNudgeKey.IsValid() && contr->IsInputKeyDown(LargeNudgeKey))
+		{
+			hg->mDefaultNudgeDistance = LargeNudgeAmount;
+		}
+		else
+		{
+			hg->mDefaultNudgeDistance = 100.0;
+		}
+	}
+}
+
+FVector FInfiniteNudgeModule::AddNudgeOffset(AFGHologram* self, const FVector& Direction)
+{
+	auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
+	auto TinyNudgeAmount = (float)config.LeftCtrlNudgeAmount;
+	auto SmallNudgeAmount = (float)config.LeftAltNudgeAmount;
+	auto LargeNudgeAmount = (float)config.LargeNudgeAmount;
+
+	FVector newVector = FVector(0, 0, 0);
+
+	auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
+	if (contr)
+	{
+		// Get Key mappings
+		FKey NudgeForwardKey;
+		FKey NudgeBackwardKey;
+		FKey TinyNudgeKey;
+		FKey SmallNudgeKey;
+		FKey LargeNudgeKey;
+		FKey VerticalNudgeKey;
+		TArray<FKey> ModifierKeys;
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "BuildGunBuild_NudgeForward", NudgeForwardKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "BuildGunBuild_NudgeBackward", NudgeBackwardKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.BigNudge", LargeNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.VerticalNudge", VerticalNudgeKey, ModifierKeys);
+
+		auto genericHolo = Cast < AFGGenericBuildableHologram>(self);
+		if (genericHolo)
+		{
+			if (contr->IsInputKeyDown(VerticalNudgeKey) && (contr->IsInputKeyDown(NudgeForwardKey) || contr->IsInputKeyDown(NudgeBackwardKey)))
+			{
+
+				// Determine "Front" of holo
+				auto snapAxis = genericHolo->mSnapAxis;
+				FVector offset = FVector(0, 0, 0);
+				switch (snapAxis)
+				{
+				case EAxis::X:
+					offset = self->GetActorForwardVector();
+					break;
+
+				case EAxis::Y:
+					offset = self->GetActorRightVector();
+					break;
+
+				case EAxis::Z:
+					offset = self->GetActorUpVector();
+					break;
+
+				default:
+					break;
+				}
+
+				if (contr->IsInputKeyDown(TinyNudgeKey))
+				{
+					newVector = offset * FVector(TinyNudgeAmount);
+				}
+				else if (contr->IsInputKeyDown(SmallNudgeKey))
+				{
+					newVector = offset * FVector(SmallNudgeAmount);
+				}
+				else if (contr->IsInputKeyDown(LargeNudgeKey))
+				{
+					newVector = offset * FVector(LargeNudgeAmount);
+				}
+				else
+				{
+					newVector = offset * 100;
+				}
+
+				if (contr->IsInputKeyDown(NudgeForwardKey))
+				{
+					return newVector;
+				}
+				else if (contr->IsInputKeyDown(NudgeBackwardKey))
+				{
+					return newVector * -1;
+				}
+			}
+		}
+
+		if (contr->IsInputKeyDown(VerticalNudgeKey) && (contr->IsInputKeyDown(NudgeForwardKey) || contr->IsInputKeyDown(NudgeBackwardKey)))
+		{
+			newVector.Z = 100;
+
+			if (contr->IsInputKeyDown(TinyNudgeKey))
+			{
+				newVector.Z = TinyNudgeAmount;
+			}
+			else if (contr->IsInputKeyDown(SmallNudgeKey))
+			{
+				newVector.Z = SmallNudgeAmount;
+			}
+			else if (contr->IsInputKeyDown(LargeNudgeKey))
+			{
+				newVector.Z = LargeNudgeAmount;
+			}
+
+			if (contr->IsInputKeyDown(NudgeForwardKey))
+			{
+				return newVector;
+			}
+			else if (contr->IsInputKeyDown(NudgeBackwardKey))
+			{
+				newVector.Z = newVector.Z * -1;
+				return newVector;
+			}
+		}
+	}
+	return newVector;
+}
+
 void FInfiniteNudgeModule::RotateLockedHologram(AFGHologram* self, int32 delta)
 {
 	auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
-	//auto newRotation = self->GetActorRotation();
-	auto newRotation = FRotator(0,0,0);
-	int rotationAmount = 15 * delta;
+	if (contr)
+	{
+		auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
+		auto TinyRotateAmount = (float)config.TinyRotateAmount;
+		auto SmallRotateAmount = (float)config.SmallRotateAmount;
 
-	// Set Fine Rotation
-	if (contr && (contr->IsInputKeyDown(EKeys::LeftControl) || contr->IsInputKeyDown(EKeys::RightControl)))
-	{
-		rotationAmount = 1 * delta;
-	}
+		FKey TinyRotateKey;
+		FKey SmallRotateKey;
+		FKey PitchRotateKey;
+		FKey RollRotateKey;
+		TArray<FKey> ModifierKeys;
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyRotate", TinyRotateKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallRotate", SmallRotateKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.PitchRotate", PitchRotateKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.RollRotate", RollRotateKey, ModifierKeys);
 
-	if (contr->IsInputKeyDown(EKeys::LeftShift))
-	{
-		//Rotate Pitch
-		newRotation.Pitch = newRotation.Pitch + rotationAmount;
+		//auto newRotation = self->GetActorRotation();
+		auto newRotation = FRotator(0, 0, 0);
+		int rotationAmount = 15 * delta;
+
+		// Set Fine Rotation
+		if (contr->IsInputKeyDown(TinyRotateKey))
+		{
+			rotationAmount = TinyRotateAmount * delta;
+		}
+		if (contr->IsInputKeyDown(SmallRotateKey))
+		{
+			rotationAmount = SmallRotateAmount * delta;
+		}
+
+		// Set rotation types
+
+		auto pipeAttachHolo = Cast<AFGPipeAttachmentHologram>(self);
+		if (pipeAttachHolo)
+		{
+			// Pipe attachments rotate roll by default
+			if (contr->IsInputKeyDown(PitchRotateKey))
+			{
+				//Rotate Pitch
+				newRotation.Pitch = newRotation.Pitch + rotationAmount;
+			}
+			else if (contr->IsInputKeyDown(RollRotateKey))
+			{
+				//Rotate Yaw
+				newRotation.Yaw = newRotation.Yaw + rotationAmount;
+			}
+			else
+			{
+				//Rotate Roll
+				newRotation.Roll = newRotation.Roll + rotationAmount;
+			}
+		}
+		else
+		{
+			if (contr->IsInputKeyDown(PitchRotateKey))
+			{
+				//Rotate Pitch
+				newRotation.Pitch = newRotation.Pitch + rotationAmount;
+			}
+			else if (contr->IsInputKeyDown(RollRotateKey))
+			{
+				//Rotate Roll
+				newRotation.Roll = newRotation.Roll + rotationAmount;
+			}
+			else
+			{
+				//Rotate Yaw
+				newRotation.Yaw = newRotation.Yaw + rotationAmount;
+			}
+		}
+		auto wireHG = Cast< AFGWireHologram>(self);
+		if (wireHG)
+		{
+			auto currentPole = wireHG->GetActiveAutomaticPoleHologram();
+			if (currentPole)
+			{
+				currentPole->AddActorLocalRotation(newRotation);
+			}
+		}
+		else
+		{
+			self->AddActorLocalRotation(newRotation);
+		}
 	}
-	else if (contr->IsInputKeyDown(EKeys::RightShift))
-	{
-		//Rotate Roll
-		newRotation.Roll = newRotation.Roll + rotationAmount;
-	}
-	else
-	{
-		//Rotate Yaw
-		newRotation.Yaw = newRotation.Yaw + rotationAmount;
-	}
-	self->AddActorLocalRotation(newRotation);
 }
-//#pragma optimize("", on)
+#pragma optimize("", off)
+void FInfiniteNudgeModule::DebugChecker()
+{
+	FString thisThing = "Hi";
+	FString thatThing = "Hello";
+	auto themThings = thisThing + thatThing;
+}
+#pragma optimize("", on)
 
 
 IMPLEMENT_GAME_MODULE(FInfiniteNudgeModule, InfiniteNudge);

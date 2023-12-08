@@ -2,6 +2,7 @@
 
 #include "Hologram/FGBuildableHologram.h"
 #include "Equipment/FGBuildGunBuild.h"
+#include "FGGenericBuildableHologram.h"
 #include "Patching/NativeHookManager.h"
 #include "Hologram/FGHologram.h"
 #include "../../../../SML/Source/SML/Public/Patching/NativeHookManager.h"
@@ -16,10 +17,13 @@ public:
 
 	FVector NudgeTowardsWorldDirection(AFGHologram* self, const FVector& Direction);
 
+	void NudgeHologram(const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult);
+	void NudgeGenericHologram(const AFGGenericBuildableHologram* self, const FVector& NudgeInput, const FHitResult& HitResult);
+	FVector AddNudgeOffset(AFGHologram* self, const FVector& Direction);
+
 	void RotateLockedHologram(AFGHologram* self, int32 delta);
 
-	float savedNudgeDistance;
+	void DebugChecker();
 
-	float LeftCtrlNudgeAmount = 20.f;
-	float LeftAltNudgeAmount = 50.f;
+	float savedNudgeDistance;
 };
