@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.2.7",
-	"SemVersion": "1.2.7",
+	"VersionName": "1.2.8",
+	"SemVersion": "1.2.8",
 	"FriendlyName": "Throughput Counter Limiter",
 	"Description": "A conveyor belt attachment that counts and displays the actual item throughput per minute. Can optionally limit the number of items allowed per minute.",
 	"Category": "Modding",
@@ -15,11 +15,10 @@
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
-	"AcceptsAnyRemoteVersion": false,
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.6.0",
+			"SemVersion": "^3.6.1",
 			"Enabled": true,
 			"BasePlugin": false
 		}
@@ -30,6 +29,5 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
-	],
-	"RemoteVersionRange": ""
+	]
 }

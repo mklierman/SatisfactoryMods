@@ -82,7 +82,10 @@ void ACL_CounterLimiter::Dismantle_Implementation()
 							belt2Conn->ClearConnection();
 							belt1Conn->SetConnection(belt2Conn);
 							auto newBelt = AFGBuildableConveyorBelt::Merge(belts);
-							newBelt->Execute_SetCustomizationData(newBelt, belt1CustomizationData);
+							if (newBelt && belt1CustomizationData.IsInitialized())
+							{
+								newBelt->Execute_SetCustomizationData(newBelt, belt1CustomizationData);
+							}
 						}
 						else
 						{
