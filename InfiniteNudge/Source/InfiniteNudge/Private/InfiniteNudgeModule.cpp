@@ -4,7 +4,9 @@
 #include "InfiniteNudge_ConfigurationStruct.h"
 #include "FGPlayerController.h"
 #include "Hologram/FGPipeAttachmentHologram.h"
+#include "Hologram/FGWaterPumpHologram.h"
 #include "Hologram/FGWireHologram.h"
+#include "Hologram/FGWallAttachmentHologram.h"
 #include "FGInputLibrary.h"
 
 #pragma optimize("", off)
@@ -30,14 +32,16 @@ void FInfiniteNudgeModule::StartupModule() {
 	//ENudgeFailReason AFGHologram::NudgeHologram(const FVector& NudgeInput, const FHitResult& HitResult){ return ENudgeFailReason(); }
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::NudgeHologram, bh, [=](auto scope, const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
 		{
-			NudgeHologram(self, NudgeInput, HitResult);
+			scope.Override(ENudgeFailReason::NFR_Success);
+			//NudgeHologram(self, NudgeInput, HitResult);
 		});
 
 
 	AFGGenericBuildableHologram* gbh = GetMutableDefault<AFGGenericBuildableHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGGenericBuildableHologram::NudgeHologram, gbh, [=](auto scope, const AFGGenericBuildableHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
 		{
-			NudgeGenericHologram(self, NudgeInput, HitResult);
+			scope.Override(ENudgeFailReason::NFR_Success);
+			//NudgeGenericHologram(self, NudgeInput, HitResult);
 		});
 
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
@@ -80,9 +84,38 @@ void FInfiniteNudgeModule::StartupModule() {
 			self->mMaxNudgeDistance = 50000;
 		});
 
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::CanNudgeHologram, bh, [=](auto& scope, const AFGHologram* self)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::CanNudgeHologram, bh, [=](auto& scope, const AFGHologram* self)
+		{
+			scope.Override(true);
+		});
+
+	//AFGResourceExtractorHologram* reh = GetMutableDefault<AFGResourceExtractorHologram>();
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGResourceExtractorHologram::CanNudgeHologram, reh, [=](auto& scope, const AFGResourceExtractorHologram* self)
 	//	{
 	//		scope.Override(true);
+	//	});
+
+	AFGWaterPumpHologram* wph = GetMutableDefault<AFGWaterPumpHologram>();
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGWaterPumpHologram::TrySnapToExtractableResource, wph, [=](auto& scope, AFGWaterPumpHologram* self, const FHitResult& hitResult, FVector& newHitLocation)
+	//	{
+	//		if (self->IsHologramLocked())
+	//		{
+	//			scope.Cancel();
+	//		}
+	//	});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGWaterPumpHologram::PostHologramPlacement, wph, [=](auto& scope, AFGWaterPumpHologram* self, const FHitResult& hitResult)
+		{
+			if (self->IsHologramLocked())
+			{
+				scope.Cancel();
+			}
+		});
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGWaterPumpHologram::CheckValidPlacement, wph, [=](auto& scope, AFGWaterPumpHologram* self)
+	//	{
+	//		if (self->IsHologramLocked())
+	//		{
+	//			scope.Cancel();
+	//		}
 	//	});
 
 	//const FVector& GetNudgeOffset() const { return mHologramNudgeOffset; }
@@ -104,12 +137,13 @@ void FInfiniteNudgeModule::StartupModule() {
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::AddNudgeOffset, bh, [=](auto& scope, AFGHologram* self, const FVector& Direction)
 		{
-			FVector newVector = AddNudgeOffset(self, Direction);
-			if (newVector.X != 0 || newVector.Y != 0 || newVector.Z != 0)
-			{
-				ENudgeFailReason fr = scope(self, newVector);
-				scope.Override(fr);
-			}
+			scope.Override(ENudgeFailReason::NFR_Success);
+			//FVector newVector = AddNudgeOffset(self, Direction);
+			//if (newVector.X != 0 || newVector.Y != 0 || newVector.Z != 0)
+			//{
+			//	ENudgeFailReason fr = scope(self, newVector);
+			//	scope.Override(fr);
+			//}
 		});
 
 	//virtual ENudgeFailReason NudgeHologram( const FVector& NudgeInput, const FHitResult& HitResult );
@@ -166,7 +200,27 @@ void FInfiniteNudgeModule::NudgeHologram(const AFGHologram* self, const FVector&
 		TArray<FKey> ModifierKeys;
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.BigNudge", LargeNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.LargeNudge", LargeNudgeKey, ModifierKeys);
+
+		if (!contr->IsInputKeyDown(EKeys::LeftShift) && !contr->IsInputKeyDown(EKeys::RightShift)
+			&& !contr->IsInputKeyDown(EKeys::LeftAlt) && !contr->IsInputKeyDown(EKeys::RightAlt))
+		{
+			if (contr->IsInputKeyDown(EKeys::LeftControl))
+			{
+				if (TinyNudgeKey == EKeys::LeftControl)
+				{
+					TinyNudgeAmount = TinyNudgeAmount * 2;
+				}
+				else if (SmallNudgeKey == EKeys::LeftControl)
+				{
+					SmallNudgeAmount = SmallNudgeAmount * 2;
+				}
+				else if (LargeNudgeKey == EKeys::LeftControl)
+				{
+					LargeNudgeAmount = LargeNudgeAmount * 2;
+				}
+			}
+		}
 
 		if (TinyNudgeKey.IsValid() && contr->IsInputKeyDown(TinyNudgeKey))
 		{
@@ -202,10 +256,13 @@ void FInfiniteNudgeModule::NudgeGenericHologram(const AFGGenericBuildableHologra
 		FKey TinyNudgeKey;
 		FKey SmallNudgeKey;
 		FKey LargeNudgeKey;
+		FKey VerticalNudgeKey;
 		TArray<FKey> ModifierKeys;
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.BigNudge", LargeNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.LargeNudge", LargeNudgeKey, ModifierKeys);
+		//UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.VerticalNudge", VerticalNudgeKey, ModifierKeys);
+
 
 		if (TinyNudgeKey.IsValid() && contr->IsInputKeyDown(TinyNudgeKey))
 		{
@@ -245,12 +302,13 @@ FVector FInfiniteNudgeModule::AddNudgeOffset(AFGHologram* self, const FVector& D
 		FKey SmallNudgeKey;
 		FKey LargeNudgeKey;
 		FKey VerticalNudgeKey;
+		
 		TArray<FKey> ModifierKeys;
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "BuildGunBuild_NudgeForward", NudgeForwardKey, ModifierKeys);
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "BuildGunBuild_NudgeBackward", NudgeBackwardKey, ModifierKeys);
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.BigNudge", LargeNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.LargeNudge", LargeNudgeKey, ModifierKeys);
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.VerticalNudge", VerticalNudgeKey, ModifierKeys);
 
 		auto genericHolo = Cast < AFGGenericBuildableHologram>(self);
@@ -375,7 +433,8 @@ void FInfiniteNudgeModule::RotateLockedHologram(AFGHologram* self, int32 delta)
 		// Set rotation types
 
 		auto pipeAttachHolo = Cast<AFGPipeAttachmentHologram>(self);
-		if (pipeAttachHolo)
+		auto wallAttachmentHolo = Cast<AFGWallAttachmentHologram>(self);
+		if (pipeAttachHolo || wallAttachmentHolo)
 		{
 			// Pipe attachments rotate roll by default
 			if (contr->IsInputKeyDown(PitchRotateKey))
