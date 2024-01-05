@@ -28,6 +28,10 @@ void AInfiniteNudge_Subsystem::NudgeHologram(AFGHologram* hologram, float xDirec
 		{
 			NudgeWallAttachment(wallAttachmentHolo, xDirection, yDirection, controller);
 		}
+		else if (auto signHolo = Cast<AFGStandaloneSignHologram>(hologram))
+		{
+			NudgeSign(signHolo, xDirection, yDirection, controller);
+		}
 		else if (controller->IsInputKeyDown(VerticalNudgeKey))
 		{
 			hologram->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
@@ -61,7 +65,7 @@ void AInfiniteNudge_Subsystem::NudgeBelt(AFGConveyorBeltHologram* hologram, floa
 		FVector lookVector = GetLookVector(lookAngle);
 		FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
 
-		nudgeTarget->AddActorLocalOffset((rVectorz * -1) * GetCurrentNudgeAmount(controller));
+		nudgeTarget->AddActorLocalOffset((rVectorz) * GetCurrentNudgeAmount(controller));
 	}
 	nudgeTarget->mHologramLockLocation = nudgeTarget->GetActorLocation();
 }
@@ -83,7 +87,7 @@ void AInfiniteNudge_Subsystem::NudgePipe(AFGPipelineHologram* hologram, float xD
 		FVector lookVector = GetLookVector(lookAngle);
 		FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
 
-		nudgeTarget->AddActorLocalOffset((rVectorz * -1) * GetCurrentNudgeAmount(controller));
+		nudgeTarget->AddActorLocalOffset((rVectorz) * GetCurrentNudgeAmount(controller));
 	}
 	nudgeTarget->mHologramLockLocation = nudgeTarget->GetActorLocation();
 }
@@ -152,6 +156,55 @@ void AInfiniteNudge_Subsystem::NudgeWallAttachment(AFGWallAttachmentHologram* ho
 	hologram->mHologramLockLocation = hologram->GetActorLocation();
 }
 
+void AInfiniteNudge_Subsystem::NudgeSign(AFGStandaloneSignHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller)
+{
+	if (auto nudgeTarget = Cast<AFGSignPoleHologram>(hologram->GetNudgeHologramTarget()))
+	{
+		//Standard nudging	auto nudgeTarget = hologram->GetNudgeHologramTarget();
+		if (controller->IsInputKeyDown(VerticalNudgeKey))
+		{
+			nudgeTarget->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+		}
+		else
+		{
+			int lookAngle = GetClosestLookAngle(nudgeTarget, controller);
+			FVector lookVector = GetLookVector(lookAngle);
+			FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
+
+			nudgeTarget->AddActorLocalOffset((rVectorz) * GetCurrentNudgeAmount(controller));
+		}
+		nudgeTarget->mHologramLockLocation = nudgeTarget->GetActorLocation();
+	}
+	else
+	{
+		//Wall attachment nudging. Isn't actually a wall attachment holo, though
+		if (controller->IsInputKeyDown(VerticalNudgeKey))
+		{
+			int lookAngle = GetClosestLookAngle(hologram, controller);
+			FVector lookVector = GetLookVector(lookAngle);
+			FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
+			hologram->AddActorLocalOffset((rVectorz) * GetCurrentNudgeAmount(controller));
+		}
+		else
+		{
+			if (xDirection != 0)
+			{
+				int lookAngle = GetClosestLookAngle(hologram, controller);
+				FVector lookVector = GetLookVector(lookAngle);
+				FVector rVectorz = FVector(0, yDirection, xDirection).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
+				hologram->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+			}
+			else
+			{
+				int lookAngle = GetClosestLookAngle(hologram, controller);
+				FVector lookVector = GetLookVector(lookAngle);
+				FVector rVectorz = FVector(xDirection, yDirection,0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
+				hologram->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+			}
+		}
+	}
+}
+
 void AInfiniteNudge_Subsystem::GetConfigValues(UObject* worldContext, APlayerController* controller)
 {
 	TArray<FKey> ModifierKeys;
@@ -184,6 +237,35 @@ float AInfiniteNudge_Subsystem::GetCurrentNudgeAmount(APlayerController* control
 	{
 		return 100.0f;
 	}
+}
+
+FVector AInfiniteNudge_Subsystem::GetFrontOffset(TSubclassOf<AFGGenericBuildableHologram> hologram)
+{
+	FVector offset = FVector(0, 0, 0);
+	if (auto holo = Cast<AFGGenericBuildableHologram>(hologram))
+	{
+		// Determine "Front" of holo
+		//auto snapAxis = holo->mSnapAxis;
+		//FVector offset = FVector(0, 0, 0);
+		//switch (snapAxis)
+		//{
+		//case EAxis::X:
+		//	offset = holo->GetActorForwardVector();
+		//	break;
+
+		//case EAxis::Y:
+		//	offset = holo->GetActorRightVector();
+		//	break;
+
+		//case EAxis::Z:
+		//	offset = holo->GetActorUpVector();
+		//	break;
+
+		//default:
+		//	break;
+		//}
+	}
+	return offset;
 }
 
 FVector AInfiniteNudge_Subsystem::CalcPivotAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat)

@@ -16,6 +16,8 @@
 #include "Hologram/FGWireHologram.h"
 #include "Hologram/FGRailroadTrackHologram.h"
 #include "Hologram/FGWallAttachmentHologram.h"
+#include "Hologram/FGStandaloneSignHologram.h"
+#include "Hologram/FGSignPoleHologram.h"
 
 #include "InfiniteNudge_Subsystem.generated.h"
 DECLARE_LOG_CATEGORY_EXTERN(InfiniteNudge_Log, Display, All);
@@ -31,9 +33,13 @@ public:
 	void NudgeWire(AFGWireHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
 	void NudgeRailroadTrack(AFGRailroadTrackHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
 	void NudgeWallAttachment(AFGWallAttachmentHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
+	void NudgeSign(AFGStandaloneSignHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
+	void NudgeBeam(AFGStandaloneSignHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
+
 
 	void GetConfigValues(UObject* worldContext, APlayerController* controller);
 	float GetCurrentNudgeAmount(APlayerController* controller);
+	FVector GetFrontOffset(TSubclassOf<AFGGenericBuildableHologram> hologram);
 
 	FVector CalcPivotAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat);
 	FVector CalcViewAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat, EAxis::Type& FoundAxis, bool& Inverted);
