@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.5",
-	"SemVersion": "1.0.5",
+	"VersionName": "1.0.6",
+	"SemVersion": "1.0.6",
 	"FriendlyName": "April Fools",
 	"Description": "Enables the April Fools event from 2021",
 	"Category": "Modding",
@@ -15,12 +15,12 @@
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
-	"Plugins": 
-		[
-			{
-				"Name": "SML",
-				"SemVersion": "^3.6.0",
-				"Enabled": true
-			}
-		]
+	"Plugins": [
+		{
+			"Name": "SML",
+			"SemVersion": "^3.7.0",
+			"Enabled": true
+		}
+	],
+	"AcceptsAnyRemoteVersion": true
 }
