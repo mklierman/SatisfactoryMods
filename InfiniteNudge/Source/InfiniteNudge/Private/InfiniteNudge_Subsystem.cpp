@@ -205,6 +205,41 @@ void AInfiniteNudge_Subsystem::NudgeSign(AFGStandaloneSignHologram* hologram, fl
 	}
 }
 
+void AInfiniteNudge_Subsystem::ScaleHologram(AFGHologram* hologram, AFGPlayerController* controller)
+{
+	if (hologram && hologram->IsHologramLocked())
+	{
+		GetConfigValues(hologram->GetWorld(), controller);
+		if (controller)
+		{
+			// 1.0 == 100%
+			float scaleAmount = 5;
+			if (controller->IsInputKeyDown(TinyNudgeKey))
+			{
+				scaleAmount = TinyScaleAmount;
+			}
+			else if (controller->IsInputKeyDown(SmallNudgeKey))
+			{
+				scaleAmount = SmallScaleAmount;
+			}
+			else if (controller->IsInputKeyDown(LargeNudgeKey))
+			{
+				scaleAmount = LargeScaleAmount;
+			}
+			if (controller->IsInputKeyDown(DecreaseScaleKey))
+			{
+				scaleAmount = scaleAmount * -1.0;
+			}
+
+			if (scaleAmount != 0.0)
+			{
+				auto currentScale = hologram->GetActorRelativeScale3D();
+				hologram->SetActorRelativeScale3D(currentScale + (scaleAmount / 100));
+			}
+		}
+	}
+}
+
 void AInfiniteNudge_Subsystem::GetConfigValues(UObject* worldContext, APlayerController* controller)
 {
 	TArray<FKey> ModifierKeys;
@@ -212,11 +247,16 @@ void AInfiniteNudge_Subsystem::GetConfigValues(UObject* worldContext, APlayerCon
 	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
 	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.LargeNudge", LargeNudgeKey, ModifierKeys);
 	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.VerticalNudge", VerticalNudgeKey, ModifierKeys);
+	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.IncreaseScale", IncreaseScaleKey, ModifierKeys);
+	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.DecreaseScale", DecreaseScaleKey, ModifierKeys);
 
 	auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(worldContext);
 	TinyNudgeAmount = (float)config.LeftCtrlNudgeAmount;
 	SmallNudgeAmount = (float)config.LeftAltNudgeAmount;
 	LargeNudgeAmount = (float)config.LargeNudgeAmount;
+	TinyScaleAmount = (float)config.TinyScaleAmount;
+	SmallScaleAmount = (float)config.SmallScaleAmount;
+	LargeScaleAmount = (float)config.LargeScaleAmount;
 }
 
 float AInfiniteNudge_Subsystem::GetCurrentNudgeAmount(APlayerController* controller)

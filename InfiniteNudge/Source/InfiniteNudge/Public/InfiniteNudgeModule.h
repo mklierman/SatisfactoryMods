@@ -22,6 +22,7 @@ public:
 	FVector AddNudgeOffset(AFGHologram* self, const FVector& Direction);
 
 	void RotateLockedHologram(AFGHologram* self, int32 delta);
+	void ScaleHologram(AFGHologram* self);
 
 	void DebugChecker();
 

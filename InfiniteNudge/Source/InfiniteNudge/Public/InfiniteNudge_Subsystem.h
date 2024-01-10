@@ -37,6 +37,9 @@ public:
 	void NudgeBeam(AFGStandaloneSignHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
 
 
+	UFUNCTION(BlueprintCallable)
+	void ScaleHologram(AFGHologram* hologram, AFGPlayerController* controller);
+
 	void GetConfigValues(UObject* worldContext, APlayerController* controller);
 	float GetCurrentNudgeAmount(APlayerController* controller);
 	FVector GetFrontOffset(TSubclassOf<AFGGenericBuildableHologram> hologram);
@@ -49,9 +52,14 @@ public:
 	float TinyNudgeAmount;
 	float SmallNudgeAmount;
 	float LargeNudgeAmount;
+	float TinyScaleAmount;
+	float SmallScaleAmount;
+	float LargeScaleAmount;
 
 	FKey TinyNudgeKey;
 	FKey SmallNudgeKey;
 	FKey LargeNudgeKey;
 	FKey VerticalNudgeKey;
+	FKey IncreaseScaleKey;
+	FKey DecreaseScaleKey;
 };

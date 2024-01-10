@@ -405,14 +405,17 @@ void FInfiniteNudgeModule::RotateLockedHologram(AFGHologram* self, int32 delta)
 		auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
 		auto TinyRotateAmount = (float)config.TinyRotateAmount;
 		auto SmallRotateAmount = (float)config.SmallRotateAmount;
+		auto LargeRotateAmount = (float)config.LargeRotateAmount;
 
-		FKey TinyRotateKey;
-		FKey SmallRotateKey;
+		FKey TinyNudgeKey;
+		FKey SmallNudgeKey;
+		FKey LargeNudgeKey;
 		FKey PitchRotateKey;
 		FKey RollRotateKey;
 		TArray<FKey> ModifierKeys;
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyRotate", TinyRotateKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallRotate", SmallRotateKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.LargeNudge", LargeNudgeKey, ModifierKeys);
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.PitchRotate", PitchRotateKey, ModifierKeys);
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.RollRotate", RollRotateKey, ModifierKeys);
 
@@ -421,13 +424,17 @@ void FInfiniteNudgeModule::RotateLockedHologram(AFGHologram* self, int32 delta)
 		int rotationAmount = 15 * delta;
 
 		// Set Fine Rotation
-		if (contr->IsInputKeyDown(TinyRotateKey))
+		if (contr->IsInputKeyDown(TinyNudgeKey))
 		{
 			rotationAmount = TinyRotateAmount * delta;
 		}
-		if (contr->IsInputKeyDown(SmallRotateKey))
+		if (contr->IsInputKeyDown(SmallNudgeKey))
 		{
 			rotationAmount = SmallRotateAmount * delta;
+		}
+		if (contr->IsInputKeyDown(LargeNudgeKey))
+		{
+			rotationAmount = LargeRotateAmount * delta;
 		}
 
 		// Set rotation types
@@ -486,6 +493,51 @@ void FInfiniteNudgeModule::RotateLockedHologram(AFGHologram* self, int32 delta)
 		}
 	}
 }
+void FInfiniteNudgeModule::ScaleHologram(AFGHologram* self)
+{
+	auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
+	if (contr)
+	{
+		auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
+		auto TinyScaleAmount = (float)config.TinyScaleAmount;
+		auto SmallScaleAmount = (float)config.SmallScaleAmount;
+		auto LargeScaleAmount = (float)config.LargeScaleAmount;
+
+		FKey IncreaseScaleKey;
+		FKey DecreaseScaleKey;
+		FKey TinyNudgeKey;
+		FKey SmallNudgeKey;
+		FKey LargeNudgeKey;
+		TArray<FKey> ModifierKeys;
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.IncreaseScale", IncreaseScaleKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.DecreaseScale", DecreaseScaleKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.LargeNudge", LargeNudgeKey, ModifierKeys);
+
+		float scaleAmount = 1.0;
+		if (contr->IsInputKeyDown(TinyNudgeKey))
+		{
+			scaleAmount = TinyScaleAmount;
+		}
+		else if (contr->IsInputKeyDown(SmallNudgeKey))
+		{
+			scaleAmount = SmallScaleAmount;
+		}
+		else if (contr->IsInputKeyDown(LargeNudgeKey))
+		{
+			scaleAmount = LargeScaleAmount;
+		}
+		if (contr->IsInputKeyDown(DecreaseScaleKey))
+		{
+			scaleAmount = scaleAmount * -1.0;
+		}
+
+		auto currentScale = self->GetActorRelativeScale3D();
+		self->SetActorRelativeScale3D(currentScale + scaleAmount);
+	}
+}
+
 #pragma optimize("", off)
 void FInfiniteNudgeModule::DebugChecker()
 {

@@ -24,6 +24,18 @@ public:
     UPROPERTY(BlueprintReadWrite)
     float SmallRotateAmount{};
 
+    UPROPERTY(BlueprintReadWrite)
+    float TinyScaleAmount{};
+
+    UPROPERTY(BlueprintReadWrite)
+    float SmallScaleAmount{};
+
+    UPROPERTY(BlueprintReadWrite)
+    float LargeScaleAmount{};
+
+    UPROPERTY(BlueprintReadWrite)
+    float LargeRotateAmount{};
+
     /* Retrieves active configuration value and returns object of this struct containing it */
     static FInfiniteNudge_ConfigurationStruct GetActiveConfig(UObject* WorldContext) {
         FInfiniteNudge_ConfigurationStruct ConfigStruct{};
