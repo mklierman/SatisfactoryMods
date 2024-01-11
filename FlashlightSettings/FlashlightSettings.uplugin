@@ -1,15 +1,15 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.5",
-	"SemVersion": "1.0.5",
+	"VersionName": "1.0.6",
+	"SemVersion": "1.0.6",
 	"FriendlyName": "Flashlight Settings",
 	"Description": "Adds a new widget which lets you adjust the settings of your flashlight",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
 	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
-  	"DocsURL": "",
-  	"MarketplaceURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
 	"SupportURL": "https://discord.gg/WM5KT7pVu8",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
@@ -22,12 +22,11 @@
 			"LoadingPhase": "Default"
 		}
 	],
-		"Plugins": 
-		[
-			{
-				"Name": "SML",
-				"SemVersion": "^3.6.0",
-				"Enabled": true
-			}
-		]
+	"Plugins": [
+		{
+			"Name": "SML",
+			"SemVersion": "^3.7.0",
+			"Enabled": true
+		}
+	]
 }

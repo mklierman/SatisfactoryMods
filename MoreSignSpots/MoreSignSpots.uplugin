@@ -1,27 +1,27 @@
 {
-  "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "1.0.2",
-  "SemVersion": "1.0.2",
-  "FriendlyName": "More Sign Spots",
-  "Description": "Adds more Sign attachment points to vanilla buildings",
-  "Category": "Modding",
-  "CreatedBy": "SirDigby",
-  "CreatedByURL": "",
-  "DocsURL": "",
-  "MarketplaceURL": "",
-  "SupportURL": "",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "IsExperimentalVersion": false,
-  "Installed": false,
-  "AcceptsAnyRemoteVersion": false,
-  "Plugins": [
-    {
-      "Name": "SML",
-      "SemVersion": "^3.6.0",
-      "Enabled": true,
-      "IsActive": false
-    }
-  ]
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.3",
+	"SemVersion": "1.0.3",
+	"FriendlyName": "More Sign Spots",
+	"Description": "Adds more Sign attachment points to vanilla buildings",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"AcceptsAnyRemoteVersion": false,
+	"Plugins": [
+		{
+			"Name": "SML",
+			"SemVersion": "^3.7.0",
+			"Enabled": true,
+			"IsActive": false
+		}
+	]
 }

@@ -1,34 +1,34 @@
 {
-  "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "1.1.7",
-  "SemVersion": "1.1.7",
-  "FriendlyName": "Location and Rotation",
-  "Description": "Adds a widget which shows you the location and rotation info for the currently highlighted buildable",
-  "Category": "",
-  "CreatedBy": "",
-  "CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
-  "DocsURL": "",
-  "MarketplaceURL": "",
-  "SupportURL": "",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "IsExperimentalVersion": false,
-  "Installed": false,
-  "AcceptsAnyRemoteVersion": false,
-  "Plugins": [
-    {
-      "Name": "SML",
-      "SemVersion": "^3.6.0",
-      "Enabled": true,
-      "IsActive": false
-    }
-  ],
-  "Modules": [
-    {
-      "Name": "HologramLocation",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ]
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.1.8",
+	"SemVersion": "1.1.8",
+	"FriendlyName": "Location and Rotation",
+	"Description": "Adds a widget which shows you the location and rotation info for the currently highlighted buildable",
+	"Category": "Modding",
+	"CreatedBy": "",
+	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"AcceptsAnyRemoteVersion": true,
+	"Plugins": [
+		{
+			"Name": "SML",
+			"SemVersion": "^3.7.0",
+			"Enabled": true,
+			"IsActive": false
+		}
+	],
+	"Modules": [
+		{
+			"Name": "HologramLocation",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
 }

@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.12",
-	"SemVersion": "1.0.12",
+	"VersionName": "1.0.13",
+	"SemVersion": "1.0.13",
 	"FriendlyName": "SnapOn",
 	"Description": "",
 	"Category": "Modding",
@@ -19,7 +19,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.6.0",
+			"SemVersion": "^3.7.0",
 			"Enabled": true,
 			"IsActive": false,
 			"BasePlugin": false

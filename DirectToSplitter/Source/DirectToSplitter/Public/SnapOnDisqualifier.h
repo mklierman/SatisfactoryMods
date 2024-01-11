@@ -12,6 +12,6 @@ class DIRECTTOSPLITTER_API USnapOnDisqualifier : public UFGConstructDisqualifier
 
 		USnapOnDisqualifier()
 	{
-		mDisqfualifyingText = FText::FromString("Connecting to storage containers with multiple inputs and/or outputs is not supported");
+		mDisqfualifyingText = FText::FromString("Snapping to connections with shared inputs/outputs is not supported");
 	}
 };

@@ -1,33 +1,33 @@
 {
-  "FileVersion": 3,
-  "Version": 2,
-  "VersionName": "2.0.5",
-  "SemVersion": "2.0.5",
-  "FriendlyName": "Crash Site Beacons",
-  "Description": "Places a map marker at every crash site.",
-  "Category": "Modding",
-  "CreatedBy": "SirDigby",
+	"FileVersion": 3,
+	"Version": 2,
+	"VersionName": "2.0.6",
+	"SemVersion": "2.0.6",
+	"FriendlyName": "Crash Site Beacons",
+	"Description": "Places a map marker at every crash site.",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
 	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
-  "DocsURL": "",
-  "MarketplaceURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
 	"SupportURL": "https://discord.gg/WM5KT7pVu8",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "IsExperimentalVersion": false,
-  "Installed": false,
-  "AcceptsAnyRemoteVersion": false,
-  "Plugins": [
-    {
-      "Name": "SML",
-      "SemVersion": "^3.6.0",
-      "Enabled": true
-    }
-  ],
-  "Modules": [
-    {
-      "Name": "CrashSiteBeacons",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ]
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"AcceptsAnyRemoteVersion": false,
+	"Plugins": [
+		{
+			"Name": "SML",
+			"SemVersion": "^3.7.0",
+			"Enabled": true
+		}
+	],
+	"Modules": [
+		{
+			"Name": "CrashSiteBeacons",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
 }

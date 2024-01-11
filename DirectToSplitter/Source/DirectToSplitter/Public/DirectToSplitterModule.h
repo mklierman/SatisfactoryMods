@@ -4,10 +4,12 @@
 #include "Patching/NativeHookManager.h"
 #include "FGFactoryConnectionComponent.h"
 #include "Hologram/FGConveyorAttachmentHologram.h"
+#include "Hologram/FGFactoryHologram.h"
 #include "Buildables/FGBuildableConveyorBase.h"
 #include "Buildables/FGBuildable.h"
 #include "Hologram/FGBuildableHologram.h"
 #include "Hologram/FGHologram.h"
+#include "Buildables/FGBuildableFactory.h"
 #include "Buildables/FGBuildableAttachmentSplitter.h"
 #include "Buildables/FGBuildableSplitterSmart.h"
 #include "Hologram/FGPipelineAttachmentHologram.h"
@@ -27,6 +29,7 @@ public:
 	virtual void StartupModule() override;
 
 	void CheckValidPlacement(AFGConveyorAttachmentHologram* self, bool& retflag);
+	void CheckValidFactoryPlacement(AFGFactoryHologram* self, bool& retflag);
 	void CheckValidPipePlacement(AFGPipelineAttachmentHologram* self, bool& retflag);
 
 	void ConfigureComponents(const AFGConveyorAttachmentHologram* self,  bool& retflag);
