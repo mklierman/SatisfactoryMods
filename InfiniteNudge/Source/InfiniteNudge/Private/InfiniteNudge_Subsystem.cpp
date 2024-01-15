@@ -234,7 +234,28 @@ void AInfiniteNudge_Subsystem::ScaleHologram(AFGHologram* hologram, AFGPlayerCon
 			if (scaleAmount != 0.0)
 			{
 				auto currentScale = hologram->GetActorRelativeScale3D();
-				hologram->SetActorRelativeScale3D(currentScale + (scaleAmount / 100));
+				auto newScale = currentScale + (scaleAmount / 100);
+				//UE_LOG(InfiniteNudge_Log, Display, TEXT("ScaleHologram - NewScale: %s"), *newScale.ToString());
+				//UE_LOG(InfiniteNudge_Log, Display, TEXT("ScaleHologram - NewScale: %s"), *newScale.ToString());
+				//auto netMode = hologram->GetNetMode();
+				if (HasAuthority() && false)
+				{
+					hologram->SetActorRelativeScale3D(newScale);
+					ForceNetUpdate();
+				}
+				else
+				{
+					if (UInfiniteNudge_RCO* RCO = UInfiniteNudge_RCO::Get(GetWorld()))
+					{
+						hologram->SetActorRelativeScale3D(newScale);
+						RCO->Server_SetHologramScale(controller, newScale);
+					}
+				}
+
+				//auto currentTransform = hologram->GetActorTransform();
+				//FTransform newTransform = currentTransform;
+				//newTransform.SetScale3D(currentScale + (scaleAmount / 100));
+				//hologram->SetActorTransform(newTransform);
 			}
 		}
 	}

@@ -18,6 +18,7 @@
 #include "Hologram/FGWallAttachmentHologram.h"
 #include "Hologram/FGStandaloneSignHologram.h"
 #include "Hologram/FGSignPoleHologram.h"
+#include "InfiniteNudge_RCO.h"
 
 #include "InfiniteNudge_Subsystem.generated.h"
 DECLARE_LOG_CATEGORY_EXTERN(InfiniteNudge_Log, Display, All);

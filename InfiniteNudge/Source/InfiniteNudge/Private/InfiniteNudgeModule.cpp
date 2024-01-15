@@ -8,6 +8,7 @@
 #include "Hologram/FGWireHologram.h"
 #include "Hologram/FGWallAttachmentHologram.h"
 #include "FGInputLibrary.h"
+#include "FGGameMode.h"
 
 #pragma optimize("", off)
 
@@ -175,6 +176,29 @@ void FInfiniteNudgeModule::StartupModule() {
 				RotateLockedHologram(self, delta);
 			}
 		});
+
+	//AFGGameMode* LocalGameMode = GetMutableDefault<AFGGameMode>();
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, [](auto& scope, AFGGameMode* gm, APlayerController* pc)
+	//	{
+	//		if (gm->HasAuthority() && !gm->IsMainMenuGameMode())
+	//		{
+	//			//Register RCO
+	//			gm->RegisterRemoteCallObjectClass(UInfiniteNudge_RCO::StaticClass());
+	//		}
+	//	});
+	//AFGBuildableHologram* fgbhg = GetMutableDefault<AFGBuildableHologram>();
+
+	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, fgbhg, [=](AActor* constructedActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID constructionID)
+	//	{
+	//		auto hgScale = self->GetActorRelativeScale3D();
+	//		constructedActor->SetActorRelativeScale3D(hgScale);
+	//	});
+
+	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::ConfigureComponents, fgbhg, [=](const AFGBuildableHologram* self, class AFGBuildable* inBuildable)
+	//	{
+	//		auto hgScale = self->GetActorRelativeScale3D();
+	//		inBuildable->SetActorRelativeScale3D(hgScale);
+	//	});
 #endif
 }
 
