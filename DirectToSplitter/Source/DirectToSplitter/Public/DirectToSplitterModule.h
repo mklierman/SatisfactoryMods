@@ -13,8 +13,15 @@
 #include "Buildables/FGBuildableAttachmentSplitter.h"
 #include "Buildables/FGBuildableSplitterSmart.h"
 #include "Hologram/FGPipelineAttachmentHologram.h"
+#include "Hologram/FGPipeAttachmentHologram.h"
 #include "FGConstructDisqualifier.h"
 #include "Buildables/FGBuildableConveyorLift.h"
+#include "FGPipeConnectionComponent.h"
+#include "Hologram/FGPipelineJunctionHologram.h"
+#include "AbstractInstanceManager.h"
+#include "AbstractInstanceInterface.h"
+#include "InstanceData.h"
+#include "AbstractInstance.h"
 #include "SnapOnDisqualifier.h"
 
 struct ConveyorAttachmentInfo
@@ -37,6 +44,8 @@ public:
 	virtual bool IsGameModule() const override { return true; }
 
 	void HGConstruct(AFGBuildableHologram* hg, AActor* buildable);
+
+	bool PipeSnap(AFGPipeAttachmentHologram* self, const FHitResult& hitResult);
 
 	TMap < AFGConveyorAttachmentHologram* ,ConveyorAttachmentInfo> AttachmentInfos;
 	TMap< AFGConveyorAttachmentHologram*, UFGFactoryConnectionComponent*> mSnappedConnections;

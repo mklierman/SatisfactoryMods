@@ -1,10 +1,12 @@
 #include "DirectToSplitterModule.h"
 #include "DTS_ConfigStruct.h"
 #include "Registry/ModContentRegistry.h"
+#include <Kismet/KismetMathLibrary.h>
 
-#pragma optimize("", off)
+//#pragma optimize("", off)
+//#if !WITH_EDITOR
+//#endif
 void FDirectToSplitterModule::StartupModule() {
-#if !WITH_EDITOR
 	AFGConveyorAttachmentHologram* cah = GetMutableDefault<AFGConveyorAttachmentHologram>();
 	AFGFactoryHologram* fh = GetMutableDefault<AFGFactoryHologram>();
 
@@ -28,6 +30,81 @@ void FDirectToSplitterModule::StartupModule() {
 		{
 			HGConstruct(self, outActor);
 		});
+
+	AFGPipeAttachmentHologram* pahg = GetMutableDefault<AFGPipeAttachmentHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::IsValidHitResult, pahg, [=](auto& scope, const AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
+		{
+			if (auto junction = Cast<AFGPipelineJunctionHologram>(self))
+			{
+				AFGBuildable* hitBuildable = nullptr;
+				auto hitInstanceMgr = Cast<AAbstractInstanceManager>(hitResult.GetActor());
+				if (hitInstanceMgr)
+				{
+					FInstanceHandle outHandle;
+					auto hitResolved = hitInstanceMgr->ResolveHit(hitResult, outHandle);
+					if (hitResolved)
+					{
+						if (outHandle.GetOwner())
+						{
+							auto handleBuildable = Cast<AFGBuildable>(outHandle.GetOwner());
+							if (handleBuildable)
+							{
+								hitBuildable = handleBuildable;
+							}
+						}
+					}
+				}
+				if (!hitBuildable)
+				{
+					hitBuildable = Cast<AFGBuildable>(hitResult.GetActor());
+				}
+				if (hitBuildable)
+				{
+					auto components = hitBuildable->GetComponentsByClass(UFGPipeConnectionComponent::StaticClass());
+					if (components.Num() > 0)
+					{
+						for (auto comp : components)
+						{
+							UFGPipeConnectionComponent* fccomp = Cast< UFGPipeConnectionComponent>(comp);
+							if (fccomp)
+							{
+								if (fccomp->IsConnected())
+								{
+									continue;
+								}
+								auto compLoc = fccomp->GetComponentLocation();
+								auto distance = FVector::Dist(hitResult.Location, compLoc);
+								if (distance <= junction->mAttachmentPointSnapDistanceThreshold)
+								{
+									scope.Override(true);
+								}
+							}
+						}
+					}
+				}
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::TrySnapToActor, pahg, [=](auto& scope, AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
+		{
+			bool result = (bool)scope(self, hitResult);
+			auto pipeAttachHolo = Cast<AFGPipeAttachmentHologram>(self);
+			if (!result && pipeAttachHolo && hitResult.GetActor())
+			{
+				scope.Override(PipeSnap(pipeAttachHolo, hitResult));
+
+				return;
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::CheckValidPlacement, pahg, [=](auto& scope, AFGPipeAttachmentHologram* self)
+		{
+			auto junction = Cast<AFGPipelineJunctionHologram>(self);
+			if (junction && self->mSnappedConnectionComponent)
+			{
+				self->ResetConstructDisqualifiers();
+				scope.Cancel();
+			}
+		});
+#if !WITH_EDITOR
 #endif
 }
 
@@ -36,11 +113,13 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 
 
 	retflag = true;
-	//auto className = self->mBuildClass.Get()->GetName();
-	//if (className != "Build_ConveyorAttachmentMerger_C" && className != "Build_ConveyorAttachmentSplitter_C")
-	//{
-	//	return;
-	//}
+	auto className = self->mBuildClass.Get()->GetName();
+	if (className == "Build_ConveyorAttachmentSplitterSmart_C" || className == "Build_ConveyorAttachmentSplitterProgrammable_C")
+	{
+		self->ResetConstructDisqualifiers();
+		self->AddConstructDisqualifier(USnapOnSplitterDisqualifier::StaticClass());
+		return;
+	}
 	TArray< TSubclassOf<  UFGConstructDisqualifier > >out_constructResults;
 	self->GetConstructDisqualifiers(out_constructResults);
 	if (self->mSnappedConection)
@@ -57,6 +136,7 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 		//	auto name = snappedBuildable->mDecoratorClass->GetName();
 		//	if (name.Equals("Deco_StorageContainerMk2_C"))
 		//	{
+		//		self->AddConstructDisqualifier(USnapOnDisqualifier::StaticClass());
 		//		return;
 		//	}
 		//}
@@ -64,21 +144,21 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 		auto direction = self->mSnappedConection->GetDirection();
 		auto inventoryIndex = self->mSnappedConection->GetInventoryAccessIndex();
 
-		//for (UActorComponent* ComponentsByClass : snappedBuildable->GetComponentsByClass(UFGFactoryConnectionComponent::StaticClass()))
-		//{
-		//	if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
-		//	{
-		//		if (ConnectionComponent != self->mSnappedConection 
-		//			&& ConnectionComponent->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR
-		//			&& ConnectionComponent->GetInventory() == snappedInventory
-		//			&& ConnectionComponent->GetDirection() == direction)
-		//		{
-		//			self->ResetConstructDisqualifiers();
-		//			self->AddConstructDisqualifier(USnapOnDisqualifier::StaticClass());
-		//			return;
-		//		}
-		//	}
-		//}
+		for (UActorComponent* ComponentsByClass : snappedBuildable->GetComponentsByClass(UFGFactoryConnectionComponent::StaticClass()))
+		{
+			if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
+			{
+				if (ConnectionComponent != self->mSnappedConection 
+					&& ConnectionComponent->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR
+					&& ConnectionComponent->GetInventory() == snappedInventory
+					&& ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
+				{
+					self->ResetConstructDisqualifiers();
+					self->AddConstructDisqualifier(USnapOnDisqualifier::StaticClass());
+					return;
+				}
+			}
+		}
 
 		//Currently broken
 		//auto modRegistry = UModContentRegistry::Get(self->GetWorld());
@@ -357,6 +437,135 @@ void FDirectToSplitterModule::HGConstruct(AFGBuildableHologram* hg, AActor* buil
 	}
 }
 
-#pragma optimize("", on)
+bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
+{
+	auto junction = Cast<AFGPipelineJunctionHologram>(self);
+	if (junction == nullptr)
+	{
+		return false;
+	}
+	//Get the (possibly) hit buildable
+	AFGBuildable* hitBuildable = nullptr;
+	auto hitInstanceMgr = Cast<AAbstractInstanceManager>(hitResult.GetActor());
+	if (hitInstanceMgr)
+	{
+		FInstanceHandle outHandle;
+		auto hitResolved = hitInstanceMgr->ResolveHit(hitResult, outHandle);
+		if (hitResolved)
+		{
+			if (outHandle.GetOwner())
+			{
+				auto handleBuildable = Cast<AFGBuildable>(outHandle.GetOwner());
+				if (handleBuildable)
+				{
+					hitBuildable = handleBuildable;
+				}
+			}
+		}
+	}
+	if (!hitBuildable)
+	{
+		hitBuildable = Cast<AFGBuildable>(hitResult.GetActor());
+	}
+
+	if (hitBuildable)
+	{
+		FVector loc = self->GetActorLocation();
+		FVector normal = self->GetActorForwardVector();
+
+		auto components = hitBuildable->GetComponentsByClass(UFGPipeConnectionComponent::StaticClass());
+		if (components.Num() > 0)
+		{
+			//Get the pipe connections
+			TArray<UFGPipeConnectionComponent*> connections;
+			for (auto component : components)
+			{
+				UFGPipeConnectionComponent* fccomp = Cast< UFGPipeConnectionComponent>(component);
+				if (fccomp)
+				{
+					if (fccomp->IsConnected())
+					{
+						continue;
+					}
+					connections.Add(fccomp);
+				}
+			}
+
+			if (connections.Num() > 0)
+			{
+				//Find the closest pipe connection
+				UFGPipeConnectionComponent* closestConnection = nullptr;
+				double closestDistance;
+				FVector myLoc = self->GetActorLocation();
+				for (auto conn : connections)
+				{
+					FVector connLoc = conn->GetComponentLocation();
+					auto distance = FVector::Dist(hitResult.Location, connLoc);
+
+					if (!closestConnection || distance < closestDistance)
+					{
+						closestConnection = conn;
+						closestDistance = distance;
+					}
+				}
+
+				auto myPipeConns = self->GetCachedPipeConnectionComponents();
+				if (myPipeConns.Num() > 0 && closestConnection)
+				{
+					UFGPipeConnectionComponent* myCompToSnap = nullptr;
+					for (auto myConn : myPipeConns)
+					{
+						auto myType = myConn->GetPipeConnectionType();
+						if (myType == EPipeConnectionType::PCT_ANY || myType == EPipeConnectionType::PCT_SNAP_ONLY)
+						{
+							myCompToSnap = myConn;
+							break;
+						}
+
+						auto closestDirection = closestConnection->GetPipeConnectionType();
+						if (closestDirection == EPipeConnectionType::PCT_CONSUMER && myType == EPipeConnectionType::PCT_PRODUCER)
+						{
+							myCompToSnap = myConn;
+							break;
+						}
+						else if (closestDirection == EPipeConnectionType::PCT_PRODUCER && myType == EPipeConnectionType::PCT_CONSUMER)
+						{
+							myCompToSnap = myConn;
+							break;
+						}
+					}
+
+					if (myCompToSnap)
+					{
+						self->mSnappedConnectionComponent = closestConnection;
+						auto newConnectionLocation = closestConnection->GetComponentLocation();
+						auto newConnectionRotation = closestConnection->GetComponentRotation();
+						auto myConnectionLocation = myCompToSnap->GetComponentLocation();
+						auto myConnectionRotation = myCompToSnap->GetComponentRotation();
+
+						auto rotationDifference = newConnectionRotation - myConnectionRotation;
+						auto rotationDiffForwardVector = UKismetMathLibrary::GetForwardVector(rotationDifference) * -1.f;
+						auto rotationFromX = UKismetMathLibrary::MakeRotFromX(rotationDiffForwardVector);
+						self->AddActorWorldRotation(rotationFromX);
+
+						auto normalizedLocationDiff = newConnectionLocation - myConnectionLocation;
+						normalizedLocationDiff.Normalize(0.0001);
+						auto distanceBetweenComps = UKismetMathLibrary::Vector_Distance(newConnectionLocation, myConnectionLocation);
+						auto newLocation = (normalizedLocationDiff * distanceBetweenComps) + myConnectionLocation;
+						auto offset = FDTS_ConfigStruct::GetActiveConfig(self->GetWorld()).PipeSnapOffset * 100.f;
+						auto compForward = closestConnection->GetForwardVector();
+						FVector addVector = compForward * offset;
+						self->SetActorLocation(newLocation + addVector);
+						return true;
+					}
+				}
+			}
+		}
+	}
+	self->mSnappedConnectionComponent = nullptr;
+	return false;
+}
+
+//#pragma optimize("", on)
 
 IMPLEMENT_GAME_MODULE(FDirectToSplitterModule, DirectToSplitter);

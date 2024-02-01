@@ -10,7 +10,10 @@ struct FDTS_ConfigStruct {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite)
-    float SnapOffset {};
+    float SnapOffset{};
+
+    UPROPERTY(BlueprintReadWrite)
+    float PipeSnapOffset{};
 
     /* Retrieves active configuration value and returns object of this struct containing it */
     static FDTS_ConfigStruct GetActiveConfig(UObject* WorldContext) {

@@ -12,6 +12,18 @@ class DIRECTTOSPLITTER_API USnapOnDisqualifier : public UFGConstructDisqualifier
 
 		USnapOnDisqualifier()
 	{
-		mDisqfualifyingText = FText::FromString("Snapping to connections with shared inputs/outputs is not supported");
+		mDisqfualifyingText = FText::FromString("Snapping to connections with shared outputs is not supported");
+	}
+};
+
+
+UCLASS()
+class DIRECTTOSPLITTER_API USnapOnSplitterDisqualifier : public UFGConstructDisqualifier
+{
+	GENERATED_BODY()
+
+	USnapOnSplitterDisqualifier()
+	{
+		mDisqfualifyingText = FText::FromString("Splitter Type not supported by SnapOn");
 	}
 };
