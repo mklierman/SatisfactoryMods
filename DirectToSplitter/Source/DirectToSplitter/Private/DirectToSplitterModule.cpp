@@ -110,16 +110,7 @@ void FDirectToSplitterModule::StartupModule() {
 
 void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram* self, bool& retflag)
 {
-
-
 	retflag = true;
-	auto className = self->mBuildClass.Get()->GetName();
-	if (className == "Build_ConveyorAttachmentSplitterSmart_C" || className == "Build_ConveyorAttachmentSplitterProgrammable_C")
-	{
-		self->ResetConstructDisqualifiers();
-		self->AddConstructDisqualifier(USnapOnSplitterDisqualifier::StaticClass());
-		return;
-	}
 	TArray< TSubclassOf<  UFGConstructDisqualifier > >out_constructResults;
 	self->GetConstructDisqualifiers(out_constructResults);
 	if (self->mSnappedConection)
@@ -127,6 +118,13 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 		auto snappedConnectionName = self->mSnappedConection->GetName();
 		if (snappedConnectionName.Contains("ConveyorAny"))
 		{
+			return;
+		}
+		auto className = self->mBuildClass.Get()->GetName();
+		if (className == "Build_ConveyorAttachmentSplitterSmart_C" || className == "Build_ConveyorAttachmentSplitterProgrammable_C")
+		{
+			self->ResetConstructDisqualifiers();
+			self->AddConstructDisqualifier(USnapOnSplitterDisqualifier::StaticClass());
 			return;
 		}
 		auto snappedBuildable = self->mSnappedConection->GetOuterBuildable();
