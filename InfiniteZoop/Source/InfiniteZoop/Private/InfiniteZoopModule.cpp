@@ -853,17 +853,28 @@ void FInfiniteZoopModule::StartupModule()
 			if (self && self->HasAuthority())
 			{
 				UWorld* world = self->GetWorld();
-				USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
-				AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
-				AInfiniteZoop_ClientSubsystem* clientSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoop_ClientSubsystem>();
-
-				if (clientSubsystem->tempZoopAmount > 0)
+				if (world)
 				{
-					self->mMaxZoop = clientSubsystem->tempZoopAmount - 1;
-				}
-				else
-				{
-					self->mMaxZoop = zoopSubsystem->currentZoopAmount - 1;
+					USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
+					if (SubsystemActorManager)
+					{
+						AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
+						if (zoopSubsystem)
+						{
+							AInfiniteZoop_ClientSubsystem* clientSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoop_ClientSubsystem>();
+							if (clientSubsystem)
+							{
+								if (clientSubsystem->tempZoopAmount > 0)
+								{
+									self->mMaxZoop = clientSubsystem->tempZoopAmount - 1;
+								}
+								else
+								{
+									self->mMaxZoop = zoopSubsystem->currentZoopAmount - 1;
+								}
+							}
+						}
+					}
 				}
 			}
 		});

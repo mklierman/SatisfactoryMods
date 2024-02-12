@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.8.3",
-	"SemVersion": "1.8.3",
+	"VersionName": "1.8.5",
+	"SemVersion": "1.8.5",
 	"FriendlyName": "Infinite Zoop",
 	"Description": "Adds a research tree in the MAM where you can improve your Zoop capacity",
 	"Category": "Modding",
@@ -18,7 +18,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.6.1",
+			"SemVersion": "^3.7.0",
 			"Enabled": true,
 			"IsActive": false
 		}
