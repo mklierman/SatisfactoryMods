@@ -17,6 +17,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void GenerateMapMarker(FString markerName, FVector_NetQuantize markerLocation);
 
+		UFUNCTION(BlueprintCallable)
+		void ForceRemoveMapMarker(const FMapMarker& marker);
+
+		UFUNCTION(BlueprintCallable)
+		void RemoveRepresentation(class UFGActorRepresentation* actorRepresentation);
+
+		UFUNCTION(BlueprintCallable)
+		void UpdateRepresentation(UFGActorRepresentation* actorRepresentation);
+
 	//void OnDropPodOpen(CallScope<void(*)(AFGDropPod*)>& scope, AFGDropPod* DropPod);
 
 	UFUNCTION(BlueprintCallable)

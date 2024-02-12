@@ -6,6 +6,7 @@
 #include "FGMapManager.h"
 #include "FGMapMarker.h"
 #include "FGIconLibrary.h"
+#include "FGActorRepresentationManager.h"
 #include "FGActorRepresentation.h"
 
 
@@ -40,7 +41,7 @@ int AddValueToEnum(FName NewName)
 		Names.Emplace(TPair<FName, int64>(Name, Value));
 		FString enumName = Enum->GetNameStringByIndex(i);
 		FString enumIdx = FString::FromInt(Value);
-		UE_LOG(CrashSiteBeacons_Log, Display, TEXT("Enum Name/Value: %s/%s"), *enumName, *enumIdx);
+		//UE_LOG(CrashSiteBeacons_Log, Display, TEXT("Enum Name/Value: %s/%s"), *enumName, *enumIdx);
 	}
 	auto New = TPair<FName, int64>(NewName, NewValue);
 	Names.Emplace(New);
@@ -69,6 +70,42 @@ void ACrashSiteBeaconsSubSystem::GenerateMapMarker(FString markerName, FVector_N
 	mapManager->AddNewMapMarker(marker, marker);
 }
 
+void ACrashSiteBeaconsSubSystem::ForceRemoveMapMarker(const FMapMarker &marker)
+{
+	TArray<FMapMarker> markersToRemove;
+	auto mapManager = AFGMapManager::Get(this);
+	for (FMapMarker mkr : mapManager->mMapMarkers)
+	{
+		if (mkr.Color == marker.Color && mkr.Name == marker.Name && mkr.Location == marker.Location)
+		{
+			mkr.MarkerID = 255;
+			mkr.Location = FVector(0, 0, 0);
+			mkr.Name = "";
+			mkr.MapMarkerType = ERepresentationType::RT_Default;
+			mkr.IconID = 0;
+			mkr.Color= FLinearColor::Black;
+			mkr.Scale= 1.0;
+			mkr.CompassViewDistance = ECompassViewDistance::CVD_Off;
+			mkr.CreatedByLocalPlayer = false;
+			markersToRemove.Add(mkr);
+		}
+	}
+	//mapManager->mMapMarkers.Remove(marker);
+}
+
+void ACrashSiteBeaconsSubSystem::RemoveRepresentation(UFGActorRepresentation* actorRepresentation)
+{
+	auto repManager = AFGActorRepresentationManager::Get(this);
+	repManager->mReplicatedRepresentations.Remove(actorRepresentation);
+	repManager->mAllRepresentations.Remove(actorRepresentation);
+	repManager->RemoveRepresentation(actorRepresentation);
+}
+
+void ACrashSiteBeaconsSubSystem::UpdateRepresentation(UFGActorRepresentation* actorRepresentation)
+{
+	actorRepresentation->mRepresentationType = ERepresentationType::RT_StartingPod;
+}
+
 void ACrashSiteBeaconsSubSystem::AddEnumType()
 {
 		UEnum* Enum = StaticEnum<ERepresentationType>();
@@ -89,6 +126,8 @@ void ACrashSiteBeaconsSubSystem::AddEnumType()
 				//UE_LOG(CrashSiteBeacons_Log, Display, TEXT("newIndex: %s"), *enumIdx);
 			}
 		}
+		auto mapManager = AFGMapManager::Get(this);
+		mapManager->mMapMarkers.Empty();
 }
 
 void OnDropPodOpen(CallScope<void(*)(AFGDropPod*)>& scope, AFGDropPod* DropPod)
@@ -101,7 +140,8 @@ void OnDropPodOpen(CallScope<void(*)(AFGDropPod*)>& scope, AFGDropPod* DropPod)
 		FVector podLoc = DropPod->GetActorLocation();
 		for (auto marker : markers)
 		{
-			if (marker.Location.X == podLoc.X && marker.Location.Y == podLoc.Y && marker.Location.Z == podLoc.Z)
+			if (marker.Location.X == podLoc.X && marker.Location.Y == podLoc.Y && marker.Location.Z == podLoc.Z
+				&& marker.MapMarkerType == ERepresentationType::RT_StartingPod)
 			{
 				mapManager->RemoveMapMarker(marker);
 			}
@@ -113,7 +153,7 @@ void OnDropPodOpen(CallScope<void(*)(AFGDropPod*)>& scope, AFGDropPod* DropPod)
 void ACrashSiteBeaconsSubSystem::HookCrashSites()
 {
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD(AFGDropPod::Open, &OnDropPodOpen);
+	//SUBSCRIBE_METHOD(AFGDropPod::Open, &OnDropPodOpen);
 #endif
 }
 

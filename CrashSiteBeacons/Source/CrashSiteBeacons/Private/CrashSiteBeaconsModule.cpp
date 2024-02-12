@@ -8,18 +8,37 @@
 #include "Patching/BlueprintHookHelper.h"
 #include "FGIconLibrary.h"
 #include "FGActorRepresentation.h"
+#include "FGMapManager.h"
+#include "FGMapMarker.h"
 
 
 
 void FCrashSiteBeaconsModule::StartupModule() {
 
-
 #if !WITH_EDITOR
-	UFGActorRepresentation* CDODropPod = GetMutableDefault<UFGActorRepresentation>();
-	SUBSCRIBE_METHOD_VIRTUAL(UFGActorRepresentation::GetShouldShowInCompass, CDODropPod, [](auto& scope, const UFGActorRepresentation* self)
+	SUBSCRIBE_METHOD(AFGDropPod::Open, [](auto& scope, AFGDropPod* DropPod)
 		{
-			scope.Override(true);
+			auto mapManager = AFGMapManager::Get(DropPod->GetWorld());
+			TArray<FMapMarker> markers;
+			mapManager->GetMapMarkers(markers);
+			if (markers.Num() > 0)
+			{
+				FVector podLoc = DropPod->GetActorLocation();
+				for (auto marker : markers)
+				{
+					if (FVector::PointsAreNear(marker.Location, podLoc, 1.0))
+					{
+						mapManager->RemoveMapMarker(marker);
+					}
+				}
+			}
 		});
+
+	//UFGActorRepresentation* CDODropPod = GetMutableDefault<UFGActorRepresentation>();
+	//SUBSCRIBE_METHOD_VIRTUAL(UFGActorRepresentation::GetShouldShowInCompass, CDODropPod, [](auto& scope, const UFGActorRepresentation* self)
+	//	{
+	//		scope.Override(true);
+	//	});
 
 
 	//UClass* SomeClass = LoadObject<UClass>(nullptr, TEXT("/Game/FactoryGame/Interface/UI/Minimap/MapFilters/BPW_MapFilterCategories.BPW_MapFilterCategories_C"));
