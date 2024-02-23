@@ -136,11 +136,13 @@ bool ACL_CounterLimiter::ShouldSave_Implementation() const
 
 void ACL_CounterLimiter::Factory_CollectInput_Implementation()
 {
-	if (HasAuthority())
+	if (HasAuthority() && outputConnection->IsConnected())
 	{
+		int emptyOutputBufferIndex = OutputStageBuffer->FindEmptyIndex();
+		int numItems = InputBuffer->mInventoryStacks[0].NumItems;
 		inputConnection->GetInventory()->SetLocked(false);
 		int emptyBufferIndex = InputBuffer->FindEmptyIndex();
-		if (emptyBufferIndex >= 0)
+		if (emptyBufferIndex >= 0 && numItems < 1)
 		{
 			FInventoryItem OutItem;
 			bool OutBool;
@@ -285,14 +287,17 @@ void ACL_CounterLimiter::SetThroughputLimit(float itemsPerMinute, bool bypassChe
 		{
 			mPerMinuteLimitRate = itemsPerMinute;
 			ForceNetUpdate();
-			GetWorld()->GetTimerManager().SetTimer(ThroughputTimerHandle, this, &ACL_CounterLimiter::StageItemForOutput, GetSecondsPerItem(), true);
+			AsyncTask(ENamedThreads::GameThread, [=]() {
+					GetWorld()->GetTimerManager().SetTimer(ThroughputTimerHandle, this, &ACL_CounterLimiter::StageItemForOutput, GetSecondsPerItem(), true);
+			});
+			
 		}
 		else
 		{
-			mPerMinuteLimitRate = itemsPerMinute;
 			if (UCL_RCO* RCO = UCL_RCO::Get(GetWorld()))
 			{
 				RCO->Server_SetLimiterRate(this, itemsPerMinute);
+				mPerMinuteLimitRate = itemsPerMinute;
 			}
 		}
 	}
@@ -362,14 +367,16 @@ void ACL_CounterLimiter::StageItemForOutput()
 					bool result = GetBufferInventory()->GetStackFromIndex(mBufferIndex, Stack);
 					if (result && Stack.HasItems())
 					{
-						GetBufferInventory()->RemoveAllFromIndex(mBufferIndex);
 						int numItems;
 						FInventoryItem OutItem;
 						UFGInventoryLibrary::BreakInventoryStack(Stack, numItems, OutItem);
-
+						if (OutputStageBuffer->AddItem(OutItem))
+						{
+							GetBufferInventory()->RemoveAllFromIndex(mBufferIndex);
+						}
 						float out_OffsetBeyond = 100.f;
 						//FInventoryStack Stack = UFGInventoryLibrary::MakeInventoryStack(1, OutItem);
-						OutputStageBuffer->AddStackToIndex(emptyBufferIndex, Stack, false);
+						//OutputStageBuffer->AddStackToIndex(emptyBufferIndex, Stack, false);
 					}
 				}
 			}
