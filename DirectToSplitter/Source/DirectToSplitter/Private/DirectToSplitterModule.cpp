@@ -4,9 +4,9 @@
 #include <Kismet/KismetMathLibrary.h>
 
 //#pragma optimize("", off)
-//#if !WITH_EDITOR
 //#endif
 void FDirectToSplitterModule::StartupModule() {
+#if !WITH_EDITOR
 	AFGConveyorAttachmentHologram* cah = GetMutableDefault<AFGConveyorAttachmentHologram>();
 	AFGFactoryHologram* fh = GetMutableDefault<AFGFactoryHologram>();
 
@@ -104,7 +104,7 @@ void FDirectToSplitterModule::StartupModule() {
 				scope.Cancel();
 			}
 		});
-#if !WITH_EDITOR
+//#if !WITH_EDITOR
 #endif
 }
 

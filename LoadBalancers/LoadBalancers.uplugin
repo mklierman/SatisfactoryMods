@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.9.7",
-	"SemVersion": "1.9.7",
+	"VersionName": "1.9.9",
+	"SemVersion": "1.9.9",
 	"FriendlyName": "Modular Load Balancers",
 	"Description": "Modular buildable that can be snapped together to form load balancers of any size",
 	"Category": "Modding",
