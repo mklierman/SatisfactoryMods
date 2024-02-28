@@ -1,5 +1,41 @@
 #include "DT_EquipDigbyTool.h"
 
+void ADT_EquipDigbyTool::SetFirstGroupLeader(ALBBuild_ModularLoadBalancer* module)
+{
+	if (module)
+	{
+		firstGroupLeader = module;
+		HighlightGroup(true);
+	}
+}
+
+void ADT_EquipDigbyTool::SetSecondGroupLeader(ALBBuild_ModularLoadBalancer* module)
+{
+	if (module)
+	{
+		secondGroupLeader = module;
+		HighlightGroup(false);
+	}
+}
+
+void ADT_EquipDigbyTool::AddModuleToBeSplit(ALBBuild_ModularLoadBalancer* module)
+{
+	if (module)
+	{
+		modulesToSplit.Add(module);
+		HighlightModule(module, firstGroupHoloMaterial);
+	}
+}
+
+void ADT_EquipDigbyTool::RemoveModuleToBeSplit(ALBBuild_ModularLoadBalancer* module)
+{
+	if (module && modulesToSplit.Contains(module))
+	{
+		modulesToSplit.Remove(module);
+		UnHighlightModule(module);
+	}
+}
+
 void ADT_EquipDigbyTool::MergeGroups()
 {
 	currentToolError = EToolError::None;
@@ -7,13 +43,6 @@ void ADT_EquipDigbyTool::MergeGroups()
 	{
 		if (firstGroupLeader->IsLeader())
 		{
-			if (firstGroupLeader->HasOverflowModule() && secondGroupLeader->HasOverflowModule())
-			{
-				//Send message about overflows
-				currentToolError = EToolError::MergeOverflows;
-				return;
-			}
-
 			TArray< ALBBuild_ModularLoadBalancer*> balancersToMove = secondGroupLeader->GetGroupModules();
 			if (balancersToMove.Num() > 0)
 			{
@@ -30,6 +59,8 @@ void ADT_EquipDigbyTool::MergeGroups()
 							ModularLoadBalancer->ApplyGroupModule();
 						}
 					}
+
+					ResetStuff();
 				}
 			}
 		}
@@ -39,37 +70,22 @@ void ADT_EquipDigbyTool::MergeGroups()
 void ADT_EquipDigbyTool::SplitGroups()
 {
 	currentToolError = EToolError::None;
-	if (splitBalancers.Num() > 0)
+	if (modulesToSplit.Num() > 0)
 	{
-		//Make sure we aren't trying to add multiple overflows to the new group
-		int numOverflows = 0;
-		for (auto balancer : splitBalancers)
-		{
-			if (balancer->IsOverflowModule())
-			{
-				numOverflows++;
-				if (numOverflows > 1)
-				{
-					//Send message about overflows
-					currentToolError = EToolError::SplitOverflows;
-					return;
-				}
-			}
-		}
-
 		//Remove balancers from their groups
-		for (auto balancer : splitBalancers)
+		for (auto balancer : modulesToSplit)
 		{
 			balancer->RemoveGroupModule();
 		}
 
 		//Set new leader and add balancers
-		ALBBuild_ModularLoadBalancer* newLeader = splitBalancers[0];
-		for (auto balancer : splitBalancers)
+		ALBBuild_ModularLoadBalancer* newLeader = modulesToSplit[0];
+		for (auto balancer : modulesToSplit)
 		{
 			balancer->GroupLeader = newLeader;
 			balancer->InitializeModule();
 		}
+		ResetStuff();
 	}
 }
 
@@ -81,4 +97,132 @@ EToolMode ADT_EquipDigbyTool::GetCurrentToolMode()
 void ADT_EquipDigbyTool::SetCurrentToolMode(EToolMode newMode)
 {
 	currentToolMode = newMode;
+}
+
+void ADT_EquipDigbyTool::CycleToolMode()
+{
+	if (GetCurrentToolMode() == EToolMode::Split)
+	{
+		SetCurrentToolMode(EToolMode::Merge);
+	}
+	else
+	{
+		SetCurrentToolMode(EToolMode::Split);
+	}
+	ResetStuff();
+}
+
+void ADT_EquipDigbyTool::ResetStuff()
+{
+	currentToolError = EToolError::None;
+	UnHighlightAll();
+	firstGroupLeader = nullptr;
+	secondGroupLeader = nullptr;
+	splitBalancers.Empty();
+	modulesToSplit.Empty();
+}
+
+void ADT_EquipDigbyTool::HighlightGroup(bool isFirstGroup)
+{
+	if (isFirstGroup && firstGroupLeader)
+	{
+		if (highlightedFirstGroupLeader)
+		{
+			UnHighlightGroup(true);
+		}
+
+		for (auto module : firstGroupLeader->GetGroupModules())
+		{
+			HighlightModule(module, firstGroupHoloMaterial);
+		}
+		highlightedFirstGroupLeader = firstGroupLeader;
+	}
+	else if (secondGroupLeader)
+	{
+		if (highlightedSecondGroupLeader)
+		{
+			UnHighlightGroup(false);
+		}
+
+		for (auto module : secondGroupLeader->GetGroupModules())
+		{
+			HighlightModule(module, secondGroupHoloMaterial);
+		}
+		highlightedSecondGroupLeader = secondGroupLeader;
+	}
+}
+
+void ADT_EquipDigbyTool::UnHighlightGroup(bool isFirstGroup)
+{
+	if (isFirstGroup && highlightedFirstGroupLeader)
+	{
+		for (auto module : highlightedFirstGroupLeader->GetGroupModules())
+		{
+			UnHighlightModule(module);
+		}
+		highlightedFirstGroupLeader = nullptr;
+	}
+	else if (highlightedSecondGroupLeader)
+	{
+		for (auto module : highlightedSecondGroupLeader->GetGroupModules())
+		{
+			UnHighlightModule(module);
+		}
+		highlightedSecondGroupLeader = nullptr;
+	}
+}
+
+void ADT_EquipDigbyTool::UnHighlightAll()
+{
+	if (highlightedFirstGroupLeader)
+	{
+		for (auto module : highlightedFirstGroupLeader->GetGroupModules())
+		{
+			UnHighlightModule(module);
+		}
+		highlightedFirstGroupLeader = nullptr;
+	}
+	else if (highlightedSecondGroupLeader)
+	{
+		for (auto module : highlightedSecondGroupLeader->GetGroupModules())
+		{
+			UnHighlightModule(module);
+		}
+		highlightedSecondGroupLeader = nullptr;
+	}
+	for (auto module : modulesToSplit)
+	{
+		UnHighlightModule(module);
+	}
+	modulesToSplit.Empty();
+}
+
+void ADT_EquipDigbyTool::HighlightModule(ALBBuild_ModularLoadBalancer* module, UMaterialInterface* holoMaterial)
+{
+	if (module)
+	{
+		auto comp = module->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass());
+		if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(comp))
+		{
+			mesh->SetMaterial(0, holoMaterial);
+			mesh->SetMaterial(1, holoMaterial);
+			mesh->SetInstanced(false);
+			mesh->SetInstanced(true);
+		}
+	}
+}
+
+void ADT_EquipDigbyTool::UnHighlightModule(ALBBuild_ModularLoadBalancer* module)
+{
+	if (module)
+	{
+		auto comp = module->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass());
+		if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(comp))
+		{
+			mesh->SetMaterial(0, mainMaterial);
+			mesh->SetMaterial(1, secondaryMaterial);
+			mesh->SetInstanced(false);
+			mesh->SetInstanced(true);
+		}
+	}
 }
