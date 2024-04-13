@@ -7,6 +7,7 @@
 #include "FGMapMarker.h"
 #include "FGIconLibrary.h"
 #include "FGActorRepresentationManager.h"
+#include "FGMapMarkerRepresentation.h"
 #include "FGActorRepresentation.h"
 
 
@@ -74,30 +75,52 @@ void ACrashSiteBeaconsSubSystem::ForceRemoveMapMarker(const FMapMarker &marker)
 {
 	TArray<FMapMarker> markersToRemove;
 	auto mapManager = AFGMapManager::Get(this);
-	for (FMapMarker mkr : mapManager->mMapMarkers)
+	auto repManager = AFGActorRepresentationManager::Get(this);
+	auto rep = mapManager->FindMapMarkerRepresentation(marker);
+	if (rep)
 	{
-		if (mkr.Color == marker.Color && mkr.Name == marker.Name && mkr.Location == marker.Location)
+		if (auto actorRep = Cast<UFGActorRepresentation>(rep))
 		{
-			mkr.MarkerID = 255;
-			mkr.Location = FVector(0, 0, 0);
-			mkr.Name = "";
-			mkr.MapMarkerType = ERepresentationType::RT_Default;
-			mkr.IconID = 0;
-			mkr.Color= FLinearColor::Black;
-			mkr.Scale= 1.0;
-			mkr.CompassViewDistance = ECompassViewDistance::CVD_Off;
-			mkr.CreatedByLocalPlayer = false;
-			markersToRemove.Add(mkr);
+			repManager->RemoveRepresentation(actorRep);
 		}
 	}
+	//for (FMapMarker mkr : mapManager->mMapMarkers)
+	//{
+	//	if (mkr.Color == marker.Color && mkr.Name == marker.Name && mkr.Location == marker.Location)
+	//	{
+	//		mkr.MarkerID = 255;
+	//		mkr.Location = FVector(0, 0, 0);
+	//		mkr.Name = "";
+	//		mkr.MapMarkerType = ERepresentationType::RT_Default;
+	//		mkr.IconID = 0;
+	//		mkr.Color= FLinearColor::Black;
+	//		mkr.Scale= 1.0;
+	//		mkr.CompassViewDistance = ECompassViewDistance::CVD_Off;
+	//		mkr.CreatedByLocalPlayer = false;
+	//		markersToRemove.Add(mkr);
+	//	}
+	//}
 	//mapManager->mMapMarkers.Remove(marker);
+}
+
+FVector ACrashSiteBeaconsSubSystem::GetMapMarkerRepresentationLocation(const FMapMarker& mapMarker)
+{
+	auto mapManager = AFGMapManager::Get(this);
+	auto repManager = AFGActorRepresentationManager::Get(this);
+	auto rep = mapManager->FindMapMarkerRepresentation(mapMarker);
+	if (rep)
+	{
+		return rep->GetActorLocation();
+	}
+
+	return FVector();
 }
 
 void ACrashSiteBeaconsSubSystem::RemoveRepresentation(UFGActorRepresentation* actorRepresentation)
 {
 	auto repManager = AFGActorRepresentationManager::Get(this);
-	repManager->mReplicatedRepresentations.Remove(actorRepresentation);
-	repManager->mAllRepresentations.Remove(actorRepresentation);
+	//repManager->mReplicatedRepresentations.Remove(actorRepresentation);
+	//repManager->mAllRepresentations.Remove(actorRepresentation);
 	repManager->RemoveRepresentation(actorRepresentation);
 }
 

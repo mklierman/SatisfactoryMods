@@ -21,6 +21,9 @@ public:
 		void ForceRemoveMapMarker(const FMapMarker& marker);
 
 		UFUNCTION(BlueprintCallable)
+		FVector GetMapMarkerRepresentationLocation(const FMapMarker& mapMarker);
+
+		UFUNCTION(BlueprintCallable)
 		void RemoveRepresentation(class UFGActorRepresentation* actorRepresentation);
 
 		UFUNCTION(BlueprintCallable)

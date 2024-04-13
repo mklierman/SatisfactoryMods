@@ -1,8 +1,9 @@
 #include "DT_EquipDigbyTool.h"
 
+#pragma optimize("", off)
 void ADT_EquipDigbyTool::SetFirstGroupLeader(ALBBuild_ModularLoadBalancer* module)
 {
-	if (module)
+	if (module && module != secondGroupLeader)
 	{
 		firstGroupLeader = module;
 		HighlightGroup(true);
@@ -11,7 +12,7 @@ void ADT_EquipDigbyTool::SetFirstGroupLeader(ALBBuild_ModularLoadBalancer* modul
 
 void ADT_EquipDigbyTool::SetSecondGroupLeader(ALBBuild_ModularLoadBalancer* module)
 {
-	if (module)
+	if (module && module != firstGroupLeader)
 	{
 		secondGroupLeader = module;
 		HighlightGroup(false);
@@ -22,7 +23,7 @@ void ADT_EquipDigbyTool::AddModuleToBeSplit(ALBBuild_ModularLoadBalancer* module
 {
 	if (module)
 	{
-		modulesToSplit.Add(module);
+		modulesToSplit.AddUnique(module);
 		HighlightModule(module, firstGroupHoloMaterial);
 	}
 }
@@ -48,19 +49,21 @@ void ADT_EquipDigbyTool::MergeGroups()
 			{
 				if (HasAuthority())
 				{
-					secondGroupLeader->GroupLeader = firstGroupLeader;
 
 					for (ALBBuild_ModularLoadBalancer* ModularLoadBalancer : balancersToMove)
 					{
 						if (ModularLoadBalancer)
 						{
+							ModularLoadBalancer->RemoveGroupModule();
 							ModularLoadBalancer->GroupLeader = firstGroupLeader;
-							ModularLoadBalancer->mNormalLoaderData = firstGroupLeader->mNormalLoaderData;
-							ModularLoadBalancer->ApplyGroupModule();
+							//ModularLoadBalancer->mNormalLoaderData = firstGroupLeader->mNormalLoaderData;
+							ModularLoadBalancer->InitializeModule();
 						}
 					}
-
-					ResetStuff();
+					firstGroupLeader->ApplyLeader();
+					secondGroupLeader = nullptr;
+					UnHighlightAll();
+					HighlightGroup(true);
 				}
 			}
 		}
@@ -79,12 +82,23 @@ void ADT_EquipDigbyTool::SplitGroups()
 		}
 
 		//Set new leader and add balancers
-		ALBBuild_ModularLoadBalancer* newLeader = modulesToSplit[0];
+		ALBBuild_ModularLoadBalancer* newLeader = nullptr;
 		for (auto balancer : modulesToSplit)
 		{
+			if (!balancer->IsPendingKillOrUnreachable())
+			{
+				newLeader = balancer;
+				balancer->ApplyLeader();
+				break;
+			}
+		}
+		for (auto balancer : modulesToSplit)
+		{
+
 			balancer->GroupLeader = newLeader;
 			balancer->InitializeModule();
 		}
+		//newLeader->ApplyLeader();
 		ResetStuff();
 	}
 }
@@ -118,7 +132,6 @@ void ADT_EquipDigbyTool::ResetStuff()
 	UnHighlightAll();
 	firstGroupLeader = nullptr;
 	secondGroupLeader = nullptr;
-	splitBalancers.Empty();
 	modulesToSplit.Empty();
 }
 
@@ -182,7 +195,7 @@ void ADT_EquipDigbyTool::UnHighlightAll()
 		}
 		highlightedFirstGroupLeader = nullptr;
 	}
-	else if (highlightedSecondGroupLeader)
+	if (highlightedSecondGroupLeader)
 	{
 		for (auto module : highlightedSecondGroupLeader->GetGroupModules())
 		{
@@ -226,3 +239,28 @@ void ADT_EquipDigbyTool::UnHighlightModule(ALBBuild_ModularLoadBalancer* module)
 		}
 	}
 }
+
+int32 ADT_EquipDigbyTool::GetSplitCount()
+{
+	return modulesToSplit.Num();
+}
+
+int32 ADT_EquipDigbyTool::GetFirstGroupCount()
+{
+	if (firstGroupLeader)
+	{
+		return firstGroupLeader->GetGroupModules().Num();
+	}
+	return 0;
+}
+
+int32 ADT_EquipDigbyTool::GetSecondGroupCount()
+{
+	if (secondGroupLeader)
+	{
+		return secondGroupLeader->GetGroupModules().Num();
+	}
+	return 0;
+}
+
+#pragma optimize("", on)

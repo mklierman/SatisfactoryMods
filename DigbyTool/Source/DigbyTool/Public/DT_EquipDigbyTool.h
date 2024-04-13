@@ -45,11 +45,7 @@ public:
 	ALBBuild_ModularLoadBalancer* highlightedSecondGroupLeader;
 
 	UPROPERTY(BlueprintReadWrite)
-		TArray< ALBBuild_ModularLoadBalancer*> splitBalancers;
-
-	UPROPERTY(BlueprintReadWrite)
-		TArray< ALBBuild_ModularLoadBalancer*> modulesToSplit;
-
+	TArray< ALBBuild_ModularLoadBalancer*> modulesToSplit;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Holo")
 	UMaterialInterface* firstGroupHoloMaterial;
@@ -79,17 +75,18 @@ public:
 	void MergeGroups();
 
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
-		void SplitGroups();
+	void SplitGroups();
 
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
-		EToolMode GetCurrentToolMode();
+	EToolMode GetCurrentToolMode();
 
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
-		void SetCurrentToolMode(EToolMode newMode);
+	void SetCurrentToolMode(EToolMode newMode);
 
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
 	void CycleToolMode();
 
+	UFUNCTION(BlueprintCallable, Category = "Equipment")
 	void ResetStuff();
 
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
@@ -106,5 +103,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
 	void UnHighlightModule(ALBBuild_ModularLoadBalancer* module);
+
+	UFUNCTION(BlueprintCallable, Category = "Equipment")
+	int32 GetSplitCount();
+
+	UFUNCTION(BlueprintCallable, Category = "Equipment")
+	int32 GetFirstGroupCount();
+
+	UFUNCTION(BlueprintCallable, Category = "Equipment")
+	int32 GetSecondGroupCount();
 };
 
