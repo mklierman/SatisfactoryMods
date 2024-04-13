@@ -445,7 +445,7 @@ void FInfiniteNudgeModule::RotateLockedHologram(AFGHologram* self, int32 delta)
 
 		//auto newRotation = self->GetActorRotation();
 		auto newRotation = FRotator(0, 0, 0);
-		int rotationAmount = 15 * delta;
+		double rotationAmount = 15.0 * delta;
 
 		// Set Fine Rotation
 		if (contr->IsInputKeyDown(TinyNudgeKey))
