@@ -164,9 +164,9 @@ void ASSP_Subsystem::ShowInitialPaths(AActor* actor)
 	UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGDrivingTargetList::StaticClass(), FoundActors);
 	if (HasAuthority() && FoundActors.Num() > 0)
 	{
-		for (AActor* actor : FoundActors)
+		for (AActor* actor1 : FoundActors)
 		{
-			auto tpList = Cast< AFGDrivingTargetList>(actor);
+			auto tpList = Cast< AFGDrivingTargetList>(actor1);
 			if (tpList && tpList->mIsPathVisible)
 			{
 				HandlePathSplines(tpList, true);
@@ -180,9 +180,9 @@ void ASSP_Subsystem::ShowAllMantaPaths(AActor* actor)
 	UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGManta::StaticClass(), FoundActors);
 	if (HasAuthority() && FoundActors.Num() > 0)
 	{
-		for (auto actor : FoundActors)
+		for (auto actor1 : FoundActors)
 		{
-			auto manta = Cast< AFGManta>(actor);
+			auto manta = Cast< AFGManta>(actor1);
 			if (manta)
 			{
 				auto spline = manta->mCachedSpline;
@@ -227,9 +227,9 @@ void ASSP_Subsystem::ShowAllVehiclePaths(AActor* actor)
 		UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGDrivingTargetList::StaticClass(), FoundActors);
 		if (FoundActors.Num() > 0)
 		{
-			for (auto actor : FoundActors)
+			for (auto actor1 : FoundActors)
 			{
-				auto tpList = Cast< AFGDrivingTargetList>(actor);
+				auto tpList = Cast< AFGDrivingTargetList>(actor1);
 				tpList->SetPathVisible(true);
 			}
 		}
@@ -243,9 +243,9 @@ void ASSP_Subsystem::HideAllVehiclePaths(AActor* actor)
 		UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGDrivingTargetList::StaticClass(), FoundActors);
 		if (FoundActors.Num() > 0)
 		{
-			for (auto actor : FoundActors)
+			for (auto actor1 : FoundActors)
 			{
-				auto tpList = Cast< AFGDrivingTargetList>(actor);
+				auto tpList = Cast< AFGDrivingTargetList>(actor1);
 				tpList->SetPathVisible(false);
 			}
 		}

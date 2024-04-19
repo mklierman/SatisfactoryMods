@@ -21,9 +21,9 @@ void UMantaRaise_BPFL::RaiseMantas(AActor* actor)
 	if (FoundActors.Num() > 0)
 	{
 		//Loop through each Manta
-		for (auto actor : FoundActors)
+		for (auto actor1 : FoundActors)
 		{
-			auto manta = Cast< AFGManta>(actor);
+			auto manta = Cast< AFGManta>(actor1);
 			if (manta)
 			{
 				//Get Spline
