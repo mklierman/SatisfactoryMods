@@ -43,6 +43,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		int GetNewEnumValue();
 
+	UFUNCTION(BlueprintCallable)
+	void ClearAllMarkers();
+
 	UPROPERTY(SaveGame, BlueprintReadWrite)
 		TArray<AFGDropPod*> PodMarkers;
 

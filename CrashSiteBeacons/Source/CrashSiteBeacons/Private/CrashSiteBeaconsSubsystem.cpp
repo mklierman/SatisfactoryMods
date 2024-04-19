@@ -10,6 +10,7 @@
 #include "FGMapMarkerRepresentation.h"
 #include "FGActorRepresentation.h"
 
+#pragma optimize("", off)
 
 DEFINE_LOG_CATEGORY(CrashSiteBeacons_Log);
 
@@ -73,9 +74,10 @@ void ACrashSiteBeaconsSubSystem::GenerateMapMarker(FString markerName, FVector_N
 
 void ACrashSiteBeaconsSubSystem::ForceRemoveMapMarker(const FMapMarker &marker)
 {
-	TArray<FMapMarker> markersToRemove;
 	auto mapManager = AFGMapManager::Get(this);
 	auto repManager = AFGActorRepresentationManager::Get(this);
+
+	TArray<FMapMarker> markersToRemove;
 	auto rep = mapManager->FindMapMarkerRepresentation(marker);
 	if (rep)
 	{
@@ -118,10 +120,28 @@ FVector ACrashSiteBeaconsSubSystem::GetMapMarkerRepresentationLocation(const FMa
 
 void ACrashSiteBeaconsSubSystem::RemoveRepresentation(UFGActorRepresentation* actorRepresentation)
 {
+	auto mapManager = AFGMapManager::Get(this);
 	auto repManager = AFGActorRepresentationManager::Get(this);
+
+	TArray<UFGActorRepresentation*>ToRemove;
+	TArray<FMapMarker> markersToRemove;
+	for (UFGActorRepresentation* rep : repManager->mAllRepresentations)
+	{
+		if (rep == actorRepresentation)
+		{
+			ToRemove.Add(rep);
+			
+		}
+	}
+	for (auto rep : ToRemove)
+	{
+		repManager->mAllRepresentations.Remove(rep);
+	}
+
+
 	//repManager->mReplicatedRepresentations.Remove(actorRepresentation);
 	//repManager->mAllRepresentations.Remove(actorRepresentation);
-	repManager->RemoveRepresentation(actorRepresentation);
+	//repManager->RemoveRepresentation(actorRepresentation);
 }
 
 void ACrashSiteBeaconsSubSystem::UpdateRepresentation(UFGActorRepresentation* actorRepresentation)
@@ -190,3 +210,49 @@ int ACrashSiteBeaconsSubSystem::GetNewEnumValue()
 	UEnum* Enum = StaticEnum<ERepresentationType>();
 	return Enum->GetValueByNameString("ERepresentationType::RT_CrashSite");
 }
+
+void ACrashSiteBeaconsSubSystem::ClearAllMarkers()
+{
+	auto repManager = AFGActorRepresentationManager::Get(this);
+	auto mapManager = AFGMapManager::Get(this);
+
+	mapManager->mMapMarkers.Empty();
+	mapManager->mMapMarkers.Reset();
+	int deletedNum = 0;
+	int savedNum = 0;
+	TArray<UFGActorRepresentation*>ToRemove;
+	for (UFGActorRepresentation* rep : repManager->mAllRepresentations)
+	{
+		if (rep->GetRepresentationType() != ERepresentationType::RT_Default
+			&& rep->GetRepresentationType() != ERepresentationType::RT_Beacon
+			&& rep->GetRepresentationType() != ERepresentationType::RT_Crate
+			&& rep->GetRepresentationType() != ERepresentationType::RT_Hub
+			&& rep->GetRepresentationType() != ERepresentationType::RT_Ping
+			&& rep->GetRepresentationType() != ERepresentationType::RT_Player
+			&& rep->GetRepresentationType() != ERepresentationType::RT_RadarTower
+			&& rep->GetRepresentationType() != ERepresentationType::RT_Resource
+			&& rep->GetRepresentationType() != ERepresentationType::RT_SpaceElevator
+			&& rep->GetRepresentationType() != ERepresentationType::RT_StartingPod
+			&& rep->GetRepresentationType() != ERepresentationType::RT_Train
+			&& rep->GetRepresentationType() != ERepresentationType::RT_TrainStation
+			&& rep->GetRepresentationType() != ERepresentationType::RT_Vehicle
+			&& rep->GetRepresentationType() != ERepresentationType::RT_VehicleDockingStation
+			&& rep->GetRepresentationType() != ERepresentationType::RT_DronePort
+			&& rep->GetRepresentationType() != ERepresentationType::RT_Drone)
+		{
+			ToRemove.Add(rep);
+			//repManager->mAllRepresentations.Remove(rep);
+			deletedNum++;
+		}
+		else
+		{
+			savedNum++;
+		}
+	}
+	for (UFGActorRepresentation* rep : ToRemove)
+	{
+		repManager->mAllRepresentations.Remove(rep);
+	}
+}
+
+#pragma optimize("", on)
