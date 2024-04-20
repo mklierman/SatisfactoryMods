@@ -1,24 +1,8 @@
 #include "HoverPackPoleRangeModule.h"
-#include "FGPowerConnectionComponent.h"
-#include "Equipment/FGHoverPack.h"
-#include "Patching/NativeHookManager.h"
-#include "FGCircuitConnectionComponent.h"
-#include "FGPowerInfoComponent.h"
-#include "Buildables/FGBuildablePowerPole.h"
-#include "Equipment/FGEquipment.h"
-#include "FGCharacterPlayer.h"
-#include "HPPR_ConfigStruct.h"
-#include "Kismet/KismetSystemLibrary.h"
-#include "Configuration/ConfigProperty.h"
-#include "Configuration/ConfigManager.h"
-#include "Engine/Engine.h"
-#include "Configuration/Properties/ConfigPropertySection.h"
-#include "Subsystem/SubsystemActorManager.h"
-#include "HPPR_Subsystem.h"
-#include "FGGameMode.h"
 
 DEFINE_LOG_CATEGORY(HoverPackPoleRange_Log);
 
+#pragma optimize("", off)
 
 void FHoverPackPoleRangeModule::Loggit(FString myString)
 {
@@ -26,6 +10,123 @@ void FHoverPackPoleRangeModule::Loggit(FString myString)
 	{
 		UE_LOG(HoverPackPoleRange_Log, Display, TEXT("%s"), *myString);
 	}
+}
+
+void FHoverPackPoleRangeModule::FindNearestConnection(AFGHoverPack* self)
+{
+	UClass* pcc = UFGPowerConnectionComponent::StaticClass();
+	TArray< UFGPowerConnectionComponent*> PossibleConnectionComponents;
+
+	// Trace multi for static in a sphere based on range
+	//FCollisionShape MySphere = FCollisionShape::MakeSphere(500.0f); // 5M Radius
+	//ECollisionChannel TraceChannel = ECollisionChannel::ECC_WorldStatic;
+	//self->GetWorld()->SweepMultiByChannel(OutResults, self->GetActorLocation() , self->GetActorLocation(), FQuat::Identity, TraceChannel, MySphere);
+
+
+	TArray<FHitResult> OutResults;
+	TArray<AActor*> OutActors;
+	TArray<UPrimitiveComponent*> OutComponents;
+	TArray<AActor*> ActorsToIgnore;
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
+	ObjectTypesArray.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
+	bool traceHit = UKismetSystemLibrary::SphereTraceMultiForObjects(self->GetWorld(), self->GetActorLocation(), self->GetActorLocation(), 500.0f, ObjectTypesArray, false, ActorsToIgnore, EDrawDebugTrace::None, OutResults, true);
+	
+	// Pick out power connection components, making sure to go through abstract instance managers
+	if (traceHit)
+	{
+		for (auto hit : OutResults)
+		{
+			if (hit.GetActor())
+			{
+				auto hitBuildable = Cast<AFGBuildable>(hit.GetActor());
+				if (hitBuildable)
+				{
+					UFGPowerConnectionComponent* comp = GetBuildablePowerConnectionComponent(hitBuildable);
+					if (comp)
+					{
+						PossibleConnectionComponents.Add(comp);
+						continue;
+					}
+				}
+
+				auto hitInstanceMgr = Cast<AAbstractInstanceManager>(hit.GetActor());
+				if (hitInstanceMgr)
+				{
+					FInstanceHandle outHandle;
+					auto hitResolved = hitInstanceMgr->ResolveHit(hit, outHandle);
+					if (hitResolved)
+					{
+						if (outHandle.GetOwner())
+						{
+							auto handleBuildable = Cast<AFGBuildable>(outHandle.GetOwner());
+							if (handleBuildable)
+							{
+								UFGPowerConnectionComponent* comp2 = GetBuildablePowerConnectionComponent(handleBuildable);
+								if (comp2)
+								{
+									PossibleConnectionComponents.Add(comp2);
+								}
+							}
+						}
+					}
+				}
+
+				auto hitRail = Cast<AFGBuildableRailroadTrack>(hit.GetActor());
+				if (hitRail)
+				{
+					auto railPower = hitRail->GetThirdRail();
+					if (railPower)
+					{
+						PossibleConnectionComponents.Add(railPower);
+					}
+				}
+			}
+		}
+
+		for (auto possibility : PossibleConnectionComponents)
+		{
+			auto owner = possibility->GetOwner();
+		}
+	}
+
+
+	// Trace multi for static in a sphere based on range
+
+	// Pick out power connection components, making sure to go through abstract instance managers
+	
+	// Filter out connections that aren't powered
+
+	// Sort connections by type (mk1, mk2, etc)
+
+	// Starting with highest range type, get distances to connections
+
+	// If any of the found connections have a larger radius than our current remaining radius, store it and break out
+
+	// If not, continue searching through remaining types
+
+	// Do the same for rails
+
+	// If there is a found connection that is better than our current one, add hidden connection to it
+}
+
+UFGPowerConnectionComponent* FHoverPackPoleRangeModule::GetBuildablePowerConnectionComponent(AFGBuildable* hitBuildable)
+{
+	if (hitBuildable)
+	{
+		auto components = hitBuildable->GetComponentsByClass(UFGPowerConnectionComponent::StaticClass());
+		if (components.Num() > 0)
+		{
+			for (auto component : components)
+			{
+				UFGPowerConnectionComponent* pccomp = Cast< UFGPowerConnectionComponent>(component);
+				if (pccomp && pccomp->HasPower())
+				{
+					return pccomp; //We don't care if there are other powered components since they will be at the same location
+				}
+			}
+		}
+	}
+	return nullptr;
 }
 
 void FHoverPackPoleRangeModule::StartupModule() {
@@ -43,6 +144,11 @@ void FHoverPackPoleRangeModule::StartupModule() {
 				mHPSubsystem = SubsystemActorManager->GetSubsystemActor<AHPPR_Subsystem>();
 				mHPSubsystem->SetConfigValues();
 			}
+		});
+	//AFGHoverPack::ConnectToNearestPowerConnection()
+	SUBSCRIBE_METHOD(AFGHoverPack::ConnectToNearestPowerConnection, [=](auto& scope, AFGHoverPack* self)
+		{
+			FindNearestConnection(self);
 		});
 
 	SUBSCRIBE_METHOD(AFGHoverPack::OnPowerConnectionLocationUpdated, [=](auto& scope, AFGHoverPack* self, const FVector& NewLocation)
@@ -166,5 +272,6 @@ void FHoverPackPoleRangeModule::StartupModule() {
 
 #endif
 }
+#pragma optimize("", on)
 
 IMPLEMENT_GAME_MODULE(FHoverPackPoleRangeModule, HoverPackPoleRange);
