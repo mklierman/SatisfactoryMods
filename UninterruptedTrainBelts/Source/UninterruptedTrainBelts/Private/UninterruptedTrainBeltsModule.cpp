@@ -1,7 +1,5 @@
 #include "UninterruptedTrainBeltsModule.h"
 #include "Patching/NativeHookManager.h"
-#include "Buildables/FGBuildableTrainPlatformCargo.h"
-#include "Buildables/FGBuildableTrainPlatform.h"
 
 void FUninterruptedTrainBeltsModule::StartupModule() {
 #if !WITH_EDITOR
@@ -13,31 +11,26 @@ void FUninterruptedTrainBeltsModule::StartupModule() {
 			scope(self, connection, out_item, out_OffsetBeyond, type);
 			self->mPlatformDockingStatus = currentStatus;
 		});
-	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableTrainPlatformCargo::SetIsInLoadMode, tpc, [=](auto& scope, AFGBuildableTrainPlatformCargo* self, bool isInLoadMode)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableTrainPlatformCargo::Factory_CollectInput_Implementation, tpc, [=](auto& scope, AFGBuildableTrainPlatformCargo* self)
 		{
-			AFGBuildableTrainPlatformCargo* platform = const_cast<AFGBuildableTrainPlatformCargo*>(self);
-			auto currentStatus = platform->mPlatformDockingStatus;
-			platform->mPlatformDockingStatus = ETrainPlatformDockingStatus::ETPDS_IdleWaitForTime;
-			scope(self, isInLoadMode);
-			platform->mPlatformDockingStatus = currentStatus;
-		});
-	SUBSCRIBE_METHOD(AFGBuildableTrainPlatformCargo::OnBeginLoadSequence, [=](auto& scope, AFGBuildableTrainPlatformCargo* self)
-		{
-			//AFGBuildableTrainPlatformCargo* platform = const_cast<AFGBuildableTrainPlatformCargo*>(self);
-			AFGBuildableTrainPlatformCargo* platform = self;
-			auto currentStatus = platform->mPlatformDockingStatus;
-			platform->mPlatformDockingStatus = ETrainPlatformDockingStatus::ETPDS_IdleWaitForTime;
+			auto currentStatus = self->mPlatformDockingStatus;
+			self->mPlatformDockingStatus = ETrainPlatformDockingStatus::ETPDS_IdleWaitForTime;
 			scope(self);
-			platform->mPlatformDockingStatus = currentStatus;
+			self->mPlatformDockingStatus = currentStatus;
 		});
-	SUBSCRIBE_METHOD(AFGBuildableTrainPlatformCargo::OnBeginUnloadSequence, [=](auto& scope, AFGBuildableTrainPlatformCargo* self)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableTrainPlatformCargo::Factory_PullPipeInput_Implementation, tpc, [=](auto& scope, AFGBuildableTrainPlatformCargo* self, float dt)
 		{
-			//AFGBuildableTrainPlatformCargo* platform = const_cast<AFGBuildableTrainPlatformCargo*>(self);
-			AFGBuildableTrainPlatformCargo* platform = self;
-			auto currentStatus = platform->mPlatformDockingStatus;
-			platform->mPlatformDockingStatus = ETrainPlatformDockingStatus::ETPDS_IdleWaitForTime;
-			scope(self);
-			platform->mPlatformDockingStatus = currentStatus;
+			auto currentStatus = self->mPlatformDockingStatus;
+			self->mPlatformDockingStatus = ETrainPlatformDockingStatus::ETPDS_IdleWaitForTime;
+			scope(self, dt);
+			self->mPlatformDockingStatus = currentStatus;
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableTrainPlatformCargo::Factory_PushPipeOutput_Implementation, tpc, [=](auto& scope, AFGBuildableTrainPlatformCargo* self, float dt)
+		{
+			auto currentStatus = self->mPlatformDockingStatus;
+			self->mPlatformDockingStatus = ETrainPlatformDockingStatus::ETPDS_IdleWaitForTime;
+			scope(self, dt);
+			self->mPlatformDockingStatus = currentStatus;
 		});
 #endif
 }
