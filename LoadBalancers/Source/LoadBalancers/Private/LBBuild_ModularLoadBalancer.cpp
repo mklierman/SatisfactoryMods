@@ -684,6 +684,11 @@ void ALBBuild_ModularLoadBalancer::RemoveGroupModule()
 {
     GroupLeader->mNormalLoaderData.RemoveBalancer(this);
     GroupLeader->mGroupModules.Remove(this);
+    //for (auto balancer : GroupLeader->GetGroupModules())
+    //{
+    //    balancer->mNormalLoaderData.RemoveBalancer(this);
+    //    balancer->mGroupModules.Remove(this);
+    //}
 
     if (IsFilterModule())
     {
@@ -709,7 +714,9 @@ void ALBBuild_ModularLoadBalancer::RemoveGroupModule()
             }
         }
     }
-
+    mGroupModules.Empty();
+    mNormalLoaderData = FLBBalancerData();
+    GroupLeader->UpdateCache();
     GroupLeader = nullptr;
 }
 
