@@ -5,6 +5,8 @@
 #include "LBBuild_ModularLoadBalancer.h"
 #include "DT_EquipDigbyTool.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(DigbyTool_Log, Display, All);
+
 UENUM(BlueprintType)
 enum class EToolMode : uint8
 {
@@ -72,10 +74,10 @@ public:
 	void RemoveModuleToBeSplit(ALBBuild_ModularLoadBalancer* module);
 
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
-	void MergeGroups();
+	void MergeGroups(ALBBuild_ModularLoadBalancer* groupLeaderOne, ALBBuild_ModularLoadBalancer* groupLeaderTwo);
 
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
-	void SplitGroups();
+	void SplitGroups(TArray< ALBBuild_ModularLoadBalancer*> modulesToBeSplit);
 
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
 	EToolMode GetCurrentToolMode();
@@ -90,10 +92,10 @@ public:
 	void ResetStuff();
 
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
-	void HighlightGroup(bool isFirstGroup);
+	void HighlightGroup(ALBBuild_ModularLoadBalancer* groupLeader);
 
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
-	void UnHighlightGroup(bool isFirstGroup);
+	void UnHighlightGroup(ALBBuild_ModularLoadBalancer* groupLeader);
 
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
 	void UnHighlightAll();

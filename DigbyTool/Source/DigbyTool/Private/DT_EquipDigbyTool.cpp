@@ -1,12 +1,14 @@
 #include "DT_EquipDigbyTool.h"
+#include "DT_RCO.h"
 
+DEFINE_LOG_CATEGORY(DigbyTool_Log);
 #pragma optimize("", off)
 void ADT_EquipDigbyTool::SetFirstGroupLeader(ALBBuild_ModularLoadBalancer* module)
 {
 	if (module && module != secondGroupLeader)
 	{
 		firstGroupLeader = module;
-		HighlightGroup(true);
+		HighlightGroup(module);
 	}
 }
 
@@ -15,7 +17,7 @@ void ADT_EquipDigbyTool::SetSecondGroupLeader(ALBBuild_ModularLoadBalancer* modu
 	if (module && module != firstGroupLeader)
 	{
 		secondGroupLeader = module;
-		HighlightGroup(false);
+		HighlightGroup(module);
 	}
 }
 
@@ -37,69 +39,89 @@ void ADT_EquipDigbyTool::RemoveModuleToBeSplit(ALBBuild_ModularLoadBalancer* mod
 	}
 }
 
-void ADT_EquipDigbyTool::MergeGroups()
+void ADT_EquipDigbyTool::MergeGroups(ALBBuild_ModularLoadBalancer* groupLeaderOne, ALBBuild_ModularLoadBalancer* groupLeaderTwo)
 {
-	currentToolError = EToolError::None;
-	if (firstGroupLeader && secondGroupLeader)
+	if (HasAuthority())
 	{
-		if (firstGroupLeader->IsLeader())
+		if (groupLeaderOne && groupLeaderTwo)
 		{
-			TArray< ALBBuild_ModularLoadBalancer*> balancersToMove = secondGroupLeader->GetGroupModules();
-			if (balancersToMove.Num() > 0)
+			if (groupLeaderOne->IsLeader())
 			{
-				if (HasAuthority())
+				TArray< ALBBuild_ModularLoadBalancer*> balancersToMove = groupLeaderTwo->GetGroupModules();
+				if (balancersToMove.Num() > 0)
 				{
-
 					for (ALBBuild_ModularLoadBalancer* ModularLoadBalancer : balancersToMove)
 					{
 						if (ModularLoadBalancer)
 						{
 							ModularLoadBalancer->RemoveGroupModule();
-							ModularLoadBalancer->GroupLeader = firstGroupLeader;
+							ModularLoadBalancer->GroupLeader = groupLeaderOne;
 							//ModularLoadBalancer->mNormalLoaderData = firstGroupLeader->mNormalLoaderData;
 							ModularLoadBalancer->InitializeModule();
 						}
 					}
-					firstGroupLeader->ApplyLeader();
-					secondGroupLeader = nullptr;
+					groupLeaderOne->ApplyLeader();
+					groupLeaderTwo = nullptr;
+					currentToolError = EToolError::None;
 					UnHighlightAll();
-					HighlightGroup(true);
 				}
 			}
 		}
 	}
+	else
+	{
+		if (UDT_RCO* RCO = UDT_RCO::Get(GetWorld()))
+		{
+			RCO->Server_MLBMerge(this, groupLeaderOne, groupLeaderTwo);
+			currentToolError = EToolError::None;
+			UnHighlightAll();
+		}
+	}
+	ResetStuff();
 }
 
-void ADT_EquipDigbyTool::SplitGroups()
+void ADT_EquipDigbyTool::SplitGroups(TArray< ALBBuild_ModularLoadBalancer*> modulesToBeSplit)
 {
-	currentToolError = EToolError::None;
-	if (modulesToSplit.Num() > 0)
+	if (HasAuthority())
 	{
-		//Remove balancers from their groups
-		for (auto balancer : modulesToSplit)
+		if (modulesToBeSplit.Num() > 0)
 		{
-			balancer->RemoveGroupModule();
-		}
+			TArray<ALBBuild_ModularLoadBalancer*> leaders;
 
-		//Set new leader and add balancers
-		ALBBuild_ModularLoadBalancer* newLeader = nullptr;
-		for (auto balancer : modulesToSplit)
-		{
-			if (!balancer->IsPendingKillOrUnreachable())
+			//Remove balancers from their groups
+			for (auto balancer : modulesToBeSplit)
 			{
-				newLeader = balancer;
-				balancer->ApplyLeader();
-				break;
+				leaders.Add(balancer->GroupLeader);
+				balancer->RemoveGroupModule();
 			}
-		}
-		for (auto balancer : modulesToSplit)
-		{
 
-			balancer->GroupLeader = newLeader;
-			balancer->InitializeModule();
+			//Set new leader and add balancers
+			ALBBuild_ModularLoadBalancer* newLeader = nullptr;
+			for (auto balancer : modulesToBeSplit)
+			{
+				if (!balancer->IsPendingKillOrUnreachable())
+				{
+					if (balancer->GroupLeader == nullptr && newLeader == nullptr)
+					{
+						newLeader = balancer;
+						balancer->ApplyLeader();
+					}
+					balancer->GroupLeader = newLeader;
+					balancer->InitializeModule();
+				}
+			}
+			currentToolError = EToolError::None;
+			ResetStuff();
 		}
-		//newLeader->ApplyLeader();
-		ResetStuff();
+	}
+	else
+	{
+		if (UDT_RCO* RCO = UDT_RCO::Get(GetWorld()))
+		{
+			RCO->Server_MLBSplit(this, modulesToBeSplit);
+			currentToolError = EToolError::None;
+			ResetStuff();
+		}
 	}
 }
 
@@ -135,52 +157,47 @@ void ADT_EquipDigbyTool::ResetStuff()
 	modulesToSplit.Empty();
 }
 
-void ADT_EquipDigbyTool::HighlightGroup(bool isFirstGroup)
+void ADT_EquipDigbyTool::HighlightGroup(ALBBuild_ModularLoadBalancer* groupLeader)
 {
-	if (isFirstGroup && firstGroupLeader)
+	if (groupLeader == firstGroupLeader)
 	{
 		if (highlightedFirstGroupLeader)
 		{
-			UnHighlightGroup(true);
+			UnHighlightGroup(highlightedFirstGroupLeader);
 		}
-
-		for (auto module : firstGroupLeader->GetGroupModules())
+		for (auto module : groupLeader->GetGroupModules())
 		{
 			HighlightModule(module, firstGroupHoloMaterial);
 		}
-		highlightedFirstGroupLeader = firstGroupLeader;
+		highlightedFirstGroupLeader = groupLeader;
 	}
-	else if (secondGroupLeader)
+	else if (groupLeader == secondGroupLeader)
 	{
 		if (highlightedSecondGroupLeader)
 		{
-			UnHighlightGroup(false);
+			UnHighlightGroup(highlightedSecondGroupLeader);
 		}
 
-		for (auto module : secondGroupLeader->GetGroupModules())
+		for (auto module : groupLeader->GetGroupModules())
 		{
 			HighlightModule(module, secondGroupHoloMaterial);
 		}
-		highlightedSecondGroupLeader = secondGroupLeader;
+		highlightedSecondGroupLeader = groupLeader;
 	}
 }
 
-void ADT_EquipDigbyTool::UnHighlightGroup(bool isFirstGroup)
+void ADT_EquipDigbyTool::UnHighlightGroup(ALBBuild_ModularLoadBalancer* groupLeader)
 {
-	if (isFirstGroup && highlightedFirstGroupLeader)
+	for (auto module : groupLeader->GetGroupModules())
 	{
-		for (auto module : highlightedFirstGroupLeader->GetGroupModules())
-		{
-			UnHighlightModule(module);
-		}
+		UnHighlightModule(module);
+	}
+	if (highlightedFirstGroupLeader && highlightedFirstGroupLeader == groupLeader)
+	{
 		highlightedFirstGroupLeader = nullptr;
 	}
-	else if (highlightedSecondGroupLeader)
+	else if (highlightedSecondGroupLeader && highlightedSecondGroupLeader == groupLeader)
 	{
-		for (auto module : highlightedSecondGroupLeader->GetGroupModules())
-		{
-			UnHighlightModule(module);
-		}
 		highlightedSecondGroupLeader = nullptr;
 	}
 }
