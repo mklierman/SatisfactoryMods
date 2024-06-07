@@ -38,51 +38,9 @@ public:
 	bool bDummy = true;
 
 	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
-	void Server_MLBMerge(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* groupLeaderOne, ALBBuild_ModularLoadBalancer* groupLeaderTwo);
-	FORCEINLINE bool Server_MLBMerge_Validate(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* groupLeaderOne, ALBBuild_ModularLoadBalancer* groupLeaderTwo) { return true; }
+	void Server_RagdollPlayer(AFGCharacterBase* Character);
+	FORCEINLINE bool Server_RagdollPlayer_Validate(AFGCharacterBase* Character) { return true; }
 
-	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
-	void Server_MLBSplit(ADT_EquipDigbyTool* DigbyTool, const TArray< ALBBuild_ModularLoadBalancer*>& modulesToBeSplit);
-	FORCEINLINE bool Server_MLBSplit_Validate(ADT_EquipDigbyTool* DigbyTool, const TArray< ALBBuild_ModularLoadBalancer*>& modulesToBeSplit) { return true; }
 
-	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
-	void Server_SetFirstGroupLeader(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* module);
-	FORCEINLINE bool Server_SetFirstGroupLeader_Validate(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* module) { return true; }
-
-	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
-	void Server_SetSecondGroupLeader(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* module);
-	FORCEINLINE bool Server_SetSecondGroupLeader_Validate(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* module) { return true; }
-
-	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
-	void Server_AddModuleToBeSplit(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* module);
-	FORCEINLINE bool Server_AddModuleToBeSplit_Validate(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* module) { return true; }
-
-	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
-	void Server_RemoveModuleToBeSplit(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* module);
-	FORCEINLINE bool Server_RemoveModuleToBeSplit_Validate(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* module) { return true; }
-
-	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
-	void Server_ResetStuff(ADT_EquipDigbyTool* DigbyTool);
-	FORCEINLINE bool Server_ResetStuff_Validate(ADT_EquipDigbyTool* DigbyTool) { return true; }
-
-	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
-	void Server_HighlightGroup(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* groupLeader);
-	FORCEINLINE bool Server_HighlightGroup_Validate(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* groupLeader) { return true; }
-
-	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
-	void Server_UnHighlightGroup(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* groupLeader);
-	FORCEINLINE bool Server_UnHighlightGroup_Validate(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* groupLeader) { return true; }
-
-	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
-	void Server_UnHighlightAll(ADT_EquipDigbyTool* DigbyTool);
-	FORCEINLINE bool Server_UnHighlightAll_Validate(ADT_EquipDigbyTool* DigbyTool) { return true; }
-
-	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
-	void Server_HighlightModule(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* module, UMaterialInterface* holoMaterial);
-	FORCEINLINE bool Server_HighlightModule_Validate(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* module, UMaterialInterface* holoMaterial) { return true; }
-
-	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
-	void Server_UnHighlightModule(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* module);
-	FORCEINLINE bool Server_UnHighlightModule_Validate(ADT_EquipDigbyTool* DigbyTool, ALBBuild_ModularLoadBalancer* module) { return true; }
 };
 

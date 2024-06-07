@@ -50,7 +50,16 @@ public:
 	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
 	void Server_ResetOutlineColor(ALBOutlineSubsystem* Subsystem);
 	FORCEINLINE bool Server_ResetOutlineColor_Validate(ALBOutlineSubsystem* Subsystem) { return true; }
-	
+
+	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
+	void Server_MergeBalancerGroups(ALBBuild_ModularLoadBalancer* groupLeaderOne, ALBBuild_ModularLoadBalancer* groupLeaderTwo);
+	FORCEINLINE bool Server_MergeBalancerGroups_Validate(ALBBuild_ModularLoadBalancer* groupLeaderOne, ALBBuild_ModularLoadBalancer* groupLeaderTwo) { return true; }
+
+	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
+	void Server_SplitBalancers(const TArray< ALBBuild_ModularLoadBalancer*>& modulesToBeSplit);
+	FORCEINLINE bool Server_SplitBalancers_Validate(const TArray< ALBBuild_ModularLoadBalancer*>& modulesToBeSplit) { return true; }
+
+
 	UPROPERTY(Replicated)
 	bool bDummy = true;
 };

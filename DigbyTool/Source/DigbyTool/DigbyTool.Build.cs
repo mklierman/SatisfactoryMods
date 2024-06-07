@@ -37,6 +37,6 @@ public class DigbyTool : ModuleRules
         if (Target.Type == TargetRules.TargetType.Editor) {
 			PublicDependencyModuleNames.AddRange(new string[] {"OnlineBlueprintSupport", "AnimGraph"});
 		}
-        PublicDependencyModuleNames.AddRange(new string[] {"FactoryGame", "SML", "LoadBalancers"});
+        PublicDependencyModuleNames.AddRange(new string[] {"FactoryGame", "SML"});
 	}
 }

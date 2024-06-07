@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
-	"Version": 1,
-	"VersionName": "1.0.0",
-	"SemVersion": "1.0.0",
+	"Version": 2,
+	"VersionName": "2.0.0",
+	"SemVersion": "2.0.0",
 	"FriendlyName": "DigbyTool",
 	"Description": "Tool used to interact with some of Sir Digby's mods",
 	"Category": "Modding",
@@ -31,7 +31,8 @@
 		{
 			"Name": "LoadBalancers",
 			"Enabled": true,
-			"SemVersion": "1.10.0"
+			"SemVersion": "^1.10.1",
+			"Optional": true
 		}
 	]
 }

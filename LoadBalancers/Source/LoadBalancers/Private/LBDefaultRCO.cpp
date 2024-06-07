@@ -71,3 +71,13 @@ void ULBDefaultRCO::Server_RemoveFilteredItem_Implementation(ALBBuild_ModularLoa
 		Balancer->ForceNetUpdate();
 	}
 }
+
+void ULBDefaultRCO::Server_MergeBalancerGroups_Implementation(ALBBuild_ModularLoadBalancer* groupLeaderOne, ALBBuild_ModularLoadBalancer* groupLeaderTwo)
+{
+
+}
+
+void ULBDefaultRCO::Server_SplitBalancers_Implementation(const TArray< ALBBuild_ModularLoadBalancer*>& modulesToBeSplit)
+{
+
+}
