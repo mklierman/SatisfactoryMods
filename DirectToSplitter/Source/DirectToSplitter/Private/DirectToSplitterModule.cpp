@@ -1,8 +1,11 @@
 #include "DirectToSplitterModule.h"
 #include "DTS_ConfigStruct.h"
 #include "Registry/ModContentRegistry.h"
+#include "Logging/StructuredLog.h"
 #include <Kismet/KismetMathLibrary.h>
+#include <Buildables/FGBuildableStorage.h>
 
+DEFINE_LOG_CATEGORY(SnapOn_Log);
 //#pragma optimize("", off)
 //#endif
 void FDirectToSplitterModule::StartupModule() {
@@ -129,47 +132,31 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 		}
 		auto snappedBuildable = self->mSnappedConection->GetOuterBuildable();
 		
-		//if (snappedBuildable->mDecoratorClass)
-		//{
-		//	auto name = snappedBuildable->mDecoratorClass->GetName();
-		//	if (name.Equals("Deco_StorageContainerMk2_C"))
-		//	{
-		//		self->AddConstructDisqualifier(USnapOnDisqualifier::StaticClass());
-		//		return;
-		//	}
-		//}
-		auto snappedInventory = self->mSnappedConection->GetInventory();
-		auto direction = self->mSnappedConection->GetDirection();
-		auto inventoryIndex = self->mSnappedConection->GetInventoryAccessIndex();
 
-		for (UActorComponent* ComponentsByClass : snappedBuildable->GetComponentsByClass(UFGFactoryConnectionComponent::StaticClass()))
+		bool shouldDisqualify = false;
+		auto direction = self->mSnappedConection->GetDirection();
+		if (direction == EFactoryConnectionDirection::FCD_OUTPUT)
 		{
-			if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
+			for (UActorComponent* ComponentsByClass : snappedBuildable->GetComponentsByClass(UFGFactoryConnectionComponent::StaticClass()))
 			{
-				if (ConnectionComponent != self->mSnappedConection 
-					&& ConnectionComponent->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR
-					&& ConnectionComponent->GetInventory() == snappedInventory
-					&& ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
+				if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
 				{
-					self->ResetConstructDisqualifiers();
-					self->AddConstructDisqualifier(USnapOnDisqualifier::StaticClass());
-					return;
+					if (ConnectionComponent != self->mSnappedConection
+						&& ConnectionComponent->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR
+						&& ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
+					{
+						shouldDisqualify = true;
+					}
 				}
 			}
 		}
-
-		//Currently broken
-		//auto modRegistry = UModContentRegistry::Get(self->GetWorld());
-		//if (!modRegistry->IsRecipeVanilla(snappedBuildable->GetBuiltWithRecipe()))
-		//{
-		//	return;
-		//}
-
-		//auto pathName = snappedBuildable->GetBuiltWithRecipe()->GetPathName();
-		//if (!pathName.Contains("FactoryGame"))
-		//{
-		//	return;
-		//}
+		if (shouldDisqualify)
+		{
+			//UE_LOG(SnapOn_Log, Display, TEXT("Setting Disqualifier"));
+			self->ResetConstructDisqualifiers();
+			self->AddConstructDisqualifier(USnapOnDisqualifier::StaticClass());
+			return;
+		}
 		
 		self->ResetConstructDisqualifiers();
 		retflag = false;
@@ -189,47 +176,6 @@ void FDirectToSplitterModule::CheckValidFactoryPlacement(AFGFactoryHologram* sel
 	auto snappedBuilding = self->GetSnappedBuilding();
 	TArray< TSubclassOf<  UFGConstructDisqualifier > >out_constructResults;
 	self->GetConstructDisqualifiers(out_constructResults);
-	//if (self->mSnappedConection)
-	//{
-	//	auto snappedConnectionName = self->mSnappedConection->GetName();
-	//	if (snappedConnectionName.Contains("ConveyorAny"))
-	//	{
-	//		return;
-	//	}
-	//	auto snappedBuildable = self->mSnappedConection->GetOuterBuildable();
-
-	//	if (snappedBuildable->mDecoratorClass)
-	//	{
-	//		auto name = snappedBuildable->mDecoratorClass->GetName();
-	//		if (name.Equals("Deco_StorageContainerMk2_C"))
-	//		{
-	//			return;
-	//		}
-	//	}
-
-	//	Currently broken
-	//	auto modRegistry = UModContentRegistry::Get(self->GetWorld());
-	//	if (!modRegistry->IsRecipeVanilla(snappedBuildable->GetBuiltWithRecipe()))
-	//	{
-	//		return;
-	//	}
-
-	//	auto pathName = snappedBuildable->GetBuiltWithRecipe()->GetPathName();
-	//	if (!pathName.Contains("FactoryGame"))
-	//	{
-	//		return;
-	//	}
-
-	//	self->ResetConstructDisqualifiers();
-	//	retflag = false;
-	//	auto offset = FDTS_ConfigStruct::GetActiveConfig(self->GetWorld()).SnapOffset * 100.f;
-
-	//	auto compLocation = self->mSnappedConection->GetConnectorLocation();
-
-	//	FVector addVector = self->mSnappedConection->GetForwardVector() * offset;
-	//	auto newLoc = compLocation + addVector;
-	//	self->SetActorLocation(newLoc);
-	//}
 }
 
 void FDirectToSplitterModule::ConfigureComponents(const AFGConveyorAttachmentHologram* self, bool& retflag)

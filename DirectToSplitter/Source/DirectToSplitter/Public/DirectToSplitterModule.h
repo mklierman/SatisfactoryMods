@@ -24,6 +24,8 @@
 #include "AbstractInstance.h"
 #include "SnapOnDisqualifier.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(SnapOn_Log, Display, All);
+
 struct ConveyorAttachmentInfo
 {
 	UFGFactoryConnectionComponent* otherConnection;
