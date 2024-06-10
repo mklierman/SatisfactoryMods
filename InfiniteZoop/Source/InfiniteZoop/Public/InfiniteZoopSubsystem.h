@@ -4,6 +4,8 @@
 #include "Subsystem/ModSubsystem.h"
 #include "InfiniteZoopSubsystem.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(InfiniteZoop_Log, Display, All);
+
 USTRUCT(BlueprintType)
 struct INFINITEZOOP_API FZoopAmountStruct
 {

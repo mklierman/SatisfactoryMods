@@ -20,11 +20,13 @@
 #include "Buildables/FGBuildableFoundation.h"
 #include "FGHologramBuildModeDescriptor.h"
 #include "InfiniteZoop_ConfigurationStruct.h"
+#include "InfiniteZoop_RCO.h"
 #include "FGRampHologram.h"
+#include <Logging/StructuredLog.h>
 
 
-//DEFINE_LOG_CATEGORY(InfiniteZoop_Log);
-//#pragma optimize("", off)
+DEFINE_LOG_CATEGORY(InfiniteZoop_Log);
+#pragma optimize("", off)
 int GetClosestZoopAngle(double angleToCheck)
 {
 	if (angleToCheck >= double(0.0) && angleToCheck < double(90.0))
@@ -349,6 +351,7 @@ bool FInfiniteZoopModule::OnRep_DesiredZoop(AFGFactoryBuildingHologram* self)
 			{
 				if (zStruct->secondPassComplete || zStruct->inScrollMode)
 				{
+					//UE_LOGFMT(InfiniteZoop_Log, Display, "Max Zoop Amount: {0}", self->mMaxZoopAmount);
 					auto maxZ = self->mMaxZoopAmount;
 					auto minZ = (self->mMaxZoopAmount * -1);
 					self->mDesiredZoop.X = FMath::Clamp(zStruct->X, minZ, maxZ);
@@ -474,11 +477,16 @@ int32 FInfiniteZoopModule::GetBaseCostMultiplier(const AFGFactoryBuildingHologra
 
 void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AActor*>& out_children)
 {
+	UWorld* world = self->GetWorld();
+	USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
+	AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
+	//UE_LOGFMT(InfiniteZoop_Log, Display, "FInfiniteZoopModule::ConstructZoop. zoopSubsystem->currentZoopAmount: {0}", zoopSubsystem->currentZoopAmount);
 	if (IsZoopMode(self))
 	{
 		auto zStruct = GetStruct(self);
 		if (self)
 		{
+			//UE_LOGFMT(InfiniteZoop_Log, Display, "Max Zoop Amount: {0}", self->mMaxZoopAmount);
 			auto maxZ = self->mMaxZoopAmount;
 			auto minZ = (self->mMaxZoopAmount * -1);
 			self->mDesiredZoop.X = FMath::Clamp(zStruct->X, minZ, maxZ);
@@ -805,6 +813,9 @@ void FInfiniteZoopModule::StartupModule()
 				AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
 				AInfiniteZoop_ClientSubsystem* clientSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoop_ClientSubsystem>();
 
+				//UE_LOGFMT(InfiniteZoop_Log, Display, "AFGHologram::BeginPlay. zoopSubsystem->currentZoopAmount: {0}", zoopSubsystem->currentZoopAmount);
+
+
 				AFGWallHologram* Whg = Cast<AFGWallHologram>(self);
 				if (Whg)
 				{
@@ -813,11 +824,31 @@ void FInfiniteZoopModule::StartupModule()
 
 				AFGFactoryBuildingHologram* bhg = Cast<AFGFactoryBuildingHologram>(self);
 
+				if (bhg)
+				{
+					
+					//UE_LOGFMT(InfiniteZoop_Log, Display, "self->HasAuthority(): {0}", self->HasAuthority());
+					if (!self->GetInstigatorController())
+					{
+						AFGPlayerController* PlayerController = Cast<AFGPlayerController>(self->GetWorld()->GetFirstPlayerController());
+						UInfiniteZoop_RCO* RCO = PlayerController->GetRemoteCallObjectOfClass<UInfiniteZoop_RCO>();
+						if (RCO)
+						{
+							//UE_LOGFMT(InfiniteZoop_Log, Display, "RCO Setting max zoop to {0}", zoopSubsystem->currentZoopAmount - 1);
+							RCO->SetHologramMaxZoop(bhg, zoopSubsystem->currentZoopAmount - 1);
+						}
+						else
+						{
+							//UE_LOGFMT(InfiniteZoop_Log, Display, "Couldn't get RCO");
+						}
+					}
+				}
 				if (clientSubsystem)
 				{
 					//UE_LOG(InfiniteZoop_Log, Display, TEXT("Zoop Corners: False"));
 					if (bhg && bhg->mMaxZoopAmount > 0)
 					{
+
 						bhg->SetMaterialState(self->GetHologramMaterialState());
 						if (clientSubsystem->tempZoopAmount > 0)
 						{
@@ -826,12 +857,14 @@ void FInfiniteZoopModule::StartupModule()
 						else
 						{
 							bhg->mMaxZoopAmount = zoopSubsystem->currentZoopAmount - 1;
+							if (bhg->mMaxZoopAmount > 10)
+							{
+							}
 						}
 						//UE_LOG(InfiniteZoop_Log, Display, TEXT("Increased Zoop Amount"));
 						return;
 					}
 				}
-
 				AFGLadderHologram* ladderHG = Cast<AFGLadderHologram>(self);
 				if (ladderHG && clientSubsystem)
 				{
@@ -878,7 +911,6 @@ void FInfiniteZoopModule::StartupModule()
 				}
 			}
 		});
-
 #endif
 }
 
@@ -968,7 +1000,7 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 	
 	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
 }
-//#pragma optimize("", on)
+#pragma optimize("", on)
 
 
 IMPLEMENT_GAME_MODULE(FInfiniteZoopModule, InfiniteZoop);
