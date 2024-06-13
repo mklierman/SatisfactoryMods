@@ -31,7 +31,7 @@ void UInfiniteZoop_RCO::SetHologramMaxZoop_Implementation(AFGFactoryBuildingHolo
 {
 	USubsystemActorManager* SubsystemActorManager = GetWorld()->GetSubsystem<USubsystemActorManager>();
 	AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
-	zoopSubsystem->currentZoopAmount = newMaxZoop;
+	//zoopSubsystem->currentZoopAmount = newMaxZoop;
 	if (hologram)
 	{
 		hologram->mMaxZoopAmount = newMaxZoop;

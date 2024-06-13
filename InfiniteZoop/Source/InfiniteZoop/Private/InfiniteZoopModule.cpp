@@ -26,7 +26,7 @@
 
 
 DEFINE_LOG_CATEGORY(InfiniteZoop_Log);
-#pragma optimize("", off)
+//#pragma optimize("", off)
 int GetClosestZoopAngle(double angleToCheck)
 {
 	if (angleToCheck >= double(0.0) && angleToCheck < double(90.0))
@@ -477,9 +477,7 @@ int32 FInfiniteZoopModule::GetBaseCostMultiplier(const AFGFactoryBuildingHologra
 
 void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AActor*>& out_children)
 {
-	UWorld* world = self->GetWorld();
-	USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
-	AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
+	//UWorld* world = self->GetWorld();
 	//UE_LOGFMT(InfiniteZoop_Log, Display, "FInfiniteZoopModule::ConstructZoop. zoopSubsystem->currentZoopAmount: {0}", zoopSubsystem->currentZoopAmount);
 	if (IsZoopMode(self))
 	{
@@ -826,7 +824,6 @@ void FInfiniteZoopModule::StartupModule()
 
 				if (bhg)
 				{
-					
 					//UE_LOGFMT(InfiniteZoop_Log, Display, "self->HasAuthority(): {0}", self->HasAuthority());
 					if (!self->GetInstigatorController())
 					{
@@ -836,10 +833,6 @@ void FInfiniteZoopModule::StartupModule()
 						{
 							//UE_LOGFMT(InfiniteZoop_Log, Display, "RCO Setting max zoop to {0}", zoopSubsystem->currentZoopAmount - 1);
 							RCO->SetHologramMaxZoop(bhg, zoopSubsystem->currentZoopAmount - 1);
-						}
-						else
-						{
-							//UE_LOGFMT(InfiniteZoop_Log, Display, "Couldn't get RCO");
 						}
 					}
 				}
@@ -857,9 +850,6 @@ void FInfiniteZoopModule::StartupModule()
 						else
 						{
 							bhg->mMaxZoopAmount = zoopSubsystem->currentZoopAmount - 1;
-							if (bhg->mMaxZoopAmount > 10)
-							{
-							}
 						}
 						//UE_LOG(InfiniteZoop_Log, Display, TEXT("Increased Zoop Amount"));
 						return;
@@ -1000,7 +990,7 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 	
 	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
 }
-#pragma optimize("", on)
+////#pragma optimize("", on)
 
 
 IMPLEMENT_GAME_MODULE(FInfiniteZoopModule, InfiniteZoop);
