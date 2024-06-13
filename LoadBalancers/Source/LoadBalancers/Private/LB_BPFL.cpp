@@ -2,6 +2,7 @@
 
 
 #include "LB_BPFL.h"
+#include <Logging/StructuredLog.h>
 
 void ULB_BPFL::SortStringArray(UPARAM(ref)TArray<FString>& Array_To_Sort, TArray<FString>& Sorted_Array)
 {
@@ -12,8 +13,10 @@ void ULB_BPFL::SortStringArray(UPARAM(ref)TArray<FString>& Array_To_Sort, TArray
 
 void ULB_BPFL::MergeBalancerGroups(ALBBuild_ModularLoadBalancer* groupLeaderOne, ALBBuild_ModularLoadBalancer* groupLeaderTwo)
 {
+	//UE_LOGFMT(LogTemp, Display, "ULB_BPFL::MergeBalancerGroups");
 	if (groupLeaderOne && groupLeaderTwo)
 	{
+		//UE_LOGFMT(LogTemp, Display, "Group leaders aren't null");
 		if (groupLeaderOne->IsLeader())
 		{
 			TArray< ALBBuild_ModularLoadBalancer*> balancersToMove = groupLeaderTwo->GetGroupModules();
@@ -36,8 +39,10 @@ void ULB_BPFL::MergeBalancerGroups(ALBBuild_ModularLoadBalancer* groupLeaderOne,
 
 void ULB_BPFL::SplitBalancers(TArray<ALBBuild_ModularLoadBalancer*> modulesToBeSplit)
 {
+	//UE_LOGFMT(LogTemp, Display, "ULB_BPFL::SplitBalancers");
 	if (modulesToBeSplit.Num() > 0)
 	{
+		//UE_LOGFMT(LogTemp, Display, "modulesToBeSplit num: {0}", modulesToBeSplit.Num());
 		TArray<ALBBuild_ModularLoadBalancer*> leaders;
 
 		//Remove balancers from their groups

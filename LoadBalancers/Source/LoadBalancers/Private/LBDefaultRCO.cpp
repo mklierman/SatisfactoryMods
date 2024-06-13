@@ -9,6 +9,7 @@
 //}
 
 #include "LBDefaultRCO.h"
+#include <LB_BPFL.h>
 
 void ULBDefaultRCO::Server_SetFilteredItem_Implementation(ALBBuild_ModularLoadBalancer* Balancer,
 	TSubclassOf<UFGItemDescriptor> ItemClass)
@@ -74,10 +75,10 @@ void ULBDefaultRCO::Server_RemoveFilteredItem_Implementation(ALBBuild_ModularLoa
 
 void ULBDefaultRCO::Server_MergeBalancerGroups_Implementation(ALBBuild_ModularLoadBalancer* groupLeaderOne, ALBBuild_ModularLoadBalancer* groupLeaderTwo)
 {
-
+	ULB_BPFL::MergeBalancerGroups(groupLeaderOne, groupLeaderTwo);
 }
 
 void ULBDefaultRCO::Server_SplitBalancers_Implementation(const TArray< ALBBuild_ModularLoadBalancer*>& modulesToBeSplit)
 {
-
+	ULB_BPFL::SplitBalancers(modulesToBeSplit);
 }
