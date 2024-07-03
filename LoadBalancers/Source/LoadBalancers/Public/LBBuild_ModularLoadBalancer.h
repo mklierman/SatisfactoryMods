@@ -162,6 +162,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Modular Loader")
 	void RemoveFilteredItem(TSubclassOf<UFGItemDescriptor> ItemClass);
 
+	UFUNCTION(BlueprintCallable, Category = "Modular Loader")
+	void SetFilteredItems(TArray<TSubclassOf<UFGItemDescriptor>> Items);
+
+	UFUNCTION(BlueprintCallable, Category = "Modular Loader")
+	void RemovedFilteredItems(TArray<TSubclassOf<UFGItemDescriptor>> Items);
+
+	UFUNCTION(BlueprintCallable, Category = "Modular Loader")
+	void RemoveAllFilteredItems();
+
 	/** Make this Loader to new GroupLeader (Tell all group modules the new leader and force an update) */
 	void ApplyLeader();
 

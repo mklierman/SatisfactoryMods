@@ -283,6 +283,32 @@ void ALBBuild_ModularLoadBalancer::RemoveFilteredItem(TSubclassOf<UFGItemDescrip
     }
 }
 
+void ALBBuild_ModularLoadBalancer::SetFilteredItems(TArray<TSubclassOf<UFGItemDescriptor>> Items)
+{
+    RemoveAllFilteredItems();
+    for (auto item : Items)
+    {
+        SetFilteredItem(item);
+    }
+}
+
+void ALBBuild_ModularLoadBalancer::RemovedFilteredItems(TArray<TSubclassOf<UFGItemDescriptor>> Items)
+{
+    for (auto item : Items)
+    {
+        RemoveFilteredItem(item);
+    }
+}
+
+void ALBBuild_ModularLoadBalancer::RemoveAllFilteredItems()
+{
+    auto ItemsToRemove = mFilteredItems;
+    for (auto item : ItemsToRemove)
+    {
+        RemoveFilteredItem(item);
+    }
+}
+
 void ALBBuild_ModularLoadBalancer::ApplyLeader()
 {
     if (HasAuthority())
