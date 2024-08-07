@@ -6,7 +6,6 @@
 #include "Creature/Enemy/FGCrabHatcher.h"
 #include "FGGameMode.h"
 #include "Creature/Actions/FGCreatureActionCharge.h"
-//#include "AI/FGEnemyController.h"
 
 void GameModePostLogin(CallScope<void(*)(AFGGameMode*, APlayerController*)>& scope, AFGGameMode* gm,
 	APlayerController* pc)
@@ -16,8 +15,7 @@ void GameModePostLogin(CallScope<void(*)(AFGGameMode*, APlayerController*)>& sco
 	UFunction* SomeFunc = SomeClass->FindFunctionByName(TEXT("StartNewWave"));
 	UBlueprintHookManager* HookManager = GEngine->GetEngineSubsystem<UBlueprintHookManager>();
 	HookManager->HookBlueprintFunction(SomeFunc, [](FBlueprintHookHelper& helper) {
-		UObject* ctx = helper.GetContext(); // the object this function got called onto
-		// do some nice stuff there
+		// Skip the normal function body -> prevent any crabs from being spawned
 		helper.JumpToFunctionReturn();
 		}, EPredefinedHookOffset::Start);
 #endif
@@ -27,16 +25,6 @@ void FPardonMeModule::StartupModule() {
 #if !WITH_EDITOR
 	AFGGameMode* LocalGameMode = GetMutableDefault<AFGGameMode>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, &GameModePostLogin)
-
-	//	UFGCreatureAction* CAC = GetMutableDefault<UFGCreatureAction>();
-	//SUBSCRIBE_METHOD_VIRTUAL(UFGCreatureAction::InitializeAction, CAC [](auto& scope, UFGCreatureAction* self, AController* controller, APawn* pawn)
-	//{
-	//		auto chargeAction = Cast<UFGCreatureActionCharge>(self);
-	//		if (chargeAction)
-	//		{
-	//			scope.Cancel();
-	//		}
-	//});
 #endif
 }
 
