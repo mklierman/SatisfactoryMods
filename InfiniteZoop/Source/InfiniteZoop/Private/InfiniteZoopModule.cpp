@@ -26,7 +26,7 @@
 
 
 DEFINE_LOG_CATEGORY(InfiniteZoop_Log);
-//#pragma optimize("", off)
+#pragma optimize("", off)
 int GetClosestZoopAngle(double angleToCheck)
 {
 	if (angleToCheck >= double(0.0) && angleToCheck < double(90.0))
@@ -600,9 +600,17 @@ void FInfiniteZoopModule::CheckBuildEffects(const AFGFactoryBuildingHologram* fb
 	}
 }
 
+void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
+{
+	TArray< TSubclassOf< UFGBuildGunModeDescriptor > > out_buildmodes;
+	self->GetSupportedBuildModes(out_buildmodes);
+	out_buildmodes.Num();
+
+}
+
 void FInfiniteZoopModule::StartupModule() 
 {
-#if !WITH_EDITOR
+//#if !WITH_EDITOR
 	lockObj = new FCriticalSection();
 
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
@@ -802,10 +810,16 @@ void FInfiniteZoopModule::StartupModule()
 	//		}
 	//		SetSubsystemZoopAmounts(-1, -1, -1, true, self->GetWorld(), self);
 	//	});
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [](auto scope, AFGHologram* self)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [=](auto scope, AFGHologram* self)
 		{
 			if (self)
 			{
+				TArray< TSubclassOf< UFGBuildGunModeDescriptor > > out_buildmodes;
+				self->GetSupportedBuildModes(out_buildmodes);
+				if (out_buildmodes.Num() == 0)
+				{
+					return;
+				}
 				UWorld* world = self->GetWorld();
 				USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
 				AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
@@ -901,7 +915,7 @@ void FInfiniteZoopModule::StartupModule()
 				}
 			}
 		});
-#endif
+//#endif
 }
 
 FVector FInfiniteZoopModule::CalcPivotAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat)
@@ -990,7 +1004,7 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 	
 	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
 }
-////#pragma optimize("", on)
+#pragma optimize("", on)
 
 
 IMPLEMENT_GAME_MODULE(FInfiniteZoopModule, InfiniteZoop);

@@ -62,4 +62,6 @@ public:
 	FCriticalSection* lockObj;
 
 	void CheckBuildEffects(const AFGFactoryBuildingHologram* fbHolo, class AFGBuildable* inBuildable);
+
+	void HGBeginPlay(AFGHologram* self);
 };
