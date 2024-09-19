@@ -119,7 +119,7 @@ void ACL_CounterLimiter::PostInitializeComponents()
 		//this->mInventorySizeY = 1;
 		GetWorld()->GetTimerManager().SetTimer(ipmTimerHandle, this, &ACL_CounterLimiter::CalculateIPM, 60.f, true, 60.f);
 		SetThroughputLimit(mPerMinuteLimitRate);
-		for (UActorComponent* ComponentsByClass : GetComponentsByClass(UFGInventoryComponent::StaticClass()))
+		for (UActorComponent* ComponentsByClass : GetComponents())
 		{
 			if (UFGInventoryComponent* InventoryComponent = Cast<UFGInventoryComponent>(ComponentsByClass))
 			{
@@ -207,70 +207,70 @@ float ACL_CounterLimiter::GetSecondsPerItem()
 
 void ACL_CounterLimiter::UpdateAttachedSigns()
 {
-	if (HasAuthority() && mAttachedSigns.Num() > 0)
-	{
-		//TMap<FText, int32> iconNames;
-		auto iconLib = UFGIconLibrary::Get();
-		auto icons = iconLib->GetIconData();
-		//for (FIconData icon : icons)
-		//{
-		//	//iconNames.Add(icon.IconName, icon.ID);
-		//}
+	//if (HasAuthority() && mAttachedSigns.Num() > 0)
+	//{
+	//	//TMap<FText, int32> iconNames;
+	//	auto iconLib = UFGIconLibrary::Get();
+	//	auto icons = iconLib->GetIconData();
+	//	//for (FIconData icon : icons)
+	//	//{
+	//	//	//iconNames.Add(icon.IconName, icon.ID);
+	//	//}
 
-		for (auto sign : mAttachedSigns)
-		{
-			if (sign)
-			{
-				FPrefabSignData out_signData;
-				sign->GetSignPrefabData(out_signData);
-				TMap<FString, FString> textMap = out_signData.TextElementData;
-				TArray<FString> keys;
-				textMap.GetKeys(keys);
-				for (int i = 0; i < keys.Num(); i++)
-				{
-					textMap[keys[i]] = FString::FromInt((int)DisplayIPM);
-				}
-				out_signData.TextElementData = textMap;
+	//	for (auto sign : mAttachedSigns)
+	//	{
+	//		if (sign)
+	//		{
+	//			FPrefabSignData out_signData;
+	//			sign->GetSignPrefabData(out_signData);
+	//			TMap<FString, FString> textMap = out_signData.TextElementData;
+	//			TArray<FString> keys;
+	//			textMap.GetKeys(keys);
+	//			for (int i = 0; i < keys.Num(); i++)
+	//			{
+	//				textMap[keys[i]] = FString::FromInt((int)DisplayIPM);
+	//			}
+	//			out_signData.TextElementData = textMap;
 
-				if (mItemCounts.Num() > 0)
-				{
-					TSubclassOf<class UFGItemDescriptor> itemDesc;
-					int32 highestCount = 0;
+	//			if (mItemCounts.Num() > 0)
+	//			{
+	//				TSubclassOf<class UFGItemDescriptor> itemDesc;
+	//				int32 highestCount = 0;
 
-					for (auto& item : mItemCounts)
-					{
-						if (item.Value > highestCount)
-						{
-							itemDesc = item.Key;
-							highestCount = item.Value;
-						}
-					}
-					auto itemName = UFGItemDescriptor::GetItemName(itemDesc);
-					int32 iconInt = -1;
-					for (auto icon : icons)
-					{
-						if (icon.IconName.ToString() == itemName.ToString())
-						{
-							iconInt = icon.ID;
-						}
-					}
-					if (iconInt >= 0)
-					{
-						TMap<FString, int32> iconMap = out_signData.IconElementData;
-						iconMap["Icon"] = iconInt;
-						out_signData.IconElementData = iconMap;
-					}
-				}
-				sign->SetPrefabSignData(out_signData);
+	//				for (auto& item : mItemCounts)
+	//				{
+	//					if (item.Value > highestCount)
+	//					{
+	//						itemDesc = item.Key;
+	//						highestCount = item.Value;
+	//					}
+	//				}
+	//				auto itemName = UFGItemDescriptor::GetItemName(itemDesc);
+	//				int32 iconInt = -1;
+	//				for (auto icon : icons)
+	//				{
+	//					if (icon.IconName.ToString() == itemName.ToString())
+	//					{
+	//						iconInt = icon.ID;
+	//					}
+	//				}
+	//				if (iconInt >= 0)
+	//				{
+	//					TMap<FString, int32> iconMap = out_signData.IconElementData;
+	//					iconMap["Icon"] = iconInt;
+	//					out_signData.IconElementData = iconMap;
+	//				}
+	//			}
+	//			sign->SetPrefabSignData(out_signData);
 
-				//Key: Icon / Value: 194 (iron ingot)
-			}
-			else
-			{
-				mAttachedSigns.Remove(sign);
-			}
-		}
-	}
+	//			//Key: Icon / Value: 194 (iron ingot)
+	//		}
+	//		else
+	//		{
+	//			mAttachedSigns.Remove(sign);
+	//		}
+	//	}
+	//}
 }
 
 UFGInventoryComponent* ACL_CounterLimiter::GetBufferInventory()

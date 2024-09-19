@@ -2,6 +2,7 @@
 #include "FGSplineComponent.h"
 #include "Buildables/FGBuildable.h"
 #include "FGSplinePath.h"
+#include <Kismet/GameplayStatics.h>
 
 
 /// Loop through each manta

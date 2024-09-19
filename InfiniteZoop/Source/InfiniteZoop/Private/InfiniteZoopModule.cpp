@@ -4,11 +4,11 @@
 #include "Hologram/FGFoundationHologram.h"
 #include "Hologram/FGWallHologram.h"
 #include "Hologram/FGWalkwayHologram.h"
-#include "FGPillarHologram.h"
+#include "Hologram/FGPillarHologram.h"
 #include "Patching/NativeHookManager.h"
 #include "FGResearchManager.h"
 #include "FGPlayerController.h"
-#include "FGPillarHologram.h"
+#include "Hologram/FGPillarHologram.h"
 #include "FGGameState.h"
 #include "FGResearchTree.h"
 #include "FGResearchTreeNode.h"
@@ -18,10 +18,10 @@
 #include "InfiniteZoop_ClientSubsystem.h"
 #include "Equipment/FGBuildGunBuild.h"
 #include "Buildables/FGBuildableFoundation.h"
-#include "FGHologramBuildModeDescriptor.h"
+#include "Hologram/FGHologramBuildModeDescriptor.h"
 #include "InfiniteZoop_ConfigurationStruct.h"
 #include "InfiniteZoop_RCO.h"
-#include "FGRampHologram.h"
+#include "Hologram/FGRampHologram.h"
 #include <Logging/StructuredLog.h>
 
 
@@ -610,7 +610,7 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 
 void FInfiniteZoopModule::StartupModule() 
 {
-//#if !WITH_EDITOR
+#if !WITH_EDITOR
 	lockObj = new FCriticalSection();
 
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
@@ -915,7 +915,7 @@ void FInfiniteZoopModule::StartupModule()
 				}
 			}
 		});
-//#endif
+#endif
 }
 
 FVector FInfiniteZoopModule::CalcPivotAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat)

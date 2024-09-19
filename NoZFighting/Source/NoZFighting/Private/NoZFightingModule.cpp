@@ -40,12 +40,15 @@ void FNoZFightingModule::OnConstruction(AFGBuildable* self, const FTransform& tr
 		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(buildFoundation->GetWorld());
 		auto min = config.FoundationMin;
 		auto max = config.FoundationMax;
-		auto meshes = self->GetComponentsByClass(UStaticMeshComponent::StaticClass());
+		auto meshes = self->GetComponents();
 		for (auto mesh : meshes)
 		{
 			auto sMesh = Cast<UStaticMeshComponent>(mesh);
-			float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
-			sMesh->AddRelativeLocation(FVector(0.0, 0.0, randomFloat));
+			if (sMesh)
+			{
+				float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
+				sMesh->AddRelativeLocation(FVector(0.0, 0.0, randomFloat));
+			}
 		}
 	}
 	else
@@ -57,12 +60,15 @@ void FNoZFightingModule::OnConstruction(AFGBuildable* self, const FTransform& tr
 			auto config = FNoZFighting_ConfigStruct::GetActiveConfig(buildWall->GetWorld());
 			auto min = config.WallMin;
 			auto max = config.WallMax;
-			auto meshes = self->GetComponentsByClass(UStaticMeshComponent::StaticClass());
+			auto meshes = self->GetComponents();
 			for (auto mesh : meshes)
 			{
 				auto sMesh = Cast<UStaticMeshComponent>(mesh);
-				float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
-				sMesh->AddRelativeLocation(FVector(randomFloat, 0.0, 0.0));
+				if (sMesh)
+				{
+					float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
+					sMesh->AddRelativeLocation(FVector(randomFloat, 0.0, 0.0));
+				}
 			}
 		}
 	}

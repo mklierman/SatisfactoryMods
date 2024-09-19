@@ -5,6 +5,7 @@
 #include "FGColorInterface.h"
 #include "Patching/NativeHookManager.h"
 #include "Buildables/FGBuildable.h"
+#include <Kismet/GameplayStatics.h>
 
 //#pragma optimize("", off)
 APersistentPaintablesCppSubSystem::APersistentPaintablesCppSubSystem()

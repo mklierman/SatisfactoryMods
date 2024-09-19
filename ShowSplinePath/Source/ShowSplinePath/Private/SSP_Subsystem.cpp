@@ -1,5 +1,6 @@
 #include "SSP_Subsystem.h"
 #include "FGSplineMeshGenerationLibrary.h"
+#include <Kismet/GameplayStatics.h>
 
 #pragma optimize("", off)
 bool ASSP_Subsystem::GetHasAuthority()

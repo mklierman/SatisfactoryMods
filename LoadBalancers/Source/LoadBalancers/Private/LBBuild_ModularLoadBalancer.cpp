@@ -8,6 +8,7 @@
 #include "LBDefaultRCO.h"
 #include "LoadBalancersModule.h"
 #include <Net/UnrealNetwork.h>
+#include <Kismet/GameplayStatics.h>
 
 DEFINE_LOG_CATEGORY(LoadBalancers_Log);
 //DEFINE_LOG_CATEGORY(LogGame);
@@ -166,7 +167,7 @@ void ALBBuild_ModularLoadBalancer::SetupInventory()
             if(MyOutputConnection)
                 MyOutputConnection->SetInventory(GetBufferInventory());
 
-            GetBufferInventory()->OnItemRemovedDelegate.AddUniqueDynamic(this, &ALBBuild_ModularLoadBalancer::OnOutputItemRemoved);
+           GetBufferInventory()->OnItemRemovedDelegate.AddUniqueDynamic(this, &ALBBuild_ModularLoadBalancer::OnOutputItemRemoved);
             GetBufferInventory()->Resize(mSlotsInBuffer);
 
             for (int i = 0; i < GetBufferInventory()->GetSizeLinear(); ++i)
@@ -201,7 +202,9 @@ void ALBBuild_ModularLoadBalancer::SetupInventory()
 UFGInventoryComponent* ALBBuild_ModularLoadBalancer::GetBufferInventory()
 {
     return mBufferInventory;
-    for (UActorComponent* ComponentsByClass : GetComponentsByClass(UFGInventoryComponent::StaticClass()))
+
+    auto components = GetComponents();
+    for (UActorComponent* ComponentsByClass : components)
     {
         if (UFGInventoryComponent* InventoryComponent = Cast<UFGInventoryComponent>(ComponentsByClass))
         {
@@ -670,7 +673,7 @@ bool ALBBuild_ModularLoadBalancer::ShouldSave_Implementation() const
     return true;
 }
 
-void ALBBuild_ModularLoadBalancer::OnOutputItemRemoved(TSubclassOf<UFGItemDescriptor> itemClass, int32 numRemoved)
+void ALBBuild_ModularLoadBalancer::OnOutputItemRemoved(TSubclassOf<UFGItemDescriptor> itemClass, int32 numRemoved, UFGInventoryComponent* targetInventory)
 {
     if(MyOutputConnection && GetBufferInventory())
     {
@@ -749,8 +752,8 @@ void ALBBuild_ModularLoadBalancer::RemoveGroupModule()
 void ALBBuild_ModularLoadBalancer::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
-
-    for (UActorComponent* ComponentsByClass : GetComponentsByClass(UFGFactoryConnectionComponent::StaticClass()))
+    auto components = GetComponents();
+    for (UActorComponent* ComponentsByClass : components)
     {
         if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
         {

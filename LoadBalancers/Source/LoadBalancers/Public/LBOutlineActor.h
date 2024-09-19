@@ -92,7 +92,9 @@ class LOADBALANCERS_API ALBOutlineActor : public AActor
 	{
 		if(Actor && OutlineMaterial)
 		{
-			for (UActorComponent* ComponentsByClass : Actor->GetComponentsByClass(UStaticMeshComponent::StaticClass()))
+
+			auto components = Actor->GetComponents();
+			for (UActorComponent* ComponentsByClass : components)
 				if(UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ComponentsByClass))
 				{
 					CreateOutlineMesh(MeshComponent, OutlineMaterial);
@@ -103,15 +105,19 @@ class LOADBALANCERS_API ALBOutlineActor : public AActor
 	
 	FORCEINLINE void ResetOther()
 	{
-		if(mOutlinedActor.IsValid())
-			for (UActorComponent* ComponentsByClass : mOutlinedActor.Get()->GetComponentsByClass(UStaticMeshComponent::StaticClass()))
-				if(UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ComponentsByClass))
+		if (mOutlinedActor.IsValid())
+		{
+
+			auto components = mOutlinedActor.Get()->GetComponents();
+			for (UActorComponent* ComponentsByClass : components)
+				if (UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ComponentsByClass))
 				{
 					//if(UFGColoredInstanceMeshProxy* MeshProxy = Cast<UFGColoredInstanceMeshProxy>(ComponentsByClass))
 						//if(!MeshProxy->mInstanceHandle.IsInstanced() && !MeshProxy->mBlockInstancing)
 							//MeshProxy->SetInstanced(true);
 					//MeshComponent->SetHiddenInGame(false);
 				}
+		}
 	}
 
 	UPROPERTY(Transient)

@@ -2,7 +2,7 @@
 
 #include "Hologram/FGBuildableHologram.h"
 #include "Equipment/FGBuildGunBuild.h"
-#include "FGGenericBuildableHologram.h"
+#include "Hologram/FGGenericBuildableHologram.h"
 #include "Patching/NativeHookManager.h"
 #include "Hologram/FGHologram.h"
 #include "../../../../SML/Source/SML/Public/Patching/NativeHookManager.h"

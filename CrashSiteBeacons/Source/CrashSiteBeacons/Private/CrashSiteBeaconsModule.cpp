@@ -16,19 +16,23 @@
 void FCrashSiteBeaconsModule::StartupModule() {
 
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD(AFGDropPod::Open, [](auto& scope, AFGDropPod* DropPod)
+	SUBSCRIBE_METHOD(AFGDropPod::OpenDropPod, [](auto& scope, AFGDropPod* DropPod, AFGCharacterPlayer* player)
 		{
-			auto mapManager = AFGMapManager::Get(DropPod->GetWorld());
-			TArray<FMapMarker> markers;
-			mapManager->GetMapMarkers(markers);
-			if (markers.Num() > 0)
+			bool result = scope(DropPod, player);
+			if (result)
 			{
-				FVector podLoc = DropPod->GetActorLocation();
-				for (auto marker : markers)
+				auto mapManager = AFGMapManager::Get(DropPod->GetWorld());
+				TArray<FMapMarker> markers;
+				mapManager->GetMapMarkers(markers);
+				if (markers.Num() > 0)
 				{
-					if (FVector::PointsAreNear(marker.Location, podLoc, 1.0))
+					FVector podLoc = DropPod->GetActorLocation();
+					for (auto marker : markers)
 					{
-						mapManager->RemoveMapMarker(marker);
+						if (FVector::PointsAreNear(marker.Location, podLoc, 1.0))
+						{
+							mapManager->RemoveMapMarker(marker);
+						}
 					}
 				}
 			}

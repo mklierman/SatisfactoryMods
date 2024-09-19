@@ -7,7 +7,7 @@
 #include "FGMapMarker.h"
 #include "FGIconLibrary.h"
 #include "FGActorRepresentationManager.h"
-#include "FGMapMarkerRepresentation.h"
+#include "Representation/FGMapMarkerRepresentation.h"
 #include "FGActorRepresentation.h"
 
 #pragma optimize("", off)

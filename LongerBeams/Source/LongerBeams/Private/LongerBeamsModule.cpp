@@ -1,10 +1,10 @@
 #include "LongerBeamsModule.h"
-#include "FGPillarHologram.h"
-#include "FGBeamHologram.h"
+#include "Hologram/FGPillarHologram.h"
+#include "Hologram/FGBeamHologram.h"
 #include "FGPlayerController.h"
 #include "Patching/NativeHookManager.h"
 #include "Equipment/FGBuildGunBuild.h"
-#include "FGHologramBuildModeDescriptor.h"
+#include "Hologram/FGHologramBuildModeDescriptor.h"
 #include "LongerBeams_ConfigStruct.h"
 
 //#pragma optimize("", off)

@@ -3,7 +3,7 @@
 #include "Modules/ModuleManager.h"
 #include "Hologram/FGHologram.h"
 #include "Hologram/FGFactoryBuildingHologram.h"
-#include "FGBeamHologram.h"
+#include "Hologram/FGBeamHologram.h"
 #include "Equipment/FGBuildGunBuild.h"
 
 class FLongerBeamsModule : public FDefaultGameModuleImpl {

@@ -145,7 +145,7 @@ public:
 	void InitializeModule();
 
 	UFUNCTION()
-	void OnOutputItemRemoved( TSubclassOf<UFGItemDescriptor> itemClass, int32 numRemoved );
+	void OnOutputItemRemoved( TSubclassOf<UFGItemDescriptor> itemClass, int32 numRemoved, UFGInventoryComponent* targetInventory);
 
 	/** Apply this module to the group (Called on BeginPlay should not need to call again) */
 	void ApplyGroupModule();
