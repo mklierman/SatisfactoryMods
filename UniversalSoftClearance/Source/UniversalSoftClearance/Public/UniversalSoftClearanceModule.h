@@ -3,7 +3,6 @@
 #include "Modules/ModuleManager.h"
 #include "Hologram/FGFactoryBuildingHologram.h"
 #include "Hologram/FGBlueprintHologram.h"
-#include "FGClearanceComponent.h"
 
 class FUniversalSoftClearanceModule : public FDefaultGameModuleImpl {
 public:
@@ -11,7 +10,9 @@ public:
 
 	virtual bool IsGameModule() const override { return true; }
 
-	void SetupClearance(AFGHologram* self, class UFGClearanceComponent* clearanceComponent);
+	//void SetupClearance(AFGHologram* self, class UFGClearanceComponent* clearanceComponent);
 
 	void GenerateCollisionObjects(AFGBlueprintHologram* self, const TArray< AFGBuildable* >& buildables);
+	void BeginPlay(AFGBuildable* self);
+	void HBeginPlay(AFGHologram* self);
 };
