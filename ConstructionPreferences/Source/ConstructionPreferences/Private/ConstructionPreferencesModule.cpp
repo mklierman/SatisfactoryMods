@@ -51,7 +51,7 @@ DEFINE_LOG_CATEGORY(LogConstructionPreferences);
 //}
 
 //#pragma optimize("", off)
-float FConstructionPreferencesModule::GetUseDistance(AFGCharacterPlayer* self)
+float FConstructionPreferencesModule::GetUseDistance(const AFGCharacterPlayer* self)
 {
 	FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig(self->GetWorld());
 	float reachDist = config.ReachDistance;
@@ -98,9 +98,10 @@ void FConstructionPreferencesModule::StartupModule() {
 	//		}
 	//	});
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [=](auto& scope, AFGCharacterPlayer* self)
+	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [=](auto& scope, const AFGCharacterPlayer* self)
 		{
-			auto newDist = GetUseDistance(self);
+			float newDist = 0.f;
+			newDist = GetUseDistance(self);
 			if (newDist > 0)
 			{
 				scope.Override(newDist);

@@ -188,7 +188,7 @@ void AHolo_WireHologramBuildModes::SwitchPoleType()
 					HologramChild->Destroy();
 				}
 			}
-			mPowerPoleWall = Cast<AFGPowerPoleWallHologram>(SpawnChildHologramFromRecipe(this, mDefaultPowerPoleWallRecipe, constInst, FVector(), constInst));
+			mPowerPoleWall = Cast<AFGPowerPoleWallHologram>(SpawnChildHologramFromRecipe(this,FName(""), mDefaultPowerPoleWallRecipe, constInst, FVector()));
 			if (mPowerPoleWall)
 			{
 				mPowerPoleWall->SetDisabled(true);
@@ -206,7 +206,7 @@ void AHolo_WireHologramBuildModes::SwitchPoleType()
 					HologramChild->Destroy();
 				}
 			}
-			auto spawnedHG = AFGHologram::SpawnChildHologramFromRecipe(this, mDefaultPowerPoleRecipe, constInst, FVector(), constInst);
+			auto spawnedHG = AFGHologram::SpawnChildHologramFromRecipe(this, FName(""), mDefaultPowerPoleRecipe, constInst, FVector());
 			mPowerPole = Cast<AFGPowerPoleHologram>(spawnedHG);
 			if (mPowerPole)
 			{
@@ -236,7 +236,7 @@ void AHolo_WireHologramBuildModes::RespawnChildPoleHolograms()
 		this->mDefaultBuildMode = CP_Subsystem->LastUsedPoleBuildMode.BuildMode;
 		mDefaultPowerPoleRecipe = CP_Subsystem->LastUsedPoleBuildMode.Recipe;
 
-		auto spawnedHG = AFGHologram::SpawnChildHologramFromRecipe(this, mDefaultPowerPoleRecipe, ConstructionInstigator, FVector(), ConstructionInstigator);
+		auto spawnedHG = AFGHologram::SpawnChildHologramFromRecipe(this, FName(""), mDefaultPowerPoleRecipe, ConstructionInstigator, FVector());
 		mPowerPole = Cast<AFGPowerPoleHologram>(spawnedHG);
 		if (mPowerPole)
 		{
@@ -251,7 +251,7 @@ void AHolo_WireHologramBuildModes::RespawnChildWallSocketHolograms()
 	{
 		mDefaultPowerPoleWallRecipe = CP_Subsystem->LastUsedWallSockedBuildMode.Recipe;
 		DefaultWallSocketRecipe = CP_Subsystem->LastUsedWallSockedBuildMode.Recipe;
-		mPowerPoleWall = Cast<AFGPowerPoleWallHologram>(SpawnChildHologramFromRecipe(this, mDefaultPowerPoleWallRecipe, ConstructionInstigator, FVector(), ConstructionInstigator));
+		mPowerPoleWall = Cast<AFGPowerPoleWallHologram>(SpawnChildHologramFromRecipe(this, FName(""), mDefaultPowerPoleWallRecipe, ConstructionInstigator, FVector()));
 		if (mPowerPoleWall)
 		{
 			mPowerPoleWall->SetDisabled(true);
@@ -274,7 +274,7 @@ void AHolo_WireHologramBuildModes::SetSafeDefaultWallSocket()
 				if (RecipeManager->IsRecipeAvailable(bmode.Recipe))
 				{
 					mDefaultPowerPoleWallRecipe = bmode.Recipe;
-					mPowerPoleWall = Cast<AFGPowerPoleWallHologram>(SpawnChildHologramFromRecipe(this, mDefaultPowerPoleWallRecipe, ConstructionInstigator, FVector(), ConstructionInstigator));
+					mPowerPoleWall = Cast<AFGPowerPoleWallHologram>(SpawnChildHologramFromRecipe(this, FName(""), mDefaultPowerPoleWallRecipe, ConstructionInstigator, FVector()));
 					if (mPowerPoleWall)
 					{
 						mPowerPoleWall->SetDisabled(true);

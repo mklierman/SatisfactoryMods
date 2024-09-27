@@ -6,6 +6,9 @@
 #include "FGPowerConnectionComponent.h"
 #include "DaisyChainEverythingSubsystem.h"
 #include "Tasks/Task.h"
+#include <Kismet/GameplayStatics.h>
+#include <Hologram/FGPowerPoleHologram.h>
+#include <Buildables/FGBuildablePowerPole.h>
 
 ADaisyChainEverythingSubsystem::ADaisyChainEverythingSubsystem()
 {

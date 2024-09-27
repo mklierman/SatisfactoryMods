@@ -6,6 +6,7 @@ void FUniversalSoftClearanceModule::StartupModule() {
 	AFGHologram* hCDO = GetMutableDefault<AFGHologram>();
 	AFGBuildable* bCDO = GetMutableDefault<AFGBuildable>();
 
+#if !WITH_EDITOR
 	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, bCDO, [=](auto scope, AFGBuildable* self)
 	//{
 	//		BeginPlay(self);
@@ -75,7 +76,6 @@ void FUniversalSoftClearanceModule::StartupModule() {
 //		{
 //			GenerateCollisionObjects(self, buildables);
 //		});
-#if !WITH_EDITOR
 #endif
 }
 

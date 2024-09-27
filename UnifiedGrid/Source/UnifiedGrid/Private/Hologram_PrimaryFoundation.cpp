@@ -9,6 +9,7 @@
 #include "Resources/FGResourceNodeBase.h"
 #include "Resources/FGResourceNodeFrackingCore.h"
 #include "UnifiedGrid_ConfigStruct.h"
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 AHologram_PrimaryFoundation::AHologram_PrimaryFoundation()
