@@ -8,5 +8,5 @@ public:
 
 	virtual bool IsGameModule() const override { return true; }
 
-
+	void OnDropPodOpened(class AFGDropPod* pod);
 };

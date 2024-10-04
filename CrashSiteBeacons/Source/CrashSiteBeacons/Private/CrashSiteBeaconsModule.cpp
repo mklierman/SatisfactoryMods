@@ -10,32 +10,17 @@
 #include "FGActorRepresentation.h"
 #include "FGMapManager.h"
 #include "FGMapMarker.h"
+#include <FGScannableSubsystem.h>
 
+#pragma optimize("", off)
 
 
 void FCrashSiteBeaconsModule::StartupModule() {
 
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD(AFGDropPod::OpenDropPod, [](auto& scope, AFGDropPod* DropPod, AFGCharacterPlayer* player)
+	SUBSCRIBE_METHOD_AFTER(AFGScannableSubsystem::OnDropPodLooted, [=](auto result, class AFGDropPod* DropPod)
 		{
-			bool result = scope(DropPod, player);
-			if (result)
-			{
-				auto mapManager = AFGMapManager::Get(DropPod->GetWorld());
-				TArray<FMapMarker> markers;
-				mapManager->GetMapMarkers(markers);
-				if (markers.Num() > 0)
-				{
-					FVector podLoc = DropPod->GetActorLocation();
-					for (auto marker : markers)
-					{
-						if (FVector::PointsAreNear(marker.Location, podLoc, 1.0))
-						{
-							mapManager->RemoveMapMarker(marker);
-						}
-					}
-				}
-			}
+				OnDropPodOpened(DropPod);
 		});
 
 	//UFGActorRepresentation* CDODropPod = GetMutableDefault<UFGActorRepresentation>();
@@ -59,6 +44,37 @@ void FCrashSiteBeaconsModule::StartupModule() {
 
 #endif
 }
+
+void FCrashSiteBeaconsModule::OnDropPodOpened(class AFGDropPod* pod)
+{
+	auto scannableSubsystem = AFGScannableSubsystem::Get(pod->GetWorld());
+	auto availablePods = scannableSubsystem->GetAvailableDropPods();
+	auto lootedPods = scannableSubsystem->mLootedDropPods;
+	if (availablePods.Num() > 0 && lootedPods.Num() > 0)
+	{
+		auto mapManager = AFGMapManager::Get(pod->GetWorld());
+		TArray<FMapMarker> markers;
+		mapManager->GetMapMarkers(markers);
+
+		for (auto aPod : availablePods)
+		{
+			if (lootedPods.Contains(aPod.ActorGuid))
+			{
+				auto aPodLoc = aPod.ActorLocation;
+				for (auto marker : markers)
+				{
+					if (FVector::PointsAreNear(marker.Location, aPodLoc, 10.0))
+					{
+						mapManager->SetMarkerHighlighted(marker, false);
+						mapManager->RemoveMapMarker(marker);
+					}
+				}
+			}
+		}
+	}
+
+}
+#pragma optimize("", on)
 
 
 IMPLEMENT_GAME_MODULE(FCrashSiteBeaconsModule, CrashSiteBeacons);
