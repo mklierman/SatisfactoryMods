@@ -602,10 +602,79 @@ void FInfiniteZoopModule::CheckBuildEffects(const AFGFactoryBuildingHologram* fb
 
 void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 {
-	TArray< TSubclassOf< UFGBuildGunModeDescriptor > > out_buildmodes;
-	self->GetSupportedBuildModes(out_buildmodes);
-	out_buildmodes.Num();
+	//TArray< TSubclassOf< UFGBuildGunModeDescriptor > > out_buildmodes;
+	//self->GetSupportedBuildModes(out_buildmodes);
+	//out_buildmodes.Num();
+	if (self)
+	{
+		TArray< TSubclassOf< UFGBuildGunModeDescriptor > > out_buildmodes;
+		self->GetSupportedBuildModes(out_buildmodes);
+		if (out_buildmodes.Num() == 0)
+		{
+			return;
+		}
+		UWorld* world = self->GetWorld();
+		USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
+		AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
+		AInfiniteZoop_ClientSubsystem* clientSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoop_ClientSubsystem>();
 
+		//UE_LOGFMT(InfiniteZoop_Log, Display, "AFGHologram::BeginPlay. zoopSubsystem->currentZoopAmount: {0}", zoopSubsystem->currentZoopAmount);
+
+
+		AFGWallHologram* Whg = Cast<AFGWallHologram>(self);
+		if (Whg)
+		{
+			Whg->mOnlyAllowLineZoop = false;
+		}
+
+		AFGFactoryBuildingHologram* bhg = Cast<AFGFactoryBuildingHologram>(self);
+
+		if (bhg)
+		{
+			//UE_LOGFMT(InfiniteZoop_Log, Display, "self->HasAuthority(): {0}", self->HasAuthority());
+			if (!self->GetInstigatorController())
+			{
+				AFGPlayerController* PlayerController = Cast<AFGPlayerController>(self->GetWorld()->GetFirstPlayerController());
+				UInfiniteZoop_RCO* RCO = PlayerController->GetRemoteCallObjectOfClass<UInfiniteZoop_RCO>();
+				if (RCO)
+				{
+					//UE_LOGFMT(InfiniteZoop_Log, Display, "RCO Setting max zoop to {0}", zoopSubsystem->currentZoopAmount - 1);
+					RCO->SetHologramMaxZoop(bhg, zoopSubsystem->currentZoopAmount - 1);
+				}
+			}
+		}
+		if (clientSubsystem)
+		{
+			//UE_LOG(InfiniteZoop_Log, Display, TEXT("Zoop Corners: False"));
+			if (bhg && bhg->mMaxZoopAmount > 0)
+			{
+
+				bhg->SetMaterialState(self->GetHologramMaterialState());
+				if (clientSubsystem->tempZoopAmount > 0)
+				{
+					bhg->mMaxZoopAmount = clientSubsystem->tempZoopAmount - 1;
+				}
+				else
+				{
+					bhg->mMaxZoopAmount = zoopSubsystem->currentZoopAmount - 1;
+				}
+				//UE_LOG(InfiniteZoop_Log, Display, TEXT("Increased Zoop Amount"));
+				return;
+			}
+		}
+		AFGLadderHologram* ladderHG = Cast<AFGLadderHologram>(self);
+		if (ladderHG && clientSubsystem)
+		{
+			if (clientSubsystem->tempZoopAmount > 0)
+			{
+				ladderHG->mMaxSegmentCount = clientSubsystem->tempZoopAmount - 1;
+			}
+			else if (zoopSubsystem)
+			{
+				ladderHG->mMaxSegmentCount = zoopSubsystem->currentZoopAmount - 1;
+			}
+		}
+	}
 }
 
 void FInfiniteZoopModule::StartupModule() 
@@ -812,76 +881,8 @@ void FInfiniteZoopModule::StartupModule()
 	//	});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [=](auto scope, AFGHologram* self)
 		{
-			if (self)
-			{
-				TArray< TSubclassOf< UFGBuildGunModeDescriptor > > out_buildmodes;
-				self->GetSupportedBuildModes(out_buildmodes);
-				if (out_buildmodes.Num() == 0)
-				{
-					return;
-				}
-				UWorld* world = self->GetWorld();
-				USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
-				AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
-				AInfiniteZoop_ClientSubsystem* clientSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoop_ClientSubsystem>();
-
-				//UE_LOGFMT(InfiniteZoop_Log, Display, "AFGHologram::BeginPlay. zoopSubsystem->currentZoopAmount: {0}", zoopSubsystem->currentZoopAmount);
-
-
-				AFGWallHologram* Whg = Cast<AFGWallHologram>(self);
-				if (Whg)
-				{
-					Whg->mOnlyAllowLineZoop = false;
-				}
-
-				AFGFactoryBuildingHologram* bhg = Cast<AFGFactoryBuildingHologram>(self);
-
-				if (bhg)
-				{
-					//UE_LOGFMT(InfiniteZoop_Log, Display, "self->HasAuthority(): {0}", self->HasAuthority());
-					if (!self->GetInstigatorController())
-					{
-						AFGPlayerController* PlayerController = Cast<AFGPlayerController>(self->GetWorld()->GetFirstPlayerController());
-						UInfiniteZoop_RCO* RCO = PlayerController->GetRemoteCallObjectOfClass<UInfiniteZoop_RCO>();
-						if (RCO)
-						{
-							//UE_LOGFMT(InfiniteZoop_Log, Display, "RCO Setting max zoop to {0}", zoopSubsystem->currentZoopAmount - 1);
-							RCO->SetHologramMaxZoop(bhg, zoopSubsystem->currentZoopAmount - 1);
-						}
-					}
-				}
-				if (clientSubsystem)
-				{
-					//UE_LOG(InfiniteZoop_Log, Display, TEXT("Zoop Corners: False"));
-					if (bhg && bhg->mMaxZoopAmount > 0)
-					{
-
-						bhg->SetMaterialState(self->GetHologramMaterialState());
-						if (clientSubsystem->tempZoopAmount > 0)
-						{
-							bhg->mMaxZoopAmount = clientSubsystem->tempZoopAmount - 1;
-						}
-						else
-						{
-							bhg->mMaxZoopAmount = zoopSubsystem->currentZoopAmount - 1;
-						}
-						//UE_LOG(InfiniteZoop_Log, Display, TEXT("Increased Zoop Amount"));
-						return;
-					}
-				}
-				AFGLadderHologram* ladderHG = Cast<AFGLadderHologram>(self);
-				if (ladderHG && clientSubsystem)
-				{
-					if (clientSubsystem->tempZoopAmount > 0)
-					{
-						ladderHG->mMaxSegmentCount = clientSubsystem->tempZoopAmount - 1;
-					}
-					else if (zoopSubsystem)
-					{
-						ladderHG->mMaxSegmentCount = zoopSubsystem->currentZoopAmount - 1;
-					}
-				}
-			}
+			HGBeginPlay(self);
+			
 		});
 
 	AFGPillarHologram* pCDO = GetMutableDefault<AFGPillarHologram>();
