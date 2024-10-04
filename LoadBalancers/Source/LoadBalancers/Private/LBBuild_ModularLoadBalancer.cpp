@@ -628,7 +628,7 @@ void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayRea
 }
 
 
-void ALBBuild_ModularLoadBalancer::SetCustomizationData_Native(const FFactoryCustomizationData& customizationData)
+void ALBBuild_ModularLoadBalancer::SetCustomizationData_Native(const FFactoryCustomizationData& customizationData, bool skipCombine)
 {
     if (IsLeader())
     {
@@ -638,7 +638,7 @@ void ALBBuild_ModularLoadBalancer::SetCustomizationData_Native(const FFactoryCus
     {
         GroupLeader->SetCustomization(this, customizationData);
     }
-    Super::SetCustomizationData_Native(customizationData); //Preview
+    Super::SetCustomizationData_Native(customizationData, skipCombine); //Preview
 }
 
 void ALBBuild_ModularLoadBalancer::SetCustomization(ALBBuild_ModularLoadBalancer* instigator, const FFactoryCustomizationData& customizationData)

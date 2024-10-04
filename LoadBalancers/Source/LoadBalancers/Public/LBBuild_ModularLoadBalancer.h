@@ -129,7 +129,7 @@ public:
 	// End AActor interface
 
 	//~ Begin IFGColorInterface
-	void SetCustomizationData_Native(const FFactoryCustomizationData& customizationData);
+	virtual void SetCustomizationData_Native(const FFactoryCustomizationData& customizationData, bool skipCombine = false);
 	virtual void StartIsAimedAtForColor_Implementation(class AFGCharacterPlayer* byCharacter, bool isValid = true);
 	virtual void StopIsAimedAtForColor_Implementation(class AFGCharacterPlayer* byCharacter);
 	//~ End IFGColorInterface
