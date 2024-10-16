@@ -1,26 +1,26 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.2",
-	"SemVersion": "1.1.2",
+	"VersionName": "1.1.3",
+	"SemVersion": "1.1.3",
 	"FriendlyName": "Double Jump",
 	"Description": "Does what it says on the box, lets you jump twice in a row",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
 	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
-  	"DocsURL": "",
-  	"MarketplaceURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
 	"SupportURL": "https://discord.gg/WM5KT7pVu8",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
-	"Plugins": 
-		[
-			{
-				"Name": "SML",
-      			"SemVersion": "^3.6.0",
-				"Enabled": true
-			}
-		]
+	"Plugins": [
+		{
+			"Name": "SML",
+			"SemVersion": "^3.8.0",
+			"Enabled": true
+		}
+	],
+	"GameVersion": ">=365306"
 }

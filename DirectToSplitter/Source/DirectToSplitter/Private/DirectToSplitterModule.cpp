@@ -6,12 +6,19 @@
 #include <Buildables/FGBuildableStorage.h>
 
 DEFINE_LOG_CATEGORY(SnapOn_Log);
-//#pragma optimize("", off)
+#pragma optimize("", off)
 //#endif
 void FDirectToSplitterModule::StartupModule() {
-#if !WITH_EDITOR
 	AFGConveyorAttachmentHologram* cah = GetMutableDefault<AFGConveyorAttachmentHologram>();
 	AFGFactoryHologram* fh = GetMutableDefault<AFGFactoryHologram>();
+
+#if !WITH_EDITOR
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::TrySnapToActor, cah, [=](auto& scope, const AFGConveyorAttachmentHologram* self,const FHitResult& hitResult)
+	//	{
+	//		//scope.Override(true);
+	//		auto result = TrySnapToActor(self, hitResult);
+	//		scope.Override(result);
+	//	});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::ConfigureComponents, cah, [=](auto& scope, const AFGConveyorAttachmentHologram* self, AFGBuildable* inBuildable)
 		{
@@ -63,7 +70,7 @@ void FDirectToSplitterModule::StartupModule() {
 				}
 				if (hitBuildable)
 				{
-					auto components = hitBuildable->GetComponentsByClass(UFGPipeConnectionComponent::StaticClass());
+					auto components = hitBuildable->GetComponents();
 					if (components.Num() > 0)
 					{
 						for (auto comp : components)
@@ -111,14 +118,19 @@ void FDirectToSplitterModule::StartupModule() {
 #endif
 }
 
+bool FDirectToSplitterModule::TrySnapToActor(const AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
+{
+	return true;
+}
+
 void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram* self, bool& retflag)
 {
 	retflag = true;
 	TArray< TSubclassOf<  UFGConstructDisqualifier > >out_constructResults;
 	self->GetConstructDisqualifiers(out_constructResults);
-	if (self->mSnappedConection)
+	if (self->mSnappedConnection)
 	{
-		auto snappedConnectionName = self->mSnappedConection->GetName();
+		auto snappedConnectionName = self->mSnappedConnection->GetName();
 		if (snappedConnectionName.Contains("ConveyorAny"))
 		{
 			return;
@@ -130,18 +142,18 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 			self->AddConstructDisqualifier(USnapOnSplitterDisqualifier::StaticClass());
 			return;
 		}
-		auto snappedBuildable = self->mSnappedConection->GetOuterBuildable();
+		auto snappedBuildable = self->mSnappedConnection->GetOuterBuildable();
 		
 
 		bool shouldDisqualify = false;
-		auto direction = self->mSnappedConection->GetDirection();
+		auto direction = self->mSnappedConnection->GetDirection();
 		if (direction == EFactoryConnectionDirection::FCD_OUTPUT)
 		{
-			for (UActorComponent* ComponentsByClass : snappedBuildable->GetComponentsByClass(UFGFactoryConnectionComponent::StaticClass()))
+			for (UActorComponent* ComponentsByClass : snappedBuildable->GetComponents())
 			{
 				if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
 				{
-					if (ConnectionComponent != self->mSnappedConection
+					if (ConnectionComponent != self->mSnappedConnection
 						&& ConnectionComponent->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR
 						&& ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
 					{
@@ -162,9 +174,9 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 		retflag = false;
 		auto offset = FDTS_ConfigStruct::GetActiveConfig(self->GetWorld()).SnapOffset * 100.f;
 
-		auto compLocation = self->mSnappedConection->GetConnectorLocation();
+		auto compLocation = self->mSnappedConnection->GetConnectorLocation();
 		
-		FVector addVector = self->mSnappedConection->GetForwardVector() * offset;
+		FVector addVector = self->mSnappedConnection->GetForwardVector() * offset;
 		auto newLoc = compLocation + addVector;
 		self->SetActorLocation(newLoc);
 	}
@@ -181,11 +193,11 @@ void FDirectToSplitterModule::CheckValidFactoryPlacement(AFGFactoryHologram* sel
 void FDirectToSplitterModule::ConfigureComponents(const AFGConveyorAttachmentHologram* self, bool& retflag)
 {
 	retflag = false;
-	if (self->mSnappedConection)
+	if (self->mSnappedConnection)
 	{
-		auto snappedConnectionName = self->mSnappedConection->GetName();
-		auto snappedConveyor = Cast<AFGBuildableConveyorBase>(self->mSnappedConection->GetOwner());
-		auto snappedLift = Cast<AFGBuildableConveyorLift>(self->mSnappedConection->GetOwner());
+		auto snappedConnectionName = self->mSnappedConnection->GetName();
+		auto snappedConveyor = Cast<AFGBuildableConveyorBase>(self->mSnappedConnection->GetOwner());
+		auto snappedLift = Cast<AFGBuildableConveyorLift>(self->mSnappedConnection->GetOwner());
 		if (snappedConveyor || snappedLift)
 		{
 			return;
@@ -196,15 +208,15 @@ void FDirectToSplitterModule::ConfigureComponents(const AFGConveyorAttachmentHol
 		}
 		AFGConveyorAttachmentHologram* hg = const_cast<AFGConveyorAttachmentHologram*>(self);
 		//Store snapped connection with current HG
-		mSnappedConnections.Add(hg, hg->mSnappedConection);
+		mSnappedConnections.Add(hg, hg->mSnappedConnection);
 		ConveyorAttachmentInfo cai;
-		cai.otherConnection = hg->mSnappedConection;
+		cai.otherConnection = hg->mSnappedConnection;
 		cai.connectionIndex = hg->mSnappingConnectionIndex;
 		AttachmentInfos.Add(hg, cai);
 
 		hg->mSnappingConnectionIndex = -1;
-		hg->mSnappedConection->ClearConnection();
-		hg->mSnappedConection = nullptr;
+		hg->mSnappedConnection->ClearConnection();
+		hg->mSnappedConnection = nullptr;
 		retflag = true;
 	}
 }
@@ -416,8 +428,8 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 	{
 		FVector loc = self->GetActorLocation();
 		FVector normal = self->GetActorForwardVector();
-
-		auto components = hitBuildable->GetComponentsByClass(UFGPipeConnectionComponent::StaticClass());
+		
+		auto components = hitBuildable->GetComponents();
 		if (components.Num() > 0)
 		{
 			//Get the pipe connections
@@ -510,6 +522,6 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 	return false;
 }
 
-//#pragma optimize("", on)
+#pragma optimize("", on)
 
 IMPLEMENT_GAME_MODULE(FDirectToSplitterModule, DirectToSplitter);

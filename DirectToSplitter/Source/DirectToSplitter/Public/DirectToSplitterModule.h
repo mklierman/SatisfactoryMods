@@ -37,6 +37,7 @@ class FDirectToSplitterModule : public FDefaultGameModuleImpl {
 public:
 	virtual void StartupModule() override;
 
+	bool TrySnapToActor(const AFGConveyorAttachmentHologram* self, const FHitResult& hitResult);
 	void CheckValidPlacement(AFGConveyorAttachmentHologram* self, bool& retflag);
 	void CheckValidFactoryPlacement(AFGFactoryHologram* self, bool& retflag);
 	void CheckValidPipePlacement(AFGPipelineAttachmentHologram* self, bool& retflag);

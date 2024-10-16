@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.11.0",
-	"SemVersion": "1.11.0",
+	"VersionName": "1.11.1",
+	"SemVersion": "1.11.1",
 	"FriendlyName": "Modular Load Balancers",
 	"Description": "Modular buildable that can be snapped together to form load balancers of any size",
 	"Category": "Modding",
@@ -18,7 +18,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.7.0",
+			"SemVersion": "^3.8.0",
 			"Enabled": true
 		}
 	],
@@ -28,5 +28,6 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
-	]
+	],
+	"GameVersion": ">=365306"
 }

@@ -1,34 +1,35 @@
 {
-  "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "1.4.2",
-  "SemVersion": "1.4.2",
-  "FriendlyName": "Construction Preferences",
-  "Description": "Set preferences for some construction defaults",
-  "Category": "Modding",
-  "CreatedBy": "SirDigby",
-  "CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
-  "DocsURL": "",
-  "MarketplaceURL": "",
-  "SupportURL": "https://discord.gg/WM5KT7pVu8",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "IsExperimentalVersion": false,
-  "Installed": false,
-  "AcceptsAnyRemoteVersion": false,
-  "Plugins": [
-    {
-      "Name": "SML",
-      "SemVersion": "^3.6.0",
-      "Enabled": true,
-      "IsActive": false
-    }
-  ],
-  "Modules": [
-    {
-      "Name": "ConstructionPreferences",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ]
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.4.3",
+	"SemVersion": "1.4.3",
+	"FriendlyName": "Construction Preferences",
+	"Description": "Set preferences for some construction defaults",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
+	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"AcceptsAnyRemoteVersion": false,
+	"Plugins": [
+		{
+			"Name": "SML",
+			"SemVersion": "^3.8.0",
+			"Enabled": true,
+			"IsActive": false
+		}
+	],
+	"Modules": [
+		{
+			"Name": "ConstructionPreferences",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"GameVersion": ">=365306"
 }

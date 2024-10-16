@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "2.1.2",
-	"SemVersion": "2.1.2",
+	"VersionName": "2.1.3",
+	"SemVersion": "2.1.3",
 	"FriendlyName": "Infinite Nudge",
 	"Description": "Nudge forever, vertically, in smaller increments, and rotate on any axis. Also nudge extractors!",
 	"Category": "Modding",
@@ -18,7 +18,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.7.0",
+			"SemVersion": "^3.8.0",
 			"Enabled": true,
 			"IsActive": false
 		}
@@ -29,5 +29,7 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
-	]
+	],
+	"GameVersion": ">=365306",
+	"RequiredOnRemote": false
 }

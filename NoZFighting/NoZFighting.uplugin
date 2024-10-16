@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.2.3",
-	"SemVersion": "1.2.3",
+	"VersionName": "1.2.4",
+	"SemVersion": "1.2.4",
 	"FriendlyName": "No Z-Fighting",
 	"Description": "Prevents foundations and walls from Z-fighting (flickering)",
 	"Category": "Modding",
@@ -19,10 +19,9 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.6.0",
+			"SemVersion": "^3.8.0",
 			"Enabled": true,
-			"IsActive": false,
-			"BasePlugin": false
+			"IsActive": false
 		}
 	],
 	"Modules": [
@@ -32,5 +31,5 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"RemoteVersionRange": ""
+	"GameVersion": ">=365306"
 }

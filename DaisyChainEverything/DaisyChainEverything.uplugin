@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.6",
-	"SemVersion": "1.0.6",
+	"VersionName": "1.0.7",
+	"SemVersion": "1.0.7",
 	"FriendlyName": "Daisy Chain Everything",
 	"Description": "Increases the number of power connections on all buildings, both vanilla and modded",
 	"Category": "Modding",
@@ -18,7 +18,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.7.0",
+			"SemVersion": "^3.8.0",
 			"Enabled": true
 		}
 	],
@@ -29,5 +29,6 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"AcceptsAnyRemoteVersion": true
+	"AcceptsAnyRemoteVersion": true,
+	"GameVersion": ">=365306"
 }

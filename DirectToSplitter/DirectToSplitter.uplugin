@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.2",
-	"SemVersion": "1.1.2",
+	"VersionName": "1.1.3",
+	"SemVersion": "1.1.3",
 	"FriendlyName": "SnapOn",
 	"Description": "SNAPON, apply directly to the factory. (Attach Splitters, Mergers, and Pipe Junctions directly to factory inputs/outputs)",
 	"Category": "Modding",
@@ -19,10 +19,9 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.7.0",
+			"SemVersion": "^3.8.0",
 			"Enabled": true,
-			"IsActive": false,
-			"BasePlugin": false
+			"IsActive": false
 		}
 	],
 	"Modules": [
@@ -32,5 +31,5 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"RemoteVersionRange": ""
+	"GameVersion": ">=365306"
 }

@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.4",
-	"SemVersion": "1.0.4",
+	"VersionName": "1.0.5",
+	"SemVersion": "1.0.5",
 	"FriendlyName": "SilentArtifacts",
 	"Description": "",
 	"Category": "Modding",
@@ -19,9 +19,10 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.7.0",
+			"SemVersion": "^3.8.0",
 			"Enabled": true,
 			"IsActive": false
 		}
-	]
+	],
+	"GameVersion": ">=365306"
 }

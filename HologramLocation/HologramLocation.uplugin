@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.8",
-	"SemVersion": "1.1.8",
+	"VersionName": "1.1.9",
+	"SemVersion": "1.1.9",
 	"FriendlyName": "Location and Rotation",
 	"Description": "Adds a widget which shows you the location and rotation info for the currently highlighted buildable",
 	"Category": "Modding",
@@ -19,7 +19,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.7.0",
+			"SemVersion": "^3.8.0",
 			"Enabled": true,
 			"IsActive": false
 		}
@@ -30,5 +30,6 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
-	]
+	],
+	"GameVersion": ">=365306"
 }
