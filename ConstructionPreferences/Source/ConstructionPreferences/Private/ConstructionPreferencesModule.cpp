@@ -19,6 +19,7 @@
 #include "FGBuildableSubsystem.h"
 #include "FGCharacterPlayer.h"
 #include "Equipment/FGBuildGun.h"
+#include "Equipment/FGParachute.h"
 #include "Hologram/FGBlueprintHologram.h"
 
 DEFINE_LOG_CATEGORY(LogConstructionPreferences);
@@ -67,6 +68,14 @@ float FConstructionPreferencesModule::GetUseDistance(const AFGCharacterPlayer* s
 		if (hp)
 		{
 			if (hp->mCurrentHoverMode == EHoverPackMode::HPM_Hover)
+			{
+				return 2000.0 + reachDist;
+			}
+		}
+		auto para = Cast<AFGParachute>(backEquip->mEquipmentInSlot);
+		if (para)
+		{
+			if (para->IsDeployed())
 			{
 				return 2000.0 + reachDist;
 			}
