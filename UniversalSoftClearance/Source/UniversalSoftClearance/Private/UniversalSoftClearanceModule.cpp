@@ -6,7 +6,6 @@ void FUniversalSoftClearanceModule::StartupModule() {
 	AFGHologram* hCDO = GetMutableDefault<AFGHologram>();
 	AFGBuildable* bCDO = GetMutableDefault<AFGBuildable>();
 
-#if !WITH_EDITOR
 	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, bCDO, [=](auto scope, AFGBuildable* self)
 	//{
 	//		BeginPlay(self);
@@ -38,15 +37,30 @@ void FUniversalSoftClearanceModule::StartupModule() {
 	//		scope.Override(EClearanceOverlapResult::COR_Soft);
 	//	});
 
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGHologram::SetupClearanceDetector, [=](auto scope, AFGHologram* self)
 		{
 			auto cd = self->mClearanceData;
 			if (cd.Num() > 0)
 			{
-				auto cd1 = cd[0];
+				TArray<FFGClearanceData> SavedCD;
+				for (auto cdata : cd)
+				{
+					FFGClearanceData newData = cdata;
+					newData.Type = EClearanceType::CT_Soft;
+					SavedCD.Add(newData);
+				}
+
 				self->mClearanceData.Empty();
-				cd1.Type = EClearanceType::CT_Soft;
-				self->mClearanceData.Add(cd1);
+				for (auto newcdata : SavedCD)
+				{
+					self->mClearanceData.Add(newcdata);
+				}
+
+				//auto cd1 = cd[0];
+				//self->mClearanceData.Empty();
+				//cd1.Type = EClearanceType::CT_Soft;
+				//self->mClearanceData.Add(cd1);
 			}
 
 		});
