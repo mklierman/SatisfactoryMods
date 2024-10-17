@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.9",
-	"SemVersion": "1.1.9",
+	"VersionName": "1.1.10",
+	"SemVersion": "1.1.10",
 	"FriendlyName": "Location and Rotation",
 	"Description": "Adds a widget which shows you the location and rotation info for the currently highlighted buildable",
 	"Category": "Modding",
