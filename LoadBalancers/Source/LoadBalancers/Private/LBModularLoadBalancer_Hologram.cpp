@@ -142,18 +142,36 @@ void ALBModularLoadBalancer_Hologram::UnHighlightAll()
 	{
 		if (actor)
 		{
-			auto comp = actor->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass());
-			if (comp)
+			auto components = actor->GetComponents();
+			if (components.Num() > 0)
 			{
-				if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(comp))
+				for (auto component : components)
 				{
-					mesh->SetMaterial(0, mMainMaterial);
-					mesh->SetMaterial(1, mSecondaryMaterial);
-					mesh->SetMaterial(2, mSymbolMaterial);
-					mesh->SetInstanced(false);
-					mesh->SetInstanced(true);
+					if (component)
+					{
+						if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(component))
+						{
+							mesh->SetMaterial(0, mMainMaterial);
+							mesh->SetMaterial(1, mSecondaryMaterial);
+							mesh->SetMaterial(2, mSymbolMaterial);
+							mesh->SetInstanced(false);
+							mesh->SetInstanced(true);
+						}
+					}
 				}
 			}
+			//auto comp = actor->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass());
+			//if (comp)
+			//{
+			//	if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(comp))
+			//	{
+			//		mesh->SetMaterial(0, mMainMaterial);
+			//		mesh->SetMaterial(1, mSecondaryMaterial);
+			//		mesh->SetMaterial(2, mSymbolMaterial);
+			//		mesh->SetInstanced(false);
+			//		mesh->SetInstanced(true);
+			//	}
+			//}
 		}
 	}
 	mHighlightedActors.Empty();
@@ -192,15 +210,34 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 		//mOutlineSubsystem->SetOutlineColor(mHoloColor, true);
 		for (ALBBuild_ModularLoadBalancer* OutlineActor : actorsToOutline)
 		{
-			auto comp = OutlineActor->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass());
-			if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(comp))
+			auto components = OutlineActor->GetComponents();
+			if (components.Num() > 0)
 			{
-				mesh->SetMaterial(0, mHoloMaterial);
-				mesh->SetMaterial(1, mHoloMaterial);
-				mesh->SetInstanced(false);
-				mesh->SetInstanced(true);
-				mHighlightedActors.Add(OutlineActor);
+				for (auto component : components)
+				{
+					if (component)
+					{
+						if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(component))
+						{
+							mesh->SetMaterial(0, mHoloMaterial);
+							mesh->SetMaterial(1, mHoloMaterial);
+							mesh->SetInstanced(false);
+							mesh->SetInstanced(true);
+							mHighlightedActors.Add(OutlineActor);
+						}
+					}
+				}
 			}
+
+			//auto comp = OutlineActor->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass());
+			//if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(comp))
+			//{
+			//	mesh->SetMaterial(0, mHoloMaterial);
+			//	mesh->SetMaterial(1, mHoloMaterial);
+			//	mesh->SetInstanced(false);
+			//	mesh->SetInstanced(true);
+			//	mHighlightedActors.Add(OutlineActor);
+			//}
 			/*if (mOutlineSubsystem)
 			{
 				mOutlineSubsystem->CreateOutline(OutlineActor, true);
