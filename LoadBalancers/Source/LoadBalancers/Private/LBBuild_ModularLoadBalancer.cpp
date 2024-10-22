@@ -18,9 +18,16 @@ DEFINE_LOG_CATEGORY(LoadBalancers_Log);
 
 void FLBBalancerData::GetInputBalancers(TArray<ALBBuild_ModularLoadBalancer*>& Out)
 {
-    for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mConnectedInputs)
-        if(Balancer.IsValid())
-            Out.AddUnique(Balancer.Get());
+    if (mConnectedInputs.Num() > 0)
+    {
+        for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> Balancer : mConnectedInputs)
+        {
+            if (Balancer != nullptr && Balancer.IsValid())
+            {
+                Out.AddUnique(Balancer.Get());
+            }
+        }
+    }
 }
 
 bool FLBBalancerData::HasAnyValidFilter() const
