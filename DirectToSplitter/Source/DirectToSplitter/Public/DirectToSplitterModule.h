@@ -37,7 +37,8 @@ class FDirectToSplitterModule : public FDefaultGameModuleImpl {
 public:
 	virtual void StartupModule() override;
 
-	bool TrySnapToActor(const AFGConveyorAttachmentHologram* self, const FHitResult& hitResult);
+	static void TrySnapToActor_Hook(TCallScope<bool(*)(AFGConveyorAttachmentHologram*, const FHitResult&)>& scope, AFGConveyorAttachmentHologram* self, const FHitResult& hitResult);
+	bool TrySnapToActor(AFGConveyorAttachmentHologram* self, const FHitResult& hitResult);
 	void CheckValidPlacement(AFGConveyorAttachmentHologram* self, bool& retflag);
 	void CheckValidFactoryPlacement(AFGFactoryHologram* self, bool& retflag);
 	void CheckValidPipePlacement(AFGPipelineAttachmentHologram* self, bool& retflag);
@@ -49,6 +50,7 @@ public:
 	void HGConstruct(AFGBuildableHologram* hg, AActor* buildable);
 
 	bool PipeSnap(AFGPipeAttachmentHologram* self, const FHitResult& hitResult);
+
 
 	TMap < AFGConveyorAttachmentHologram* ,ConveyorAttachmentInfo> AttachmentInfos;
 	TMap< AFGConveyorAttachmentHologram*, UFGFactoryConnectionComponent*> mSnappedConnections;

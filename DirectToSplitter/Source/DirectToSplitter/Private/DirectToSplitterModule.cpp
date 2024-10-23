@@ -12,13 +12,27 @@ void FDirectToSplitterModule::StartupModule() {
 	AFGConveyorAttachmentHologram* cah = GetMutableDefault<AFGConveyorAttachmentHologram>();
 	AFGFactoryHologram* fh = GetMutableDefault<AFGFactoryHologram>();
 
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::TrySnapToActor, cah, &TrySnapToActor_Hook);
+
+
 #if !WITH_EDITOR
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::TrySnapToActor, cah, [=](auto& scope, const AFGConveyorAttachmentHologram* self,const FHitResult& hitResult)
-	//	{
-	//		//scope.Override(true);
-	//		auto result = TrySnapToActor(self, hitResult);
-	//		scope.Override(result);
-	//	});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::TrySnapToActor, cah, [=](auto& scope, AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
+		{
+			bool scopeResult = scope(self, hitResult);
+			if (scopeResult)
+			{
+				return;
+			}
+			bool result = TrySnapToActor(self, hitResult);
+			if (!result)
+			{
+				return;
+			}
+			scope.Override(result);
+			bool retflag;
+			if (result)
+				CheckValidPlacement(self, retflag);
+		});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::ConfigureComponents, cah, [=](auto& scope, const AFGConveyorAttachmentHologram* self, AFGBuildable* inBuildable)
 		{
@@ -29,16 +43,21 @@ void FDirectToSplitterModule::StartupModule() {
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CheckValidPlacement, cah, [=](auto& scope, AFGConveyorAttachmentHologram* self)
 		{
-			bool retflag;
-			CheckValidPlacement(self, retflag);
-			if (retflag) return;
-			scope.Cancel();
+			//bool retflag;
+			//CheckValidPlacement(self, retflag);
+			//if (retflag) return;
+			//scope.Cancel();
 		});
 
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, bhg, [=](auto& outActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID netConstructionID)
 		{
 			HGConstruct(self, outActor);
+		});
+
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::IsValidHitResult, bhg, [=](auto& scope, const AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
+		{
+			scope.Override(true);
 		});
 
 	AFGPipeAttachmentHologram* pahg = GetMutableDefault<AFGPipeAttachmentHologram>();
@@ -118,9 +137,110 @@ void FDirectToSplitterModule::StartupModule() {
 #endif
 }
 
-bool FDirectToSplitterModule::TrySnapToActor(const AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
+
+void FDirectToSplitterModule::TrySnapToActor_Hook(TCallScope<bool(*)
+	(AFGConveyorAttachmentHologram*, const FHitResult&)>& scope ,
+	AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
 {
-	return true;
+	
+}
+
+bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
+{
+	//Get the (possibly) hit buildable
+	AFGBuildable* hitBuildable = nullptr;
+	auto hitInstanceMgr = Cast<AAbstractInstanceManager>(hitResult.GetActor());
+	if (hitInstanceMgr)
+	{
+		FInstanceHandle outHandle;
+		auto hitResolved = hitInstanceMgr->ResolveHit(hitResult, outHandle);
+		if (hitResolved)
+		{
+			if (outHandle.GetOwner())
+			{
+				auto handleBuildable = Cast<AFGBuildable>(outHandle.GetOwner());
+				if (handleBuildable)
+				{
+					hitBuildable = handleBuildable;
+				}
+			}
+		}
+	}
+	if (!hitBuildable)
+	{
+		hitBuildable = Cast<AFGBuildable>(hitResult.GetActor());
+	}
+
+	if (hitBuildable)
+	{
+		if (auto convAttachment = Cast<AFGBuildableConveyorAttachment>(hitBuildable))
+		{
+			return false;
+		}
+		else if (self->mBuildClass == hitBuildable->GetClass())
+		{
+			return false;
+		}
+		FVector loc = self->GetActorLocation();
+		FVector normal = self->GetActorForwardVector();
+
+		auto components = hitBuildable->GetComponents();
+		if (components.Num() > 0)
+		{
+			for (auto component : components)
+			{
+				UFGFactoryConnectionComponent* conn = Cast<UFGFactoryConnectionComponent>(component);
+				if (conn)
+				{
+					if (conn->IsConnected())
+					{
+						continue;
+					}
+					auto direction = conn->GetDirection();
+					if (direction == EFactoryConnectionDirection::FCD_OUTPUT)
+					{
+						UFGFactoryConnectionComponent* myConnection = nullptr;
+						for (auto myComp : self->mConnections)
+						{
+							if (myComp->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
+							{
+								myConnection = myComp;
+								break;
+							}
+						}
+
+						if (myConnection)
+						{
+							self->SnapToConnection(conn, myConnection, loc);
+							self->mSnappedConnection = conn;
+							return true;
+						}
+						
+					}
+					//else if (direction == EFactoryConnectionDirection::FCD_INPUT)
+					//{
+					//	UFGFactoryConnectionComponent* myConnection = nullptr;
+					//	for (auto myComp : self->mConnections)
+					//	{
+					//		if (myComp->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
+					//		{
+					//			myConnection = myComp;
+					//			break;
+					//		}
+					//	}
+
+					//	if (myConnection)
+					//	{
+					//		self->SnapToConnection(conn, myConnection, loc);
+					//		self->mSnappedConnection = conn;
+					//		return true;
+					//	}
+					//}
+				}
+			}
+		}
+	}
+	return false;
 }
 
 void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram* self, bool& retflag)
@@ -136,12 +256,12 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 			return;
 		}
 		auto className = self->mBuildClass.Get()->GetName();
-		if (className == "Build_ConveyorAttachmentSplitterSmart_C" || className == "Build_ConveyorAttachmentSplitterProgrammable_C")
-		{
-			self->ResetConstructDisqualifiers();
-			self->AddConstructDisqualifier(USnapOnSplitterDisqualifier::StaticClass());
-			return;
-		}
+		//if (className == "Build_ConveyorAttachmentSplitterSmart_C" || className == "Build_ConveyorAttachmentSplitterProgrammable_C")
+		//{
+		//	self->ResetConstructDisqualifiers();
+		//	self->AddConstructDisqualifier(USnapOnSplitterDisqualifier::StaticClass());
+		//	return;
+		//}
 		auto snappedBuildable = self->mSnappedConnection->GetOuterBuildable();
 		
 
