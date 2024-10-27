@@ -1,12 +1,11 @@
 using UnrealBuildTool;
-using System.IO;
-using System;
 
 public class FlashlightSettings : ModuleRules
 {
     public FlashlightSettings(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        CppStandard = CppStandardVersion.Cpp20;
         bLegacyPublicIncludePaths = false;
 
         //SML transitive dependencies
@@ -33,10 +32,9 @@ public class FlashlightSettings : ModuleRules
             "SlateCore", "Slate", "UMG",
         });
 
-
         if (Target.Type == TargetRules.TargetType.Editor) {
-			PublicDependencyModuleNames.AddRange(new string[] {"OnlineBlueprintSupport", "AnimGraph"});
-		}
+            PublicDependencyModuleNames.AddRange(new string[] {"OnlineBlueprintSupport", "AnimGraph"});
+        }
         PublicDependencyModuleNames.AddRange(new string[] {"FactoryGame", "SML"});
     }
 }
