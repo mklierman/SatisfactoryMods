@@ -87,40 +87,65 @@ void APersistentPaintablesCppSubSystem::HookPipeNetwork()
 //	{
 //		//void AddFluidIntegrant(class IFGFluidIntegrantInterface* fluidIntegrant);
 //		//AFGBuildablePipeline* BuildablePipeline = GetMutableDefault<AFGBuildablePipeline>();
-//		SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::UpdateFluidDescriptor, [=](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
-//			{
-//				if (self && IsInGameThread())
-//				{
-//					//FTimerHandle FluidColorTimerHandle;
-//					//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
-//					this->UpdateColor(self);
-//				}
-//			});
-//		SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::AddFluidIntegrant, [=](AFGPipeNetwork* self, class IFGFluidIntegrantInterface* fluidIntegrant)
-//			{
-//				if (self && IsInGameThread())
-//				{
-//					auto pipeBase = Cast<UFGPipeConnectionComponentBase>(fluidIntegrant);
-//					if (pipeBase && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_CONSUMER && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_PRODUCER)
-//					{
-//						auto pipeCons = fluidIntegrant->GetPipeConnections();
-//						if (pipeCons.Num() > 0)
-//						{
-//							if (auto owner = pipeCons[0]->GetOwner())
-//							{
-//								if (auto buildable = Cast<AFGBuildable>(owner))
-//								{
-//									UpdateColorSingle(buildable, self);
-//								}
-//							}
-//						}
-//					}
-//					
-//					//FTimerHandle FluidColorTimerHandle;
-//					//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
-//					//this->UpdateColor(self);
-//				}
-//			});
+
+	SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::TrySetFluidDescriptor, [=](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
+		{
+			if (self && IsInGameThread())
+			{
+					//FTimerHandle FluidColorTimerHandle;
+					//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
+					this->UpdateColor(self);
+			}
+		});
+
+	//void FlushIntegrant(class IFGFluidIntegrantInterface*);
+	SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::FlushIntegrant, [=](AFGPipeNetwork* self, class IFGFluidIntegrantInterface* interface)
+		{
+			if (self && IsInGameThread())
+			{
+					//FTimerHandle FluidColorTimerHandle;
+					//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
+					this->UpdateColor(self);
+				//}
+			}
+		});
+
+
+		SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::UpdateFluidDescriptor, [=](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
+			{
+				if (self && IsInGameThread())
+				{
+					//FTimerHandle FluidColorTimerHandle;
+					//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
+					this->UpdateColor(self);
+				}
+			});
+		SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::AddFluidIntegrant, [=](AFGPipeNetwork* self, class IFGFluidIntegrantInterface* fluidIntegrant)
+			{
+				if (self && IsInGameThread())
+				{
+					auto pipeBase = Cast<UFGPipeConnectionComponentBase>(fluidIntegrant);
+					if (pipeBase && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_CONSUMER && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_PRODUCER)
+					{
+						auto pipeCons = fluidIntegrant->GetPipeConnections();
+						if (pipeCons.Num() > 0)
+						{
+							if (auto owner = pipeCons[0]->GetOwner())
+							{
+								if (auto buildable = Cast<AFGBuildable>(owner))
+								{
+									UpdateColorSingle(buildable, self);
+									UpdateColor(self);
+								}
+							}
+						}
+					}
+					
+					//FTimerHandle FluidColorTimerHandle;
+					//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
+					//this->UpdateColor(self);
+				}
+			});
 //#if !WITH_EDITOR
 //#endif
 //	}

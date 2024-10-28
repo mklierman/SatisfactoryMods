@@ -27,7 +27,7 @@
 //	FFactoryCustomizationData customizationData;
 //};
 
-//DECLARE_LOG_CATEGORY_EXTERN(PersistentPaintables_Log, Display, All);
+DECLARE_LOG_CATEGORY_EXTERN(PersistentPaintables_Log, Display, All);
 class FPersistentPaintablesModule : public FDefaultGameModuleImpl {
 public:
 	virtual void StartupModule() override;

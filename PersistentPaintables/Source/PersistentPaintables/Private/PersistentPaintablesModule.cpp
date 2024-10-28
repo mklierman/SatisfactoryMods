@@ -1,7 +1,8 @@
 #include "PersistentPaintablesModule.h"
+#include "SessionSettings/SessionSettingsManager.h"
 
 
-//DEFINE_LOG_CATEGORY(PersistentPaintables_Log);
+DEFINE_LOG_CATEGORY(PersistentPaintables_Log);
 //#pragma optimize("", off)
 void FPersistentPaintablesModule::ApplyColor(AFGBuildable* buildable, UClass* inSwatchClass, FFactoryCustomizationData customizationData)
 {
@@ -199,7 +200,7 @@ void FPersistentPaintablesModule::UpdateColorSingle(AFGBuildable* buildable, AFG
 		newData.NeedsSkinUpdate = true;
 
 		ApplyColor(buildable, swatchClass, newData);
-
+		return;
 		if (auto pipe = Cast<AFGBuildablePipeline>(buildable))
 		{
 			if (pipe->mPipeConnections.Num() > 0)
@@ -323,17 +324,16 @@ void FPersistentPaintablesModule::StartupModule() {
 	swatchClass = LoadObject<UClass>(nullptr, TEXT("/Game/FactoryGame/Buildable/-Shared/Customization/Swatches/SwatchDesc_Custom.SwatchDesc_Custom_C"));
 
 	//AFGBuildablePipeline* BuildablePipeline = GetMutableDefault<AFGBuildablePipeline>();
+#if !WITH_EDITOR
 	//SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::UpdateFluidDescriptor, [=](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
 	//	{
 	//		if (self)
 	//		{
 	//			this->UpdateColor(self, descriptor);
-	//			//this->StartTimer(self, descriptor);
 	//		}
 	//	});
 		//SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::OnFullRebuildCompleted, &UpdateColor)
 
-#if !WITH_EDITOR
 	AFGBuildableHologram* hg = GetMutableDefault<AFGBuildableHologram>();
 	ConstructHook = SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, hg, [=](auto& returnActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID constructionID)
 		{
@@ -389,19 +389,64 @@ void FPersistentPaintablesModule::AddBuildable(AFGBuildable* buildable)
 
 void FPersistentPaintablesModule::HookPipes()
 {
+
+
+	//void TrySetFluidDescriptor(TSubclassOf< UFGItemDescriptor > newItemDescriptor
+	//SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::TrySetFluidDescriptor, [=](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
+	//	{
+	//		UE_LOG(PersistentPaintables_Log, Display, TEXT("AFGPipeNetwork::TrySetFluidDescriptor"));
+	//		if (self && IsInGameThread())
+	//		{
+	//			FPersistentPaintables_ConfigStruct config = FPersistentPaintables_ConfigStruct::GetActiveConfig(self->GetWorld());
+	//			if (config.PaintPipes)
+	//			{
+	//				//FTimerHandle FluidColorTimerHandle;
+	//				//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
+	//				this->UpdateNetworkColor(self);
+	//			}
+	//		}
+	//	});
+
+	//void FlushIntegrant(class IFGFluidIntegrantInterface*);
+	//SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::FlushIntegrant, [=](AFGPipeNetwork* self, class IFGFluidIntegrantInterface* itf)
+	//	{
+	//		UE_LOG(PersistentPaintables_Log, Display, TEXT("AFGPipeNetwork::FlushIntegrant"));
+	//		if (self && IsInGameThread())
+	//		{
+	//			FPersistentPaintables_ConfigStruct config = FPersistentPaintables_ConfigStruct::GetActiveConfig(self->GetWorld());
+	//			if (config.PaintPipes)
+	//			{
+	//				//FTimerHandle FluidColorTimerHandle;
+	//				//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
+	//				this->UpdateNetworkColor(self);
+	//			}
+	//			//}
+	//		}
+	//	});
+
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::UpdateFluidDescriptor, [=](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
 		{
-			if (self && IsInGameThread())
+			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+			auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
+			if (optionValue)
 			{
-				FPersistentPaintables_ConfigStruct config = FPersistentPaintables_ConfigStruct::GetActiveConfig(self->GetWorld());
-				if (config.PaintPipes)
-				{
-					//FTimerHandle FluidColorTimerHandle;
-					//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
+				//UE_LOG(PersistentPaintables_Log, Display, TEXT("AFGPipeNetwork::UpdateFluidDescriptor"));
+				AsyncTask(ENamedThreads::GameThread, [=]() {
 					this->UpdateNetworkColor(self);
-				}
+					});
 			}
+
+			//if (self && IsInGameThread())
+			//{
+			//	FPersistentPaintables_ConfigStruct config = FPersistentPaintables_ConfigStruct::GetActiveConfig(self->GetWorld());
+			//	if (config.PaintPipes)
+			//	{
+			//		//FTimerHandle FluidColorTimerHandle;
+			//		//self->GetWorld()->GetTimerManager().SetTimer(FluidColorTimerHandle, [=]() { this->UpdateColor(self, descriptor); }, 5.f, false, 5.f);
+			//		this->UpdateNetworkColor(self);
+			//	}
+			//}
 		});
 
 	SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::AddFluidIntegrant, [=](AFGPipeNetwork* self, class IFGFluidIntegrantInterface* fluidIntegrant)
@@ -422,6 +467,7 @@ void FPersistentPaintablesModule::HookPipes()
 								if (auto buildable = Cast<AFGBuildable>(owner))
 								{
 									UpdateColorSingle(buildable, self);
+									//this->UpdateNetworkColor(self);
 								}
 							}
 						}
