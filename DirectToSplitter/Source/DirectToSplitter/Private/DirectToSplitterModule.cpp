@@ -181,14 +181,21 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 		{
 			return false;
 		}
+		else if (auto lift = Cast<AFGBuildableConveyorLift>(hitBuildable))
+		{
+			return false;
+		}
 		FVector loc = self->GetActorLocation();
 		FVector normal = self->GetActorForwardVector();
 
 		auto components = hitBuildable->GetComponents();
 		if (components.Num() > 0)
 		{
+			UFGFactoryConnectionComponent* closestConnection = nullptr;
+			FVector closestLocation = FVector(0,0,0);
 			for (auto component : components)
 			{
+				TArray< UFGFactoryConnectionComponent*> connections;
 				UFGFactoryConnectionComponent* conn = Cast<UFGFactoryConnectionComponent>(component);
 				if (conn)
 				{
@@ -196,7 +203,32 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 					{
 						continue;
 					}
-					auto direction = conn->GetDirection();
+					connections.Add(conn);
+				}
+				for (auto connection : connections)
+				{
+					if (closestConnection == nullptr)
+					{
+						closestConnection = connection;
+						closestLocation = connection->GetConnectorLocation();
+					}
+					else
+					{
+						auto myDistance = FVector::Distance(loc, connection->GetConnectorLocation());
+						auto closestDistance = FVector::Distance(loc, closestLocation);
+						if (myDistance < closestDistance)
+						{
+							closestConnection = connection;
+							closestLocation = connection->GetConnectorLocation();
+						}
+					}
+				}
+			}
+
+				//UFGFactoryConnectionComponent* conn = Cast<UFGFactoryConnectionComponent>(component);
+				if (closestConnection)
+				{
+					auto direction = closestConnection->GetDirection();
 					if (direction == EFactoryConnectionDirection::FCD_OUTPUT)
 					{
 						UFGFactoryConnectionComponent* myConnection = nullptr;
@@ -211,32 +243,34 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 
 						if (myConnection)
 						{
-							self->SnapToConnection(conn, myConnection, loc);
-							self->mSnappedConnection = conn;
+							self->SnapToConnection(closestConnection, myConnection, closestLocation);
+							self->mSnappedConnection = closestConnection;
+							self->mSnappingConnectionIndex = 0;
 							return true;
 						}
 						
 					}
-					//else if (direction == EFactoryConnectionDirection::FCD_INPUT)
-					//{
-					//	UFGFactoryConnectionComponent* myConnection = nullptr;
-					//	for (auto myComp : self->mConnections)
-					//	{
-					//		if (myComp->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
-					//		{
-					//			myConnection = myComp;
-					//			break;
-					//		}
-					//	}
+					else if (direction == EFactoryConnectionDirection::FCD_INPUT)
+					{
+						UFGFactoryConnectionComponent* myConnection = nullptr;
+						for (auto myComp : self->mConnections)
+						{
+							if (myComp->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
+							{
+								myConnection = myComp;
+								break;
+							}
+						}
 
-					//	if (myConnection)
-					//	{
-					//		self->SnapToConnection(conn, myConnection, loc);
-					//		self->mSnappedConnection = conn;
-					//		return true;
-					//	}
-					//}
-				}
+						if (myConnection)
+						{
+							self->SnapToConnection(closestConnection, myConnection, closestLocation);
+							self->mSnappedConnection = closestConnection;
+							self->mSnappingConnectionIndex = 0;
+							return true;
+						}
+					}
+				
 			}
 		}
 	}
