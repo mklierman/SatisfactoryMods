@@ -7,7 +7,7 @@
 #include <Net/UnrealNetwork.h>
 
 //DEFINE_LOG_CATEGORY(LoadBalancers_Log);
-//#pragma optimize("", off)
+#pragma optimize("", off)
 
 // Build step
 
@@ -34,6 +34,99 @@ AActor* ALBModularLoadBalancer_Hologram::Construct(TArray<AActor*>& out_children
 	return Super::Construct(out_children, netConstructionID);
 }
 
+void ALBModularLoadBalancer_Hologram::SetHologramLocationAndRotation(const FHitResult& hitResult)
+{
+	AActor* hitActor = hitResult.GetActor();
+	ALBBuild_ModularLoadBalancer* cl = Cast <ALBBuild_ModularLoadBalancer>(hitActor);
+	if (hitActor && cl)
+	{
+		FRotator addedRotation = FRotator(0, 0, 0);
+		auto yVector = cl->GetActorRightVector();
+		auto zVector = cl->GetActorUpVector();
+		if (this->GetRotationStep() != 0)
+		{
+			addedRotation.Yaw = mRotationAmount;
+		}
+		auto hitSide = GetHitSide(cl->GetActorTransform(), hitResult.ImpactNormal);
+		switch (hitSide)
+		{
+		case EFoundationSide::FoundationRight:
+			SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * 200), cl->GetActorRotation() + addedRotation);
+			this->mSnappedBuilding = cl;
+			LastSnapped = cl;
+			this->CheckValidPlacement();
+			break;
+		case EFoundationSide::FoundationLeft:
+			SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * -200), cl->GetActorRotation() + addedRotation);
+			this->mSnappedBuilding = cl;
+			LastSnapped = cl;
+			this->CheckValidPlacement();
+			break;
+		case EFoundationSide::FoundationTop:
+			SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, 200), cl->GetActorRotation() + addedRotation);
+			this->mSnappedBuilding = cl;
+			LastSnapped = cl;
+			this->CheckValidPlacement();
+			break;
+		case EFoundationSide::FoundationBottom:
+			SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, -200), cl->GetActorRotation() + addedRotation);
+			this->mSnappedBuilding = cl;
+			LastSnapped = cl;
+			this->CheckValidPlacement();
+			break;
+		default:
+			Super::SetHologramLocationAndRotation(hitResult);
+			SetActorLocation(GetActorLocation() + FVector(0, 0, -100));
+			LastSnapped = cl;
+			break;
+		}
+
+
+		//if (hitResult.ImpactNormal.Z <= -0.75)
+		//{
+		//	SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, -200), cl->GetActorRotation() + addedRotation);
+		//}
+		//else if (hitResult.ImpactNormal.Z >= 0.75)
+		//{
+		//	SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, 200), cl->GetActorRotation() + addedRotation);
+		//	this->mSnappedBuilding = cl;
+		//	LastSnapped = cl;
+		//	this->CheckValidPlacement();
+		//}
+		//else if ((hitResult.ImpactNormal * yVector).Y <= -0.05)
+		//{
+		//	// Snapping to left
+		//	SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * -200), cl->GetActorRotation() + addedRotation);
+		//	this->mSnappedBuilding = cl;
+		//	LastSnapped = cl;
+		//	this->CheckValidPlacement();
+		//}
+		//else if ((hitResult.ImpactNormal * yVector).Y >= 0.05)
+		//{
+		//	// Snapping to right
+		//	SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * 200), cl->GetActorRotation() + addedRotation);
+		//	this->mSnappedBuilding = cl;
+		//	LastSnapped = cl;
+		//	this->CheckValidPlacement();
+		//}
+		//else
+		//{
+		//	Super::SetHologramLocationAndRotation(hitResult);
+		//	SetActorLocation(GetActorLocation() + FVector(0, 0, -100));
+		//	LastSnapped = cl;
+		//}
+		this->TrySnapToActor(hitResult);
+	}
+	else
+	{
+		Super::SetHologramLocationAndRotation(hitResult);
+		SetActorLocation(GetActorLocation() + FVector(0, 0, -100));
+		UnHighlightAll();
+		LastSnapped = nullptr;
+		ActiveGroupLeader = nullptr;
+	}
+}
+
 void ALBModularLoadBalancer_Hologram::Destroyed()
 {
 	UnHighlightAll();
@@ -43,7 +136,8 @@ void ALBModularLoadBalancer_Hologram::Destroyed()
 bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult)
 {
 	const bool SnapResult = Super::TrySnapToActor(hitResult);
-	if (SnapResult)
+	
+	if (!SnapResult)
 	{
 		ALBBuild_ModularLoadBalancer* Default = GetDefaultBuildable<ALBBuild_ModularLoadBalancer>();
 		if (ALBBuild_ModularLoadBalancer* SnappedBalancer = Cast<ALBBuild_ModularLoadBalancer>(hitResult.GetActor()))
@@ -60,11 +154,12 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 			FRotator Rot = GetActorRotation();
 			Rot.Yaw += 180 * GetScrollRotateValue();
 
-			SetActorRotation(Rot);
+			//SetActorRotation(Rot);
 		}
 	}
 	else
 	{
+		SetActorLocation(GetActorLocation() + FVector(0, 0, -100));
 		if (ActiveGroupLeader)
 		{
 			UnHighlightAll();
@@ -90,21 +185,27 @@ void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)
 	//Super::SetScrollMode(EHologramScrollMode::HSM_ROTATE);
 	if(GetSnappedBuilding() && Cast<ALBBuild_ModularLoadBalancer>(GetSnappedBuilding()))
 	{
-		auto contr = Cast<APlayerController>(GetConstructionInstigator()->GetController());
-		if (contr && contr->IsInputKeyDown(EKeys::LeftControl))
+		//auto contr = Cast<APlayerController>(GetConstructionInstigator()->GetController());
+		auto pContr = this->GetNetOwningPlayer()->GetPlayerController(GetWorld());
+		if (pContr && pContr->IsInputKeyDown(EKeys::LeftControl))
 		{
-			UE_LOG(LoadBalancers_Log, Display, TEXT("LeftControl"));
-			Super::Scroll(delta);
+			//UE_LOG(LoadBalancers_Log, Display, TEXT("LeftControl"));
+			mRotationAmount += delta * 5;
+			SetScrollRotateValue(GetScrollRotateValue() + delta * 5);
+			//Super::Scroll(delta);
 		}
-		else if (contr && contr->IsInputKeyDown(EKeys::LeftShift))
+		else if (pContr && pContr->IsInputKeyDown(EKeys::LeftShift))
 		{
-			UE_LOG(LoadBalancers_Log, Display, TEXT("LeftShift"));
+			//UE_LOG(LoadBalancers_Log, Display, TEXT("LeftShift"));
 			//Super::SetScrollMode(EHologramScrollMode::HSM_RAISE_LOWER);
+			mRotationAmount += delta * 90;
 			Super::Scroll(delta);
 		}
 		else
 		{
-			SetScrollRotateValue(GetScrollRotateValue() + delta);
+			//SetScrollRotateValue(GetScrollRotateValue() + delta);
+			mRotationAmount += delta * 45;
+			Super::Scroll(delta);
 		}
 	}
 	else
@@ -113,13 +214,35 @@ void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)
 	}
 }
 
+EFoundationSide ALBModularLoadBalancer_Hologram::GetHitSide(FTransform hitTransform, FVector_NetQuantizeNormal hitNormal)
+{
+	auto xAxis = hitTransform.GetRotation().GetAxisX().Dot(hitNormal);
+	auto yAxis = hitTransform.GetRotation().GetAxisY().Dot(hitNormal);
+	auto zAxis = hitTransform.GetRotation().GetAxisZ().Dot(hitNormal);
+
+	if (xAxis >= 0.7071)
+		return EFoundationSide::FoundationFront;
+	else if (xAxis <= -0.7071)
+		return EFoundationSide::FoundationBack;
+	else if (yAxis >= 0.7071)
+		return EFoundationSide::FoundationRight;
+	else if (yAxis <= -0.7071)
+		return EFoundationSide::FoundationLeft;
+	else if (zAxis >= 0.7071)
+		return EFoundationSide::FoundationTop;
+	else if (zAxis <= -0.7071)
+		return EFoundationSide::FoundationBottom;
+
+	return EFoundationSide::Invalid;
+}
+
 
 bool ALBModularLoadBalancer_Hologram::IsValidHitResult(const FHitResult& hitResult) const
 {
 	bool SuperBool = Super::IsValidHitResult(hitResult);
-
+	SuperBool = true;
 	// We clear the outline here if it invalid hit (in some cases it still hold the old outline because he switch instandly to Invalid)
-	if (!SuperBool && mOutlineSubsystem)
+	if (SuperBool && mOutlineSubsystem)
 	{
 		if (mOutlineSubsystem->HasAnyOutlines())
 		{
@@ -245,4 +368,4 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 		}
 	}
 }
-//#pragma optimize("", on)
+#pragma optimize("", on)

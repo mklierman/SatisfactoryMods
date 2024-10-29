@@ -187,6 +187,8 @@ public:
 	/* Try to send it on the next NormalBalancer */
 	bool SendToNormalBalancer(FInventoryItem Item) const;
 
+	void CheckWeakArray(TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> weakObjects);
+
 	/* Do we have a overflow loader? (return true if pointer valid) */
 	FORCEINLINE bool HasOverflowModule() const
 	{

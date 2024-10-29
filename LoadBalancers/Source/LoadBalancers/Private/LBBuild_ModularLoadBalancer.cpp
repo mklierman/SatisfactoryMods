@@ -149,7 +149,7 @@ void ALBBuild_ModularLoadBalancer::InitializeModule()
         }
 
         ApplyGroupModule();
-        for (auto item : GroupLeader->mNormalLoaderData.mFilterMap)
+        for (TPair<TSubclassOf<UFGItemDescriptor>,FLBBalancerData_Filters> item : GroupLeader->mNormalLoaderData.mFilterMap)
         {
             if (item.Key != UFGNoneDescriptor::StaticClass() && !GroupLeader->mNormalLoaderData.mFilterInputMap.Contains(item.Key))
             {
@@ -210,7 +210,7 @@ UFGInventoryComponent* ALBBuild_ModularLoadBalancer::GetBufferInventory()
 {
     return mBufferInventory;
 
-    auto components = GetComponents();
+    TSet<UActorComponent*> components = GetComponents();
     for (UActorComponent* ComponentsByClass : components)
     {
         if (UFGInventoryComponent* InventoryComponent = Cast<UFGInventoryComponent>(ComponentsByClass))
@@ -296,7 +296,7 @@ void ALBBuild_ModularLoadBalancer::RemoveFilteredItem(TSubclassOf<UFGItemDescrip
 void ALBBuild_ModularLoadBalancer::SetFilteredItems(TArray<TSubclassOf<UFGItemDescriptor>> Items)
 {
     RemoveAllFilteredItems();
-    for (auto item : Items)
+    for (TSubclassOf<UFGItemDescriptor> item : Items)
     {
         SetFilteredItem(item);
     }
@@ -304,7 +304,7 @@ void ALBBuild_ModularLoadBalancer::SetFilteredItems(TArray<TSubclassOf<UFGItemDe
 
 void ALBBuild_ModularLoadBalancer::RemovedFilteredItems(TArray<TSubclassOf<UFGItemDescriptor>> Items)
 {
-    for (auto item : Items)
+    for (TSubclassOf<UFGItemDescriptor> item : Items)
     {
         RemoveFilteredItem(item);
     }
@@ -312,8 +312,8 @@ void ALBBuild_ModularLoadBalancer::RemovedFilteredItems(TArray<TSubclassOf<UFGIt
 
 void ALBBuild_ModularLoadBalancer::RemoveAllFilteredItems()
 {
-    auto ItemsToRemove = mFilteredItems;
-    for (auto item : ItemsToRemove)
+    TArray<TSubclassOf<UFGItemDescriptor>> ItemsToRemove = mFilteredItems;
+    for (TSubclassOf<UFGItemDescriptor> item : ItemsToRemove)
     {
         RemoveFilteredItem(item);
     }
@@ -506,13 +506,28 @@ bool ALBBuild_ModularLoadBalancer::SendToNormalBalancer(FInventoryItem Item) con
     return false;
 }
 
+void ALBBuild_ModularLoadBalancer::CheckWeakArray(TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> weakObjects)
+{
+    for (auto& weakObj : weakObjects)
+    {
+        if (weakObj.IsValid())
+        {
+            continue;
+        }
+        else
+        {
+            weakObjects.Remove(weakObj);
+        }
+    }
+}
+
 int32 ALBBuild_ModularLoadBalancer::GetNumItems(UFGInventoryComponent* bufferInventory, TSubclassOf< UFGItemDescriptor > itemClass) const
 {
     TArray< FInventoryStack > out_stacks;
     bufferInventory->GetInventoryStacks(out_stacks);
     if (out_stacks.Num() > 0)
     {
-        for (auto stack : out_stacks)
+        for (FInventoryStack stack : out_stacks)
         {
             if (stack.Item.GetItemClass() == itemClass && stack.HasItems())
             {
@@ -559,65 +574,47 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
 
 void ALBBuild_ModularLoadBalancer::UpdateCache()
 {
-    if (!GroupLeader)
+    if (!GroupLeader) 
     {
         return;
     }
 
-    if (MyInputConnection)
+
+    if (MyInputConnection) 
     {
-        if (GroupLeader->mNormalLoaderData.mConnectedInputs.Num() > 0 && this)
-        {
-            if (GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this) && !MyInputConnection->IsConnected())
-            {
-                GroupLeader->mNormalLoaderData.mConnectedInputs.Remove(this);
-            }
-            else if (!GroupLeader->mNormalLoaderData.mConnectedInputs.Contains(this) && MyInputConnection->IsConnected())
-            {
-                GroupLeader->mNormalLoaderData.mConnectedInputs.AddUnique(this);
-            }
-        }
-        else if (MyInputConnection->IsConnected())
+        CheckWeakArray(GroupLeader->mNormalLoaderData.mConnectedInputs);
+        if (MyInputConnection->IsConnected()) 
         {
             GroupLeader->mNormalLoaderData.mConnectedInputs.AddUnique(this);
         }
+        else 
+        {
+            GroupLeader->mNormalLoaderData.mConnectedInputs.Remove(this);
+        }
     }
 
-    if (MyOutputConnection && IsOverflowModule())
+    if (MyOutputConnection && IsOverflowModule()) 
     {
-        if (GroupLeader->mNormalLoaderData.mOverflowBalancer.Num() > 0)
-        {
-            if (GroupLeader->mNormalLoaderData.mOverflowBalancer.Contains(this) && !MyOutputConnection->IsConnected())
-            {
-                GroupLeader->mNormalLoaderData.mOverflowBalancer.Remove(this);
-            }
-            else if (!GroupLeader->mNormalLoaderData.mOverflowBalancer.Contains(this) && MyOutputConnection->IsConnected())
-            {
-                GroupLeader->mNormalLoaderData.mOverflowBalancer.AddUnique(this);
-            }
-        }
-        else if (MyOutputConnection->IsConnected())
+        CheckWeakArray(GroupLeader->mNormalLoaderData.mOverflowBalancer);
+        if (MyOutputConnection->IsConnected()) 
         {
             GroupLeader->mNormalLoaderData.mOverflowBalancer.AddUnique(this);
-        }
-    }
-
-    else if (MyOutputConnection && IsNormalModule())
-    {
-        if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Num() > 0)
+        } 
+        else 
         {
-            if (GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && !MyOutputConnection->IsConnected())
-            {
-                GroupLeader->mNormalLoaderData.mConnectedOutputs.Remove(this);
-            }
-            else if (!GroupLeader->mNormalLoaderData.mConnectedOutputs.Contains(this) && MyOutputConnection->IsConnected())
-            {
-                GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
-            }
+            GroupLeader->mNormalLoaderData.mOverflowBalancer.Remove(this);
         }
-        else if (MyOutputConnection->IsConnected())
+    } 
+    else if (MyOutputConnection && IsNormalModule()) 
+    {
+        CheckWeakArray(GroupLeader->mNormalLoaderData.mConnectedOutputs);
+        if (MyOutputConnection->IsConnected()) 
         {
             GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
+        } 
+        else 
+        {
+            GroupLeader->mNormalLoaderData.mConnectedOutputs.Remove(this);
         }
     }
 }
@@ -652,7 +649,7 @@ void ALBBuild_ModularLoadBalancer::SetCustomization(ALBBuild_ModularLoadBalancer
 {
     if (IsLeader())
     {
-        for (auto module : mGroupModules)
+        for (TWeakObjectPtr<ALBBuild_ModularLoadBalancer> module : mGroupModules)
         {
             if (module != nullptr && module != this && module != instigator)
             {
@@ -759,7 +756,7 @@ void ALBBuild_ModularLoadBalancer::RemoveGroupModule()
 void ALBBuild_ModularLoadBalancer::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
-    auto components = GetComponents();
+    TSet<UActorComponent*> components = GetComponents();
     for (UActorComponent* ComponentsByClass : components)
     {
         if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
@@ -823,7 +820,7 @@ void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()
                 }
                 else if (GroupLeader->mNormalLoaderData.HasAnyValidFilter())
                 {
-                    for (auto filterInputIdx : GroupLeader->mNormalLoaderData.mFilterInputMap)
+                    for (TPair<TSubclassOf<UFGItemDescriptor>, int32> filterInputIdx : GroupLeader->mNormalLoaderData.mFilterInputMap)
                     {
                         auto FilterIndexing = filterInputIdx.Value;
                         if (FilterIndexing)

@@ -9,6 +9,8 @@
 #include "LBOutlineSubsystem.h"
 #include "FGPlayerController.h"
 #include "FGAttachmentPoint.h"
+#include "Hologram/FGConveyorAttachmentHologram.h"
+#include <Buildables/FGBuildableFactoryBuilding.h>
 #include "LBModularLoadBalancer_Hologram.generated.h"
 
 /**
@@ -16,7 +18,7 @@
  */
 //DECLARE_LOG_CATEGORY_EXTERN(LoadBalancersHG_Log, Display, All);
 UCLASS()
-class LOADBALANCERS_API ALBModularLoadBalancer_Hologram : public AFGFactoryHologram
+class LOADBALANCERS_API ALBModularLoadBalancer_Hologram : public AFGConveyorAttachmentHologram
 {
 	GENERATED_BODY()
 public:
@@ -25,11 +27,17 @@ public:
 	virtual void BeginPlay() override;
 
 	virtual AActor* Construct(TArray< AActor* >& out_children, FNetConstructionID netConstructionID) override;
+	virtual void SetHologramLocationAndRotation(const FHitResult& hitResult) override;
 	virtual void Destroyed() override;
 	virtual bool TrySnapToActor(const FHitResult& hitResult) override;
 	virtual bool CanNudgeHologram() const override;
 
 	virtual void Scroll(int32 delta) override;
+
+	EFoundationSide GetHitSide(FTransform hitTransform, FVector_NetQuantizeNormal hitNormal);
+
+
+	int mRotationAmount = 0;
 
 	virtual bool IsValidHitResult(const FHitResult& hitResult) const override;
 
