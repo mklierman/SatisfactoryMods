@@ -4,6 +4,8 @@
 #include "Logging/StructuredLog.h"
 #include <Kismet/KismetMathLibrary.h>
 #include <Buildables/FGBuildableStorage.h>
+#include <Buildables/FGBuildableTrainPlatform.h>
+#include <Buildables/FGBuildableDockingStation.h>
 
 DEFINE_LOG_CATEGORY(SnapOn_Log);
 #pragma optimize("", off)
@@ -312,6 +314,30 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 						&& ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
 					{
 						shouldDisqualify = true;
+					}
+				}
+			}
+		}
+		else if (direction == EFactoryConnectionDirection::FCD_INPUT)
+		{
+			auto trainCargo = Cast< AFGBuildableTrainPlatform>(snappedBuildable);
+			auto truckStation = Cast< AFGBuildableDockingStation>(snappedBuildable);
+			if (trainCargo || truckStation)
+			{
+				shouldDisqualify = true;
+			}
+			else if (auto storage = Cast<AFGBuildableStorage>(snappedBuildable))
+			{
+				for (UActorComponent* ComponentsByClass : snappedBuildable->GetComponents())
+				{
+					if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
+					{
+						if (ConnectionComponent != self->mSnappedConnection
+							&& ConnectionComponent->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR
+							&& ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
+						{
+							shouldDisqualify = true;
+						}
 					}
 				}
 			}
