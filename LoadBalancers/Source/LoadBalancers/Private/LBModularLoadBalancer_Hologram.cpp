@@ -43,6 +43,7 @@ void ALBModularLoadBalancer_Hologram::SetHologramLocationAndRotation(const FHitR
 		FRotator addedRotation = FRotator(0, 0, 0);
 		auto yVector = cl->GetActorRightVector();
 		auto zVector = cl->GetActorUpVector();
+		auto xVector = cl->GetActorForwardVector();
 		if (this->GetRotationStep() != 0)
 		{
 			addedRotation.Yaw = mRotationAmount;
@@ -70,6 +71,18 @@ void ALBModularLoadBalancer_Hologram::SetHologramLocationAndRotation(const FHitR
 			break;
 		case EFoundationSide::FoundationBottom:
 			SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, -200), cl->GetActorRotation() + addedRotation);
+			this->mSnappedBuilding = cl;
+			LastSnapped = cl;
+			this->CheckValidPlacement();
+			break;
+		case EFoundationSide::FoundationFront:
+			SetActorLocationAndRotation(cl->GetActorLocation() + (xVector * 200), cl->GetActorRotation() + addedRotation);
+			this->mSnappedBuilding = cl;
+			LastSnapped = cl;
+			this->CheckValidPlacement();
+			break;
+		case EFoundationSide::FoundationBack:
+			SetActorLocationAndRotation(cl->GetActorLocation() + (xVector * -200), cl->GetActorRotation() + addedRotation);
 			this->mSnappedBuilding = cl;
 			LastSnapped = cl;
 			this->CheckValidPlacement();
@@ -115,7 +128,7 @@ void ALBModularLoadBalancer_Hologram::SetHologramLocationAndRotation(const FHitR
 		//	SetActorLocation(GetActorLocation() + FVector(0, 0, -100));
 		//	LastSnapped = cl;
 		//}
-		this->TrySnapToActor(hitResult);
+		//this->TrySnapToActor(hitResult);
 	}
 	else
 	{
@@ -136,7 +149,7 @@ void ALBModularLoadBalancer_Hologram::Destroyed()
 bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult)
 {
 	const bool SnapResult = Super::TrySnapToActor(hitResult);
-	
+	//SnapResult = false;
 	if (!SnapResult)
 	{
 		ALBBuild_ModularLoadBalancer* Default = GetDefaultBuildable<ALBBuild_ModularLoadBalancer>();
