@@ -190,6 +190,10 @@ void FPersistentPaintablesModule::UpdateColorSingle(AFGBuildable* buildable, AFG
 	if (buildable)
 	{
 		auto fluidColor = UFGItemDescriptor::GetFluidColorLinear(pipeNetwork->GetFluidDescriptor());
+		//if (fluidColor == FLinearColor())
+		//{
+		//	return;
+		//}
 		FFactoryCustomizationData newData = FFactoryCustomizationData();
 		newData.SwatchDesc = swatchClass;
 		newData.ColorSlot = 255;

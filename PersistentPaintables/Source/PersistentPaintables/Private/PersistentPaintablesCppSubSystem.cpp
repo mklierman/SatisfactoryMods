@@ -168,6 +168,10 @@ void APersistentPaintablesCppSubSystem::UpdateColorSingle(AFGBuildable* buildabl
 	if (buildable)
 	{
 		auto fluidColor = UFGItemDescriptor::GetFluidColorLinear(pipeNetwork->GetFluidDescriptor());
+		//if (fluidColor == FLinearColor())
+		//{
+		//	return;
+		//}
 		FFactoryCustomizationData newData = FFactoryCustomizationData();
 		newData.SwatchDesc = swatchClass;
 		newData.ColorSlot = 255;
@@ -178,7 +182,7 @@ void APersistentPaintablesCppSubSystem::UpdateColorSingle(AFGBuildable* buildabl
 		newData.NeedsSkinUpdate = true;
 
 		ApplyColor(buildable, swatchClass, newData);
-
+		return;
 		if (auto pipe = Cast<AFGBuildablePipeline>(buildable))
 		{
 			if (pipe->mPipeConnections.Num() > 0)
