@@ -113,7 +113,7 @@ UFGPowerConnectionComponent* FHoverPackPoleRangeModule::GetBuildablePowerConnect
 {
 	if (hitBuildable)
 	{
-		auto components = hitBuildable->GetComponentsByClass(UFGPowerConnectionComponent::StaticClass());
+		auto components = hitBuildable->GetComponents();
 		if (components.Num() > 0)
 		{
 			for (auto component : components)
