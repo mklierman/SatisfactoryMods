@@ -91,6 +91,7 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 	AFGFactoryBuildingHologram* Fhg = Cast<AFGFactoryBuildingHologram>(self);
 	if (Fhg)
 	{
+
 		AFGFoundationHologram* foundation = Cast<AFGFoundationHologram>(self);
 		AFGWallHologram* wall = Cast<AFGWallHologram>(self);
 		auto currentZoop = Fhg->mDesiredZoop;
@@ -122,6 +123,7 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 				currentZoop.X = zStruct->X;
 				currentZoop.Y = zStruct->Y;
 				currentZoop.Z = zStruct->Z;
+
 
 				if (isXZoop)
 				{
@@ -251,15 +253,26 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 				}
 			}
 		}
-		if (wall)
+		if (Fhg )
 		{
-			HologramsToZoop.Add(self, currentZoop);
+
+			if (wall)
+			{
+				HologramsToZoop.Add(self, currentZoop);
+			}
+			else if (foundation && FoundationsBeingZooped.Contains(foundation) && Fhg->IsCurrentBuildMode(Fhg->mBuildModeZoop) && !SetZoopAmount(Fhg, currentZoop))
+			{
+				auto zStruct = FoundationsBeingZooped[foundation];
+				auto maxZ = Fhg->mMaxZoopAmount;
+				auto minZ = (Fhg->mMaxZoopAmount * -1);
+				zStruct->X = FMath::Clamp(zStruct->X, minZ, maxZ);
+				zStruct->Y = FMath::Clamp(zStruct->Y, minZ, maxZ);
+				zStruct->Z = FMath::Clamp(zStruct->Z, minZ, maxZ);
+
+				FoundationsBeingZooped[foundation]->inScrollMode = true;
+			}
+			Fhg->SetZoopAmount(currentZoop);
 		}
-		else if (foundation && FoundationsBeingZooped.Contains(foundation) && Fhg->IsCurrentBuildMode(Fhg->mBuildModeZoop))
-		{
-			FoundationsBeingZooped[foundation]->inScrollMode = true;
-		}
-		Fhg->SetZoopAmount(currentZoop);
 	}
 }
 
@@ -816,16 +829,19 @@ void FInfiniteZoopModule::StartupModule()
 	AFGHologram* hCDO = GetMutableDefault<AFGHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, hCDO, [=](auto scope, AFGHologram* self, int32 delta)
 		{
-			if (auto ramphg = Cast<AFGRampHologram>(self))
+			if (self)
 			{
-				return;
-			}
-			if (self->IsHologramLocked())
-			{
-				return;
-			}
+				if (auto ramphg = Cast<AFGRampHologram>(self))
+				{
+					return;
+				}
+				if (self->IsHologramLocked())
+				{
+					return;
+				}
 
-			this->ScrollHologram(self, delta);
+				this->ScrollHologram(self, delta);
+			}
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Destroyed, hCDO, [=](auto& scope, AFGHologram* self)
