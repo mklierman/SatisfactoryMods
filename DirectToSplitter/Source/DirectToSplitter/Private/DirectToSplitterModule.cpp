@@ -183,6 +183,10 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 		{
 			return false;
 		}
+		else if (self->mBuildClass->GetName().Contains("ModularLoadBalancer"))
+		{
+			return false;
+		}
 		else if (auto lift = Cast<AFGBuildableConveyorLift>(hitBuildable))
 		{
 			return false;
