@@ -2,7 +2,7 @@ param (
     [string]$SingleFolder = ""
 )
 
-$SMLPath = "C:\Code\SatisfactoryModLoader-Dedi\Mods"
+$SMLPath = "C:\Code\SatisfactoryModLoader-1.0\Mods"
 $ModDir = "C:\Code\SF\SatisfactoryMods"
 
 function New-Sym-Link ($Link) {
