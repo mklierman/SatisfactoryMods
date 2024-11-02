@@ -1,5 +1,0 @@
-// ILikeBanas
-
-
-#include "MyBlueprintFunctionLibrary.h"
-
