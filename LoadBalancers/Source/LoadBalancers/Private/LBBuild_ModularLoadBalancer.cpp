@@ -556,15 +556,15 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
         //        }
         //    }
 
-        if (MyOutputConnection || MyInputConnection)
-        {
-            mTimer += dt;
-            if (mTimer >= 1.f)
-            {
-                mTimer -= 1.f;
-                UpdateCache();
-            }
-        }
+        //if (MyOutputConnection || MyInputConnection)
+        //{
+        //    mTimer += dt;
+        //    if (mTimer >= 1.f)
+        //    {
+        //        mTimer -= 1.f;
+        //        UpdateCache();
+        //    }
+        //}
 
         if(MyOutputConnection && GetBufferInventory())
             if(!GetBufferInventory()->IsValidIndex(MyOutputConnection->GetInventoryAccessIndex()) && MyOutputConnection->GetInventoryAccessIndex() != -1)
@@ -582,7 +582,7 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
 
     if (MyInputConnection) 
     {
-        CheckWeakArray(GroupLeader->mNormalLoaderData.mConnectedInputs);
+        //CheckWeakArray(GroupLeader->mNormalLoaderData.mConnectedInputs);
         if (MyInputConnection->IsConnected()) 
         {
             GroupLeader->mNormalLoaderData.mConnectedInputs.AddUnique(this);
@@ -595,7 +595,7 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
 
     if (MyOutputConnection && IsOverflowModule()) 
     {
-        CheckWeakArray(GroupLeader->mNormalLoaderData.mOverflowBalancer);
+        //CheckWeakArray(GroupLeader->mNormalLoaderData.mOverflowBalancer);
         if (MyOutputConnection->IsConnected()) 
         {
             GroupLeader->mNormalLoaderData.mOverflowBalancer.AddUnique(this);
@@ -607,7 +607,7 @@ void ALBBuild_ModularLoadBalancer::UpdateCache()
     } 
     else if (MyOutputConnection && IsNormalModule()) 
     {
-        CheckWeakArray(GroupLeader->mNormalLoaderData.mConnectedOutputs);
+        //CheckWeakArray(GroupLeader->mNormalLoaderData.mConnectedOutputs);
         if (MyOutputConnection->IsConnected()) 
         {
             GroupLeader->mNormalLoaderData.mConnectedOutputs.AddUnique(this);
@@ -631,6 +631,18 @@ void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayRea
    Super::EndPlay(EndPlayReason);
 }
 
+void ALBBuild_ModularLoadBalancer::Tick(float dt)
+{
+    if (MyOutputConnection || MyInputConnection)
+    {
+        mTimer += dt;
+        if (mTimer >= 1.f)
+        {
+            mTimer -= 1.f;
+            UpdateCache();
+        }
+    }
+}
 
 void ALBBuild_ModularLoadBalancer::SetCustomizationData_Native(const FFactoryCustomizationData& customizationData, bool skipCombine)
 {
