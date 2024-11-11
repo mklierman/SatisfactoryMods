@@ -556,15 +556,15 @@ void ALBBuild_ModularLoadBalancer::Factory_Tick(float dt)
         //        }
         //    }
 
-        //if (MyOutputConnection || MyInputConnection)
-        //{
-        //    mTimer += dt;
-        //    if (mTimer >= 1.f)
-        //    {
-        //        mTimer -= 1.f;
-        //        UpdateCache();
-        //    }
-        //}
+        if (MyOutputConnection || MyInputConnection)
+        {
+            mTimer += dt;
+            if (mTimer >= 1.f)
+            {
+                mTimer -= 1.f;
+                AsyncTask(ENamedThreads::GameThread, [this]() { UpdateCache(); });
+            }
+        }
 
         if(MyOutputConnection && GetBufferInventory())
             if(!GetBufferInventory()->IsValidIndex(MyOutputConnection->GetInventoryAccessIndex()) && MyOutputConnection->GetInventoryAccessIndex() != -1)
@@ -633,15 +633,15 @@ void ALBBuild_ModularLoadBalancer::EndPlay(const EEndPlayReason::Type EndPlayRea
 
 void ALBBuild_ModularLoadBalancer::Tick(float dt)
 {
-    if (MyOutputConnection || MyInputConnection)
-    {
-        mTimer += dt;
-        if (mTimer >= 1.f)
-        {
-            mTimer -= 1.f;
-            UpdateCache();
-        }
-    }
+    //if (MyOutputConnection || MyInputConnection)
+    //{
+    //    mTimer += dt;
+    //    if (mTimer >= 1.f)
+    //    {
+    //        mTimer -= 1.f;
+    //        UpdateCache();
+    //    }
+    //}
 }
 
 void ALBBuild_ModularLoadBalancer::SetCustomizationData_Native(const FFactoryCustomizationData& customizationData, bool skipCombine)
