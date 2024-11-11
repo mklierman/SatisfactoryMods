@@ -21,6 +21,7 @@
 #include "Equipment/FGBuildGun.h"
 #include "Equipment/FGParachute.h"
 #include "Hologram/FGBlueprintHologram.h"
+#include <SessionSettings/SessionSettingsManager.h>
 
 DEFINE_LOG_CATEGORY(LogConstructionPreferences);
 
@@ -52,36 +53,67 @@ DEFINE_LOG_CATEGORY(LogConstructionPreferences);
 //}
 
 //#pragma optimize("", off)
-float FConstructionPreferencesModule::GetUseDistance(const AFGCharacterPlayer* self)
+float FConstructionPreferencesModule::GetUseDistance(const AFGCharacterPlayer* self, float defaultDistance)
 {
-	FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig(self->GetWorld());
-	float reachDist = config.ReachDistance;
-	if (reachDist <= 250.f) //250 is default
-	{
-		return -1.f;
-	}
+	USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+	auto reachMult = SessionSettings->GetFloatOptionValue("ConstructionPreferences.UseDistance");
+	return reachMult * defaultDistance;
 
-	auto backEquip = self->mBackEquipmentSlot;
-	if (backEquip)
-	{
-		auto hp = Cast<AFGHoverPack>(backEquip->mEquipmentInSlot);
-		if (hp)
-		{
-			if (hp->mCurrentHoverMode == EHoverPackMode::HPM_Hover)
-			{
-				return 2000.0 + reachDist;
-			}
-		}
-		auto para = Cast<AFGParachute>(backEquip->mEquipmentInSlot);
-		if (para)
-		{
-			if (para->IsDeployed())
-			{
-				return 2000.0 + reachDist;
-			}
-		}
-	}
-	return reachDist;
+	//if (reachMult == 1.f)
+	//{
+	//	return 1.f * defaultDistance;
+	//}
+
+	//auto backEquip = self->mBackEquipmentSlot;
+	//if (backEquip)
+	//{
+	//	auto hp = Cast<AFGHoverPack>(backEquip->mEquipmentInSlot);
+	//	if (hp)
+	//	{
+	//		if (hp->mCurrentHoverMode == EHoverPackMode::HPM_Hover)
+	//		{
+	//			return defaultDistance + reachMult;
+	//		}
+	//	}
+	//	auto para = Cast<AFGParachute>(backEquip->mEquipmentInSlot);
+	//	if (para)
+	//	{
+	//		if (para->IsDeployed())
+	//		{
+	//			return defaultDistance + reachMult;
+	//		}
+	//	}
+	//}
+	//return reachMult ;
+
+	//FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig(self->GetWorld());
+	//float reachDist = config.ReachDistance;
+	//if (reachDist <= 250.f) //250 is default
+	//{
+	//	return -1.f;
+	//}
+
+	//auto backEquip = self->mBackEquipmentSlot;
+	//if (backEquip)
+	//{
+	//	auto hp = Cast<AFGHoverPack>(backEquip->mEquipmentInSlot);
+	//	if (hp)
+	//	{
+	//		if (hp->mCurrentHoverMode == EHoverPackMode::HPM_Hover)
+	//		{
+	//			return 2000.0 + reachDist;
+	//		}
+	//	}
+	//	auto para = Cast<AFGParachute>(backEquip->mEquipmentInSlot);
+	//	if (para)
+	//	{
+	//		if (para->IsDeployed())
+	//		{
+	//			return 2000.0 + reachDist;
+	//		}
+	//	}
+	//}
+	//return reachDist;
 }
 //#pragma optimize("", on)
 
@@ -109,8 +141,9 @@ void FConstructionPreferencesModule::StartupModule() {
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [=](auto& scope, const AFGCharacterPlayer* self)
 		{
+			float result = scope(self);
 			float newDist = 0.f;
-			newDist = GetUseDistance(self);
+			newDist = GetUseDistance(self, result);
 			if (newDist > 0)
 			{
 				scope.Override(newDist);
@@ -119,24 +152,30 @@ void FConstructionPreferencesModule::StartupModule() {
 
 	SUBSCRIBE_METHOD(AFGBuildGun::GetBuildGunRange, [=](auto& scope, const AFGBuildGun* self)
 		{
-			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig(self->GetWorld());
-			float reachDist = config.ReachDistance;
+			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+			auto reachMult = SessionSettings->GetFloatOptionValue("ConstructionPreferences.UseDistance");
+			//FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig(self->GetWorld());
+			//float reachDist = config.ReachDistance;
 			auto bg = const_cast<AFGBuildGun*>(self);
 			auto defaultRange = bg->GetDefaultBuildGunRange();
 			//if (reachDist > defaultRange && reachDist > bg->mBuildDistanceMax)
 			//{
-			scope.Override(bg->mBuildDistanceMax + reachDist);
+			scope.Override(bg->mBuildDistanceMax * reachMult);
 			//}
 		});
 
 	AFGConveyorLiftHologram* hg = GetMutableDefault<AFGConveyorLiftHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGConveyorLiftHologram::BeginPlay, hg, [](AFGConveyorLiftHologram* self)
 		{
-			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig(self->GetWorld());
-			self->mStepHeight = ((float)config.ConveyorLiftStep * 100);
-			self->mMinimumHeight = ((float)config.ConveyorLiftHeight * 100);
-			self->mMaximumHeight = ((float)config.ConveyorLiftHeightMax * 100);
-			self->mJointMesh = nullptr;
+			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+			auto stepHeight = SessionSettings->GetFloatOptionValue("ConstructionPreferences.ConveyorLift.StepHeight");
+			auto minHeight = SessionSettings->GetFloatOptionValue("ConstructionPreferences.ConveyorLift.MinHeight");
+			auto maxHeight = SessionSettings->GetFloatOptionValue("ConstructionPreferences.ConveyorLift.MaxHeight");
+
+			//FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig(self->GetWorld());
+			self->mStepHeight = (stepHeight * 100);
+			self->mMinimumHeight = (minHeight * 100);
+			self->mMaximumHeight = (maxHeight * 100);
 		});
 
 

@@ -10,5 +10,5 @@ public:
 
 	virtual bool IsGameModule() const override { return true; }
 
-	float GetUseDistance(const AFGCharacterPlayer* self);
+	float GetUseDistance(const AFGCharacterPlayer* self, float defaultDistance);
 };
