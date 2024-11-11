@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.8.15",
-	"SemVersion": "1.8.15",
+	"VersionName": "1.8.16",
+	"SemVersion": "1.8.16",
 	"FriendlyName": "Infinite Zoop",
 	"Description": "Adds a research tree in the MAM where you can improve your Zoop capacity",
 	"Category": "Modding",
@@ -30,5 +30,5 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"GameVersion": ">=365306"
+	"GameVersion": ">=377620"
 }

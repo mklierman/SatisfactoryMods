@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 3,
-	"VersionName": "3.0.4",
-	"SemVersion": "3.0.4",
+	"VersionName": "3.0.5",
+	"SemVersion": "3.0.5",
 	"FriendlyName": "Crash Site Beacons",
 	"Description": "Places a map marker at every crash site.",
 	"Category": "Modding",
@@ -30,5 +30,5 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"GameVersion": ">=365306"
+	"GameVersion": ">=377620"
 }
