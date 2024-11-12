@@ -5,6 +5,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "LoadBalancersModule.h"
 #include <Net/UnrealNetwork.h>
+#include "Buildables/FGBuildableConveyorBelt.h"
 
 //DEFINE_LOG_CATEGORY(LoadBalancers_Log);
 #pragma optimize("", off)
@@ -191,6 +192,50 @@ bool ALBModularLoadBalancer_Hologram::CanNudgeHologram() const
 		return true;
 	}
 	return Super::CanNudgeHologram();
+}
+
+void ALBModularLoadBalancer_Hologram::ConfigureComponents(AFGBuildable* inBuildable) const
+{
+	Super::ConfigureComponents(inBuildable);
+
+	if (mSnappedConveyor && inBuildable)
+	{
+		auto cl = Cast< ALBBuild_ModularLoadBalancer>(inBuildable);
+		if (cl)
+		{
+			auto beltCustomizationData = mSnappedConveyor->Execute_GetCustomizationData(mSnappedConveyor);
+			TArray< AFGBuildableConveyorBelt* > Belts = AFGBuildableConveyorBelt::Split(mSnappedConveyor, mSnappedConveyorOffset, false);
+			if (Belts.Num() > 0)
+			{
+				for (auto Belt : Belts)
+				{
+					if (Belt->GetConnection0() && !Belt->GetConnection0()->IsConnected())
+					{
+						if (Belt->GetConnection0()->GetDirection() == EFactoryConnectionDirection::FCD_INPUT && !cl->MyOutputConnection->GetConnection())
+						{
+							Belt->GetConnection0()->SetConnection(cl->MyOutputConnection);
+						}
+						else if (Belt->GetConnection0()->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT && !cl->MyInputConnection->GetConnection())
+						{
+							Belt->GetConnection0()->SetConnection(cl->MyInputConnection);
+						}
+					}
+					else if (Belt->GetConnection1() && !Belt->GetConnection1()->IsConnected() && !cl->MyOutputConnection->GetConnection())
+					{
+						if (Belt->GetConnection1()->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
+						{
+							Belt->GetConnection1()->SetConnection(cl->MyOutputConnection);
+						}
+						else if (Belt->GetConnection1()->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT && !cl->MyInputConnection->GetConnection())
+						{
+							Belt->GetConnection1()->SetConnection(cl->MyInputConnection);
+						}
+					}
+					Belt->Execute_SetCustomizationData(Belt, beltCustomizationData);
+				}
+			}
+		}
+	}
 }
 
 void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)

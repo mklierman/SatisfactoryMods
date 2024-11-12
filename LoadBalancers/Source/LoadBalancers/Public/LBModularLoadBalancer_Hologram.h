@@ -31,6 +31,7 @@ public:
 	virtual void Destroyed() override;
 	virtual bool TrySnapToActor(const FHitResult& hitResult) override;
 	virtual bool CanNudgeHologram() const override;
+	virtual void ConfigureComponents(class AFGBuildable* inBuildable) const override;
 
 	virtual void Scroll(int32 delta) override;
 

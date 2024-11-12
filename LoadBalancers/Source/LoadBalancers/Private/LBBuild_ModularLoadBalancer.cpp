@@ -9,6 +9,7 @@
 #include "LoadBalancersModule.h"
 #include <Net/UnrealNetwork.h>
 #include <Kismet/GameplayStatics.h>
+#include <Buildables/FGBuildableConveyorBelt.h>
 
 DEFINE_LOG_CATEGORY(LoadBalancers_Log);
 //DEFINE_LOG_CATEGORY(LogGame);
@@ -642,6 +643,53 @@ void ALBBuild_ModularLoadBalancer::Tick(float dt)
     //        UpdateCache();
     //    }
     //}
+}
+
+void ALBBuild_ModularLoadBalancer::Dismantle_Implementation()
+{
+    if (MyInputConnection && MyOutputConnection)
+    {
+        if (MyInputConnection->GetConnection() && MyOutputConnection->GetConnection())
+        {
+            auto inputLoc = MyInputConnection->GetConnection()->GetConnectorLocation();
+            auto outputLoc = MyOutputConnection->GetConnection()->GetConnectorLocation();
+            if ((inputLoc - outputLoc).IsNearlyZero(0.01))
+            {
+                auto belt1Conn = MyInputConnection->GetConnection();
+                auto belt2Conn = MyOutputConnection->GetConnection();
+                if (belt1Conn && belt2Conn)
+                {
+                    auto belt1 = Cast< AFGBuildableConveyorBelt>(belt1Conn->GetOuterBuildable());
+                    auto belt2 = Cast< AFGBuildableConveyorBelt>(belt2Conn->GetOuterBuildable());
+                    if (belt1 && belt2)
+                    {
+                        if (belt1->GetSpeed() == belt2->GetSpeed())
+                        {
+                            auto belt1CustomizationData = belt1->Execute_GetCustomizationData(belt1);
+                            TArray< AFGBuildableConveyorBelt*> belts;
+                            belts.Add(belt1);
+                            belts.Add(belt2);
+                            belt1Conn->ClearConnection();
+                            belt2Conn->ClearConnection();
+                            belt1Conn->SetConnection(belt2Conn);
+                            auto newBelt = AFGBuildableConveyorBelt::Merge(belts);
+                            if (newBelt && belt1CustomizationData.IsInitialized())
+                            {
+                                newBelt->Execute_SetCustomizationData(newBelt, belt1CustomizationData);
+                            }
+                        }
+                        else
+                        {
+                            belt1Conn->ClearConnection();
+                            belt2Conn->ClearConnection();
+                            belt1Conn->SetConnection(belt2Conn);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Super::Dismantle_Implementation();
 }
 
 void ALBBuild_ModularLoadBalancer::SetCustomizationData_Native(const FFactoryCustomizationData& customizationData, bool skipCombine)

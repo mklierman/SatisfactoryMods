@@ -129,6 +129,8 @@ public:
 	virtual void Tick(float dt) override;
 	// End AActor interface
 
+	virtual void Dismantle_Implementation() override;
+
 	//~ Begin IFGColorInterface
 	virtual void SetCustomizationData_Native(const FFactoryCustomizationData& customizationData, bool skipCombine = false);
 	virtual void StartIsAimedAtForColor_Implementation(class AFGCharacterPlayer* byCharacter, bool isValid = true);
