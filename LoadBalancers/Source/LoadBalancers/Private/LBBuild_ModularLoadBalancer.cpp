@@ -123,6 +123,19 @@ void ALBBuild_ModularLoadBalancer::BeginPlay()
 {
     Super::BeginPlay();
 	InitializeModule();
+
+    //Fix for Z-Fighting
+    auto meshes = GetComponents();
+    for (auto mesh : meshes)
+    {
+        auto sMesh = Cast<UStaticMeshComponent>(mesh);
+        if (sMesh)
+        {
+            float randomFloat = UKismetMathLibrary::RandomFloatInRange(-0.001, 0.001);
+            sMesh->AddRelativeLocation(FVector(randomFloat, randomFloat, randomFloat));
+            sMesh->AddRelativeRotation(FRotator(randomFloat, randomFloat, randomFloat));
+        }
+    }
 }
 
 void ALBBuild_ModularLoadBalancer::InitializeModule()
