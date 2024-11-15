@@ -1,5 +1,9 @@
 #include "PersistentPaintablesModule.h"
 #include "SessionSettings/SessionSettingsManager.h"
+#include <Buildables/FGBuildableFoundation.h>
+#include "FGLightweightBuildableSubsystem.h"
+#include <Logging/StructuredLog.h>
+#include "Hologram/FGFoundationHologram.h"
 
 
 DEFINE_LOG_CATEGORY(PersistentPaintables_Log);
@@ -328,7 +332,6 @@ void FPersistentPaintablesModule::StartupModule() {
 	swatchClass = LoadObject<UClass>(nullptr, TEXT("/Game/FactoryGame/Buildable/-Shared/Customization/Swatches/SwatchDesc_Custom.SwatchDesc_Custom_C"));
 
 	//AFGBuildablePipeline* BuildablePipeline = GetMutableDefault<AFGBuildablePipeline>();
-#if !WITH_EDITOR
 	//SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::UpdateFluidDescriptor, [=](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
 	//	{
 	//		if (self)
@@ -337,17 +340,79 @@ void FPersistentPaintablesModule::StartupModule() {
 	//		}
 	//	});
 		//SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::OnFullRebuildCompleted, &UpdateColor)
-
-	AFGBuildableHologram* hg = GetMutableDefault<AFGBuildableHologram>();
-	ConstructHook = SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, hg, [=](auto& returnActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID constructionID)
+	//void CopyCustomizationDataFromTemporaryToInstance(AFGBuildable * buildable);
+	SUBSCRIBE_METHOD(AFGLightweightBuildableSubsystem::CopyCustomizationDataFromTemporaryToInstance, [=](auto& scope, AFGLightweightBuildableSubsystem* self, AFGBuildable* buildable)
 		{
-			//AActor* actor = const_cast<AActor*>(returnActor);
-			AFGBuildable* buildable = Cast< AFGBuildable>(returnActor);
 			if (buildable)
 			{
-				AddBuildable(buildable);
+
+				if (buildable->GetCanBeColored_Implementation())
+				{
+					USubsystemActorManager* SubsystemActorManager = buildable->GetWorld()->GetSubsystem<USubsystemActorManager>();
+					APersistentPaintablesCppSubSystem* ppSubsystem = SubsystemActorManager->GetSubsystemActor<APersistentPaintablesCppSubSystem>();
+
+					if (ppSubsystem && !ppSubsystem->PlayerCustomizationStructs.IsEmpty())
+					{
+						if (auto instigator = buildable->mBuildEffectInstignator)
+						{
+							for (FPlayerCustomizationStruct custData : ppSubsystem->PlayerCustomizationStructs)
+							{
+								if (custData.CharacterPlayer && custData.CustomizationData.IsInitialized() && custData.CharacterPlayer == instigator)
+								{
+									//auto lightweightFoundation = Cast<AFGBuildableFoundationLightweight>(buildable);
+									buildable->SetCustomizationData_Implementation(custData.CustomizationData);
+									buildable->ApplyCustomizationData_Implementation(custData.CustomizationData);
+									buildable->SetCustomizationDataLightweightNoApply(custData.CustomizationData);
+									return;
+								}
+							}
+						}
+					}
+				}
 			}
 		});
+	AFGBuildableHologram* hg = GetMutableDefault<AFGBuildableHologram>();
+	AFGFoundationHologram* fhg = GetMutableDefault<AFGFoundationHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::ConfigureActor, hg, [=](const AFGBuildableHologram* self, class AFGBuildable* inBuildable)
+		{
+			if (self)
+			{
+				USubsystemActorManager* SubsystemActorManager = self->GetWorld()->GetSubsystem<USubsystemActorManager>();
+				APersistentPaintablesCppSubSystem* ppSubsystem = SubsystemActorManager->GetSubsystemActor<APersistentPaintablesCppSubSystem>();
+
+				if (ppSubsystem && !ppSubsystem->PlayerCustomizationStructs.IsEmpty())
+				{
+					auto instigator = self->GetConstructionInstigator();
+					if (instigator)
+					{
+						for (FPlayerCustomizationStruct custData : ppSubsystem->PlayerCustomizationStructs)
+						{
+							if (custData.CharacterPlayer && custData.CustomizationData.IsInitialized() && custData.CharacterPlayer == instigator)
+							{
+								//self->mCustomizationData = custData.CustomizationData;
+								//self->mDefaultSwatch = custData.CustomizationData.SwatchDesc;
+								inBuildable->SetCustomizationData_Implementation(custData.CustomizationData);
+								inBuildable->ApplyCustomizationData_Implementation(custData.CustomizationData);
+								inBuildable->SetCustomizationDataLightweightNoApply(custData.CustomizationData);
+								//UE_LOGFMT(PersistentPaintables_Log, Display, "Set data");
+								return;
+							}
+						}
+					}
+				}
+			}
+		});
+
+#if !WITH_EDITOR
+	//ConstructHook = SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, hg, [=](auto& returnActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID constructionID)
+	//	{
+	//		//AActor* actor = const_cast<AActor*>(returnActor);
+	//		AFGBuildable* buildable = Cast< AFGBuildable>(returnActor);
+	//		if (buildable)
+	//		{
+	//			AddBuildable(buildable);
+	//		}
+	//	});
 
 	HookPipes();
 
@@ -366,9 +431,9 @@ void FPersistentPaintablesModule::AddBuildable(AFGBuildable* buildable)
 {
 	if (buildable)
 	{
+	
 		if (buildable->GetCanBeColored_Implementation())
 		{
-
 			USubsystemActorManager* SubsystemActorManager = buildable->GetWorld()->GetSubsystem<USubsystemActorManager>();
 			APersistentPaintablesCppSubSystem* ppSubsystem = SubsystemActorManager->GetSubsystemActor<APersistentPaintablesCppSubSystem>();
 
@@ -380,8 +445,10 @@ void FPersistentPaintablesModule::AddBuildable(AFGBuildable* buildable)
 					{
 						if (custData.CharacterPlayer && custData.CustomizationData.IsInitialized() && custData.CharacterPlayer == instigator)
 						{
+							//auto lightweightFoundation = Cast<AFGBuildableFoundationLightweight>(buildable);
 							buildable->SetCustomizationData_Implementation(custData.CustomizationData);
 							buildable->ApplyCustomizationData_Implementation(custData.CustomizationData);
+							buildable->SetCustomizationDataLightweightNoApply(custData.CustomizationData);
 							return;
 						}
 					}
