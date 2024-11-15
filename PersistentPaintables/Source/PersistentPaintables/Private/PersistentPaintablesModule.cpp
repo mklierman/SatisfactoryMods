@@ -404,15 +404,15 @@ void FPersistentPaintablesModule::StartupModule() {
 		});
 
 #if !WITH_EDITOR
-	//ConstructHook = SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, hg, [=](auto& returnActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID constructionID)
-	//	{
-	//		//AActor* actor = const_cast<AActor*>(returnActor);
-	//		AFGBuildable* buildable = Cast< AFGBuildable>(returnActor);
-	//		if (buildable)
-	//		{
-	//			AddBuildable(buildable);
-	//		}
-	//	});
+	ConstructHook = SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, hg, [=](auto& returnActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID constructionID)
+		{
+			//AActor* actor = const_cast<AActor*>(returnActor);
+			AFGBuildable* buildable = Cast< AFGBuildable>(returnActor);
+			if (buildable)
+			{
+				AddBuildable(buildable);
+			}
+		});
 
 	HookPipes();
 
