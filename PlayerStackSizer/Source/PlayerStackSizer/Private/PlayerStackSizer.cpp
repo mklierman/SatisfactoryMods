@@ -12,6 +12,7 @@
 #pragma optimize("", off)
 void FPlayerStackSizerModule::StartupModule()
 {
+#if !WITH_EDITOR
 	// Get player inventory and set all slot sizes to 500
 	AFGCharacterPlayer* cdo = GetMutableDefault<AFGCharacterPlayer>();
 
@@ -61,6 +62,7 @@ void FPlayerStackSizerModule::StartupModule()
 
 
 		});
+#endif
 }
 
 void FPlayerStackSizerModule::ShutdownModule()
