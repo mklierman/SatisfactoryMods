@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.2",
+	"VersionName": "1.0.3",
 	"FriendlyName": "Storage On Belt",
 	"Description": "A small storage container that can be snapped to belts",
 	"Category": "Modding",
@@ -28,6 +28,6 @@
 			"SemVersion": "^3.8.0"
 		}
 	],
-	"SemVersion": "1.0.2",
-	"GameVersion": ">=377620"
+	"SemVersion": "1.0.3",
+	"GameVersion": ">=382498"
 }
