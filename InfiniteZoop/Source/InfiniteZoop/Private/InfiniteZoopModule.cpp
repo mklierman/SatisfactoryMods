@@ -631,6 +631,8 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 		AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
 		AInfiniteZoop_ClientSubsystem* clientSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoop_ClientSubsystem>();
 
+		if (zoopSubsystem == nullptr)
+			return;
 		//UE_LOGFMT(InfiniteZoop_Log, Display, "AFGHologram::BeginPlay. zoopSubsystem->currentZoopAmount: {0}", zoopSubsystem->currentZoopAmount);
 
 
