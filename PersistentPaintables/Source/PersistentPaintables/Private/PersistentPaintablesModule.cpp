@@ -331,6 +331,7 @@ void FPersistentPaintablesModule::StartupModule() {
 	floorHoleClass = LoadObject<UClass>(nullptr, TEXT("/Game/FactoryGame/Buildable/Factory/FoundationPassthrough/Build_FoundationPassthrough_Pipe.Build_FoundationPassthrough_Pipe_C"));
 	swatchClass = LoadObject<UClass>(nullptr, TEXT("/Game/FactoryGame/Buildable/-Shared/Customization/Swatches/SwatchDesc_Custom.SwatchDesc_Custom_C"));
 
+#if !WITH_EDITOR
 	//AFGBuildablePipeline* BuildablePipeline = GetMutableDefault<AFGBuildablePipeline>();
 	//SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::UpdateFluidDescriptor, [=](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor)
 	//	{
@@ -403,7 +404,6 @@ void FPersistentPaintablesModule::StartupModule() {
 			}
 		});
 
-#if !WITH_EDITOR
 	ConstructHook = SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, hg, [=](auto& returnActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID constructionID)
 		{
 			//AActor* actor = const_cast<AActor*>(returnActor);
