@@ -369,14 +369,21 @@ void ALBModularLoadBalancer_Hologram::ConfigureActor(AFGBuildable* inBuildable) 
 		if (LastSnapped)
 		{
 			Balancer->GroupLeader = LastSnapped->GroupLeader;
+
+			//Color stuff
+			auto colors = Balancer->GroupLeader->GetCustomizationData_Implementation();
+			Balancer->SetCustomizationData_Implementation(colors);
 		}
 		else
 		{
 			Balancer->GroupLeader = Balancer;
 		}
+
 	}
 
 	Super::ConfigureActor(inBuildable);
+
+
 }
 
 void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBalancer*> actorsToOutline)

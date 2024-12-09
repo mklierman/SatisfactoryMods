@@ -29,6 +29,7 @@ void ULB_BPFL::MergeBalancerGroups(ALBBuild_ModularLoadBalancer* groupLeaderOne,
 						ModularLoadBalancer->RemoveGroupModule();
 						ModularLoadBalancer->GroupLeader = groupLeaderOne;
 						ModularLoadBalancer->InitializeModule();
+						ModularLoadBalancer->SetCustomizationData_Implementation(groupLeaderOne->GetCustomizationData_Implementation());
 					}
 				}
 				groupLeaderOne->ApplyLeader();
@@ -65,6 +66,7 @@ void ULB_BPFL::SplitBalancers(TArray<ALBBuild_ModularLoadBalancer*> modulesToBeS
 				}
 				balancer->GroupLeader = newLeader;
 				balancer->InitializeModule();
+				balancer->SetCustomizationData_Implementation(newLeader->GetCustomizationData_Implementation());
 			}
 			//}
 		}
