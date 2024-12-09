@@ -28,49 +28,54 @@ void FDirectToSplitterModule::StartupModule() {
 				HandleExistingSnappedOn(attachment);
 			}
 		});
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::TrySnapToActor, cah, [=](auto& scope, AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
-	//	{
-	//		bool scopeResult = scope(self, hitResult);
-	//		if (scopeResult)
-	//		{
-	//			return;
-	//		}
-	//		bool result = TrySnapToActor(self, hitResult);
-	//		if (!result)
-	//		{
-	//			return;
-	//		}
-	//		scope.Override(result);
-	//		bool retflag;
-	//		if (result)
-	//			CheckValidPlacement(self, retflag);
-	//	});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::TrySnapToActor, cah, [=](auto& scope, AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
+		{
+			bool scopeResult = scope(self, hitResult);
+			if (scopeResult)
+			{
+				return;
+			}
+			bool result = TrySnapToActor(self, hitResult);
+			if (!result)
+			{
+				return;
+			}
+			scope.Override(result);
+			bool retflag;
+			if (result)
+				CheckValidPlacement(self, retflag);
+		});
 
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::ConfigureComponents, cah, [=](auto& scope, const AFGConveyorAttachmentHologram* self, AFGBuildable* inBuildable)
-	//	{
-	//		bool shouldCancel;
-	//		ConfigureComponents(self, shouldCancel);
-	//		if (shouldCancel) scope.Cancel();
-	//	});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::ConfigureComponents, cah, [=](auto& scope, const AFGConveyorAttachmentHologram* self, AFGBuildable* inBuildable)
+		{
+			bool shouldCancel;
+			ConfigureComponents(self, shouldCancel);
+			if (shouldCancel) scope.Cancel();
+		});
 
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CheckValidPlacement, cah, [=](auto& scope, AFGConveyorAttachmentHologram* self)
-	//	{
-	//		//bool retflag;
-	//		//CheckValidPlacement(self, retflag);
-	//		//if (retflag) return;
-	//		//scope.Cancel();
-	//	});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CheckValidPlacement, cah, [=](auto& scope, AFGConveyorAttachmentHologram* self)
+		{
+			//bool retflag;
+			//CheckValidPlacement(self, retflag);
+			//if (retflag) return;
+			//scope.Cancel();
+		});
 
-	//AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
-	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, bhg, [=](auto& outActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID netConstructionID)
-	//	{
-	//		HGConstruct(self, outActor);
-	//	});
+	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, bhg, [=](auto& outActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID netConstructionID)
+		{
+			HGConstruct(self, outActor);
 
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::IsValidHitResult, bhg, [=](auto& scope, const AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
-	//	{
-	//		scope.Override(true);
-	//	});
+			if (auto attachment = Cast<AFGBuildable>(outActor))
+			{
+				HandleExistingSnappedOn(attachment);
+			}
+		});
+
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::IsValidHitResult, bhg, [=](auto& scope, const AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
+		{
+			scope.Override(true);
+		});
 
 	AFGPipeAttachmentHologram* pahg = GetMutableDefault<AFGPipeAttachmentHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::IsValidHitResult, pahg, [=](auto& scope, const AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
@@ -149,65 +154,50 @@ void FDirectToSplitterModule::StartupModule() {
 #endif
 }
 
-void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildableConveyorAttachment* conveyorAttachment)
+void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAttachment)
 {
-	// Get all actors of class <AFGBuildableConveyorAttachment>
-	//TArray<AActor*> FoundActors;
-	//if (GEngine && GEngine->GameViewport)
-	//{
-	//	FWorldContext* world = GEngine->GetWorldContextFromGameViewport(GEngine->GameViewport);
-	//	if (world)
-	//	{
-	//		UGameplayStatics::GetAllActorsOfClass(world->World(), AFGBuildableConveyorAttachment::StaticClass(), FoundActors);
+	if (conveyorAttachment)
+	{
+		auto& components = conveyorAttachment->GetComponents();
+		for (auto component : components)
+		{
+			auto factoryConn = Cast < UFGFactoryConnectionComponent>(component);
+			if (factoryConn && IsSnappedOn(factoryConn))
+			{
+				auto otherConn = factoryConn->GetConnection();
+				factoryConn->ClearConnection();
 
-	//		// For Each get all UFGFactoryConnectionComponents
-	//		for (AActor* actor : FoundActors)
-	//		{
-				//auto conveyorAttachment = Cast<AFGBuildableConveyorAttachment>(actor);
-				if (conveyorAttachment)
+				//Mk6 belt blueprint class
+				UClass* beltClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk6/Build_ConveyorBeltMk6.Build_ConveyorBeltMk6_C"));
+				auto Transform1 = conveyorAttachment->GetActorLocation();
+				auto Transform2 = factoryConn->GetComponentLocation();
+				auto Location = ((Transform2 - Transform1) / Transform1 + Transform2);
+				
+				FTransform TF = conveyorAttachment->GetActorTransform();
+				//TF.SetLocation(Location);
+				AFGBuildableSubsystem* Subsystem = AFGBuildableSubsystem::Get(conveyorAttachment);
+				auto beltActor = Subsystem->BeginSpawnBuildable(beltClass, TF);
+				beltActor->FinishSpawning(TF);
+				//auto beltActor = conveyorAttachment->GetWorld()->SpawnActor(beltClass, &Transform);
+				auto belt = Cast<AFGBuildableConveyorBase>(beltActor);
+				if (belt)
 				{
-					auto& components = conveyorAttachment->GetComponents();
-					for (auto component : components)
+					belt->mLength = 200;
+					belt->SetBuiltWithRecipe(nullptr);
+					if (factoryConn->CanConnectTo(belt->GetConnection0()))
 					{
-						auto factoryConn = Cast < UFGFactoryConnectionComponent>(component);
-						if (factoryConn && IsSnappedOn(factoryConn))
-						{
-							auto otherConn = factoryConn->GetConnection();
-							factoryConn->ClearConnection();
-
-							//Mk6 belt blueprint class
-							UClass* beltClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk6/Build_ConveyorBeltMk6.Build_ConveyorBeltMk6_C"));
-							auto const Transform = conveyorAttachment->GetActorTransform();
-							AFGBuildableSubsystem* Subsystem = AFGBuildableSubsystem::Get(conveyorAttachment);
-							auto beltActor = Subsystem->BeginSpawnBuildable(beltClass, Transform);
-							beltActor->FinishSpawning(Transform);
-							//auto beltActor = conveyorAttachment->GetWorld()->SpawnActor(beltClass, &Transform);
-							auto belt = Cast<AFGBuildableConveyorBase>(beltActor);
-							if (belt)
-							{
-								belt->mLength = 200;
-								belt->SetBuiltWithRecipe(nullptr);
-								if (factoryConn->CanConnectTo(belt->GetConnection0()))
-								{
-									factoryConn->SetConnection(belt->GetConnection0());
-									otherConn->SetConnection(belt->GetConnection1());
-								}
-								else if (factoryConn->CanConnectTo(belt->GetConnection1()))
-								{
-									factoryConn->SetConnection(belt->GetConnection1());
-									otherConn->SetConnection(belt->GetConnection0());
-								}
-							}
-						}
+						factoryConn->SetConnection(belt->GetConnection0());
+						otherConn->SetConnection(belt->GetConnection1());
+					}
+					else if (factoryConn->CanConnectTo(belt->GetConnection1()))
+					{
+						factoryConn->SetConnection(belt->GetConnection1());
+						otherConn->SetConnection(belt->GetConnection0());
 					}
 				}
-	//		}
-	//	}
-	//}
-
-	// IsSnappedOn
-
-	// Disconnect
+			}
+		}
+	}
 }
 
 bool FDirectToSplitterModule::IsSnappedOn(UFGFactoryConnectionComponent* Connection)
@@ -265,10 +255,14 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 		{
 			return false;
 		}
-		else if (self->mBuildClass->GetName().Contains("ModularLoadBalancer"))
-		{
-			return false;
-		}
+		//else if (self->mBuildClass->GetName().Contains("ModularLoadBalancer"))
+		//{
+		//	return false;
+		//}
+		//else if (self->mBuildClass->GetName().Contains("CounterLimiter"))
+		//{
+		//	return false;
+		//}
 		else if (auto lift = Cast<AFGBuildableConveyorLift>(hitBuildable))
 		{
 			return false;
@@ -389,52 +383,52 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 
 		bool shouldDisqualify = false;
 		auto direction = self->mSnappedConnection->GetDirection();
-		if (direction == EFactoryConnectionDirection::FCD_OUTPUT)
-		{
-			for (UActorComponent* ComponentsByClass : snappedBuildable->GetComponents())
-			{
-				if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
-				{
-					if (ConnectionComponent != self->mSnappedConnection
-						&& ConnectionComponent->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR
-						&& ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
-					{
-						shouldDisqualify = true;
-					}
-				}
-			}
-		}
-		else if (direction == EFactoryConnectionDirection::FCD_INPUT)
-		{
-			auto trainCargo = Cast< AFGBuildableTrainPlatform>(snappedBuildable);
-			auto truckStation = Cast< AFGBuildableDockingStation>(snappedBuildable);
-			if (trainCargo || truckStation)
-			{
-				shouldDisqualify = true;
-			}
-			else if (auto storage = Cast<AFGBuildableStorage>(snappedBuildable))
-			{
-				for (UActorComponent* ComponentsByClass : snappedBuildable->GetComponents())
-				{
-					if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
-					{
-						if (ConnectionComponent != self->mSnappedConnection
-							&& ConnectionComponent->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR
-							&& ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
-						{
-							shouldDisqualify = true;
-						}
-					}
-				}
-			}
-		}
-		if (shouldDisqualify)
-		{
-			//UE_LOG(SnapOn_Log, Display, TEXT("Setting Disqualifier"));
-			self->ResetConstructDisqualifiers();
-			self->AddConstructDisqualifier(USnapOnDisqualifier::StaticClass());
-			return;
-		}
+		//if (direction == EFactoryConnectionDirection::FCD_OUTPUT)
+		//{
+		//	for (UActorComponent* ComponentsByClass : snappedBuildable->GetComponents())
+		//	{
+		//		if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
+		//		{
+		//			if (ConnectionComponent != self->mSnappedConnection
+		//				&& ConnectionComponent->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR
+		//				&& ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
+		//			{
+		//				shouldDisqualify = true;
+		//			}
+		//		}
+		//	}
+		//}
+		//else if (direction == EFactoryConnectionDirection::FCD_INPUT)
+		//{
+		//	auto trainCargo = Cast< AFGBuildableTrainPlatform>(snappedBuildable);
+		//	auto truckStation = Cast< AFGBuildableDockingStation>(snappedBuildable);
+		//	if (trainCargo || truckStation)
+		//	{
+		//		shouldDisqualify = true;
+		//	}
+		//	else if (auto storage = Cast<AFGBuildableStorage>(snappedBuildable))
+		//	{
+		//		for (UActorComponent* ComponentsByClass : snappedBuildable->GetComponents())
+		//		{
+		//			if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
+		//			{
+		//				if (ConnectionComponent != self->mSnappedConnection
+		//					&& ConnectionComponent->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR
+		//					&& ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
+		//				{
+		//					shouldDisqualify = true;
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
+		//if (shouldDisqualify)
+		//{
+		//	//UE_LOG(SnapOn_Log, Display, TEXT("Setting Disqualifier"));
+		//	self->ResetConstructDisqualifiers();
+		//	self->AddConstructDisqualifier(USnapOnDisqualifier::StaticClass());
+		//	return;
+		//}
 		
 		self->ResetConstructDisqualifiers();
 		retflag = false;
@@ -657,6 +651,7 @@ void FDirectToSplitterModule::HGConstruct(AFGBuildableHologram* hg, AActor* buil
 			}
 		}
 	}
+
 }
 
 bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
