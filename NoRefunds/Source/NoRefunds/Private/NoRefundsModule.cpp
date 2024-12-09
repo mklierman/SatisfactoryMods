@@ -3,29 +3,38 @@
 #include "Patching/NativeHookManager.h"
 #include "Equipment/FGChainsaw.h"
 #include "FGFoliageLibrary.h"
+#include "FGCharacterPlayer.h"
 #include "NR_ConfigStruct.h"
 
 //#pragma optimize("", off)
 void FNoRefundsModule::StartupModule() {
-#if !WITH_EDITOR
 	TArray< FInventoryStack > refund = TArray< FInventoryStack >();
-	//SUBSCRIBE_METHOD(UFGBuildGunStateDismantle::GetDismantleRefund, [=](auto& scope, const UFGBuildGunStateDismantle* self, bool noBuildCostEnabled)
-	//	{
-	//		TArray< FInventoryStack > refund = scope(self);
-	//		refund = AllowDismantleRefund(refund);
-	//		scope.Override(refund);
-	//	});
+#if !WITH_EDITOR
+	SUBSCRIBE_METHOD(UFGBuildGunStateDismantle::GetPeekDismantleRefund, [=](auto& scope, const UFGBuildGunStateDismantle* self)
+		{
+			TArray< FInventoryStack > refund = scope(self);
+			refund = AllowDismantleRefund(refund);
+			scope.Override(refund);
+		});
 
+	SUBSCRIBE_METHOD(UFGBuildGunStateDismantle::Internal_DismantleActor, [=](auto& scope, UFGBuildGunStateDismantle* self, class AActor* actorToDismantle, TArray< AActor* >& out_couldNotDismantle, TArray<FInventoryStack>& out_dismantleRefunds, bool bNoBuildCostEnabled)
+		{
+			scope(self, actorToDismantle, out_couldNotDismantle, out_dismantleRefunds, bNoBuildCostEnabled);
+			TArray<FInventoryStack> newRefund;
+			newRefund = AllowDismantleRefund(out_dismantleRefunds);
+			out_dismantleRefunds = newRefund;
+			scope.Cancel();
+		});
 
-	//SUBSCRIBE_METHOD_AFTER(UFGFoliageLibrary::CheckInventorySpaceAndGetStacks, [=](auto& scope, AFGCharacterPlayer* character, UHierarchicalInstancedStaticMeshComponent* meshComponent, TArrayView< uint32 > randomSeeds, TArray<struct FInventoryStack>& out_inventoryStacks)
-	//	{
-	//		auto config = FNR_ConfigStruct::GetActiveConfig();
-	//		bool shouldPreventFoliage = config.Foliage;
-	//		if (shouldPreventFoliage)
-	//		{
-	//			out_inventoryStacks.Empty();
-	//		}
-	//	});
+	SUBSCRIBE_METHOD_AFTER(UFGFoliageLibrary::CheckInventorySpaceAndGetStacks, [=](auto returnValue, AFGCharacterPlayer* character, UHierarchicalInstancedStaticMeshComponent* meshComponent, TArrayView< uint32 > randomSeeds, TArray<struct FInventoryStack>& out_inventoryStacks)
+		{
+			auto config = FNR_ConfigStruct::GetActiveConfig(character->GetWorld());
+			bool shouldPreventFoliage = config.Foliage;
+			if (shouldPreventFoliage)
+			{
+				out_inventoryStacks.Empty();
+			}
+		});
 #endif
 }
 
@@ -37,7 +46,7 @@ TArray<FInventoryStack> FNoRefundsModule::AllowDismantleRefund(TArray<FInventory
 		for (auto stack : refund)
 		{
 			auto itemClass = stack.Item.GetItemClass()->GetName();
-			if (itemClass.Equals("Desc_HUBParts_C") || itemClass.Equals("Desc_CrystalShard_C"))
+			if (itemClass.Equals("Desc_HUBParts_C") || itemClass.Equals("Desc_CrystalShard_C") || itemClass.Equals("Desc_WAT1_C") || itemClass.Equals("Desc_WAT2_C"))
 			{
 				newRefund.Add(stack);
 			}
