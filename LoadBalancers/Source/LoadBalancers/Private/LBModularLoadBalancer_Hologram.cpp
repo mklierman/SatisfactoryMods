@@ -149,7 +149,7 @@ void ALBModularLoadBalancer_Hologram::Destroyed()
 
 bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult)
 {
-	const bool SnapResult = Super::TrySnapToActor(hitResult);
+	bool SnapResult = Super::TrySnapToActor(hitResult);
 	//SnapResult = false;
 	if (!SnapResult)
 	{
@@ -173,6 +173,13 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 	}
 	else
 	{
+		if (mSnappedConveyor)
+		{
+			if (mConnections.Num() < 2)
+			{
+				SnapResult = false;
+			}
+		}
 		SetActorLocation(GetActorLocation() + FVector(0, 0, -100));
 		if (ActiveGroupLeader)
 		{
@@ -201,7 +208,7 @@ void ALBModularLoadBalancer_Hologram::ConfigureComponents(AFGBuildable* inBuilda
 	if (mSnappedConveyor && inBuildable)
 	{
 		auto cl = Cast< ALBBuild_ModularLoadBalancer>(inBuildable);
-		if (cl)
+		if (cl && cl->MyInputConnection && cl->MyOutputConnection)
 		{
 			auto beltCustomizationData = mSnappedConveyor->Execute_GetCustomizationData(mSnappedConveyor);
 			TArray< AFGBuildableConveyorBelt* > Belts = AFGBuildableConveyorBelt::Split(mSnappedConveyor, mSnappedConveyorOffset, false);
