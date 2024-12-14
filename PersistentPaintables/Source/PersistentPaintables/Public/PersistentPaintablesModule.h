@@ -57,7 +57,7 @@ public:
 
 	void ApplyColor(AFGBuildable* buildable, UClass* inSwatchClass, FFactoryCustomizationData customizationData);
 
-	void AddBuildable(class AFGBuildable* buildable);
+	void AddBuildable(class AFGBuildable* buildable, const AFGBuildableHologram* hologram);
 
 	void HookPipes();
 
