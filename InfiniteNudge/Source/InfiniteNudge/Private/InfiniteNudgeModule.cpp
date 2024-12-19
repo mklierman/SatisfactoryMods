@@ -30,11 +30,9 @@ void FInfiniteNudgeModule::StartupModule() {
 
 #if !WITH_EDITOR
 	AFGHologram* bh = GetMutableDefault<AFGHologram>();
-	//ENudgeFailReason AFGHologram::NudgeHologram(const FVector& NudgeInput, const FHitResult& HitResult){ return ENudgeFailReason(); }
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::NudgeHologram, bh, [=](auto scope, const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
 		{
 			scope.Override(ENudgeFailReason::NFR_Success);
-			//NudgeHologram(self, NudgeInput, HitResult);
 		});
 
 
@@ -42,35 +40,9 @@ void FInfiniteNudgeModule::StartupModule() {
 	SUBSCRIBE_METHOD_VIRTUAL(AFGGenericBuildableHologram::NudgeHologram, gbh, [=](auto scope, const AFGGenericBuildableHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
 		{
 			scope.Override(ENudgeFailReason::NFR_Success);
-			//NudgeGenericHologram(self, NudgeInput, HitResult);
 		});
 
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
-
-	//AFGPipeAttachmentHologram* pahg = GetMutableDefault<AFGPipeAttachmentHologram>();
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::CanNudgeHologram, pahg, [=](auto scope, const AFGPipeAttachmentHologram* self)
-	//	{
-	//		DebugChecker();
-	//		scope.Override(true);
-	//	});
-
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::CanNudgeHologram, bhg, [=](auto& scope, const AFGBuildableHologram* self)
-	//	{
-	//		scope.Override(true);
-	//	});
-
-	//AFGResourceExtractorHologram* rehg = GetMutableDefault<AFGResourceExtractorHologram>();
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGResourceExtractorHologram::CanNudgeHologram, rehg, [=](auto& scope, const AFGResourceExtractorHologram* self)
-	//	{
-	//		scope.Override(true);
-	//	});
-
-
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::GetNudgeHologramTarget, bh, [=](auto& scope, AFGHologram* self)
-	//	{
-	//		scope.Override(self);
-	//	});
-
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGHologram::BeginPlay, bh, [=](AFGHologram* self)
 		{
 			self->mCanNudgeHologram = true;
@@ -90,20 +62,7 @@ void FInfiniteNudgeModule::StartupModule() {
 			scope.Override(true);
 		});
 
-	//AFGResourceExtractorHologram* reh = GetMutableDefault<AFGResourceExtractorHologram>();
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGResourceExtractorHologram::CanNudgeHologram, reh, [=](auto& scope, const AFGResourceExtractorHologram* self)
-	//	{
-	//		scope.Override(true);
-	//	});
-
 	AFGWaterPumpHologram* wph = GetMutableDefault<AFGWaterPumpHologram>();
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGWaterPumpHologram::TrySnapToExtractableResource, wph, [=](auto& scope, AFGWaterPumpHologram* self, const FHitResult& hitResult, FVector& newHitLocation)
-	//	{
-	//		if (self->IsHologramLocked())
-	//		{
-	//			scope.Cancel();
-	//		}
-	//	});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGWaterPumpHologram::PostHologramPlacement, wph, [=](auto& scope, AFGWaterPumpHologram* self, const FHitResult& hitResult)
 		{
 			if (self->IsHologramLocked())
@@ -111,13 +70,6 @@ void FInfiniteNudgeModule::StartupModule() {
 				scope.Cancel();
 			}
 		});
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGWaterPumpHologram::CheckValidPlacement, wph, [=](auto& scope, AFGWaterPumpHologram* self)
-	//	{
-	//		if (self->IsHologramLocked())
-	//		{
-	//			scope.Cancel();
-	//		}
-	//	});
 
 	//const FVector& GetNudgeOffset() const { return mHologramNudgeOffset; }
 	SUBSCRIBE_METHOD(AFGHologram::LockHologramPosition, [=](auto scope, AFGHologram* self, bool lock)
@@ -125,48 +77,17 @@ void FInfiniteNudgeModule::StartupModule() {
 			self->mCanNudgeHologram = true;
 			self->mCanLockHologram = true;
 		});
-		//const FVector& GetNudgeOffset() const { return mHologramNudgeOffset; }
+
 	SUBSCRIBE_METHOD(AFGHologram::GetMaxNudgeDistance, [=](auto scope, const AFGHologram* self)
 		{
 			FVector ret = FVector(50000, 50000, 50000);
 			scope.Override(ret);
-			//auto hg = Cast<AFGHologram>(self);
-			//hg->mHologramNudgeOffset.X = 0;
-			//hg->mHologramNudgeOffset.Y = 0;
-			//hg->mHologramNudgeOffset.Z = 0;
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::AddNudgeOffset, bh, [=](auto& scope, AFGHologram* self, const FVector& Direction)
 		{
 			scope.Override(ENudgeFailReason::NFR_Success);
-			//FVector newVector = AddNudgeOffset(self, Direction);
-			//if (newVector.X != 0 || newVector.Y != 0 || newVector.Z != 0)
-			//{
-			//	ENudgeFailReason fr = scope(self, newVector);
-			//	scope.Override(fr);
-			//}
 		});
-
-	//virtual ENudgeFailReason NudgeHologram( const FVector& NudgeInput, const FHitResult& HitResult );
-	// 
-	///Hooking this causes weird bugs. Need to find another spot?
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::SetNudgeOffset, bh, [=](auto& scope, AFGHologram* self, const FVector& NewNudgeOffset)
-	//	{
-	//		savedNudgeDistance = self->mDefaultNudgeDistance;
-	//		auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
-	//		if (contr && contr->IsInputKeyDown(EKeys::LeftControl))
-	//		{
-	//			self->mDefaultNudgeDistance = 20.0;
-	//		}
-	//		else if (contr && contr->IsInputKeyDown(EKeys::LeftAlt))
-	//		{
-	//			self->mDefaultNudgeDistance = 50.0;
-	//		}
-	//		else
-	//		{
-	//			self->mDefaultNudgeDistance = 100.0;
-	//		}
-	//	});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, bh, [=](auto& scope, AFGHologram* self, int32 delta)
 		{
@@ -177,28 +98,6 @@ void FInfiniteNudgeModule::StartupModule() {
 			}
 		});
 
-	//AFGGameMode* LocalGameMode = GetMutableDefault<AFGGameMode>();
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, [](auto& scope, AFGGameMode* gm, APlayerController* pc)
-	//	{
-	//		if (gm->HasAuthority() && !gm->IsMainMenuGameMode())
-	//		{
-	//			//Register RCO
-	//			gm->RegisterRemoteCallObjectClass(UInfiniteNudge_RCO::StaticClass());
-	//		}
-	//	});
-	//AFGBuildableHologram* fgbhg = GetMutableDefault<AFGBuildableHologram>();
-
-	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, fgbhg, [=](AActor* constructedActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID constructionID)
-	//	{
-	//		auto hgScale = self->GetActorRelativeScale3D();
-	//		constructedActor->SetActorRelativeScale3D(hgScale);
-	//	});
-
-	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::ConfigureComponents, fgbhg, [=](const AFGBuildableHologram* self, class AFGBuildable* inBuildable)
-	//	{
-	//		auto hgScale = self->GetActorRelativeScale3D();
-	//		inBuildable->SetActorRelativeScale3D(hgScale);
-	//	});
 #endif
 }
 
@@ -285,7 +184,6 @@ void FInfiniteNudgeModule::NudgeGenericHologram(const AFGGenericBuildableHologra
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
 		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.LargeNudge", LargeNudgeKey, ModifierKeys);
-		//UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.VerticalNudge", VerticalNudgeKey, ModifierKeys);
 
 
 		if (TinyNudgeKey.IsValid() && contr->IsInputKeyDown(TinyNudgeKey))
