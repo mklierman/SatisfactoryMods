@@ -2,6 +2,7 @@
 #include "Hologram/FGPillarHologram.h"
 #include "Hologram/FGBeamHologram.h"
 #include "FGPlayerController.h"
+#include "FGCharacterPlayer.h"
 #include "Patching/NativeHookManager.h"
 #include "Equipment/FGBuildGunBuild.h"
 #include "Hologram/FGHologramBuildModeDescriptor.h"
@@ -10,23 +11,26 @@
 //#pragma optimize("", off)
 void FLongerBeamsModule::StartupModule() 
 {
-#if !WITH_EDITOR
 //#endif
 	AFGHologram* hCDO = GetMutableDefault<AFGHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, hCDO, [=](auto scope, AFGHologram* self, int32 delta)
 		{
-			if (auto beamhg = Cast<AFGBeamHologram>(self))
+			if (!self->IsHologramLocked())
 			{
-				auto pc = Cast<AFGPlayerController>(self->GetWorld()->GetFirstPlayerController());
-				if (pc->IsInputKeyDown(EKeys::LeftShift))
+				if (auto beamhg = Cast<AFGBeamHologram>(self))
 				{
-					ScrollingBeams.AddUnique(beamhg);
-					this->ScrollHologram(beamhg, delta);
-					scope.Cancel();
+					auto pc = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
+					if (pc->IsInputKeyDown(EKeys::LeftShift))
+					{
+						ScrollingBeams.AddUnique(beamhg);
+						this->ScrollHologram(beamhg, delta);
+						scope.Cancel();
+					}
 				}
 			}
 		});
-
+	
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Destroyed, hCDO, [=](auto& scope, AFGHologram* self)
 		{
 			if (auto beamhg = Cast<AFGBeamHologram>(self))
@@ -38,17 +42,6 @@ void FLongerBeamsModule::StartupModule()
 				}
 			}
 		});
-
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::OnBuildModeChanged, hCDO, [=](auto& scope, AFGHologram* self, TSubclassOf<UFGHologramBuildModeDescriptor> buildMode)
-	//	{
-	//		if (auto beamhg = Cast<AFGBeamHologram>(self))
-	//		{
-	//			if (ScrollingBeams.Contains(beamhg))
-	//			{
-	//				ScrollingBeams.Remove(beamhg);
-	//			}
-	//		}
-	//	});
 
 	AFGHologram* bhCDO = GetMutableDefault<AFGBeamHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBeamHologram::SetHologramLocationAndRotation, bhCDO, [=](auto& scope, AFGBeamHologram* self, const FHitResult& hitResult)
@@ -98,19 +91,22 @@ void FLongerBeamsModule::ScrollHologram(AFGBeamHologram* self, int32 delta)
 	auto pc = Cast<AFGPlayerController>(self->GetWorld()->GetFirstPlayerController());
 	if (pc->IsInputKeyDown(EKeys::LeftShift) && !pc->IsInputKeyDown(EKeys::LeftControl))
 	{
-		self->SetCurrentLength(currentLength + (delta * 100));
+		auto desiredLength = currentLength + (delta * 100);
+		if (desiredLength > 0)
+		{
+			self->SetCurrentLength(currentLength + (delta * 100));
+		}
 	}
 	else if (pc->IsInputKeyDown(EKeys::LeftShift) && pc->IsInputKeyDown(EKeys::LeftControl))
 	{
 		auto config = FLongerBeams_ConfigStruct::GetActiveConfig(self->GetWorld());
 		auto length = config.ScrollAmount * 100;
-		self->SetCurrentLength(currentLength + (delta * length));
+		auto desiredLength = currentLength + (delta * length);
+		if (desiredLength > 0)
+		{
+			self->SetCurrentLength(currentLength + (delta * length));
+		}
 	}
-	//else if (!pc->IsInputKeyDown(EKeys::LeftShift) && pc->IsInputKeyDown(EKeys::LeftControl))
-	//{
-	//	auto rt = self->ApplyScrollRotationTo(delta);
-	//	self->SetActorRotation(FRotator(0, 0, self->GetActorRotation().Roll + delta));
-	//}
 }
 
 //#pragma optimize("", on)
