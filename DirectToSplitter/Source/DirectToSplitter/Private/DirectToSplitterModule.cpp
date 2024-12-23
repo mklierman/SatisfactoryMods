@@ -183,7 +183,8 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 				if (belt)
 				{
 					belt->mLength = 200;
-					belt->SetBuiltWithRecipe(nullptr);
+					UClass* recipeClass = LoadObject<UClass>(NULL, TEXT("/DirectToSplitter/SnapOn_Recipe.SnapOn_Recipe_C"));
+					belt->SetBuiltWithRecipe(recipeClass);
 					if (factoryConn->CanConnectTo(belt->GetConnection0()))
 					{
 						factoryConn->SetConnection(belt->GetConnection0());
