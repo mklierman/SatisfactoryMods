@@ -10,7 +10,7 @@ struct FInfiniteNudge_ConfigurationStruct {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite)
-    int32 LeftCtrlNudgeAmount{};
+    float LeftCtrlNudgeAmount{};
 
     UPROPERTY(BlueprintReadWrite)
     int32 LeftAltNudgeAmount{};
