@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.2.1",
-	"SemVersion": "1.2.1",
+	"VersionName": "1.2.2",
+	"SemVersion": "1.2.2",
 	"FriendlyName": "SnapOn",
 	"Description": "SNAPON, apply directly to the factory. (Attach Splitters, Mergers, and Pipe Junctions directly to factory inputs/outputs)",
 	"Category": "Modding",

@@ -36,6 +36,8 @@ struct ConveyorAttachmentInfo
 class FDirectToSplitterModule : public FDefaultGameModuleImpl {
 public:
 	virtual void StartupModule() override;
+	void DismantleLeftoverBelt(UFGFactoryConnectionComponent* conn);
+	void HandleLeftoverBelts(AFGBuildable* conveyorAttachment);
 	void HandleExistingSnappedOn(AFGBuildable* conveyorAttachment);
 	static bool IsSnappedOn(UFGFactoryConnectionComponent* Connection);
 	static void TrySnapToActor_Hook(TCallScope<bool(*)(AFGConveyorAttachmentHologram*, const FHitResult&)>& scope, AFGConveyorAttachmentHologram* self, const FHitResult& hitResult);

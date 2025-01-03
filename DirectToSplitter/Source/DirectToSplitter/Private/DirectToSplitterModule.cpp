@@ -7,8 +7,10 @@
 #include <Buildables/FGBuildableTrainPlatform.h>
 #include "Buildables/FGBuildableConveyorBelt.h"
 #include "Buildables/FGBuildableConveyorBase.h"
+#include "FGFactoryConnectionComponent.h"
 #include <Buildables/FGBuildableDockingStation.h>
 #include <Kismet/GameplayStatics.h>
+#include "Equipment/FGBuildGunDismantle.h"
 
 DEFINE_LOG_CATEGORY(SnapOn_Log);
 #pragma optimize("", off)
@@ -16,12 +18,19 @@ DEFINE_LOG_CATEGORY(SnapOn_Log);
 void FDirectToSplitterModule::StartupModule() {
 	AFGConveyorAttachmentHologram* cah = GetMutableDefault<AFGConveyorAttachmentHologram>();
 	AFGFactoryHologram* fh = GetMutableDefault<AFGFactoryHologram>();
-	AFGBuildable* bca = GetMutableDefault<AFGBuildable>();
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::TrySnapToActor, cah, &TrySnapToActor_Hook);
-
+	AFGBuildable* fgb = GetMutableDefault<AFGBuildable>();
+	AFGBuildableConveyorAttachment* bca = GetMutableDefault<AFGBuildableConveyorAttachment>();
 
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, bca, [=](auto& scope, AFGBuildable* self)
+	SUBSCRIBE_METHOD(UFGFactoryConnectionComponent::ClearConnection, [=](auto& scope, UFGFactoryConnectionComponent* self)
+		{
+			if (self)
+			{
+				auto conn = self->GetConnection();
+				DismantleLeftoverBelt(conn);
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, fgb, [=](auto& scope, AFGBuildable* self)
 		{
 			if (auto attachment = Cast<AFGBuildableConveyorAttachment>(self))
 			{
@@ -53,13 +62,6 @@ void FDirectToSplitterModule::StartupModule() {
 			if (shouldCancel) scope.Cancel();
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CheckValidPlacement, cah, [=](auto& scope, AFGConveyorAttachmentHologram* self)
-		{
-			//bool retflag;
-			//CheckValidPlacement(self, retflag);
-			//if (retflag) return;
-			//scope.Cancel();
-		});
 
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, bhg, [=](auto& outActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID netConstructionID)
@@ -152,6 +154,52 @@ void FDirectToSplitterModule::StartupModule() {
 		});
 //#if !WITH_EDITOR
 #endif
+}
+
+void FDirectToSplitterModule::DismantleLeftoverBelt(UFGFactoryConnectionComponent* conn)
+{
+	if (conn && conn->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR)
+	{
+		auto outer = conn->GetOuterBuildable();
+		if (outer)
+		{
+			auto recipe = outer->GetBuiltWithRecipe();
+			if (recipe && recipe->GetName() == "SnapOn_Recipe_C")
+			{
+				//conn->ClearConnection();
+				outer->Dismantle_Implementation();
+			}
+		}
+	}
+}
+
+void FDirectToSplitterModule::HandleLeftoverBelts(AFGBuildable* conveyorAttachment)
+{
+
+	auto& components = conveyorAttachment->GetComponents();
+	for (auto component : components)
+	{
+		auto factoryConn = Cast < UFGFactoryConnectionComponent>(component);
+		if (factoryConn && factoryConn->IsConnected())
+		{
+			auto conn = factoryConn->GetConnection();
+			auto comp = conn->GetConnection();
+			if (comp && comp->GetName() == "ConveyorAny0")
+			{
+				auto outer = comp->GetOuterBuildable();
+				if (outer)
+				{
+					auto recipe = outer->GetBuiltWithRecipe();
+					if (recipe && recipe->GetName() == "SnapOn_Recipe_C")
+					{
+						//conn->ClearConnection();
+						outer->Dismantle_Implementation();
+					}
+				}
+			}
+		}
+	}
+	
 }
 
 void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAttachment)
