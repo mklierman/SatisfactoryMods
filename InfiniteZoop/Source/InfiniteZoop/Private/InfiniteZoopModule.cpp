@@ -609,6 +609,8 @@ void FInfiniteZoopModule::CheckBuildEffects(const AFGFactoryBuildingHologram* fb
 		if (config.BuildEffects.SkipEffects && total > config.BuildEffects.SkipAfterAmount)
 		{
 			inBuildable->mSkipBuildEffect = true;
+			AFGFactoryBuildingHologram* holo = const_cast<AFGFactoryBuildingHologram*>(fbHolo);
+			holo->mSuppressBuildEffect = true;
 		}
 	}
 }
