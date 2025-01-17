@@ -304,6 +304,10 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 		{
 			return false;
 		}
+		else if (self->mBuildClass->GetName().Contains("ModularLoadBalancer") && hitBuildable->GetClass()->GetName().Contains("ModularLoadBalancer"))
+		{
+			return false;
+		}
 		//else if (self->mBuildClass->GetName().Contains("ModularLoadBalancer"))
 		//{
 		//	return false;
