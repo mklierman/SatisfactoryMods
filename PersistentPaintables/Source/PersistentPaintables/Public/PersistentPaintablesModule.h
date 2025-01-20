@@ -52,6 +52,10 @@ public:
 
 	void UpdateColorSingle(AFGBuildable* buildable, AFGPipeNetwork* pipeNetwork);
 
+	void ColorConnectedSupports(AFGBuildablePipeline* pipe, FFactoryCustomizationData& newData);
+
+	void ColorSupports(AFGBuildablePipeline* pipe, FFactoryCustomizationData& newData);
+
 	UFUNCTION()
 	void StartTimer(AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor);
 
@@ -62,4 +66,6 @@ public:
 	void HookPipes();
 
 	TArray<AActor*> FindNearbySupports(AFGBuildable* pipe, UFGPipeConnectionComponentBase* pipeConn);
+
+	TArray<AActor*> PotentialSupports;
 };
