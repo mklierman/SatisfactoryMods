@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.2.21",
-	"SemVersion": "1.2.21",
+	"VersionName": "1.2.22",
+	"SemVersion": "1.2.22",
 	"FriendlyName": "Persistent Paintables",
 	"Description": "Paint-Focused QoL Tweaks",
 	"Category": "Modding",
