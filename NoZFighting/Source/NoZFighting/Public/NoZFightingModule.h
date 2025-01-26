@@ -7,6 +7,9 @@
 #include "AbstractInstance.h"
 #include "CoreMinimal.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "AbstractInstanceManager.h"
+#include "FGColoredInstanceMeshProxy.h"
+#include "Hologram/FGBuildableHologram.h"
 #include "Modules/ModuleManager.h"
 #include "NoZFighting_ConfigStruct.h"
 
