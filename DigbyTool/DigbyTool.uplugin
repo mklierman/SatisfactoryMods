@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "2.0.9",
-	"SemVersion": "2.0.9",
+	"VersionName": "2.0.10",
+	"SemVersion": "2.0.10",
 	"FriendlyName": "DigbyTool",
 	"Description": "Tool used to interact with some of Sir Digby's mods",
 	"Category": "Modding",
@@ -25,7 +25,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.8.0",
+			"SemVersion": "^3.9.0",
 			"Enabled": true
 		},
 		{
@@ -35,5 +35,5 @@
 			"Optional": true
 		}
 	],
-	"GameVersion": ">=382498"
+	"GameVersion": ">=383729"
 }
