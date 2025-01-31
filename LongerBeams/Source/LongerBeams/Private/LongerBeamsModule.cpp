@@ -12,6 +12,7 @@
 void FLongerBeamsModule::StartupModule() 
 {
 //#endif
+#if !WITH_EDITOR
 	AFGHologram* hCDO = GetMutableDefault<AFGHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, hCDO, [=](auto scope, AFGHologram* self, int32 delta)
 		{
@@ -30,7 +31,6 @@ void FLongerBeamsModule::StartupModule()
 			}
 		});
 	
-#if !WITH_EDITOR
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Destroyed, hCDO, [=](auto& scope, AFGHologram* self)
 		{
 			if (auto beamhg = Cast<AFGBeamHologram>(self))
