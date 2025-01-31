@@ -1,5 +1,10 @@
 #include "DT_BPFL.h"
 
+static TAutoConsoleVariable<bool> CVarDigbyToolDebugMode(
+	TEXT("DigbyTool.DebugMode"),
+	false,
+	TEXT("Verbose logging for Digby Tool"));
+
 void UDT_BPFL::SetMeshInstanced(UFGColoredInstanceMeshProxy* mesh, bool setToInstanced)
 {
 	if (mesh)
