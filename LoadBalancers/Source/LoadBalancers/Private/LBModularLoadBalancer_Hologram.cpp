@@ -340,8 +340,8 @@ void ALBModularLoadBalancer_Hologram::UnHighlightAll()
 						if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(component))
 						{
 							mesh->SetMaterial(0, mMainMaterial);
-							mesh->SetMaterial(1, mSecondaryMaterial);
-							mesh->SetMaterial(2, mSymbolMaterial);
+							//mesh->SetMaterial(1, mSecondaryMaterial);
+							//mesh->SetMaterial(2, mSymbolMaterial);
 							mesh->SetInstanced(false);
 							mesh->SetInstanced(true);
 						}
@@ -415,7 +415,7 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 						if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(component))
 						{
 							mesh->SetMaterial(0, mHoloMaterial);
-							mesh->SetMaterial(1, mHoloMaterial);
+							//mesh->SetMaterial(1, mHoloMaterial);
 							mesh->SetInstanced(false);
 							mesh->SetInstanced(true);
 							mHighlightedActors.Add(OutlineActor);
