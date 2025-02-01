@@ -218,13 +218,13 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 				//Mk6 belt blueprint class
 				UClass* beltClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk6/Build_ConveyorBeltMk6.Build_ConveyorBeltMk6_C"));
 				auto Transform1 = conveyorAttachment->GetActorLocation();
-				auto Transform2 = factoryConn->GetComponentLocation();
-				auto Location = ((Transform2 - Transform1) / Transform1 + Transform2);
-				
+				auto Location = Transform1 + UE::Math::TVector<double>(0, 0, 100);
 				FTransform TF = conveyorAttachment->GetActorTransform();
-				//TF.SetLocation(Location);
+				TF.SetLocation(Location);
+
 				AFGBuildableSubsystem* Subsystem = AFGBuildableSubsystem::Get(conveyorAttachment);
 				auto beltActor = Subsystem->BeginSpawnBuildable(beltClass, TF);
+
 				beltActor->FinishSpawning(TF);
 				//auto beltActor = conveyorAttachment->GetWorld()->SpawnActor(beltClass, &Transform);
 				auto belt = Cast<AFGBuildableConveyorBase>(beltActor);
