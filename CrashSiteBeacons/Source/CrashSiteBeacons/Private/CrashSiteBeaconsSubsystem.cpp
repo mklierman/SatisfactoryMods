@@ -224,21 +224,22 @@ void ACrashSiteBeaconsSubSystem::ClearAllMarkers()
 	for (UFGActorRepresentation* rep : repManager->mAllRepresentations)
 	{
 		if (rep->GetRepresentationType() != ERepresentationType::RT_Default
-			&& rep->GetRepresentationType() != ERepresentationType::RT_Beacon
-			&& rep->GetRepresentationType() != ERepresentationType::RT_Crate
-			&& rep->GetRepresentationType() != ERepresentationType::RT_Hub
-			&& rep->GetRepresentationType() != ERepresentationType::RT_Ping
-			&& rep->GetRepresentationType() != ERepresentationType::RT_Player
-			&& rep->GetRepresentationType() != ERepresentationType::RT_RadarTower
-			&& rep->GetRepresentationType() != ERepresentationType::RT_Resource
-			&& rep->GetRepresentationType() != ERepresentationType::RT_SpaceElevator
-			&& rep->GetRepresentationType() != ERepresentationType::RT_StartingPod
-			&& rep->GetRepresentationType() != ERepresentationType::RT_Train
-			&& rep->GetRepresentationType() != ERepresentationType::RT_TrainStation
-			&& rep->GetRepresentationType() != ERepresentationType::RT_Vehicle
-			&& rep->GetRepresentationType() != ERepresentationType::RT_VehicleDockingStation
-			&& rep->GetRepresentationType() != ERepresentationType::RT_DronePort
-			&& rep->GetRepresentationType() != ERepresentationType::RT_Drone)
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_Beacon
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_Crate
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_Hub
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_Ping
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_Player
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_RadarTower
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_Resource
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_SpaceElevator
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_StartingPod
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_Train
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_TrainStation
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_Vehicle
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_VehicleDockingStation
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_DronePort
+			//&& rep->GetRepresentationType() != ERepresentationType::RT_Drone
+			)
 		{
 			ToRemove.Add(rep);
 			//repManager->mAllRepresentations.Remove(rep);
