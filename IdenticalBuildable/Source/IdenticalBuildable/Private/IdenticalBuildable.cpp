@@ -28,39 +28,66 @@ void FIdenticalBuildableModule::StartupModule()
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::IsHologramIdenticalToActor, BuildableHologramCDO, [](auto& scope,const AFGBuildableHologram* self, AActor* actor, const FVector& hologramLocationOffset)
 		{
-			scope.Override(false);
+			if (self && actor)
+			{
+				scope.Override(false);
+			}
 		});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBeamHologram::IsHologramIdenticalToActor, BeamHologramCDO, [](auto& scope, const AFGBeamHologram* self, AActor* actor, const FVector& hologramLocationOffset)
 		{
-			scope.Override(false);
+			if (self && actor)
+			{
+				scope.Override(false);
+			}
 		});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGFoundationHologram::IsHologramIdenticalToActor, FoundationHologramCDO, [](auto& scope, const AFGFoundationHologram* self, AActor* actor, const FVector& hologramLocationOffset)
 		{
-			scope.Override(false);
+			if (self && actor)
+			{
+				scope.Override(false);
+			}
 		});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGGenericBuildableHologram::IsHologramIdenticalToActor, GenericBuildableHologramCDO, [](auto& scope, const AFGGenericBuildableHologram* self, AActor* actor, const FVector& hologramLocationOffset)
 		{
-			scope.Override(false);
+			if (self && actor)
+			{
+				scope.Override(false);
+			}
 		});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGPillarHologram::IsHologramIdenticalToActor, PillarHologramCDO, [](auto& scope, const AFGPillarHologram* self, AActor* actor, const FVector& hologramLocationOffset)
 		{
-			scope.Override(false);
+			if (self && actor)
+			{
+				scope.Override(false);
+			}
 		});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineSupportHologram::IsHologramIdenticalToActor, PipelineSupportHologramCDO, [](auto& scope, const AFGPipelineSupportHologram* self, AActor* actor, const FVector& hologramLocationOffset)
 		{
-			scope.Override(false);
+			if (self && actor)
+			{
+				scope.Override(false);
+			}
 		});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGStairHologram::IsHologramIdenticalToActor, StairHologramCDO, [](auto& scope, const AFGStairHologram* self, AActor* actor, const FVector& hologramLocationOffset)
 		{
-			scope.Override(false);
+			if (self && actor)
+			{
+				scope.Override(false);
+			}
 		});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGWallHologram::IsHologramIdenticalToActor, WallHologramCDO, [](auto& scope, const AFGWallHologram* self, AActor* actor, const FVector& hologramLocationOffset)
 		{
-			scope.Override(false);
+			if (self && actor)
+			{
+				scope.Override(false);
+			}
 		});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGRampHologram::IsHologramIdenticalToActor, RampHologramCDO, [](auto& scope, const AFGRampHologram* self, AActor* actor, const FVector& hologramLocationOffset)
 		{
-			scope.Override(false);
+			if (self && actor)
+			{
+				scope.Override(false);
+			}
 		});
 }
 
