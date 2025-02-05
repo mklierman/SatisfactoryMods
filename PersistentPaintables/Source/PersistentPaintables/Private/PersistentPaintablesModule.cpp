@@ -69,7 +69,8 @@ void FPersistentPaintablesModule::UpdateNetworkColor(AFGPipeNetwork* pipeNetwork
 
 void FPersistentPaintablesModule::UpdateColorSingle(AFGBuildable* buildable, AFGPipeNetwork* pipeNetwork)
 {
-	if (buildable)
+	auto desc = pipeNetwork->GetFluidDescriptor();
+	if (buildable && pipeNetwork && pipeNetwork->mFluidForm != EResourceForm::RF_INVALID)
 	{
 		auto fluidColor = UFGItemDescriptor::GetFluidColorLinear(pipeNetwork->GetFluidDescriptor());
 		FFactoryCustomizationData newData = FFactoryCustomizationData();
