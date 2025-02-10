@@ -256,4 +256,27 @@ void ACrashSiteBeaconsSubSystem::ClearAllMarkers()
 	}
 }
 
+void ACrashSiteBeaconsSubSystem::ClearPodMarkers()
+{
+	auto mapManager = AFGMapManager::Get(this);
+
+	TArray<FMapMarker> markersToRemove;
+	TArray<FMapMarker> out_mapMarkers;
+	mapManager->GetMapMarkers(out_mapMarkers);
+	for (auto marker : out_mapMarkers)
+	{
+		if (marker.MapMarkerType == ERepresentationType::RT_MapMarker
+			&& marker.CategoryName == "Crash Sites"
+			&& marker.Name == "Crash Site")
+		{
+			markersToRemove.Add(marker);
+		}
+	}
+
+	for (auto marker : markersToRemove)
+	{
+		mapManager->RemoveMapMarker(marker);
+	}
+}
+
 #pragma optimize("", on)
