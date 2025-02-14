@@ -16,6 +16,7 @@
 
 void FIdenticalBuildableModule::StartupModule()
 {
+#if !WITH_EDITOR
 	AFGBuildableHologram* BuildableHologramCDO = GetMutableDefault<AFGBuildableHologram>();
 	AFGBeamHologram* BeamHologramCDO = GetMutableDefault<AFGBeamHologram>();
 	AFGFoundationHologram* FoundationHologramCDO = GetMutableDefault<AFGFoundationHologram>();
@@ -89,6 +90,7 @@ void FIdenticalBuildableModule::StartupModule()
 				scope.Override(false);
 			}
 		});
+#endif
 }
 
 void FIdenticalBuildableModule::ShutdownModule()
