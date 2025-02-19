@@ -1,11 +1,11 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.1",
+	"VersionName": "1.1.0",
 	"FriendlyName": "Doggo Loot Collector",
 	"Description": "Adds building that automatically collects items from nearby Lizard Doggos",
 	"Category": "Modding",
-	"CreatedBy": "SirDigby",
+	"CreatedBy": "SirDigby, Bababooie",
 	"CreatedByURL": "",
 	"DocsURL": "",
 	"MarketplaceURL": "",
@@ -21,6 +21,6 @@
 			"SemVersion": "^3.9.0"
 		}
 	],
-	"SemVersion": "1.0.1",
+	"SemVersion": "1.1.0",
 	"GameVersion": ">=383729"
 }
