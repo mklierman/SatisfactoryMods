@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.4.11",
-	"SemVersion": "1.4.11",
+	"VersionName": "1.5.0",
+	"SemVersion": "1.5.0",
 	"FriendlyName": "Construction Preferences",
 	"Description": "Set preferences for some construction defaults",
 	"Category": "Modding",
@@ -19,7 +19,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.8.0",
+			"SemVersion": "^3.9.0",
 			"Enabled": true,
 			"IsActive": false
 		}
@@ -31,5 +31,5 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"GameVersion": ">=377620"
+	"GameVersion": ">=383729"
 }

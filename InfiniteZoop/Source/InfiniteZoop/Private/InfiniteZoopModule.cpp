@@ -87,11 +87,10 @@ int GetClosestZoopAngle(double angleToCheck)
 
 void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 {
-	auto pc = Cast<AFGPlayerController>(self->GetWorld()->GetFirstPlayerController());
+	auto pc = Cast<AFGPlayerController>(self->GetConstructionInstigator()->GetController());
 	AFGFactoryBuildingHologram* Fhg = Cast<AFGFactoryBuildingHologram>(self);
 	if (Fhg)
 	{
-
 		AFGFoundationHologram* foundation = Cast<AFGFoundationHologram>(self);
 		AFGWallHologram* wall = Cast<AFGWallHologram>(self);
 		auto currentZoop = Fhg->mDesiredZoop;
@@ -119,7 +118,7 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 				auto lookedAtZoopAxis = GetClosestZoopAngle(newAngle);
 				bool isXZoop = (lookedAtZoopAxis == 0 || lookedAtZoopAxis == 180);
 
-				auto zStruct = FoundationsBeingZooped[foundation];
+				auto zStruct = GetStruct(foundation);
 				currentZoop.X = zStruct->X;
 				currentZoop.Y = zStruct->Y;
 				currentZoop.Z = zStruct->Z;
@@ -262,16 +261,19 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 			}
 			else if (foundation && FoundationsBeingZooped.Contains(foundation) && Fhg->IsCurrentBuildMode(Fhg->mBuildModeZoop) && !SetZoopAmount(Fhg, currentZoop))
 			{
-				auto zStruct = FoundationsBeingZooped[foundation];
+				auto zStruct = GetStruct(foundation);
 				auto maxZ = Fhg->mMaxZoopAmount;
 				auto minZ = (Fhg->mMaxZoopAmount * -1);
 				zStruct->X = FMath::Clamp(zStruct->X, minZ, maxZ);
 				zStruct->Y = FMath::Clamp(zStruct->Y, minZ, maxZ);
 				zStruct->Z = FMath::Clamp(zStruct->Z, minZ, maxZ);
 
-				FoundationsBeingZooped[foundation]->inScrollMode = true;
+				GetStruct(foundation)->inScrollMode = true;
 			}
+			//bool isFoundation = foundation != nullptr;
 			Fhg->SetZoopAmount(currentZoop);
+			//SetSubsystemZoopAmounts(currentZoop.X, currentZoop.Y, currentZoop.Z, isFoundation, Fhg->GetWorld(), Fhg);
+			//Fhg->ForceNetUpdate();
 		}
 	}
 }
@@ -401,7 +403,6 @@ void FInfiniteZoopModule::CreateDefaultFoundationZoop(AFGFoundationHologram* sel
 	{
 		auto zStruct = GetStruct(self);
 
-		//UE_LOG(InfiniteZoop_Log, Display, TEXT("CreateDefaultFoundationZoop: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
 		auto x = abs(self->mDesiredZoop.X);
 		auto y = abs(self->mDesiredZoop.Y);
 		if (x > y)
@@ -446,12 +447,10 @@ void FInfiniteZoopModule::CreateDefaultFoundationZoop(AFGFoundationHologram* sel
 		if (!zStruct->firstPassComplete)
 		{
 			zStruct->firstPassComplete = true;
-			//zStruct->hgMaterialState1 = self->GetHologramMaterialState();
 		}
 		else
 		{
 			zStruct->secondPassComplete = true;
-			//zStruct->hgMaterialState2 = self->GetHologramMaterialState();
 		}
 
 		FoundationsBeingZooped[self] = zStruct;
@@ -648,7 +647,6 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 
 		if (bhg)
 		{
-			//UE_LOGFMT(InfiniteZoop_Log, Display, "self->HasAuthority(): {0}", self->HasAuthority());
 			if (!self->GetInstigatorController())
 			{
 				AFGPlayerController* PlayerController = Cast<AFGPlayerController>(self->GetWorld()->GetFirstPlayerController());
@@ -662,7 +660,6 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 		}
 		if (clientSubsystem)
 		{
-			//UE_LOG(InfiniteZoop_Log, Display, TEXT("Zoop Corners: False"));
 			if (bhg && bhg->mMaxZoopAmount > 0)
 			{
 
@@ -675,7 +672,6 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 				{
 					bhg->mMaxZoopAmount = zoopSubsystem->currentZoopAmount - 1;
 				}
-				//UE_LOG(InfiniteZoop_Log, Display, TEXT("Increased Zoop Amount"));
 				return;
 			}
 		}
@@ -783,13 +779,6 @@ void FInfiniteZoopModule::StartupModule()
 			}
 		});
 	UFGBuildGunStateBuild* bgbCDO = GetMutableDefault<UFGBuildGunStateBuild>();
-	//SUBSCRIBE_METHOD_VIRTUAL(UFGBuildGunStateBuild::SecondaryFire_Implementation, bgbCDO, [=](auto& scope, UFGBuildGunStateBuild* self)
-	//	{
-	//		if (!BGSecondaryFire(self))
-	//		{
-	//			scope.Cancel();
-	//		}
-	//	});
 
 	AFGFactoryBuildingHologram* fbhgCDO = GetMutableDefault<AFGFactoryBuildingHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGFactoryBuildingHologram::GetBaseCostMultiplier, fbhgCDO, [=](auto& scope, const AFGFactoryBuildingHologram* self)
@@ -876,33 +865,9 @@ void FInfiniteZoopModule::StartupModule()
 			}
 		});
 
-	//TODO Figure out how to do this differently
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::OnBuildModeChanged, hCDO, [=](auto& scope, AFGHologram* self, TSubclassOf<UFGHologramBuildModeDescriptor> buildMode)
-	//	{
-	//		if (self->CanBeZooped())
-	//		{
-	//			if (Cast<AFGWallHologram>(self))
-	//			{
-	//				HologramsToZoop.Remove(self);
-	//			}
-	//			else if (auto fhg = Cast<AFGFoundationHologram>(self))
-	//			{
-	//				FoundationsBeingZooped.Remove(fhg);
-
-	//				fhg->mDesiredZoop.X = 0;
-	//				fhg->mDesiredZoop.Y = 0;
-	//				fhg->mDesiredZoop.Z = 0;
-	//				fhg->SetZoopAmount(FIntVector(0, 0, 0));
-	//				fhg->UpdateZoop();
-	//			}
-
-	//		}
-	//		SetSubsystemZoopAmounts(-1, -1, -1, true, self->GetWorld(), self);
-	//	});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [=](auto scope, AFGHologram* self)
 		{
 			HGBeginPlay(self);
-			
 		});
 
 	AFGPillarHologram* pCDO = GetMutableDefault<AFGPillarHologram>();
@@ -1000,6 +965,7 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 	if (!isZoopMode)
 	{
 		zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
+		zoopSubsystem->ForceNetUpdate();
 		return;
 	}
 	int newX = FMath::Abs(x);
@@ -1022,8 +988,10 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 		newX = -1;
 		newY = -1;
 	}
-	
+
+	//UE_LOGFMT(InfiniteZoop_Log, Display, "SetPublicZoopAmount: {0},{1},{2}", newX, newY, newZ);
 	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
+	zoopSubsystem->ForceNetUpdate();
 }
 #pragma optimize("", on)
 

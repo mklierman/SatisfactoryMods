@@ -1,5 +1,6 @@
 #include "InfiniteZoopSubsystem.h"
 #include <Net/UnrealNetwork.h>
+#include <Logging/StructuredLog.h>
 
 AInfiniteZoopSubsystem::AInfiniteZoopSubsystem()
 {
@@ -16,7 +17,8 @@ void AInfiniteZoopSubsystem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 
 void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop, APawn* owner, FCriticalSection* lockObj)
 {
-	if (lockObj->TryLock())
+	//UE_LOGFMT(InfiniteZoop_Log, Display, "AInfiniteZoopSubsystem::SetPublicZoopAmount: {0},{1},{2}", x, y, z);
+	if (lockObj && lockObj->TryLock())
 	{
 		if (!owner)
 		{
@@ -54,6 +56,7 @@ void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool found
 			zStruct.needsUpdate = true;
 		}
 		ZoopAmountStructs.Add(owner, zStruct);
+		ForceNetUpdate();
 		lockObj->Unlock();
 	}
 }

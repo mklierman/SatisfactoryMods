@@ -46,6 +46,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ClearAllMarkers();
 
+	UFUNCTION(BlueprintCallable)
+	void ClearPodMarkers();
+
 	UPROPERTY(SaveGame, BlueprintReadWrite)
 		TArray<AFGDropPod*> PodMarkers;
 

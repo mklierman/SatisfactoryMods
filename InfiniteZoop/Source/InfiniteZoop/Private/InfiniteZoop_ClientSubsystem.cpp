@@ -1,5 +1,6 @@
 #include "InfiniteZoop_ClientSubsystem.h"
 #include "Subsystem/SubsystemActorManager.h"
+#include <Logging/StructuredLog.h>
 
 AInfiniteZoop_ClientSubsystem::AInfiniteZoop_ClientSubsystem()
 {
