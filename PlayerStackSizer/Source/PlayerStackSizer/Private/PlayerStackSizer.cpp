@@ -12,21 +12,30 @@
 #pragma optimize("", off)
 void FPlayerStackSizerModule::StartupModule()
 {
-#if !WITH_EDITOR
 	// Get player inventory and set all slot sizes to 500
 	AFGCharacterPlayer* cdo = GetMutableDefault<AFGCharacterPlayer>();
 
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGCharacterPlayer::BeginPlay, cdo, [=](AFGCharacterPlayer* self)
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto stackSizeFloat = SessionSettings->GetFloatOptionValue("PlayerStackSizer.StackSize");
 			int32 stackSizeInt = FMath::FloorToInt(stackSizeFloat);
+
 			auto inventory = self->GetInventory();
 			auto size = inventory->GetSizeLinear();
 			for (int i = 0; i < size; i++)
 			{
 				inventory->AddArbitrarySlotSize(i, stackSizeInt);
 			}
+
+            auto armsInventory = self->GetEquipmentSlot(EEquipmentSlot::ES_ARMS);
+            auto armsSize = armsInventory->GetSizeLinear();
+            for (int i = 0; i < armsSize; i++)
+            {
+                armsInventory->AddArbitrarySlotSize(i, stackSizeInt);
+            }
+
 		});
 
 
@@ -42,6 +51,19 @@ void FPlayerStackSizerModule::StartupModule()
 				inventory->AddArbitrarySlotSize(i, stackSizeInt);
 			}
 		});
+
+        SUBSCRIBE_METHOD_AFTER(AFGCharacterPlayer::OnArmsSlotsUnlocked, [=](AFGCharacterPlayer* self, const int32 newUnlockedSlots)
+            {
+                USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+                auto stackSizeFloat = SessionSettings->GetFloatOptionValue("PlayerStackSizer.StackSize");
+                int32 stackSizeInt = FMath::FloorToInt(stackSizeFloat);
+                auto armsInventory = self->GetEquipmentSlot(EEquipmentSlot::ES_ARMS);
+                auto armsSize = armsInventory->GetSizeLinear();
+                for (int i = 0; i < armsSize; i++)
+                {
+                    armsInventory->AddArbitrarySlotSize(i, stackSizeInt);
+                }
+            });
 
 	SUBSCRIBE_METHOD(UFGInventoryLibrary::MoveInventoryItem, [this](auto& scope, UFGInventoryComponent* sourceComponent, const int32 sourceIdx, UFGInventoryComponent* destinationComponent, const int32 destinationIdx)
 		{

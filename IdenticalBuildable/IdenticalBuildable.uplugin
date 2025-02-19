@@ -1,23 +1,22 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.2.23",
-	"SemVersion": "1.2.23",
-	"FriendlyName": "Persistent Paintables",
-	"Description": "Paint-Focused QoL Tweaks",
+	"VersionName": "1.0.1",
+	"FriendlyName": "Allow Identical Buildables",
+	"Description": "",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
-	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
+	"CreatedByURL": "",
 	"DocsURL": "",
 	"MarketplaceURL": "",
-	"SupportURL": "https://discord.gg/WM5KT7pVu8",
+	"SupportURL": "",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "PersistentPaintables",
+			"Name": "IdenticalBuildable",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
@@ -25,9 +24,10 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.9.0",
-			"Enabled": true
+			"Enabled": true,
+			"SemVersion": "^3.9.0"
 		}
 	],
+	"SemVersion": "1.0.1",
 	"GameVersion": ">=383729"
 }

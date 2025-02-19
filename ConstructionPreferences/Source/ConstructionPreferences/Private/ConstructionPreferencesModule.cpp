@@ -383,5 +383,4 @@ void FConstructionPreferencesModule::StartupModule() {
 	//	});
 }
 
-
 IMPLEMENT_GAME_MODULE(FConstructionPreferencesModule, ConstructionPreferences);
