@@ -8,3 +8,5 @@
 */!Source/*
 */!*.uplugin
 SymlinkLaptop.ps1
+.vs/
+[Bb]bin/
