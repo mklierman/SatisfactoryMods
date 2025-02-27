@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.0",
+	"VersionName": "1.0.1",
 	"FriendlyName": "More Trinkets And Helmets",
 	"Description": "Adds more Trinket and Helmet customizations",
 	"Category": "Modding",
@@ -18,9 +18,9 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.8.0"
+			"SemVersion": "^3.9.0"
 		}
 	],
-	"SemVersion": "1.0.0",
-	"GameVersion": ">=365306"
+	"SemVersion": "1.0.1",
+	"GameVersion": ">=383729"
 }
