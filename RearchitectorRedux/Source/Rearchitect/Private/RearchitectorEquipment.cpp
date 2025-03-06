@@ -158,18 +158,24 @@ void ARearchitectorEquipment::Tick(float DeltaSeconds)
 	bool Success;
 	auto Data = GetTraceData(TraceDistance, TraceTypeQuery1, Success);
 	auto Outline = GetInstigatorCharacter()->GetOutline();
-	auto OutlineActor = Outline->GetOwner();
-	Outline->HideOutline(OutlineActor);
-	
-	if (!Success || !FArchitectorToolTarget::IsValidTarget(Data))
+	if (Outline)
 	{
-		Outline->HideOutline(OutlineActor);
-	}
-	else
-	{
-		auto Target = FArchitectorToolTarget(Data);
-		bool IsTargeted = !TargetManager.HasAnyTargets() || TargetManager.HasTarget(Target);
-		Outline->ShowOutline(Target.Target, IsTargeted ? EOutlineColor::OC_HOLOGRAM : EOutlineColor::OC_SOFTCLEARANCE);
+		auto OutlineActor = Outline->GetOwner();
+		if (OutlineActor)
+		{
+			Outline->HideOutline(OutlineActor);
+
+			if (!Success || !FArchitectorToolTarget::IsValidTarget(Data))
+			{
+				Outline->HideOutline(OutlineActor);
+			}
+			else
+			{
+				auto Target = FArchitectorToolTarget(Data);
+				bool IsTargeted = !TargetManager.HasAnyTargets() || TargetManager.HasTarget(Target);
+				Outline->ShowOutline(Target.Target, IsTargeted ? EOutlineColor::OC_HOLOGRAM : EOutlineColor::OC_SOFTCLEARANCE);
+			}
+		}
 	}
 
 

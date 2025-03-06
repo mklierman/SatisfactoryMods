@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "AbstractInstanceManager.h"
 #include "Buildables/FGBuildable.h"
+#include "Buildables/FGBuildableConveyorBase.h"
 
 #include "ArchitectorTarget.generated.h"
 
@@ -59,7 +60,14 @@ public:
 		if(!Actor) return false;
 		
 		bool IsValidClass = (Actor->IsA<AFGBuildable>() && !Actor->HasAnyFlags(RF_WasLoaded)) || HitResult.GetActor()->IsA<AAbstractInstanceManager>();
-		
+		if (IsValidClass)
+		{
+			auto Belt = Cast<AFGBuildableConveyorBase>(Actor);
+			if (Belt)
+			{
+				IsValidClass = false;
+			}
+		}
 		return IsValidClass;
 	}
 
