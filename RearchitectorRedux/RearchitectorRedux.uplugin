@@ -1,0 +1,33 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.0",
+	"FriendlyName": "Rearchitector Redux",
+	"Description": "Utility tool that allows user to move and rotate already placed buildings and walls",
+	"Category": "Modding",
+	"CreatedBy": "Sir Digby",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "Rearchitect",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "SML",
+			"Enabled": true,
+			"SemVersion": "^3.9.1"
+		}
+	],
+	"SemVersion": "1.0.0",
+	"GameVersion": ">=383729"
+}
