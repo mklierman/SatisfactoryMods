@@ -4,7 +4,7 @@
 #include "Buildables/FGBuildable.h"
 #include "Components/ActorComponent.h"
 #include "FGPowerConnectionComponent.h"
-#include "DaisyChainEverythingSubsystem.h"
+#include "EngineUtils.h"
 #include "Tasks/Task.h"
 #include <Kismet/GameplayStatics.h>
 #include <Hologram/FGPowerPoleHologram.h>
@@ -30,10 +30,9 @@ void ADaisyChainEverythingSubsystem::OnSessionSettingUpdated(const FString StrID
 	auto minConnections = (int)SessionSettings->GetFloatOptionValue("DaisyChainEverything.MinConnections");
 	auto IgnorePowerPoles = SessionSettings->GetBoolOptionValue("DaisyChainEverything.IgnorePowerPolesBool");
 
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFGBuildable::StaticClass(), FoundActors);
-	for (auto buildable : FoundActors)
+	for (TActorIterator<AFGBuildable> It(GetWorld()); It; ++It)
 	{
+		AFGBuildable* buildable = *It;
 		if (IgnorePowerPoles)
 		{
 			auto PowerPole = Cast< AFGBuildablePowerPole>(buildable);
