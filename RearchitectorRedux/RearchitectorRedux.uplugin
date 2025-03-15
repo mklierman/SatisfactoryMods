@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.1",
+	"VersionName": "1.0.2",
 	"FriendlyName": "Rearchitector Redux",
 	"Description": "Utility tool that allows user to move and rotate already placed buildings and walls",
 	"Category": "Modding",
@@ -28,6 +28,6 @@
 			"SemVersion": "^3.10.0"
 		}
 	],
-	"SemVersion": "1.0.1",
+	"SemVersion": "1.0.2",
 	"GameVersion": ">=383729"
 }
