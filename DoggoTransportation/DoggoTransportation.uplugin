@@ -1,9 +1,9 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.3",
+	"VersionName": "1.1.0",
 	"FriendlyName": "Doggo Transportation",
-	"Description": "",
+	"Description": "Pick up and place Doggos",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
 	"CreatedByURL": "",
@@ -18,9 +18,9 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.8.0"
+			"SemVersion": "^3.10.0"
 		}
 	],
-	"SemVersion": "1.0.3",
-	"GameVersion": ">=365306"
+	"SemVersion": "1.1.0",
+	"GameVersion": ">=383729"
 }

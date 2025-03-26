@@ -9,7 +9,7 @@
 #include "FGPipeConnectionComponent.h"
 #include "FGPipeNetwork.h"
 #include "Hologram/FGBuildableHologram.h"
-#include "Kismet\KismetSystemLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Modules/ModuleManager.h"
 #include "Patching/NativeHookManager.h"
 #include "PersistentPaintablesCppSubSystem.h"

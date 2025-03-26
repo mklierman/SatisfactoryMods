@@ -82,6 +82,14 @@ void FPersistentPaintablesModule::UpdateColorSingle(AFGBuildable* buildable, AFG
 		newData.ExtraData = buildable->mCustomizationData.ExtraData;
 		newData.NeedsSkinUpdate = true;
 
+		USessionSettingsManager* SessionSettings = buildable->GetWorld()->GetSubsystem<USessionSettingsManager>();
+		auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipesMetallic");
+		if (optionValue)
+		{
+			UClass* SomeClass = LoadObject<UClass>(nullptr, TEXT("/PersistentPaintables/PersistentPaintables_CustomFinish.PersistentPaintables_CustomFinish_C"));
+			newData.OverrideColorData.PaintFinish = SomeClass;
+		}
+
 		ApplyColor(buildable, swatchClass, newData);
 		//return;
 
@@ -299,8 +307,6 @@ void FPersistentPaintablesModule::AddBuildable(AFGBuildable* buildable, const AF
 					auto component = instigator->GetComponentByClass<UPP_ActorComponent>();
 					if (component)
 					{
-						//UE_LOG(PersistentPaintables_Log, Display, TEXT("component"));
-						//auto lightweightFoundation = Cast<AFGBuildableFoundationLightweight>(buildable);
 						buildable->SetCustomizationData_Implementation(component->CustomizationStruct);
 						buildable->ApplyCustomizationData_Implementation(component->CustomizationStruct);
 						buildable->SetCustomizationDataLightweightNoApply(component->CustomizationStruct);
