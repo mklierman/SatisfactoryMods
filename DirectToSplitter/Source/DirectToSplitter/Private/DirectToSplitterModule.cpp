@@ -21,7 +21,6 @@ void FDirectToSplitterModule::StartupModule() {
 	AFGBuildable* fgb = GetMutableDefault<AFGBuildable>();
 	AFGBuildableConveyorAttachment* bca = GetMutableDefault<AFGBuildableConveyorAttachment>();
 
-#if !WITH_EDITOR
 	SUBSCRIBE_METHOD(UFGFactoryConnectionComponent::ClearConnection, [=](auto& scope, UFGFactoryConnectionComponent* self)
 		{
 			if (self)
@@ -30,6 +29,23 @@ void FDirectToSplitterModule::StartupModule() {
 				DismantleLeftoverBelt(conn);
 			}
 		});
+
+	//SUBSCRIBE_METHOD(AFGBuildableConveyorBelt::Merge, [=](auto& scope, TArray< AFGBuildableConveyorBelt* > conveyors)
+	//	{
+	//		auto recipe1 = conveyors[0]->GetBuiltWithRecipe();
+	//		auto recipe2 = conveyors[1]->GetBuiltWithRecipe();
+	//		if (recipe1 && recipe1->GetName() == "SnapOn_Recipe_C")
+	//		{
+	//			scope.Override(nullptr);
+	//		}
+	//		else if (recipe2 && recipe2->GetName() == "SnapOn_Recipe_C")
+	//		{
+	//			scope.Override(nullptr);
+	//		}
+	//		scope.Override(nullptr);
+	//	});
+
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, fgb, [=](auto& scope, AFGBuildable* self)
 		{
 			if (auto attachment = Cast<AFGBuildableConveyorAttachment>(self))
@@ -218,7 +234,7 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 				//Mk6 belt blueprint class
 				UClass* beltClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk6/Build_ConveyorBeltMk6.Build_ConveyorBeltMk6_C"));
 				auto Transform1 = conveyorAttachment->GetActorLocation();
-				auto Location = Transform1 + UE::Math::TVector<double>(0, 0, 100);
+				auto Location = Transform1 + UE::Math::TVector<double>(0, -100, 100); // Has to be moved physically away so it doesn't get auto-merged
 				FTransform TF = conveyorAttachment->GetActorTransform();
 				TF.SetLocation(Location);
 
