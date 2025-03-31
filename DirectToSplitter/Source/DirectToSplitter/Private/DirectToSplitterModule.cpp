@@ -234,7 +234,7 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 				//Mk6 belt blueprint class
 				UClass* beltClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk6/Build_ConveyorBeltMk6.Build_ConveyorBeltMk6_C"));
 				auto Transform1 = conveyorAttachment->GetActorLocation();
-				auto Location = Transform1 + UE::Math::TVector<double>(0, -100, 100); // Has to be moved physically away so it doesn't get auto-merged
+				auto Location = Transform1 + UE::Math::TVector<double>(0, -100, 0); // Has to be moved physically away so it doesn't get auto-merged
 				FTransform TF = conveyorAttachment->GetActorTransform();
 				TF.SetLocation(Location);
 
