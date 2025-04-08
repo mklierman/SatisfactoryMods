@@ -6,6 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "FGFactoryConnectionComponent.h"
 #include "Hologram/FGConveyorLiftHologram.h"
+#include <Buildables/FGBuildableConveyorLift.h>
 #include "HologramLocation_BPLib.generated.h"
 
 
@@ -37,6 +38,9 @@ class HOLOGRAMLOCATION_API UHologramLocation_BPLib : public UBlueprintFunctionLi
 
 	UFUNCTION(BlueprintCallable, Category = "HologramLocation")
 		static float GetLiftHeight(AFGConveyorLiftHologram* clHologram);
+
+		UFUNCTION(BlueprintCallable, Category = "HologramLocation")
+		static float GetLiftBuildableHeight(AFGBuildableConveyorLift* cl);
 
 	UFUNCTION(BlueprintCallable, Category = "HologramLocation")
 		static FString FormatIntAsNumberString(int32 number, bool usePeriod);
