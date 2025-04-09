@@ -11,6 +11,11 @@
 #include <Buildables/FGBuildableDockingStation.h>
 #include <Kismet/GameplayStatics.h>
 #include "Equipment/FGBuildGunDismantle.h"
+#include <Hologram/FGSplineHologram.h>
+#include <Hologram/FGConveyorPoleHologram.h>
+#include <Hologram/FGPipelineSupportHologram.h>
+#include <Hologram/FGWallAttachmentHologram.h>
+#include <Hologram/FGWireHologram.h>
 
 DEFINE_LOG_CATEGORY(SnapOn_Log);
 #pragma optimize("", off)
@@ -21,6 +26,7 @@ void FDirectToSplitterModule::StartupModule() {
 	AFGBuildable* fgb = GetMutableDefault<AFGBuildable>();
 	AFGBuildableConveyorAttachment* bca = GetMutableDefault<AFGBuildableConveyorAttachment>();
 
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD(UFGFactoryConnectionComponent::ClearConnection, [=](auto& scope, UFGFactoryConnectionComponent* self)
 		{
 			if (self)
@@ -45,7 +51,6 @@ void FDirectToSplitterModule::StartupModule() {
 	//		scope.Override(nullptr);
 	//	});
 
-#if !WITH_EDITOR
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, fgb, [=](auto& scope, AFGBuildable* self)
 		{
 			if (auto attachment = Cast<AFGBuildableConveyorAttachment>(self))
@@ -92,7 +97,11 @@ void FDirectToSplitterModule::StartupModule() {
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::IsValidHitResult, bhg, [=](auto& scope, const AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
 		{
-			scope.Override(true);
+			if (IsValidHitResult(self, hitResult))
+			{
+				scope.Override(true);
+			}
+			//scope.Override(true);
 		});
 
 	AFGPipeAttachmentHologram* pahg = GetMutableDefault<AFGPipeAttachmentHologram>();
@@ -234,9 +243,11 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 				//Mk6 belt blueprint class
 				UClass* beltClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk6/Build_ConveyorBeltMk6.Build_ConveyorBeltMk6_C"));
 				auto Transform1 = conveyorAttachment->GetActorLocation();
-				auto Location = Transform1 + UE::Math::TVector<double>(0, -100, 0); // Has to be moved physically away so it doesn't get auto-merged
+				auto OtherLocation = otherConn->GetOwner()->GetActorLocation();
+				auto Location = Transform1 - OtherLocation; // Has to be moved physically away so it doesn't get auto-merged
+				FVector Midpoint = UKismetMathLibrary::VLerp(Transform1, OtherLocation, 0.5f);
 				FTransform TF = conveyorAttachment->GetActorTransform();
-				TF.SetLocation(Location);
+				TF.SetLocation(Midpoint);
 
 				AFGBuildableSubsystem* Subsystem = AFGBuildableSubsystem::Get(conveyorAttachment);
 				auto beltActor = Subsystem->BeginSpawnBuildable(beltClass, TF);
@@ -517,6 +528,36 @@ void FDirectToSplitterModule::CheckValidFactoryPlacement(AFGFactoryHologram* sel
 	auto snappedBuilding = self->GetSnappedBuilding();
 	TArray< TSubclassOf<  UFGConstructDisqualifier > >out_constructResults;
 	self->GetConstructDisqualifiers(out_constructResults);
+}
+
+bool FDirectToSplitterModule::IsValidHitResult(const AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
+{
+	auto splineHolo = Cast<AFGSplineHologram>(self);
+	if (splineHolo)
+	{
+		return false;
+	}
+	auto poleHolo = Cast<AFGPoleHologram>(self);
+	if (poleHolo)
+	{
+		return false;
+	}
+	auto pipelineHolo = Cast<AFGPipelineSupportHologram>(self);
+	if (pipelineHolo)
+	{
+		return false;
+	}
+	auto wallHolo = Cast<AFGWallAttachmentHologram>(self);
+	if (wallHolo)
+	{
+		return false;
+	}
+	auto wireHolo = Cast<AFGWireHologram>(self);
+	if (wireHolo)
+	{
+		return false;
+	}
+	return true;
 }
 
 void FDirectToSplitterModule::ConfigureComponents(const AFGConveyorAttachmentHologram* self, bool& retflag)
