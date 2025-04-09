@@ -7,6 +7,7 @@
 #include "FGFactoryConnectionComponent.h"
 #include "Hologram/FGConveyorLiftHologram.h"
 #include <Buildables/FGBuildableConveyorLift.h>
+#include <FGBuildableBeam.h>
 #include "HologramLocation_BPLib.generated.h"
 
 
@@ -47,4 +48,7 @@ class HOLOGRAMLOCATION_API UHologramLocation_BPLib : public UBlueprintFunctionLi
 
 	UFUNCTION(BlueprintCallable, Category = "HologramLocation")
 		static FString FormatFloatAsNumberString(float number, bool usePeriod);
+
+	UFUNCTION(BlueprintCallable, Category = "HologramLocation")
+		static float GetBeamLength(AFGBuildableBeam* beam);
 };

@@ -109,3 +109,8 @@ FString UHologramLocation_BPLib::FormatFloatAsNumberString(float number, bool us
 
     return formattedString;
 }
+
+float UHologramLocation_BPLib::GetBeamLength(AFGBuildableBeam* beam)
+{
+    return beam->GetLength();
+}
