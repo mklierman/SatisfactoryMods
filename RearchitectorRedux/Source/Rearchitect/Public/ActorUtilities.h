@@ -81,17 +81,18 @@ public:
 			// Cast will only succeed if the interface is implemented in native code, which means we can use GetLightweightInstanceHandles (which is only implemented in C++)
 			if ( const IAbstractInstanceInterface* AbstractInstanceInterface = Cast<IAbstractInstanceInterface>( Actor ) )
 			{
-				for ( const FInstanceHandle* InstanceHandle : AbstractInstanceInterface->GetLightweightInstanceHandles().HandleArray )
-				{
-					if ( InstanceHandle->IsInstanced() && InstanceHandle->IsValid() )
-					{
-						// Retrieve instance transform in world space
-						FTransform InstanceTransform;
-						InstanceHandle->GetInstanceComponent()->GetInstanceTransform( InstanceHandle->GetHandleID(), InstanceTransform, true );
+				// Broke by 1.1
+				//for ( const FInstanceHandle* InstanceHandle : AbstractInstanceInterface->GetLightweightInstanceHandles().HandleArray )
+				//{
+				//	if ( InstanceHandle->IsInstanced() /*&& InstanceHandle->IsValid()*/ )
+				//	{
+				//		// Retrieve instance transform in world space
+				//		FTransform InstanceTransform;
+				//		InstanceHandle->GetInstanceComponent()->GetInstanceTransform( InstanceHandle->GetHandleID(), InstanceTransform, true );
 
-						AddProxyOutlineMeshInstance( InstanceHandle->GetInstanceComponent()->GetStaticMesh(), InstanceTransform );
-					}
-				}
+				//		AddProxyOutlineMeshInstance( InstanceHandle->GetInstanceComponent()->GetStaticMesh(), InstanceTransform );
+				//	}
+				//}
 			}
 			// GetActorLightweightInstanceData does not account for dynamically spawned instances, or for instance visibility, but is BP friendly, so use it as a fallback
 			else if ( Actor->Implements<UAbstractInstanceInterface>() )
@@ -172,17 +173,18 @@ public:
 			// Cast will only succeed if the interface is implemented in native code, which means we can use GetLightweightInstanceHandles (which is only implemented in C++)
 			if ( const IAbstractInstanceInterface* AbstractInstanceInterface = Cast<IAbstractInstanceInterface>( Actor ) )
 			{
-				for ( const FInstanceHandle* InstanceHandle : AbstractInstanceInterface->GetLightweightInstanceHandles().HandleArray )
-				{
-					if ( InstanceHandle->IsInstanced() && InstanceHandle->IsValid() )
-					{
-						// Retrieve instance transform in world space
-						FTransform InstanceTransform;
-						InstanceHandle->GetInstanceComponent()->GetInstanceTransform( InstanceHandle->GetHandleID(), InstanceTransform, true );
+				// Broke by 1.1
+				//for ( const FInstanceHandle* InstanceHandle : AbstractInstanceInterface->GetLightweightInstanceHandles().HandleArray )
+				//{
+				//	if ( InstanceHandle->IsInstanced() && InstanceHandle->IsValid() )
+				//	{
+				//		// Retrieve instance transform in world space
+				//		FTransform InstanceTransform;
+				//		InstanceHandle->GetInstanceComponent()->GetInstanceTransform( InstanceHandle->GetHandleID(), InstanceTransform, true );
 
-						AddProxyOutlineMeshInstance( InstanceHandle->GetInstanceComponent()->GetStaticMesh(), InstanceTransform, Color );
-					}
-				}
+				//		AddProxyOutlineMeshInstance( InstanceHandle->GetInstanceComponent()->GetStaticMesh(), InstanceTransform, Color );
+				//	}
+				//}
 			}
 			// GetActorLightweightInstanceData does not account for dynamically spawned instances, or for instance visibility, but is BP friendly, so use it as a fallback
 			else if ( Actor->Implements<UAbstractInstanceInterface>() )

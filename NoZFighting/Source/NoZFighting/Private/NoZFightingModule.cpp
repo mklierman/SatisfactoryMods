@@ -17,13 +17,13 @@ void FNoZFightingModule::StartupModule() {
 	//void AAbstractInstanceManager::SetInstanced(AActor * OwnerActor, const FTransform & ActorTransform, const FInstanceData & InstanceData, FInstanceHandle * &OutHandle, bool bInitializeHidden)
 	//void AAbstractInstanceManager::SetInstanced(AActor * OwnerActor, const FTransform & ActorTransform, const FInstanceData & InstanceData, FInstanceOwnerHandlePtr & OutHandle, bool bInitializeHidden)
 
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AAbstractInstanceManager::SetInstanced, [this](auto& scope, AAbstractInstanceManager* self, AActor* OwnerActor, const FTransform& ActorTransform, const FInstanceData& InstanceData, FInstanceOwnerHandlePtr& OutHandle, bool bInitializeHidden)
 		{
 			//scope(self, OwnerActor, ActorTransform, InstanceData, OutHandle, bInitializeHidden);
 			SetInstanced(self, OwnerActor, ActorTransform, InstanceData, OutHandle, bInitializeHidden);
 		});
 
-#if !WITH_EDITOR
 	//AFGBuildable* bcdo = GetMutableDefault<AFGBuildable>();
 	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, bcdo, [this](auto& scope, AFGBuildable* self)
 	//	{

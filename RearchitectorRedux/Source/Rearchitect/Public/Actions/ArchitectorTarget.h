@@ -59,7 +59,7 @@ public:
 		auto Actor = HitResult.GetActor();
 		if(!Actor) return false;
 		
-		bool IsValidClass = (Actor->IsA<AFGBuildable>() && !Actor->HasAnyFlags(RF_WasLoaded)) || HitResult.GetActor()->IsA<AAbstractInstanceManager>();
+		bool IsValidClass = (Actor->IsA<AFGBuildable>() && !Actor->HasAnyFlags(RF_WasLoaded)) && !HitResult.GetActor()->IsA<AAbstractInstanceManager>();
 		if (IsValidClass)
 		{
 			auto Belt = Cast<AFGBuildableConveyorBase>(Actor);

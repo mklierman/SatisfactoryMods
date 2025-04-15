@@ -39,7 +39,11 @@ void UArchitectorRCO::Multicast_ApplyTransformOnEach_Implementation(const TArray
 		const auto& Target = TargetTransformData.Target;
 
 		Target.Target->SetActorTransform(ActorT);
-		if(Target.IsAbstract) Target.GenerateInstanceHandle().UpdateTransform(AbstT);
+		// Broke by 1.1
+		if (Target.IsAbstract)
+		{
+			auto handle = Target.GenerateInstanceHandle();// .UpdateTransform(AbstT);
+		}
 	}
 }
 
@@ -70,7 +74,8 @@ void UArchitectorRCO::PerformActionOnTarget(const FArchitectorToolTarget& Target
 	if(Target.IsAbstract)
 	{
 		InstanceHandle = Target.GenerateInstanceHandle();
-		InstanceHandle.GetInstanceComponent()->SetMobility(EComponentMobility::Movable);
+		// Broke by 1.1
+		//InstanceHandle.GetInstanceComponent()->SetMobility(EComponentMobility::Movable);
 	}
 	
 	for(auto& Component : TInlineComponentArray<UFGColoredInstanceMeshProxy*>( Target.Target ))
@@ -89,7 +94,8 @@ void UArchitectorRCO::PerformActionOnTarget(const FArchitectorToolTarget& Target
 		else Transform.AddToTranslation(PositionValue);
 			
 		Target.Target->SetActorTransform(Transform);
-		Target.Target->CachedActorTransform = Transform;
+		// Broke by 1.1
+		//Target.Target->CachedActorTransform = Transform;
 		
 
 		//Transform abstract instance
@@ -99,8 +105,8 @@ void UArchitectorRCO::PerformActionOnTarget(const FArchitectorToolTarget& Target
 
 			if(TransformData.Move.UseAsSetAction) Transform.SetLocation(PositionValue);
 			else Transform.AddToTranslation(PositionValue);
-				
-			InstanceHandle.UpdateTransform(Transform);
+			// Broke by 1.1
+			//InstanceHandle.UpdateTransform(Transform);
 		}
 	}
 
@@ -125,7 +131,8 @@ void UArchitectorRCO::PerformActionOnTarget(const FArchitectorToolTarget& Target
 			: TransformData.Rotate.Value * Transform.GetRotation();
 
 			Transform.SetRotation(NewInstanceRotation);
-			InstanceHandle.UpdateTransform(Transform);
+			// Broke by 1.1
+			//InstanceHandle.UpdateTransform(Transform);
 		}
 	}
 
@@ -150,7 +157,8 @@ void UArchitectorRCO::PerformActionOnTarget(const FArchitectorToolTarget& Target
 			: Transform.GetScale3D() + TransformData.Scale.Value;
 
 			Transform.SetScale3D(NewInstanceScale);
-			InstanceHandle.UpdateTransform(Transform);
+			// Broke by 1.1
+			//InstanceHandle.UpdateTransform(Transform);
 		}
 	}
 }
