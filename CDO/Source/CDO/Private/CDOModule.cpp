@@ -1,7 +1,6 @@
 #include "CDOModule.h"
 #include "Hologram/FGFactoryBuildingHologram.h"
 #include "Hologram/FGFoundationHologram.h"
-#include "FGClearanceComponent.h"
 #include "Patching/NativeHookManager.h"
 #include "Creature/FGCreature.h"
 #include "Creature/Enemy/FGEnemy.h"
@@ -16,9 +15,7 @@
 #include "Buildables/FGBuildableWidgetSign.h"
 #include "Hologram/FGConveyorBeltHologram.h"
 #include "Hologram/FGPoleHologram.h"
-#include "FGPillarHologram.h"
 #include "Hologram/FGHologram.h"
-#include "FGBeamHologram.h"
 #include "Hologram/FGBuildableHologram.h"
 #include "FGDroneVehicle.h"
 #include "Equipment/FGBuildGunBuild.h"
@@ -27,7 +24,6 @@
 #include "Hologram/FGPipelineAttachmentHologram.h"
 #include "FGProductionIndicatorInstanceComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include <Runtime/Engine/Classes/Components/ProxyInstancedStaticMeshComponent.h>
 #include "FGColoredInstanceMeshProxy.h"
 #include "Resources/FGItemDescriptor.h"
 #include "Buildables/FGBuildablePipeline.h"
@@ -38,8 +34,8 @@
 #include "FGSplineMeshGenerationLibrary.h"
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
-#include "FGInstancedSplineMeshComponent.h"
 #include "FGVehicleWheel.h"
+#include "FGSignSubsystem.h"
 
 DEFINE_LOG_CATEGORY(CDO_Log);
 
@@ -104,7 +100,6 @@ void FCDOModule::StartupModule() {
 	//		scope.Cancel();
 	//	});
 	//virtual void ConfigureComponents(class AFGBuildable* inBuildable) const override;
-#if !WITH_EDITOR
 // 	static void BuildSplineMeshesInstanced(
 	//class USplineComponent* spline,
 	//	UStaticMesh* mesh,
@@ -112,16 +107,23 @@ void FCDOModule::StartupModule() {
 	//	UFGInstancedSplineMeshComponent* splineInstances );
 
 
-	//AFGFoundationHologram* fh = GetMutableDefault<AFGFoundationHologram>();
-	////virtual bool AFGFoundationHologram::TrySnapToActor(const FHitResult & hitResult) override;
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGFoundationHologram::TrySnapToActor, fh, [=](auto& scope, AFGFoundationHologram* self, const FHitResult& hitResult)
+#if !WITH_EDITOR
+	//AFGBuildableWidgetSign* bws = GetMutableDefault<AFGBuildableWidgetSign>();
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableWidgetSign::BeginPlay, bws, [this](auto& scope, AFGBuildableWidgetSign* sign)
 	//{
-	//		auto res = scope(self, hitResult);
-	//		if (res)
-	//		{
-	//			UE_LOG(CDO_Log, Display, TEXT("Snapped to actor: %s"), *hitResult.GetActor()->GetName());
-	//		}
-	//	//UE_LOG(CDO_Log, Display, TEXT("VerifyDefaults: %s"), scope.Result.ToString());
+	//		FTimerDelegate timerCallback;
+	//		timerCallback.BindLambda([this]
+	//			{
+	//				AFGSignSubsystem* sub = AFGSignSubsystem::Get(sign->GetWorld());
+	//				sub->UpdateAndSortPendingSigns();
+	//				//FPrefabSignData pfb;
+	//				//sign->GetSignPrefabData(pfb);
+	//				//pfb.ForegroundColor = FLinearColor::Blue;
+	//				//sign->SetPrefabSignData(pfb);
+	//				//sign->UpdateSignElements(pfb);
+	//			});
+	//		FTimerHandle timer;
+	//		sign->GetWorld()->GetTimerManager().SetTimer(timer, timerCallback,1, false);
 	//});
 
 #endif
@@ -504,26 +506,30 @@ void FCDOModule::StartupModule() {
 //#endif
 
 }
-
-void FCDOModule::SetMeshInstanced(UMeshComponent* MeshComp, bool Instanced)
+void FCDOModule::TimerElapsed()
 {
-	auto StaticMeshProxy = Cast<UProxyInstancedStaticMeshComponent>(MeshComp);
-	if (StaticMeshProxy) {
-		StaticMeshProxy->SetInstanced(Instanced);
-	}
-	else {
-		auto ColoredMeshProxy = Cast<UFGColoredInstanceMeshProxy>(MeshComp);
-		if (ColoredMeshProxy) {
-			ColoredMeshProxy->mBlockInstancing = !Instanced;
-			ColoredMeshProxy->SetInstanced(Instanced);
-		}
-		else {
-			auto ProdIndInst = Cast<UFGProductionIndicatorInstanceComponent>(MeshComp);
-			if (ProdIndInst) {
-				ProdIndInst->SetInstanced(Instanced);
-			}
-		}
-	}
+
 }
+//
+//void FCDOModule::SetMeshInstanced(UMeshComponent* MeshComp, bool Instanced)
+//{
+//	auto StaticMeshProxy = Cast<UProxyInstancedStaticMeshComponent>(MeshComp);
+//	if (StaticMeshProxy) {
+//		StaticMeshProxy->SetInstanced(Instanced);
+//	}
+//	else {
+//		auto ColoredMeshProxy = Cast<UFGColoredInstanceMeshProxy>(MeshComp);
+//		if (ColoredMeshProxy) {
+//			ColoredMeshProxy->mBlockInstancing = !Instanced;
+//			ColoredMeshProxy->SetInstanced(Instanced);
+//		}
+//		else {
+//			auto ProdIndInst = Cast<UFGProductionIndicatorInstanceComponent>(MeshComp);
+//			if (ProdIndInst) {
+//				ProdIndInst->SetInstanced(Instanced);
+//			}
+//		}
+//	}
+//}
 
 IMPLEMENT_GAME_MODULE(FCDOModule, CDO);

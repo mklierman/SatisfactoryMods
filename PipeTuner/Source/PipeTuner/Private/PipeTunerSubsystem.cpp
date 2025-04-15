@@ -13,7 +13,7 @@ APipeTunerSubsystem::APipeTunerSubsystem()
 {
 #if !WITH_EDITOR
 	//AFGPipelineAttachmentHologram* pah = GetMutableDefault<AFGPipelineAttachmentHologram>();
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineAttachmentHologram::BeginPlay, pah, [=](auto scope, AFGPipelineAttachmentHologram* self)
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineAttachmentHologram::BeginPlay, pah, [this](auto scope, AFGPipelineAttachmentHologram* self)
 	//	{
 	//		auto pumphg = Cast< AFGPipelinePumpHologram>(self);
 	//		if (pumphg)

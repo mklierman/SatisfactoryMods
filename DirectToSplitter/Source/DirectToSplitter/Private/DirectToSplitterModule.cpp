@@ -13,7 +13,7 @@
 #include "Equipment/FGBuildGunDismantle.h"
 #include <Hologram/FGSplineHologram.h>
 #include <Hologram/FGConveyorPoleHologram.h>
-#include <Hologram/FGPipelineSupportHologram.h>
+//#include <Hologram/FGPipelineSupportHologram.h>
 #include <Hologram/FGWallAttachmentHologram.h>
 #include <Hologram/FGWireHologram.h>
 
@@ -27,7 +27,7 @@ void FDirectToSplitterModule::StartupModule() {
 	AFGBuildableConveyorAttachment* bca = GetMutableDefault<AFGBuildableConveyorAttachment>();
 
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD(UFGFactoryConnectionComponent::ClearConnection, [=](auto& scope, UFGFactoryConnectionComponent* self)
+	SUBSCRIBE_METHOD(UFGFactoryConnectionComponent::ClearConnection, [this](auto& scope, UFGFactoryConnectionComponent* self)
 		{
 			if (self)
 			{
@@ -36,7 +36,7 @@ void FDirectToSplitterModule::StartupModule() {
 			}
 		});
 
-	//SUBSCRIBE_METHOD(AFGBuildableConveyorBelt::Merge, [=](auto& scope, TArray< AFGBuildableConveyorBelt* > conveyors)
+	//SUBSCRIBE_METHOD(AFGBuildableConveyorBelt::Merge, [this](auto& scope, TArray< AFGBuildableConveyorBelt* > conveyors)
 	//	{
 	//		auto recipe1 = conveyors[0]->GetBuiltWithRecipe();
 	//		auto recipe2 = conveyors[1]->GetBuiltWithRecipe();
@@ -51,14 +51,14 @@ void FDirectToSplitterModule::StartupModule() {
 	//		scope.Override(nullptr);
 	//	});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, fgb, [=](auto& scope, AFGBuildable* self)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, fgb, [this](auto& scope, AFGBuildable* self)
 		{
 			if (auto attachment = Cast<AFGBuildableConveyorAttachment>(self))
 			{
 				HandleExistingSnappedOn(attachment);
 			}
 		});
-	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::TrySnapToActor, cah, [=](auto& scope, AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::TrySnapToActor, cah, [this](auto& scope, AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
 		{
 			bool scopeResult = scope(self, hitResult);
 			if (scopeResult)
@@ -76,7 +76,7 @@ void FDirectToSplitterModule::StartupModule() {
 				CheckValidPlacement(self, retflag);
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::ConfigureComponents, cah, [=](auto& scope, const AFGConveyorAttachmentHologram* self, AFGBuildable* inBuildable)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::ConfigureComponents, cah, [this](auto& scope, const AFGConveyorAttachmentHologram* self, AFGBuildable* inBuildable)
 		{
 			bool shouldCancel;
 			ConfigureComponents(self, shouldCancel);
@@ -85,7 +85,7 @@ void FDirectToSplitterModule::StartupModule() {
 
 
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, bhg, [=](auto& outActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID netConstructionID)
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, bhg, [this](auto& outActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID netConstructionID)
 		{
 			HGConstruct(self, outActor);
 
@@ -95,7 +95,7 @@ void FDirectToSplitterModule::StartupModule() {
 			}
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::IsValidHitResult, bhg, [=](auto& scope, const AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::IsValidHitResult, bhg, [this](auto& scope, const AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
 		{
 			if (IsValidHitResult(self, hitResult))
 			{
@@ -105,7 +105,7 @@ void FDirectToSplitterModule::StartupModule() {
 		});
 
 	AFGPipeAttachmentHologram* pahg = GetMutableDefault<AFGPipeAttachmentHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::IsValidHitResult, pahg, [=](auto& scope, const AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::IsValidHitResult, pahg, [this](auto& scope, const AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
 		{
 			if (auto junction = Cast<AFGPipelineJunctionHologram>(self))
 			{
@@ -157,7 +157,7 @@ void FDirectToSplitterModule::StartupModule() {
 				}
 			}
 		});
-	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::TrySnapToActor, pahg, [=](auto& scope, AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::TrySnapToActor, pahg, [this](auto& scope, AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
 		{
 			bool result = (bool)scope(self, hitResult);
 			auto pipeAttachHolo = Cast<AFGPipeAttachmentHologram>(self);
@@ -168,7 +168,7 @@ void FDirectToSplitterModule::StartupModule() {
 				return;
 			}
 		});
-	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::CheckValidPlacement, pahg, [=](auto& scope, AFGPipeAttachmentHologram* self)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::CheckValidPlacement, pahg, [this](auto& scope, AFGPipeAttachmentHologram* self)
 		{
 			auto junction = Cast<AFGPipelineJunctionHologram>(self);
 			if (junction && self->mSnappedConnectionComponent)
@@ -542,11 +542,11 @@ bool FDirectToSplitterModule::IsValidHitResult(const AFGConveyorAttachmentHologr
 	{
 		return false;
 	}
-	auto pipelineHolo = Cast<AFGPipelineSupportHologram>(self);
-	if (pipelineHolo)
-	{
-		return false;
-	}
+	//auto pipelineHolo = Cast<AFGPipelineSupportHologram>(self);
+	//if (pipelineHolo)
+	//{
+	//	return false;
+	//}
 	auto wallHolo = Cast<AFGWallAttachmentHologram>(self);
 	if (wallHolo)
 	{

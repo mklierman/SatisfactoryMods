@@ -4,7 +4,7 @@
 void FShowSplinePathModule::StartupModule() {
 #if !WITH_EDITOR
 	//void RemoveTargetPoint(class AFGTargetPoint* targetToRemove, bool updateList = true);
-	SUBSCRIBE_METHOD_AFTER(AFGVehicleSubsystem::UpdateTargetList, [=](AFGVehicleSubsystem* self, AFGDrivingTargetList* targetList)
+	SUBSCRIBE_METHOD_AFTER(AFGVehicleSubsystem::UpdateTargetList, [this](AFGVehicleSubsystem* self, AFGDrivingTargetList* targetList)
 		{
 			if (self->HasAuthority())
 			{
@@ -16,7 +16,7 @@ void FShowSplinePathModule::StartupModule() {
 			}
 		});
 
-	SUBSCRIBE_METHOD_AFTER(AFGDrivingTargetList::CreatePath, [=](AFGDrivingTargetList* self)
+	SUBSCRIBE_METHOD_AFTER(AFGDrivingTargetList::CreatePath, [this](AFGDrivingTargetList* self)
 		{
 			if (self->HasAuthority())
 			{
@@ -27,7 +27,7 @@ void FShowSplinePathModule::StartupModule() {
 			}
 		});
 
-	SUBSCRIBE_METHOD_AFTER(AFGDrivingTargetList::OnRep_IsPathVisible, [=](AFGDrivingTargetList* self)
+	SUBSCRIBE_METHOD_AFTER(AFGDrivingTargetList::OnRep_IsPathVisible, [this](AFGDrivingTargetList* self)
 		{
 			if (self->HasAuthority())
 			{
@@ -38,7 +38,7 @@ void FShowSplinePathModule::StartupModule() {
 			}
 		});
 
-	SUBSCRIBE_METHOD_AFTER(AFGVehicleSubsystem::AddTargetPoint, [=](AFGVehicleSubsystem* self, class AFGTargetPoint* target)
+	SUBSCRIBE_METHOD_AFTER(AFGVehicleSubsystem::AddTargetPoint, [this](AFGVehicleSubsystem* self, class AFGTargetPoint* target)
 		{
 			if (self->HasAuthority())
 			{
@@ -59,7 +59,7 @@ void FShowSplinePathModule::StartupModule() {
 			}
 		});
 
-	SUBSCRIBE_METHOD(AFGVehicleSubsystem::RemoveTargetPoint, [=](auto& scope, AFGVehicleSubsystem* self, class AFGTargetPoint* targetToRemove, bool updateList)
+	SUBSCRIBE_METHOD(AFGVehicleSubsystem::RemoveTargetPoint, [this](auto& scope, AFGVehicleSubsystem* self, class AFGTargetPoint* targetToRemove, bool updateList)
 		{
 			if (self->HasAuthority())
 			{

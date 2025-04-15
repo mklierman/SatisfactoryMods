@@ -4,7 +4,7 @@
 #include "Buildables/FGBuildable.h"
 #include "Buildables/FGBuildablePipeline.h"
 #include "Buildables/FGBuildablePipelineJunction.h"
-#include "FGBuildablePipelineSupport.h"
+//#include "FGBuildablePipelineSupport.h"
 #include "FGFluidIntegrantInterface.h"
 #include "FGPipeConnectionComponent.h"
 #include "FGPipeNetwork.h"
@@ -38,6 +38,7 @@ public:
 	UClass* wallSupportClass;
 	UClass* wallHoleClass;
 	UClass* floorHoleClass;
+	UClass* pipeSupportClass;
 	UClass* swatchClass;
 	UClass* subsystemClass;
 

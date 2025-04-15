@@ -14,7 +14,7 @@ void FLongerBeamsModule::StartupModule()
 //#endif
 #if !WITH_EDITOR
 	AFGHologram* hCDO = GetMutableDefault<AFGHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, hCDO, [=](auto scope, AFGHologram* self, int32 delta)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, hCDO, [this](auto scope, AFGHologram* self, int32 delta)
 		{
 			if (!self->IsHologramLocked())
 			{
@@ -31,7 +31,7 @@ void FLongerBeamsModule::StartupModule()
 			}
 		});
 	
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Destroyed, hCDO, [=](auto& scope, AFGHologram* self)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Destroyed, hCDO, [this](auto& scope, AFGHologram* self)
 		{
 			if (auto beamhg = Cast<AFGBeamHologram>(self))
 			{
@@ -44,7 +44,7 @@ void FLongerBeamsModule::StartupModule()
 		});
 
 	AFGHologram* bhCDO = GetMutableDefault<AFGBeamHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGBeamHologram::SetHologramLocationAndRotation, bhCDO, [=](auto& scope, AFGBeamHologram* self, const FHitResult& hitResult)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBeamHologram::SetHologramLocationAndRotation, bhCDO, [this](auto& scope, AFGBeamHologram* self, const FHitResult& hitResult)
 		{
 			if (ScrollingBeams.Contains(self))
 			{
@@ -52,7 +52,7 @@ void FLongerBeamsModule::StartupModule()
 			}
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGBeamHologram::GetRotationStep, bhCDO, [=](auto& scope, const AFGBeamHologram* self)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBeamHologram::GetRotationStep, bhCDO, [this](auto& scope, const AFGBeamHologram* self)
 		{
 			auto pc = Cast<AFGPlayerController>(self->GetWorld()->GetFirstPlayerController());
 			if (!pc->IsInputKeyDown(EKeys::LeftShift) && pc->IsInputKeyDown(EKeys::LeftControl))
@@ -63,7 +63,7 @@ void FLongerBeamsModule::StartupModule()
 			}
 		});
 
-	SUBSCRIBE_METHOD(UFGBuildGunState::SecondaryFire, [=](auto& scope, UFGBuildGunState* self)
+	SUBSCRIBE_METHOD(UFGBuildGunState::SecondaryFire, [this](auto& scope, UFGBuildGunState* self)
 		{
 			if (auto bgsb = Cast<UFGBuildGunStateBuild>(self))
 			{

@@ -3,38 +3,38 @@ DEFINE_LOG_CATEGORY(InfiniteNudge_Log);
 #pragma optimize("", off)
 //Get Building direction closest to camera direction
 
-void AInfiniteNudge_Subsystem::NudgeHologram(AFGHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller)
+void AInfiniteNudge_Subsystem::NudgeHologram(AFGHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller)
 {
 	if (hologram && hologram->IsHologramLocked())
 	{
 		GetConfigValues(hologram->GetWorld(), controller);
-		if (auto beltHolo = Cast< AFGConveyorBeltHologram>(hologram))
+		if (zDirection != 0.0)
 		{
-			NudgeBelt(beltHolo, xDirection, yDirection, controller);
+			hologram->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * zDirection));
+		}
+		else if (auto beltHolo = Cast< AFGConveyorBeltHologram>(hologram))
+		{
+			NudgeBelt(beltHolo, xDirection, yDirection, zDirection, controller);
 		}
 		else if (auto pipeHolo = Cast<AFGPipelineHologram>(hologram))
 		{
-			NudgePipe(pipeHolo, xDirection, yDirection, controller);
+			NudgePipe(pipeHolo, xDirection, yDirection, zDirection, controller);
 		}
 		else if (auto wireHolo = Cast<AFGWireHologram>(hologram))
 		{
-			NudgeWire(wireHolo, xDirection, yDirection, controller);
+			NudgeWire(wireHolo, xDirection, yDirection, zDirection, controller);
 		}
 		else if (auto trackHolo = Cast<AFGRailroadTrackHologram>(hologram))
 		{
-			NudgeRailroadTrack(trackHolo, xDirection, yDirection, controller);
+			NudgeRailroadTrack(trackHolo, xDirection, yDirection, zDirection, controller);
 		}
 		else if (auto wallAttachmentHolo = Cast<AFGWallAttachmentHologram>(hologram))
 		{
-			NudgeWallAttachment(wallAttachmentHolo, xDirection, yDirection, controller);
+			NudgeWallAttachment(wallAttachmentHolo, xDirection, yDirection, zDirection, controller);
 		}
 		else if (auto signHolo = Cast<AFGStandaloneSignHologram>(hologram))
 		{
-			NudgeSign(signHolo, xDirection, yDirection, controller);
-		}
-		else if (controller->IsInputKeyDown(VerticalNudgeKey))
-		{
-			hologram->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+			NudgeSign(signHolo, xDirection, yDirection, zDirection, controller);
 		}
 		else
 		{
@@ -48,12 +48,12 @@ void AInfiniteNudge_Subsystem::NudgeHologram(AFGHologram* hologram, float xDirec
 	}
 }
 
-void AInfiniteNudge_Subsystem::NudgeBelt(AFGConveyorBeltHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller)
+void AInfiniteNudge_Subsystem::NudgeBelt(AFGConveyorBeltHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller)
 {
 	auto nudgeTarget = hologram->GetNudgeHologramTarget();
 	if (auto wallAttachmentHolo = Cast< AFGWallAttachmentHologram>(nudgeTarget))
 	{
-		NudgeWallAttachment(wallAttachmentHolo, xDirection, yDirection, controller);
+		NudgeWallAttachment(wallAttachmentHolo, xDirection, yDirection, zDirection, controller);
 	}
 	else if (controller->IsInputKeyDown(VerticalNudgeKey))
 	{
@@ -70,12 +70,12 @@ void AInfiniteNudge_Subsystem::NudgeBelt(AFGConveyorBeltHologram* hologram, floa
 	nudgeTarget->mHologramLockLocation = nudgeTarget->GetActorLocation();
 }
 
-void AInfiniteNudge_Subsystem::NudgePipe(AFGPipelineHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller)
+void AInfiniteNudge_Subsystem::NudgePipe(AFGPipelineHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller)
 {
 	auto nudgeTarget = hologram->GetNudgeHologramTarget();
 	if (auto wallAttachmentHolo = Cast< AFGWallAttachmentHologram>(nudgeTarget))
 	{
-		NudgeWallAttachment(wallAttachmentHolo, xDirection, yDirection, controller);
+		NudgeWallAttachment(wallAttachmentHolo, xDirection, yDirection, zDirection, controller);
 	}
 	else if (controller->IsInputKeyDown(VerticalNudgeKey))
 	{
@@ -92,7 +92,7 @@ void AInfiniteNudge_Subsystem::NudgePipe(AFGPipelineHologram* hologram, float xD
 	nudgeTarget->mHologramLockLocation = nudgeTarget->GetActorLocation();
 }
 
-void AInfiniteNudge_Subsystem::NudgeWire(AFGWireHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller)
+void AInfiniteNudge_Subsystem::NudgeWire(AFGWireHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller)
 {
 	auto nudgeTarget = hologram->GetNudgeHologramTarget();
 	if (controller->IsInputKeyDown(VerticalNudgeKey))
@@ -110,7 +110,7 @@ void AInfiniteNudge_Subsystem::NudgeWire(AFGWireHologram* hologram, float xDirec
 	nudgeTarget->mHologramLockLocation = nudgeTarget->GetActorLocation();
 }
 
-void AInfiniteNudge_Subsystem::NudgeRailroadTrack(AFGRailroadTrackHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller)
+void AInfiniteNudge_Subsystem::NudgeRailroadTrack(AFGRailroadTrackHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller)
 {
 	auto nudgeTarget = hologram->GetNudgeHologramTarget();
 	if (controller->IsInputKeyDown(VerticalNudgeKey))
@@ -127,7 +127,7 @@ void AInfiniteNudge_Subsystem::NudgeRailroadTrack(AFGRailroadTrackHologram* holo
 	hologram->mHologramLockLocation = hologram->GetActorLocation();
 }
 
-void AInfiniteNudge_Subsystem::NudgeWallAttachment(AFGWallAttachmentHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller)
+void AInfiniteNudge_Subsystem::NudgeWallAttachment(AFGWallAttachmentHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller)
 {
 	if (controller->IsInputKeyDown(VerticalNudgeKey))
 	{
@@ -156,7 +156,7 @@ void AInfiniteNudge_Subsystem::NudgeWallAttachment(AFGWallAttachmentHologram* ho
 	hologram->mHologramLockLocation = hologram->GetActorLocation();
 }
 
-void AInfiniteNudge_Subsystem::NudgeSign(AFGStandaloneSignHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller)
+void AInfiniteNudge_Subsystem::NudgeSign(AFGStandaloneSignHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller)
 {
 	if (auto nudgeTarget = Cast<AFGSignPoleHologram>(hologram->GetNudgeHologramTarget()))
 	{

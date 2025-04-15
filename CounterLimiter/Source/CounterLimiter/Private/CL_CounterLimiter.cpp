@@ -287,7 +287,7 @@ void ACL_CounterLimiter::SetThroughputLimit(float itemsPerMinute, bool bypassChe
 		{
 			mPerMinuteLimitRate = itemsPerMinute;
 			ForceNetUpdate();
-			AsyncTask(ENamedThreads::GameThread, [=]() {
+			AsyncTask(ENamedThreads::GameThread, [this]() {
 					GetWorld()->GetTimerManager().SetTimer(ThroughputTimerHandle, this, &ACL_CounterLimiter::StageItemForOutput, GetSecondsPerItem(), true);
 			});
 			

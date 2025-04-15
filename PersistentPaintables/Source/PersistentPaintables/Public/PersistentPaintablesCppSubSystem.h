@@ -5,7 +5,7 @@
 #include "Buildables/FGBuildablePipeline.h"
 #include "Buildables/FGBuildablePipelineJunction.h"
 #include "CoreMinimal.h"
-#include "FGBuildablePipelineSupport.h"
+//#include "FGBuildablePipelineSupport.h"
 #include "FGBuildableSubsystem.h"
 #include "FGColorInterface.h"
 #include "FGFactoryColoringTypes.h"

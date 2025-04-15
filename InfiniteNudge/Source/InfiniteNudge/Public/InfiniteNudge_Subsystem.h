@@ -28,14 +28,14 @@ class INFINITENUDGE_API AInfiniteNudge_Subsystem : public AModSubsystem
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable)
-	void NudgeHologram(AFGHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
-	void NudgeBelt(AFGConveyorBeltHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
-	void NudgePipe(AFGPipelineHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
-	void NudgeWire(AFGWireHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
-	void NudgeRailroadTrack(AFGRailroadTrackHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
-	void NudgeWallAttachment(AFGWallAttachmentHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
-	void NudgeSign(AFGStandaloneSignHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
-	void NudgeBeam(AFGStandaloneSignHologram* hologram, float xDirection, float yDirection, AFGPlayerController* controller);
+	void NudgeHologram(AFGHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller);
+	void NudgeBelt(AFGConveyorBeltHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller);
+	void NudgePipe(AFGPipelineHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller);
+	void NudgeWire(AFGWireHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller);
+	void NudgeRailroadTrack(AFGRailroadTrackHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller);
+	void NudgeWallAttachment(AFGWallAttachmentHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller);
+	void NudgeSign(AFGStandaloneSignHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller);
+	void NudgeBeam(AFGStandaloneSignHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller);
 
 
 	UFUNCTION(BlueprintCallable)

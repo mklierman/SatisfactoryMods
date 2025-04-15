@@ -18,7 +18,7 @@
 void FCrashSiteBeaconsModule::StartupModule() {
 
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD_AFTER(AFGScannableSubsystem::OnDropPodLooted, [=](auto result, class AFGDropPod* DropPod)
+	SUBSCRIBE_METHOD_AFTER(AFGScannableSubsystem::OnDropPodLooted, [this](auto result, class AFGDropPod* DropPod)
 		{
 				OnDropPodOpened(DropPod);
 		});
@@ -34,7 +34,7 @@ void FCrashSiteBeaconsModule::StartupModule() {
 	//UFunction* SomeFunc = SomeClass->FindFunctionByName(TEXT("CanBeSeenOnCompass"));
 	//UBlueprintHookManager* hooker = GetMutableDefault<UBlueprintHookManager>();
 
-	//hooker->HookBlueprintFunction(SomeFunc, [=](FBlueprintHookHelper& helper) {
+	//hooker->HookBlueprintFunction(SomeFunc, [this](FBlueprintHookHelper& helper) {
 	//	//auto localStr = helper.GetLocalVarPtr<FUInt16Property>("StrVariable"); // getting the pointer to a local variable
 	//	//auto output = GetOutVariablePtr<FBoolProperty>(TEXT("ReturnValue"));
 	//	SetOutBool(helper.FramePointer, true, TEXT("ReturnValue"));

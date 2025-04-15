@@ -12,4 +12,8 @@ public:
 	void SetMeshInstanced(UMeshComponent* MeshComp, bool Instanced);
 
 	virtual bool IsGameModule() const override { return true; }
+
+	AFGBuildableWidgetSign* sign;
+	UFUNCTION()
+	void TimerElapsed();
 };

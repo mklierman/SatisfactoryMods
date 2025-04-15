@@ -7,7 +7,7 @@ void FDestructibleDepositsModule::StartupModule() {
 	//RadialDamage.BindUFunction(this, "OnTakeRadialDamage");
 	////virtual void BeginPlay() override;
 	//AFGResourceDeposit* rdCDO = GetMutableDefault<AFGResourceDeposit>();
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGResourceDeposit::BeginPlay, rdCDO, [=](auto& scope, AFGResourceDeposit* self)
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGResourceDeposit::BeginPlay, rdCDO, [this](auto& scope, AFGResourceDeposit* self)
 	//	{
 	//	});
 

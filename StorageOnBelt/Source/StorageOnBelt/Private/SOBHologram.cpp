@@ -78,7 +78,8 @@ void ASOBHologram::ConfigureComponents(AFGBuildable* inBuildable) const
         if (cl)
         {
             auto beltCustomizationData = mSnappedConveyor->Execute_GetCustomizationData(mSnappedConveyor);
-            TArray< AFGBuildableConveyorBelt* > Belts = AFGBuildableConveyorBelt::Split(mSnappedConveyor, mSnappedConveyorOffset, false);
+            auto snapped = Cast<AFGBuildableConveyorBelt>(mSnappedConveyor);
+            TArray< AFGBuildableConveyorBelt* > Belts = AFGBuildableConveyorBelt::Split(snapped, mSnappedConveyorOffset, false);
             if (Belts.Num() > 0)
             {
                 for (auto Belt : Belts)

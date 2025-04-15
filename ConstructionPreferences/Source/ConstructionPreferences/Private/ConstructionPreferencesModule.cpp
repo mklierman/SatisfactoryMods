@@ -8,7 +8,7 @@
 #include "Equipment/FGBuildGunBuild.h"
 #include "Hologram/FGWireHologram.h"
 #include "Holo_WireHologramBuildModes.h"
-#include "Buildables/FGConveyorPoleStackable.h"
+//#include "Buildables/FGConveyorPoleStackable.h"
 #include "Equipment/FGBuildGunDismantle.h"
 #include "Equipment/FGHoverPack.h"
 #include "CP_ModConfigStruct.h"
@@ -119,7 +119,7 @@ float FConstructionPreferencesModule::GetUseDistance(const AFGCharacterPlayer* s
 
 void FConstructionPreferencesModule::StartupModule() {
 
-	//SUBSCRIBE_METHOD(AFGWireHologram::SetActiveAutomaticPoleHologram, [=](auto& scope, AFGWireHologram* self, class AFGPowerPoleHologram* poleHologram)
+	//SUBSCRIBE_METHOD(AFGWireHologram::SetActiveAutomaticPoleHologram, [this](auto& scope, AFGWireHologram* self, class AFGPowerPoleHologram* poleHologram)
 	//	{
 	//		UE_LOG(LogConstructionPreferences, Display, TEXT("SetActiveAutomaticPoleHologram"));
 	//		auto castSelf = Cast< AHolo_WireHologramBuildModes>(self);
@@ -139,7 +139,7 @@ void FConstructionPreferencesModule::StartupModule() {
 	//		}
 	//	});
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [=](auto& scope, const AFGCharacterPlayer* self)
+	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [this](auto& scope, const AFGCharacterPlayer* self)
 		{
 			float result = scope(self);
 			float newDist = 0.f;
@@ -150,7 +150,7 @@ void FConstructionPreferencesModule::StartupModule() {
 			}
 		});
 
-	SUBSCRIBE_METHOD(AFGBuildGun::GetBuildGunRange, [=](auto& scope, const AFGBuildGun* self)
+	SUBSCRIBE_METHOD(AFGBuildGun::GetBuildGunRange, [this](auto& scope, const AFGBuildGun* self)
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto reachMult = SessionSettings->GetFloatOptionValue("ConstructionPreferences.UseDistance");
@@ -206,7 +206,7 @@ void FConstructionPreferencesModule::StartupModule() {
 	//
 	//
 	//	//virtual bool DoMultiStepPlacement(bool isInputFromARelease) override;
-//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::DoMultiStepPlacement, CBH, [=](auto& scope, AFGConveyorBeltHologram* self, bool isInputFromARelease)
+//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::DoMultiStepPlacement, CBH, [this](auto& scope, AFGConveyorBeltHologram* self, bool isInputFromARelease)
 //		{
 //			FCP_ModConfigStruct config = FCP_ModConfigStruct::GetActiveConfig();
 //			if (config.ConveyorPole == 1)
@@ -231,7 +231,7 @@ void FConstructionPreferencesModule::StartupModule() {
 //		});
 //
 //
-//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::Scroll, CBH, [=](auto& scope, AFGConveyorBeltHologram* self, int32 delta)
+//	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::Scroll, CBH, [this](auto& scope, AFGConveyorBeltHologram* self, int32 delta)
 //		{
 //			auto pole = Cast<AFGConveyorPoleHologram>(self->mChildPoleHologram);
 //			if (pole)
@@ -354,7 +354,7 @@ void FConstructionPreferencesModule::StartupModule() {
 	////virtual void PrimaryFireRelease_Implementation() override;
 	//SUBSCRIBE_METHOD_VIRTUAL(UFGBuildGunStateBuild::PrimaryFire_Implementation, BG, &PrimaryFire)
 
-	//SUBSCRIBE_METHOD_VIRTUAL(UFGBuildGunStateBuild::PrimaryFireRelease_Implementation, BG, [=](auto& scope, UFGBuildGunStateBuild* self)
+	//SUBSCRIBE_METHOD_VIRTUAL(UFGBuildGunStateBuild::PrimaryFireRelease_Implementation, BG, [this](auto& scope, UFGBuildGunStateBuild* self)
 	//	{
 	//		UE_LOG(LogConstructionPreferences, Display, TEXT("UFGBuildGunStateBuild::PrimaryFireRelease_Implementation"));
 

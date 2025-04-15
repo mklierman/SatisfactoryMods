@@ -101,7 +101,7 @@ ALBBuild_ModularLoadBalancer::ALBBuild_ModularLoadBalancer()
 {
     if (!mBufferInventory)
     {
-        mBufferInventory = UFGInventoryLibrary::CreateInventoryComponent(this, FName("mBufferInventory"));
+        mBufferInventory = CreateDefaultSubobject<UFGInventoryComponent>(FName("mBufferInventory"), false);
         mBufferInventory->Resize(4);
     }
 #if !WITH_EDITOR

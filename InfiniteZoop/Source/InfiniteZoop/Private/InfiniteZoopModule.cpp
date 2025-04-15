@@ -696,7 +696,7 @@ void FInfiniteZoopModule::StartupModule()
 	lockObj = new FCriticalSection();
 
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::ConfigureActor, bhg, [=](auto& scope, const AFGBuildableHologram* self, class AFGBuildable* inBuildable)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::ConfigureActor, bhg, [this](auto& scope, const AFGBuildableHologram* self, class AFGBuildable* inBuildable)
 		{
 			if (self->CanBeZooped())
 			{
@@ -708,7 +708,7 @@ void FInfiniteZoopModule::StartupModule()
 			}
 		});
 
-	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::OnRep_DesiredZoop, [=](auto& scope, AFGFactoryBuildingHologram* self)
+	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::OnRep_DesiredZoop, [this](auto& scope, AFGFactoryBuildingHologram* self)
 		{
 			if (auto ramphg = Cast<AFGRampHologram>(self))
 			{
@@ -720,7 +720,7 @@ void FInfiniteZoopModule::StartupModule()
 	}
 		});
 
-	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::SetZoopAmount, [=](auto& scope, AFGFactoryBuildingHologram* self, const FIntVector& Zoop)
+	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::SetZoopAmount, [this](auto& scope, AFGFactoryBuildingHologram* self, const FIntVector& Zoop)
 		{
 			if (auto ramphg = Cast<AFGRampHologram>(self))
 			{
@@ -731,7 +731,7 @@ void FInfiniteZoopModule::StartupModule()
 				scope.Cancel();
 			}
 		});
-	SUBSCRIBE_METHOD(UFGBuildGunStateBuild::OnZoopUpdated, [=](auto& scope, UFGBuildGunStateBuild* self, float currentZoop, float maxZoop, const FVector& zoopLocation)
+	SUBSCRIBE_METHOD(UFGBuildGunStateBuild::OnZoopUpdated, [this](auto& scope, UFGBuildGunStateBuild* self, float currentZoop, float maxZoop, const FVector& zoopLocation)
 		{
 			// Fix for incorrect # showing when 2D zooping
 			auto hg = self->GetHologram();
@@ -768,7 +768,7 @@ void FInfiniteZoopModule::StartupModule()
 	}
 		});
 
-	SUBSCRIBE_METHOD(UFGBuildGunState::SecondaryFire, [=](auto& scope, UFGBuildGunState* self)
+	SUBSCRIBE_METHOD(UFGBuildGunState::SecondaryFire, [this](auto& scope, UFGBuildGunState* self)
 		{
 			if (auto bgsb = Cast< UFGBuildGunStateBuild>(self))
 			{
@@ -781,7 +781,7 @@ void FInfiniteZoopModule::StartupModule()
 	UFGBuildGunStateBuild* bgbCDO = GetMutableDefault<UFGBuildGunStateBuild>();
 
 	AFGFactoryBuildingHologram* fbhgCDO = GetMutableDefault<AFGFactoryBuildingHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGFactoryBuildingHologram::GetBaseCostMultiplier, fbhgCDO, [=](auto& scope, const AFGFactoryBuildingHologram* self)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGFactoryBuildingHologram::GetBaseCostMultiplier, fbhgCDO, [this](auto& scope, const AFGFactoryBuildingHologram* self)
 		{
 			if (auto ramphg = Cast<AFGRampHologram>(self))
 			{
@@ -800,18 +800,19 @@ void FInfiniteZoopModule::StartupModule()
 
 	AFGFoundationHologram* fhCDO = GetMutableDefault<AFGFoundationHologram>();
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGFoundationHologram::ConstructZoop, fhCDO, [=](auto& scope, AFGFoundationHologram* self, TArray<AActor*>& out_children)
-		{
-			ConstructZoop(self, out_children);
-		});
+	// Broke by 1.1
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGFoundationHologram::ConstructZoop, fhCDO, [this](auto& scope, AFGFoundationHologram* self, TArray<AActor*>& out_children)
+	//	{
+	//		ConstructZoop(self, out_children);
+	//	});
 
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGFoundationHologram::CreateDefaultFoundationZoop, fhCDO, [=](AFGFoundationHologram* self, const FHitResult& hitResult)
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGFoundationHologram::CreateDefaultFoundationZoop, fhCDO, [this](AFGFoundationHologram* self, const FHitResult& hitResult)
 		{
 			CreateDefaultFoundationZoop(self, hitResult);
 		});
 
 	//void ValidatePlacementAndCost(class UFGInventoryComponent* inventory);
-	SUBSCRIBE_METHOD(AFGHologram::ValidatePlacementAndCost, [=](auto scope, AFGHologram* self, class UFGInventoryComponent* inventory)
+	SUBSCRIBE_METHOD(AFGHologram::ValidatePlacementAndCost, [this](auto scope, AFGHologram* self, class UFGInventoryComponent* inventory)
 		{
 			if (!ValidatePlacementAndCost(self, inventory))
 			{
@@ -820,7 +821,7 @@ void FInfiniteZoopModule::StartupModule()
 		});
 
 	AFGHologram* hCDO = GetMutableDefault<AFGHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, hCDO, [=](auto scope, AFGHologram* self, int32 delta)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, hCDO, [this](auto scope, AFGHologram* self, int32 delta)
 		{
 			if (self)
 			{
@@ -837,7 +838,7 @@ void FInfiniteZoopModule::StartupModule()
 			}
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Destroyed, hCDO, [=](auto& scope, AFGHologram* self)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Destroyed, hCDO, [this](auto& scope, AFGHologram* self)
 		{
 			if (self->CanBeZooped())
 			{
@@ -865,7 +866,7 @@ void FInfiniteZoopModule::StartupModule()
 			}
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [=](auto scope, AFGHologram* self)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [this](auto scope, AFGHologram* self)
 		{
 			HGBeginPlay(self);
 		});

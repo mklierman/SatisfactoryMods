@@ -5,6 +5,7 @@
 #include "Hologram/FGPipelinePumpHologram.h"
 #include "Hologram/FGPipelineAttachmentHologram.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogPipeTuner, Display, All);
 class FPipeTunerModule : public FDefaultGameModuleImpl {
 public:
 	virtual void StartupModule() override;

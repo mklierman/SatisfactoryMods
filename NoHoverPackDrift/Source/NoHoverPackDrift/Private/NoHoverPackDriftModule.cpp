@@ -8,7 +8,7 @@
 void FNoHoverPackDriftModule::StartupModule() {
 	AFGHoverPack* hpcdo = GetMutableDefault<AFGHoverPack>();
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGHoverPack::Tick, hpcdo, [=](AFGHoverPack* self, float deltaTime)
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGHoverPack::Tick, hpcdo, [this](AFGHoverPack* self, float deltaTime)
 		{
 			this->StopDrift(self, deltaTime);
 		});

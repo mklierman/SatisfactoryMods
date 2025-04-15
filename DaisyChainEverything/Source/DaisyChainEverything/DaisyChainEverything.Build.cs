@@ -9,6 +9,8 @@ public class DaisyChainEverything : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         bLegacyPublicIncludePaths = false;
 
+        CppStandard = CppStandardVersion.Cpp20;
+
         //SML transitive dependencies
         PublicDependencyModuleNames.AddRange(new[] {
             "Json",

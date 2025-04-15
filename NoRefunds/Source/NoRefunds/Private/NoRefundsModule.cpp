@@ -10,14 +10,14 @@
 void FNoRefundsModule::StartupModule() {
 	TArray< FInventoryStack > refund = TArray< FInventoryStack >();
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD(UFGBuildGunStateDismantle::GetPeekDismantleRefund, [=](auto& scope, const UFGBuildGunStateDismantle* self)
+	SUBSCRIBE_METHOD(UFGBuildGunStateDismantle::GetPeekDismantleRefund, [this](auto& scope, const UFGBuildGunStateDismantle* self)
 		{
 			TArray< FInventoryStack > refund = scope(self);
 			refund = AllowDismantleRefund(refund);
 			scope.Override(refund);
 		});
 
-	SUBSCRIBE_METHOD(UFGBuildGunStateDismantle::Internal_DismantleActor, [=](auto& scope, UFGBuildGunStateDismantle* self, class AActor* actorToDismantle, TArray< AActor* >& out_couldNotDismantle, TArray<FInventoryStack>& out_dismantleRefunds, bool bNoBuildCostEnabled)
+	SUBSCRIBE_METHOD(UFGBuildGunStateDismantle::Internal_DismantleActor, [this](auto& scope, UFGBuildGunStateDismantle* self, class AActor* actorToDismantle, TArray< AActor* >& out_couldNotDismantle, TArray<FInventoryStack>& out_dismantleRefunds, bool bNoBuildCostEnabled)
 		{
 			scope(self, actorToDismantle, out_couldNotDismantle, out_dismantleRefunds, bNoBuildCostEnabled);
 			TArray<FInventoryStack> newRefund;
@@ -26,7 +26,7 @@ void FNoRefundsModule::StartupModule() {
 			scope.Cancel();
 		});
 
-	SUBSCRIBE_METHOD_AFTER(UFGFoliageLibrary::CheckInventorySpaceAndGetStacks, [=](auto returnValue, AFGCharacterPlayer* character, UHierarchicalInstancedStaticMeshComponent* meshComponent, TArrayView< uint32 > randomSeeds, TArray<struct FInventoryStack>& out_inventoryStacks)
+	SUBSCRIBE_METHOD_AFTER(UFGFoliageLibrary::CheckInventorySpaceAndGetStacks, [this](auto returnValue, AFGCharacterPlayer* character, UHierarchicalInstancedStaticMeshComponent* meshComponent, TArrayView< uint32 > randomSeeds, TArray<struct FInventoryStack>& out_inventoryStacks)
 		{
 			auto config = FNR_ConfigStruct::GetActiveConfig(character->GetWorld());
 			bool shouldPreventFoliage = config.Foliage;

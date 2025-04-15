@@ -6,7 +6,7 @@
 void FZippierModule::StartupModule() {
 #if !WITH_EDITOR
 	//void UFGCharacterMovementComponent::StartZiplineMovement(AActor* ziplineActor, const FVector& point1, const FVector& point2, const FVector& actorForward){ }
-	SUBSCRIBE_METHOD(UFGCharacterMovementComponent::StartZiplineMovement, [=](auto scope, UFGCharacterMovementComponent* self, AActor* ziplineActor, const FVector& point1, const FVector& point2, const FVector& actorForward)
+	SUBSCRIBE_METHOD(UFGCharacterMovementComponent::StartZiplineMovement, [this](auto scope, UFGCharacterMovementComponent* self, AActor* ziplineActor, const FVector& point1, const FVector& point2, const FVector& actorForward)
 		{
 			SetZiplineStuff(self);
 		});

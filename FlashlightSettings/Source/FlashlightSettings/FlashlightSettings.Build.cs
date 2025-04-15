@@ -8,6 +8,8 @@ public class FlashlightSettings : ModuleRules
         CppStandard = CppStandardVersion.Cpp20;
         bLegacyPublicIncludePaths = false;
 
+        CppStandard = CppStandardVersion.Cpp20;
+
         //SML transitive dependencies
         PublicDependencyModuleNames.AddRange(new[] {
             "Json",

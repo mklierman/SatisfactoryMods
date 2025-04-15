@@ -30,40 +30,41 @@ void FInfiniteNudgeModule::StartupModule() {
 
 #if !WITH_EDITOR
 	AFGHologram* bh = GetMutableDefault<AFGHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::NudgeHologram, bh, [=](auto scope, const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::NudgeHologram, bh, [this](auto scope, const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
 		{
+			//NudgeHologram(self, NudgeInput, HitResult);
 			scope.Override(ENudgeFailReason::NFR_Success);
 		});
 
 
 	AFGGenericBuildableHologram* gbh = GetMutableDefault<AFGGenericBuildableHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGGenericBuildableHologram::NudgeHologram, gbh, [=](auto scope, const AFGGenericBuildableHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGGenericBuildableHologram::NudgeHologram, gbh, [this](auto scope, const AFGGenericBuildableHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
 		{
 			scope.Override(ENudgeFailReason::NFR_Success);
 		});
 
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGHologram::BeginPlay, bh, [=](AFGHologram* self)
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGHologram::BeginPlay, bh, [this](AFGHologram* self)
 		{
 			self->mCanNudgeHologram = true;
 			self->mCanLockHologram = true;
-			self->mMaxNudgeDistance = 50000;
+			//self->mMaxNudgeDistance = 50000;
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGGenericBuildableHologram::BeginPlay, bh, [=](AFGGenericBuildableHologram* self)
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGGenericBuildableHologram::BeginPlay, bh, [this](AFGGenericBuildableHologram* self)
 		{
 			self->mCanNudgeHologram = true;
 			self->mCanLockHologram = true;
-			self->mMaxNudgeDistance = 50000;
+			//self->mMaxNudgeDistance = 50000;
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::CanNudgeHologram, bh, [=](auto& scope, const AFGHologram* self)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::CanNudgeHologram, bh, [this](auto& scope, const AFGHologram* self)
 		{
 			scope.Override(true);
 		});
 
 	AFGWaterPumpHologram* wph = GetMutableDefault<AFGWaterPumpHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGWaterPumpHologram::PostHologramPlacement, wph, [=](auto& scope, AFGWaterPumpHologram* self, const FHitResult& hitResult)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGWaterPumpHologram::PostHologramPlacement, wph, [this](auto& scope, AFGWaterPumpHologram* self, const FHitResult& hitResult, bool callForChildren)
 		{
 			if (self->IsHologramLocked())
 			{
@@ -72,24 +73,26 @@ void FInfiniteNudgeModule::StartupModule() {
 		});
 
 	//const FVector& GetNudgeOffset() const { return mHologramNudgeOffset; }
-	SUBSCRIBE_METHOD(AFGHologram::LockHologramPosition, [=](auto scope, AFGHologram* self, bool lock)
+	SUBSCRIBE_METHOD(AFGHologram::LockHologramPosition, [this](auto scope, AFGHologram* self, bool lock)
 		{
 			self->mCanNudgeHologram = true;
 			self->mCanLockHologram = true;
 		});
 
-	SUBSCRIBE_METHOD(AFGHologram::GetMaxNudgeDistance, [=](auto scope, const AFGHologram* self)
-		{
-			FVector ret = FVector(50000, 50000, 50000);
-			scope.Override(ret);
-		});
+	// Broke by 1.1
+	//SUBSCRIBE_METHOD(AFGHologram::GetMaxNudgeDistance, [this](auto scope, const AFGHologram* self)
+	//	{
+	//		FVector ret = FVector(50000, 50000, 50000);
+	//		scope.Override(ret);
+	//	});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::AddNudgeOffset, bh, [=](auto& scope, AFGHologram* self, const FVector& Direction)
+	//ENudgeFailReason AFGHologram::AddNudgeOffset(const FVector & Offset, const FVector & MaxNudgeDistance) { return ENudgeFailReason(); }
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::AddNudgeOffset, bh, [this](auto& scope, AFGHologram* self, const FVector& Offset, const FVector& MaxNudgeDistance)
 		{
 			scope.Override(ENudgeFailReason::NFR_Success);
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, bh, [=](auto& scope, AFGHologram* self, int32 delta)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, bh, [this](auto& scope, AFGHologram* self, int32 delta)
 		{
 			if (self->IsHologramLocked())
 			{

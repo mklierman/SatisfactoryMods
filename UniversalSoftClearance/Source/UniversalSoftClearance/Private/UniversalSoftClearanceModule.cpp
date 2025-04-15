@@ -6,17 +6,17 @@ void FUniversalSoftClearanceModule::StartupModule() {
 	AFGHologram* hCDO = GetMutableDefault<AFGHologram>();
 	AFGBuildable* bCDO = GetMutableDefault<AFGBuildable>();
 
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, bCDO, [=](auto scope, AFGBuildable* self)
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, bCDO, [this](auto scope, AFGBuildable* self)
 	//{
 	//		BeginPlay(self);
 	//});
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [=](auto scope, AFGHologram* self)
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [this](auto scope, AFGHologram* self)
 	//	{
 	//		self->mClearanceDetector = nullptr;
 	//		//HBeginPlay(self);
 	//	});
 	////EClearanceOverlapResult TestClearanceOverlap(const FFGClearanceData & clearanceData, const FFGClearanceData & otherClearanceData, AActor * otherActor) const;
-	//SUBSCRIBE_METHOD(AFGHologram::TestClearanceOverlap, [=](auto scope, const AFGHologram* self, const FFGClearanceData& clearanceData, const FFGClearanceData& otherClearanceData, AActor* otherActor)
+	//SUBSCRIBE_METHOD(AFGHologram::TestClearanceOverlap, [this](auto scope, const AFGHologram* self, const FFGClearanceData& clearanceData, const FFGClearanceData& otherClearanceData, AActor* otherActor)
 	//	{
 	//		auto bld = Cast<AFGBuildable>(otherActor);
 	//		if (bld)
@@ -38,7 +38,7 @@ void FUniversalSoftClearanceModule::StartupModule() {
 	//	});
 
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD(AFGHologram::SetupClearanceDetector, [=](auto scope, AFGHologram* self)
+	SUBSCRIBE_METHOD(AFGHologram::SetupClearanceDetector, [this](auto scope, AFGHologram* self)
 		{
 			auto cd = self->mClearanceData;
 			if (cd.Num() > 0)
@@ -65,7 +65,7 @@ void FUniversalSoftClearanceModule::StartupModule() {
 
 		});
 	// 
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [=](auto scope, AFGHologram* self)
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [this](auto scope, AFGHologram* self)
 	//	{
 	//		auto cd = self->mClearanceData;
 	//		if (cd.Num() > 0)
@@ -76,7 +76,7 @@ void FUniversalSoftClearanceModule::StartupModule() {
 	//			self->mClearanceData.Add(cd1);
 	//		}
 	//	});
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::GetClearanceData, hCDO, [=](auto scope, const AFGHologram* self, TArray< const FFGClearanceData* >& out_ClearanceData)
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::GetClearanceData, hCDO, [this](auto scope, const AFGHologram* self, TArray< const FFGClearanceData* >& out_ClearanceData)
 	//	{
 	//		auto cd = self->mClearanceData;
 	//		for (FFGClearanceData c : cd)
@@ -86,7 +86,7 @@ void FUniversalSoftClearanceModule::StartupModule() {
 	//	});
 
 //
-//	SUBSCRIBE_METHOD_AFTER(AFGBlueprintHologram::GenerateCollisionObjects, [=](AFGBlueprintHologram* self, const TArray< AFGBuildable* >& buildables)
+//	SUBSCRIBE_METHOD_AFTER(AFGBlueprintHologram::GenerateCollisionObjects, [this](AFGBlueprintHologram* self, const TArray< AFGBuildable* >& buildables)
 //		{
 //			GenerateCollisionObjects(self, buildables);
 //		});
