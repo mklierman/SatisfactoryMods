@@ -14,34 +14,36 @@
 #pragma optimize("", off)
 void FNoZFightingModule::StartupModule() {
 
-#if !WITH_EDITOR
 	//void AAbstractInstanceManager::SetInstanced(AActor * OwnerActor, const FTransform & ActorTransform, const FInstanceData & InstanceData, FInstanceHandle * &OutHandle, bool bInitializeHidden)
-	SUBSCRIBE_METHOD(AAbstractInstanceManager::SetInstanced, [=](auto& scope, AAbstractInstanceManager* self, AActor* OwnerActor, const FTransform& ActorTransform, const FInstanceData& InstanceData, FInstanceHandle*& OutHandle, bool bInitializeHidden)
+	//void AAbstractInstanceManager::SetInstanced(AActor * OwnerActor, const FTransform & ActorTransform, const FInstanceData & InstanceData, FInstanceOwnerHandlePtr & OutHandle, bool bInitializeHidden)
+
+	SUBSCRIBE_METHOD(AAbstractInstanceManager::SetInstanced, [this](auto& scope, AAbstractInstanceManager* self, AActor* OwnerActor, const FTransform& ActorTransform, const FInstanceData& InstanceData, FInstanceOwnerHandlePtr& OutHandle, bool bInitializeHidden)
 		{
 			//scope(self, OwnerActor, ActorTransform, InstanceData, OutHandle, bInitializeHidden);
 			SetInstanced(self, OwnerActor, ActorTransform, InstanceData, OutHandle, bInitializeHidden);
 		});
 
+#if !WITH_EDITOR
 	//AFGBuildable* bcdo = GetMutableDefault<AFGBuildable>();
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, bcdo, [=](auto& scope, AFGBuildable* self)
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, bcdo, [this](auto& scope, AFGBuildable* self)
 	//	{
 	//		auto transform = self->GetActorTransform();
 	//		OnConstruction(self, transform);
 	//	});
 
 	//int32 AFGLightweightBuildableSubsystem::AddFromBuildable(AFGBuildable * buildable, AActor * buildEffectInstigator, AFGBlueprintProxy * blueprintProxy) { return int32(); }
-	//SUBSCRIBE_METHOD(AFGLightweightBuildableSubsystem::AddFromBuildable, [=](auto& scope, AFGLightweightBuildableSubsystem* self, AFGBuildable* buildable, AActor* buildEffectInstigator, AFGBlueprintProxy* blueprintProxy)
+	//SUBSCRIBE_METHOD(AFGLightweightBuildableSubsystem::AddFromBuildable, [this](auto& scope, AFGLightweightBuildableSubsystem* self, AFGBuildable* buildable, AActor* buildEffectInstigator, AFGBlueprintProxy* blueprintProxy)
 	//	{
 	//		OnConstruction(buildable, buildable->GetActorTransform());
 	//	});
 	//AFGBuildable::HandleLightweightAddition
-	//SUBSCRIBE_METHOD(AFGBuildable::HandleLightweightAddition, [=](auto& scope, AFGBuildable* self)
+	//SUBSCRIBE_METHOD(AFGBuildable::HandleLightweightAddition, [this](auto& scope, AFGBuildable* self)
 	//	{
 	//		OnConstruction(self, self->GetActorTransform());
 	//	});
 	//
 	//AFGBuildableHologram* bhgcdo = GetMutableDefault<AFGBuildableHologram>();
-	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, bhgcdo, [=](AActor* actor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID netConstructionID)
+	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, bhgcdo, [this](AActor* actor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID netConstructionID)
 	//	{
 	//		auto buildable = Cast<AFGBuildable>(actor);
 	//		auto transform = buildable->GetActorTransform();
@@ -102,7 +104,7 @@ void FNoZFightingModule::OnConstruction(AFGBuildable* self, const FTransform& tr
 	}
 }
 
-void FNoZFightingModule::SetInstanced(AAbstractInstanceManager* manager, AActor* OwnerActor, const FTransform& ActorTransform, const FInstanceData& InstanceData, FInstanceHandle*& OutHandle, bool bInitializeHidden)
+void FNoZFightingModule::SetInstanced(AAbstractInstanceManager* manager, AActor* OwnerActor, const FTransform& ActorTransform, const FInstanceData& InstanceData, FInstanceOwnerHandlePtr& OutHandle, bool bInitializeHidden)
 {
 
 	FName Name;
@@ -155,53 +157,53 @@ void FNoZFightingModule::SetInstanced(AAbstractInstanceManager* manager, AActor*
 	//FInstanceComponentData* InstanceEntry = manager->InstanceMap.Find(Name);
 	//FInstanceData* ptr;
 	//ptr = (FInstanceData*)(&InstanceData);
-	auto idk = manager->GetOwnerByHandle(*OutHandle);
-	auto lwbs = Cast<AFGLightweightBuildableSubsystem>(idk);
-	FLightweightBuildableInstanceRef out_buildableDescriptor;
-	lwbs->ResolveLightweightInstance(*OutHandle, out_buildableDescriptor);
-	if (lwbs)
-	{
-		for (auto active : lwbs->mActiveInstanceConverters)
-		{
-			auto buildFoundation = Cast<AFGBuildableFoundation>(active.Instigator);
-			auto buildWalkway = Cast<AFGBuildableWalkway>(active.Instigator);
-			auto holoFoundation = Cast<AFGFoundationHologram>(active.Instigator);
-			if (buildFoundation || buildWalkway || holoFoundation)
-			{
-				auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
-				auto min = config.FoundationMin;
-				auto max = config.FoundationMax;
-				float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
-				//ptr->PositionOffset = FVector(0, 0, randomFloat);
-				auto loc = ptr->RelativeTransform.GetLocation();
-				loc.Z = loc.Z + randomFloat;
-				ptr->RelativeTransform.SetLocation(loc);
-				return;
-			}
-			else if (auto buildWall = Cast<AFGBuildableWall>(OwnerActor))
-			{
-				auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
-				auto min = config.WallMin;
-				auto max = config.WallMax;
-				float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
-				ptr->PositionOffset = FVector(randomFloat, 0, 0);
-				ptr->bApplyRandomOffsetOnInstance = true;
-				return;
-			}
-		}
-	}
-	else if (lwbs)
-	{
-		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
-		auto min = config.FoundationMin;
-		auto max = config.FoundationMax;
-		float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
-		//ptr->PositionOffset = FVector(0, 0, randomFloat);
-		auto loc = ptr->RelativeTransform.GetLocation();
-		loc.Z = loc.Z + randomFloat;
-		ptr->RelativeTransform.SetLocation(loc);
+	//auto idk = manager->GetOwnerByHandle(*OutHandle);
+	//auto lwbs = Cast<AFGLightweightBuildableSubsystem>(idk);
+	//FLightweightBuildableInstanceRef out_buildableDescriptor;
+	//lwbs->ResolveLightweightInstance(*OutHandle, out_buildableDescriptor);
+	//if (lwbs)
+	//{
+	//	for (auto active : lwbs->mActiveInstanceConverters)
+	//	{
+	//		auto buildFoundation = Cast<AFGBuildableFoundation>(active.Instigator);
+	//		auto buildWalkway = Cast<AFGBuildableWalkway>(active.Instigator);
+	//		auto holoFoundation = Cast<AFGFoundationHologram>(active.Instigator);
+	//		if (buildFoundation || buildWalkway || holoFoundation)
+	//		{
+	//			auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
+	//			auto min = config.FoundationMin;
+	//			auto max = config.FoundationMax;
+	//			float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
+	//			//ptr->PositionOffset = FVector(0, 0, randomFloat);
+	//			auto loc = ptr->RelativeTransform.GetLocation();
+	//			loc.Z = loc.Z + randomFloat;
+	//			ptr->RelativeTransform.SetLocation(loc);
+	//			return;
+	//		}
+	//		else if (auto buildWall = Cast<AFGBuildableWall>(OwnerActor))
+	//		{
+	//			auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
+	//			auto min = config.WallMin;
+	//			auto max = config.WallMax;
+	//			float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
+	//			ptr->PositionOffset = FVector(randomFloat, 0, 0);
+	//			ptr->bApplyRandomOffsetOnInstance = true;
+	//			return;
+	//		}
+	//	}
+	//}
+	//else if (lwbs)
+	//{
+	//	auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
+	//	auto min = config.FoundationMin;
+	//	auto max = config.FoundationMax;
+	//	float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
+	//	//ptr->PositionOffset = FVector(0, 0, randomFloat);
+	//	auto loc = ptr->RelativeTransform.GetLocation();
+	//	loc.Z = loc.Z + randomFloat;
+	//	ptr->RelativeTransform.SetLocation(loc);
 
-	}
+	//}
 }
 
 #pragma optimize("", on)
