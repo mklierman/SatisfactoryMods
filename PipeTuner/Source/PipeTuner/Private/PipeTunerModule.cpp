@@ -3,7 +3,6 @@
 #include "PipeTuner_ConfigStruct.h"
 #include "CoreMinimal.h"
 #include "Patching/BlueprintHookManager.h"
-#include "Patching/BlueprintHookHelper.h"
 #include "Buildables/FGBuildablePipeline.h"
 #include "FGGameMode.h"
 #include "Hologram/FGPipelinePumpHologram.h"
@@ -13,14 +12,6 @@
 
 DEFINE_LOG_CATEGORY(LogPipeTuner);
 
-void bphook(FBlueprintHookHelper& helper)
-{
-		UObject* ctx = helper.GetContext(); // the object this function got called onto
-		// do some nice stuff there
-		auto outer = ctx->GetOuter();
-		helper.JumpToFunctionReturn();
-		//helper.JumpToFunctionReturn();
-}
 
 
 void FPipeTunerModule::StartupModule() {

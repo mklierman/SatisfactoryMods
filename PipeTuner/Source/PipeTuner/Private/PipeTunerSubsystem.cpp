@@ -5,7 +5,6 @@
 #include "FGFluidIntegrantInterface.h"
 #include "Patching/BlueprintHookManager.h"
 #include "FGGameMode.h"
-#include "Patching/BlueprintHookHelper.h"
 #include "Patching/NativeHookManager.h"
 #include "Modules/ModuleManager.h"
 

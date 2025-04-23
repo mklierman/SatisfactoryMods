@@ -5,7 +5,6 @@
 #include "FGDropPod.h"
 #include "Patching/NativeHookManager.h"
 #include "Patching/BlueprintHookManager.h"
-#include "Patching/BlueprintHookHelper.h"
 #include "FGIconLibrary.h"
 #include "FGActorRepresentation.h"
 #include "FGMapManager.h"
