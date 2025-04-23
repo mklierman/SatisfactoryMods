@@ -133,21 +133,27 @@ void ASSP_Subsystem::HandlePathSplines(AFGDrivingTargetList* targetList, bool sh
 
 void ASSP_Subsystem::ShowTargetPath(AFGTargetPoint* targetPoint)
 {
-	auto targetList = targetPoint->GetOwningList();
-	if (HasAuthority() && targetList)
+	if (targetPoint)
 	{
-		targetList->SetPathVisible(true);
-		//HandlePathSplines(targetList, true);
+		auto targetList = targetPoint->GetOwningList();
+		if (HasAuthority() && targetList)
+		{
+			targetList->SetPathVisible(true);
+			//HandlePathSplines(targetList, true);
+		}
 	}
 }
 
 void ASSP_Subsystem::HideTargetPath(AFGTargetPoint* targetPoint)
 {
-	auto targetList = targetPoint->GetOwningList();
-	if (HasAuthority() && targetList)
+	if (targetPoint)
 	{
-		targetList->SetPathVisible(false);
-		//HandlePathSplines(targetList, false);
+		auto targetList = targetPoint->GetOwningList();
+		if (HasAuthority() && targetList)
+		{
+			targetList->SetPathVisible(false);
+			//HandlePathSplines(targetList, false);
+		}
 	}
 }
 
