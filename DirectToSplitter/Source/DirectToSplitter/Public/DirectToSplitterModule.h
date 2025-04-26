@@ -46,6 +46,7 @@ public:
 	void CheckValidFactoryPlacement(AFGFactoryHologram* self, bool& retflag);
 	void CheckValidPipePlacement(AFGPipelineAttachmentHologram* self, bool& retflag);
 	bool IsValidHitResult(const AFGConveyorAttachmentHologram* self, const FHitResult& hitResult);
+	void CheckValidFloor(AFGConveyorAttachmentHologram* self);
 
 	void ConfigureComponents(const AFGConveyorAttachmentHologram* self,  bool& retflag);
 

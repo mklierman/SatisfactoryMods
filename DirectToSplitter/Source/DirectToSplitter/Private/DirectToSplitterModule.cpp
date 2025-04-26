@@ -50,6 +50,10 @@ void FDirectToSplitterModule::StartupModule() {
 	//		}
 	//		scope.Override(nullptr);
 	//	});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CheckValidFloor, cah, [this](auto& scope, AFGConveyorAttachmentHologram* self)
+		{
+			CheckValidFloor(self);
+		});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, fgb, [this](auto& scope, AFGBuildable* self)
 		{
@@ -65,9 +69,19 @@ void FDirectToSplitterModule::StartupModule() {
 			{
 				return;
 			}
+			self->mSnappedConnection = nullptr;
+			for (auto conn : self->mConnections)
+			{
+				conn->ClearConnection();
+			}
 			bool result = TrySnapToActor(self, hitResult);
 			if (!result)
 			{
+				self->mSnappedConnection = nullptr;
+				for (auto conn : self->mConnections)
+				{
+					conn->ClearConnection();
+				}
 				return;
 			}
 			scope.Override(result);
@@ -239,6 +253,15 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 			{
 				auto otherConn = factoryConn->GetConnection();
 				factoryConn->ClearConnection();
+				auto connLoc = factoryConn->GetComponentLocation();
+				auto otherLoc = otherConn->GetComponentLocation();
+				auto distance = FVector::Distance(connLoc, otherLoc);
+				distance = FMath::RoundToDouble(distance);
+				auto offset = FDTS_ConfigStruct::GetActiveConfig(conveyorAttachment->GetWorld()).SnapOffset * 100.f / 2;
+				//if (distance != offset)
+				//{
+				//	return;
+				//}
 
 				//Mk6 belt blueprint class
 				UClass* beltClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk6/Build_ConveyorBeltMk6.Build_ConveyorBeltMk6_C"));
@@ -297,6 +320,8 @@ void FDirectToSplitterModule::TrySnapToActor_Hook(TCallScope<bool(*)
 
 bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
 {
+
+	self->mSnappedConnection = nullptr;
 	//Get the (possibly) hit buildable
 	AFGBuildable* hitBuildable = nullptr;
 	auto hitInstanceMgr = Cast<AAbstractInstanceManager>(hitResult.GetActor());
@@ -441,6 +466,7 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 
 void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram* self, bool& retflag)
 {
+
 	retflag = true;
 	TArray< TSubclassOf<  UFGConstructDisqualifier > >out_constructResults;
 	self->GetConstructDisqualifiers(out_constructResults);
@@ -558,6 +584,16 @@ bool FDirectToSplitterModule::IsValidHitResult(const AFGConveyorAttachmentHologr
 		return false;
 	}
 	return true;
+}
+
+void FDirectToSplitterModule::CheckValidFloor(AFGConveyorAttachmentHologram* self)
+{
+	auto building = Cast<AFGBuildableFactory>(self->mSnappedBuilding);
+	auto cb = Cast<AFGBuildableConveyorBase>(self->mSnappedBuilding);
+	if (!building && !cb)
+	{
+		self->mSnappedConnection = nullptr;
+	}
 }
 
 void FDirectToSplitterModule::ConfigureComponents(const AFGConveyorAttachmentHologram* self, bool& retflag)
