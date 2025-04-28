@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0.0",
-	"FriendlyName": "NoSplash",
+	"FriendlyName": "No Splash",
 	"Description": "",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
@@ -22,5 +22,6 @@
 		}
 	],
 	"SemVersion": "1.0.0",
-	"GameVersion": ">=404994"
+	"GameVersion": ">=404994",
+	"RequiredOnRemote": false
 }
