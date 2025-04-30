@@ -17,7 +17,7 @@ void FPhotoModerModule::StartupModule()
 			AFGPlayerState* state = self->GetOuterAFGPlayerState();
 			APlayerState* pState = Cast<APlayerState>(state);
 			auto controller = pState->GetPlayerController();
-			if (controller->IsInputKeyDown(EKeys::LeftShift))
+			if (controller->IsInputKeyDown(EKeys::LeftShift) || controller->IsInputKeyDown(EKeys::RightShift))
 			{
 				if (self->GetIsDecoupledCameraOn())
 				{
