@@ -2,8 +2,8 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0.0",
-	"FriendlyName": "OutlineLoot",
-	"Description": "",
+	"FriendlyName": "Outline Loot",
+	"Description": "Outlines dropped items and loot",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
 	"CreatedByURL": "",
@@ -18,7 +18,7 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.10.0"
+			"SemVersion": "^3.11.0"
 		}
 	],
 	"SemVersion": "1.0.0",
