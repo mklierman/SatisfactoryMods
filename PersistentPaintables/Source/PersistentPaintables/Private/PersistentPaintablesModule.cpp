@@ -44,6 +44,7 @@ TArray<AActor*> FPersistentPaintablesModule::FindNearbySupports(AFGBuildable* pi
 
 	UClass* seekClass = AActor::StaticClass(); // NULL;
 	UKismetSystemLibrary::SphereOverlapActors(pipe->GetWorld(), connLoc, radius, traceObjectTypes, seekClass, ignoreActors, outActors);
+
 	return outActors;
 }
 
@@ -51,7 +52,6 @@ void FPersistentPaintablesModule::UpdateNetworkColor(AFGPipeNetwork* pipeNetwork
 {
 	if (pipeNetwork && pipeNetwork->mFluidIntegrants.Num() > 0)
 	{
-
 		TArray<AActor*> FoundActors;
 		UGameplayStatics::GetAllActorsOfClass(pipeNetwork->GetWorld(), wallHoleClass, FoundActors);
 		PotentialSupports = FoundActors;
@@ -74,43 +74,40 @@ void FPersistentPaintablesModule::UpdateNetworkColor(AFGPipeNetwork* pipeNetwork
 
 void FPersistentPaintablesModule::UpdateColorSingle(AFGBuildable* buildable, AFGPipeNetwork* pipeNetwork)
 {
-	auto desc = pipeNetwork->GetFluidDescriptor();
-	if (desc != nullptr && buildable && pipeNetwork && pipeNetwork->mFluidForm != EResourceForm::RF_INVALID)
+	if (pipeNetwork)
 	{
-		auto fluidColor = UFGItemDescriptor::GetFluidColorLinear(pipeNetwork->GetFluidDescriptor());
-		FFactoryCustomizationData newData = FFactoryCustomizationData();
-		newData.SwatchDesc = swatchClass;
-		newData.ColorSlot = 255;
-		newData.OverrideColorData.PrimaryColor = fluidColor;
-		newData.OverrideColorData.SecondaryColor = fluidColor;
-		newData.Data = buildable->mCustomizationData.Data;
-		newData.ExtraData = buildable->mCustomizationData.ExtraData;
-		newData.NeedsSkinUpdate = true;
-
-		USessionSettingsManager* SessionSettings = buildable->GetWorld()->GetSubsystem<USessionSettingsManager>();
-		auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipesMetallic");
-		if (optionValue)
+		auto desc = pipeNetwork->GetFluidDescriptor();
+		if (desc != nullptr && buildable && pipeNetwork->mFluidForm != EResourceForm::RF_INVALID)
 		{
-			UClass* SomeClass = LoadObject<UClass>(nullptr, TEXT("/PersistentPaintables/PersistentPaintables_CustomFinish.PersistentPaintables_CustomFinish_C"));
-			newData.OverrideColorData.PaintFinish = SomeClass;
-		}
+			if (auto pipe = Cast<AFGBuildablePipeline>(buildable))
+			{
+				auto fluidColor = UFGItemDescriptor::GetFluidColorLinear(pipeNetwork->GetFluidDescriptor());
+				FFactoryCustomizationData newData = FFactoryCustomizationData();
+				newData.SwatchDesc = swatchClass;
+				newData.ColorSlot = 255;
+				newData.OverrideColorData.PrimaryColor = fluidColor;
+				newData.OverrideColorData.SecondaryColor = fluidColor;
+				newData.Data = buildable->mCustomizationData.Data;
+				newData.ExtraData = buildable->mCustomizationData.ExtraData;
+				newData.NeedsSkinUpdate = true;
 
-		ApplyColor(buildable, swatchClass, newData);
-		//return;
+				USessionSettingsManager* SessionSettings = buildable->GetWorld()->GetSubsystem<USessionSettingsManager>();
+				auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipesMetallic");
+				if (optionValue)
+				{
+					UClass* SomeClass = LoadObject<UClass>(nullptr, TEXT("/PersistentPaintables/PersistentPaintables_CustomFinish.PersistentPaintables_CustomFinish_C"));
+					newData.OverrideColorData.PaintFinish = SomeClass;
+				}
 
-		if (auto pipe = Cast<AFGBuildablePipeline>(buildable))
-		{
-
-			ColorConnectedSupports(pipe, newData);
-
-			//ColorSupports(pipe, newData);
+				ApplyColor(buildable, swatchClass, newData);
+				ColorConnectedSupports(pipe, newData);
+			}
 		}
 	}
 }
 
 void FPersistentPaintablesModule::ColorConnectedSupports(AFGBuildablePipeline* pipe, FFactoryCustomizationData& newData)
 {
-
 	USessionSettingsManager* SessionSettings = pipe->GetWorld()->GetSubsystem<USessionSettingsManager>();
 	auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintSupports");
 	if (optionValue)
@@ -308,47 +305,27 @@ void FPersistentPaintablesModule::ShutdownModule()
 
 void FPersistentPaintablesModule::AddBuildable(AFGBuildable* buildable, const AFGBuildableHologram* hologram)
 {
-	//UE_LOG(PersistentPaintables_Log, Display, TEXT("AddBuildable"));
 	if (buildable)
 	{
-		if (buildable->GetCanBeColored_Implementation())
+		if (auto pipe = Cast<AFGBuildablePipeline>(buildable))
 		{
-			//UE_LOG(PersistentPaintables_Log, Display, TEXT("GetCanBeColored_Implementation"));
-			if (auto instigatorPawn = hologram->GetConstructionInstigator())
-			{
-				//UE_LOG(PersistentPaintables_Log, Display, TEXT("instigatorPawn"));
-				auto instigator = Cast <AFGCharacterPlayer>(instigatorPawn);
-				if (instigator)
-				{
-					auto component = instigator->GetComponentByClass<UPP_ActorComponent>();
-					if (component)
-					{
-						buildable->SetCustomizationData_Implementation(component->CustomizationStruct);
-						buildable->ApplyCustomizationData_Implementation(component->CustomizationStruct);
-						buildable->SetCustomizationDataLightweightNoApply(component->CustomizationStruct);
-						if (auto pipe = Cast<AFGBuildablePipeline>(buildable))
-						{
-							TArray<AActor*> FoundActors;
-							UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), wallHoleClass, FoundActors);
-							PotentialSupports = FoundActors;
-							UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), floorHoleClass, FoundActors);
-							PotentialSupports.Append(FoundActors);
-							UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), wallSupportClass, FoundActors);
-							PotentialSupports.Append(FoundActors);
-							UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), pipeSupportClass, FoundActors);
-							PotentialSupports.Append(FoundActors);
-							UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), AFGBuildablePoleStackable::StaticClass(), FoundActors);
-							PotentialSupports.Append(FoundActors);
+			TArray<AActor*> FoundActors;
+			UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), wallHoleClass, FoundActors);
+			PotentialSupports = FoundActors;
+			UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), floorHoleClass, FoundActors);
+			PotentialSupports.Append(FoundActors);
+			UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), wallSupportClass, FoundActors);
+			PotentialSupports.Append(FoundActors);
+			UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), pipeSupportClass, FoundActors);
+			PotentialSupports.Append(FoundActors);
+			UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), AFGBuildablePoleStackable::StaticClass(), FoundActors);
+			PotentialSupports.Append(FoundActors);
 
-
-							ColorConnectedSupports(pipe, component->CustomizationStruct);
-							//ColorSupports(pipe, component->CustomizationStruct);
-						}
-						return;
-					}
-				}
-			}
-			return;
+			auto connComp = Cast<UFGPipeConnectionComponent>(pipe->GetConnection0());
+			auto pipeNetworkId = connComp->GetPipeNetworkID();
+			auto pipeSubsystem = AFGPipeSubsystem::Get(buildable->GetWorld());
+			auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
+			UpdateColorSingle(pipe, network);
 		}
 	}
 }
@@ -362,7 +339,27 @@ void FPersistentPaintablesModule::HookPipes()
 			auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
 			if (optionValue)
 			{
-				auto pipeNetworkId = self->GetPipeNetworkID();
+				auto buildable = Cast<AFGBuildable>(self->GetOwner());
+				if (buildable)
+				{
+					auto pipeNetworkId = self->GetPipeNetworkID();
+					auto pipeSubsystem = AFGPipeSubsystem::Get(self->GetWorld());
+					auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
+					AsyncTask(ENamedThreads::GameThread, [=, this]() {
+						UpdateColorSingle(buildable, network);
+						});
+				}
+			}
+		});
+	UFGPipeConnectionComponent* pcb = GetMutableDefault<UFGPipeConnectionComponent>();
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(UFGPipeConnectionComponent::BeginPlay, pcb, [this](UFGPipeConnectionComponent* self)
+		{
+			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+			auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
+			if (optionValue)
+			{
+				auto PipeConnComp = Cast<UFGPipeConnectionComponent>(self);
+				auto pipeNetworkId = PipeConnComp->GetPipeNetworkID();
 				auto pipeSubsystem = AFGPipeSubsystem::Get(self->GetWorld());
 				auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
 				AsyncTask(ENamedThreads::GameThread, [=, this]() {
@@ -384,6 +381,7 @@ void FPersistentPaintablesModule::HookPipes()
 	//	});
 
 	AFGPipeNetwork* pn = GetMutableDefault<AFGPipeNetwork>();
+
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGPipeNetwork::BeginPlay, pn, [this](AFGPipeNetwork* self)
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
@@ -400,11 +398,14 @@ void FPersistentPaintablesModule::HookPipes()
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::AddFluidIntegrant, [this](AFGPipeNetwork* self, class IFGFluidIntegrantInterface* fluidIntegrant)
 		{
-			if (self && IsInGameThread())
+			if (self)
 			{
-				FPersistentPaintables_ConfigStruct config = FPersistentPaintables_ConfigStruct::GetActiveConfig(self->GetWorld());
-				if (config.PaintPipes)
+				USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+				auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
+				//FPersistentPaintables_ConfigStruct config = FPersistentPaintables_ConfigStruct::GetActiveConfig(self->GetWorld());
+				if (optionValue)
 				{
+					auto startTime = FDateTime::Now();
 					auto pipeBase = Cast<UFGPipeConnectionComponentBase>(fluidIntegrant);
 					if (pipeBase && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_CONSUMER && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_PRODUCER)
 					{
@@ -413,13 +414,20 @@ void FPersistentPaintablesModule::HookPipes()
 						{
 							if (auto owner = pipeCons[0]->GetOwner())
 							{
-								if (auto buildable = Cast<AFGBuildable>(owner))
+								if (auto buildable = Cast<AFGBuildablePipeline>(owner))
 								{
-									UpdateColorSingle(buildable, self);
+
+									AsyncTask(ENamedThreads::GameThread, [=, this]() {
+										UpdateColorSingle(buildable, self);
+										});
 								}
 							}
 						}
 					}
+
+					auto endTime = FDateTime::Now();
+					auto elapsedTime = endTime - startTime;
+					UE_LOGFMT(PersistentPaintables_Log, Display, "AFGPipeNetwork::AddFluidIntegrant time elapsed: {0}", elapsedTime);
 				}
 			}
 		});
