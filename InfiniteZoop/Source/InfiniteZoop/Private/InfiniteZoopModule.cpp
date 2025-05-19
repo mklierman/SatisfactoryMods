@@ -491,7 +491,7 @@ void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AAct
 {
 	//UWorld* world = self->GetWorld();
 	//UE_LOGFMT(InfiniteZoop_Log, Display, "FInfiniteZoopModule::ConstructZoop. zoopSubsystem->currentZoopAmount: {0}", zoopSubsystem->currentZoopAmount);
-	if (IsZoopMode(self))
+	if (self && IsZoopMode(self))
 	{
 		auto zStruct = GetStruct(self);
 		if (self)
@@ -523,58 +523,66 @@ void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AAct
 FZoopStruct* FInfiniteZoopModule::GetStruct(AFGFoundationHologram* self)
 {
 	FZoopStruct* zStruct = new FZoopStruct();
-	if (FoundationsBeingZooped.Contains(self))
+	if (self)
 	{
-		zStruct = FoundationsBeingZooped[self];
-	}
-	else
-	{
-		FoundationsBeingZooped.Add(self, zStruct);
+		if (FoundationsBeingZooped.Contains(self))
+		{
+			zStruct = FoundationsBeingZooped[self];
+		}
+		else
+		{
+			FoundationsBeingZooped.Add(self, zStruct);
+		}
 	}
 	return zStruct;
 }
 
 bool FInfiniteZoopModule::IsZoopMode(AFGFoundationHologram* self)
 {
-	auto vertMode = self->mBuildModeVerticalZoop;
-	if (self->IsCurrentBuildMode(vertMode))
+	if (self)
 	{
-		return false;
+		auto vertMode = self->mBuildModeVerticalZoop;
+		if (self->IsCurrentBuildMode(vertMode))
+		{
+			return false;
+		}
+		return true;
 	}
-	return true;
+	return false;
 }
 
 bool FInfiniteZoopModule::BGSecondaryFire(UFGBuildGunStateBuild* self)
 {
-	
-	if (auto hologram = Cast<AFGFactoryBuildingHologram>(self->GetHologram()))
+	if (self)
 	{
-		if (auto foundation = Cast<AFGFoundationHologram>(hologram))
+		if (auto hologram = Cast<AFGFactoryBuildingHologram>(self->GetHologram()))
 		{
-			if (Cast<AFGRampHologram>(hologram) || FoundationsBeingZooped.Num() <= 0)
+			if (auto foundation = Cast<AFGFoundationHologram>(hologram))
 			{
-				return true;
-			}
-			if (FoundationsBeingZooped.Contains(foundation))
-			{
-				auto zStruct = FoundationsBeingZooped[foundation];
-				if (zStruct->inScrollMode)
+				if (Cast<AFGRampHologram>(hologram) || FoundationsBeingZooped.Num() <= 0)
 				{
-					zStruct->inScrollMode = false;
+					return true;
+				}
+				if (FoundationsBeingZooped.Contains(foundation))
+				{
+					auto zStruct = FoundationsBeingZooped[foundation];
+					if (zStruct->inScrollMode)
+					{
+						zStruct->inScrollMode = false;
+						return false;
+					}
+				}
+			}
+			else if (auto wall = Cast< AFGWallHologram>(hologram))
+			{
+				if (HologramsToZoop.Contains(hologram))
+				{
+					HologramsToZoop.Remove(hologram);
 					return false;
 				}
 			}
+			SetSubsystemZoopAmounts(-1, -1, -1, true, self->GetWorld(), hologram);
 		}
-		else if (auto wall = Cast< AFGWallHologram>(hologram))
-		{
-			if (HologramsToZoop.Contains(hologram))
-			{
-				HologramsToZoop.Remove(hologram);
-				return false;
-			}
-		}
-
-		SetSubsystemZoopAmounts(-1, -1, -1, true, self->GetWorld(), hologram);
 	}
 	return true;
 }
