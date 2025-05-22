@@ -36,9 +36,8 @@ void FInfiniteNudgeModule::StartupModule() {
 			scope.Override(ENudgeFailReason::NFR_Success);
 		});
 
-
-	AFGGenericBuildableHologram* gbh = GetMutableDefault<AFGGenericBuildableHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGGenericBuildableHologram::NudgeHologram, gbh, [this](auto scope, const AFGGenericBuildableHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
+	AFGHologram* gbh = GetMutableDefault<AFGHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::NudgeHologram, gbh, [this](auto scope, const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
 		{
 			scope.Override(ENudgeFailReason::NFR_Success);
 		});
