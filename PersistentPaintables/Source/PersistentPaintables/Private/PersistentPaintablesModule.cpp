@@ -405,7 +405,7 @@ void FPersistentPaintablesModule::HookPipes()
 				//FPersistentPaintables_ConfigStruct config = FPersistentPaintables_ConfigStruct::GetActiveConfig(self->GetWorld());
 				if (optionValue)
 				{
-					auto startTime = FDateTime::Now();
+					//auto startTime = FDateTime::Now();
 					auto pipeBase = Cast<UFGPipeConnectionComponentBase>(fluidIntegrant);
 					if (pipeBase && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_CONSUMER && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_PRODUCER)
 					{
@@ -425,9 +425,9 @@ void FPersistentPaintablesModule::HookPipes()
 						}
 					}
 
-					auto endTime = FDateTime::Now();
-					auto elapsedTime = endTime - startTime;
-					UE_LOGFMT(PersistentPaintables_Log, Display, "AFGPipeNetwork::AddFluidIntegrant time elapsed: {0}", elapsedTime);
+					//auto endTime = FDateTime::Now();
+					//auto elapsedTime = endTime - startTime;
+					//UE_LOGFMT(PersistentPaintables_Log, Display, "AFGPipeNetwork::AddFluidIntegrant time elapsed: {0}", elapsedTime);
 				}
 			}
 		});
