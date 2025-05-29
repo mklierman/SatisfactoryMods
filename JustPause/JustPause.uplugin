@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.6",
-	"SemVersion": "1.1.6",
+	"VersionName": "1.1.7",
+	"SemVersion": "1.1.7",
 	"FriendlyName": "Just Pause",
 	"Description": "Pause button goes brrr",
 	"Category": "Modding",
@@ -18,9 +18,9 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.8.0",
+			"SemVersion": "^3.11.0",
 			"Enabled": true
 		}
 	],
-	"GameVersion": ">=365306"
+	"GameVersion": ">=404994"
 }

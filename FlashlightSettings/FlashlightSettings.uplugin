@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.2",
-	"SemVersion": "1.1.2",
+	"VersionName": "1.1.3",
+	"SemVersion": "1.1.3",
 	"FriendlyName": "Flashlight Settings",
 	"Description": "Adds a new widget which lets you adjust the settings of your flashlight",
 	"Category": "Modding",
@@ -25,10 +25,10 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.10.0",
+			"SemVersion": "^3.11.0",
 			"Enabled": true
 		}
 	],
-	"GameVersion": ">=383729",
+	"GameVersion": ">=404994",
 	"RequiredOnRemote": false
 }

@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.2",
+	"VersionName": "1.0.3",
 	"FriendlyName": "Progressive Hover Pack",
 	"Description": "Adds progressive tiers of Hover Packs",
 	"Category": "Modding",
@@ -18,9 +18,9 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.8.0"
+			"SemVersion": "^3.11.0"
 		}
 	],
-	"SemVersion": "1.0.2",
-	"GameVersion": ">=365306"
+	"SemVersion": "1.0.3",
+	"GameVersion": ">=404994"
 }

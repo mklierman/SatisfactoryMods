@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0.0",
-	"FriendlyName": "InfiniteElevators",
+	"FriendlyName": "Infinite Elevators",
 	"Description": "",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
@@ -18,7 +18,7 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.10.0"
+			"SemVersion": "^3.11.0"
 		}
 	],
 	"SemVersion": "1.0.0",

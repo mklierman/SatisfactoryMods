@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.0",
+	"VersionName": "1.0.1",
 	"FriendlyName": "Constant Geothermal Power",
 	"Description": "Makes Geothermal Power Plants provide constant power",
 	"Category": "Modding",
@@ -18,9 +18,9 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.9.0"
+			"SemVersion": "^3.11.0"
 		}
 	],
-	"SemVersion": "1.0.0",
-	"GameVersion": ">=383729"
+	"SemVersion": "1.0.1",
+	"GameVersion": ">=404994"
 }

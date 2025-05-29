@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.0",
-	"SemVersion": "1.1.0",
+	"VersionName": "1.1.1",
+	"SemVersion": "1.1.1",
 	"FriendlyName": "Search-it",
 	"Description": "Sets mouse focus on the Search boxes",
 	"Category": "Modding",
@@ -19,10 +19,10 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.8.0",
+			"SemVersion": "^3.11.0",
 			"Enabled": true,
 			"IsActive": false
 		}
 	],
-	"GameVersion": ">=377620"
+	"GameVersion": ">=404994"
 }

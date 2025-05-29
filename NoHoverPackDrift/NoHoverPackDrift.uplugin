@@ -1,25 +1,26 @@
 {
-  "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "1.1.4",
-  "SemVersion": "1.1.4",
-  "FriendlyName": "HoverPack Configurator",
-  "Description": "Allows configuration of some HoverPack variables",
-  "Category": "Modding",
-  "CreatedBy": "SirDigby",
+	"FileVersion": 3,
+	"Version": 2,
+	"VersionName": "2.0.0",
+	"SemVersion": "2.0.0",
+	"FriendlyName": "HoverPack Configurator",
+	"Description": "Allows configuration of some HoverPack variables",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
 	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
-  "DocsURL": "",
-  "MarketplaceURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
 	"SupportURL": "https://discord.gg/WM5KT7pVu8",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "IsExperimentalVersion": false,
-  "Installed": false,
-  "Plugins": [
-    {
-      "Name": "SML",
-      "SemVersion": "^3.6.0",
-      "Enabled": true
-    }
-  ]
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Plugins": [
+		{
+			"Name": "SML",
+			"SemVersion": "^3.11.0",
+			"Enabled": true
+		}
+	],
+	"GameVersion": ">=404994"
 }

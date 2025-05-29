@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.2",
-	"SemVersion": "1.0.2",
+	"VersionName": "1.0.3",
+	"SemVersion": "1.0.3",
 	"FriendlyName": "Uninterrupted Train Belts",
 	"Description": "Train station belts will continue working during load/unload",
 	"Category": "Modding",
@@ -18,7 +18,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.8.0",
+			"SemVersion": "^3.11.0",
 			"Enabled": true
 		}
 	],
@@ -29,5 +29,5 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"GameVersion": ">=382498"
+	"GameVersion": ">=404994"
 }
