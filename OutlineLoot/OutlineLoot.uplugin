@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.0",
+	"VersionName": "1.0.2",
 	"FriendlyName": "Outline Loot",
 	"Description": "Outlines dropped items and loot",
 	"Category": "Modding",
@@ -21,6 +21,6 @@
 			"SemVersion": "^3.11.0"
 		}
 	],
-	"SemVersion": "1.0.0",
+	"SemVersion": "1.0.2",
 	"GameVersion": ">=404994"
 }
