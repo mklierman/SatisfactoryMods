@@ -22,6 +22,7 @@
 #include "Equipment/FGParachute.h"
 #include "Hologram/FGBlueprintHologram.h"
 #include <SessionSettings/SessionSettingsManager.h>
+#include <Logging/StructuredLog.h>
 
 DEFINE_LOG_CATEGORY(LogConstructionPreferences);
 
@@ -71,7 +72,6 @@ void FConstructionPreferencesModule::StartupModule() {
 			self->mMaximumHeight = (maxHeight * 100);
 		});
 
-#endif
 	AFGConveyorBeltHologram* bhg = GetMutableDefault<AFGConveyorBeltHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGConveyorBeltHologram::BeginPlay, bhg, [](AFGConveyorBeltHologram* self)
 		{
@@ -80,6 +80,23 @@ void FConstructionPreferencesModule::StartupModule() {
 			self->mMaxSplineLength = length * 100;
 		});
 
+	AFGPipelineHologram* phg = GetMutableDefault<AFGPipelineHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGPipelineHologram::BeginPlay, phg, [](AFGPipelineHologram* self)
+		{
+			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Pipeline.Length");
+			self->mMaxSplineLength = length * 100;
+		});
+
+	AFGRailroadTrackHologram* rrhg = GetMutableDefault<AFGRailroadTrackHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGRailroadTrackHologram::BeginPlay, rrhg, [](AFGRailroadTrackHologram* self)
+		{
+			//UE_LOGFMT(LogConstructionPreferences, Display, "Railroad Max Length: {0}", self->mMaxLength);
+			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Railroad.Length");
+			self->mMaxLength = length * 100;
+		});
+#endif
 
 }
 
