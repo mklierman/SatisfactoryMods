@@ -79,7 +79,10 @@ void FPersistentPaintablesModule::UpdateColorSingle(AFGBuildable* buildable, AFG
 		auto desc = pipeNetwork->GetFluidDescriptor();
 		if (desc != nullptr && buildable && pipeNetwork->mFluidForm != EResourceForm::RF_INVALID)
 		{
-			if (auto pipe = Cast<AFGBuildablePipeline>(buildable))
+			auto pipe = Cast<AFGBuildablePipeline>(buildable);
+			auto junction = Cast<AFGBuildablePipelineJunction>(buildable);
+
+			if (pipe || junction)
 			{
 				auto fluidColor = UFGItemDescriptor::GetFluidColorLinear(pipeNetwork->GetFluidDescriptor());
 				FFactoryCustomizationData newData = FFactoryCustomizationData();
@@ -100,7 +103,10 @@ void FPersistentPaintablesModule::UpdateColorSingle(AFGBuildable* buildable, AFG
 				}
 
 				ApplyColor(buildable, swatchClass, newData);
-				ColorConnectedSupports(pipe, newData);
+				if (pipe)
+				{
+					ColorConnectedSupports(pipe, newData);
+				}
 			}
 		}
 	}
