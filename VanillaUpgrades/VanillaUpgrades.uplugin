@@ -21,6 +21,13 @@
 			"SemVersion": "^3.11.1"
 		}
 	],
+	"Modules": [
+		{
+			"Name": "VanillaUpgrades",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
 	"SemVersion": "1.0.0",
-	"GameVersion": ">=404994"
+	"GameVersion": ">=415558"
 }
