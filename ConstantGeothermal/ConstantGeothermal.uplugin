@@ -18,9 +18,9 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.11.0"
+			"SemVersion": "^3.11.1"
 		}
 	],
 	"SemVersion": "1.0.1",
-	"GameVersion": ">=404994"
+	"GameVersion": ">=415558"
 }
