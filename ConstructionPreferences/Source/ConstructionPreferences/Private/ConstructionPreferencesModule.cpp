@@ -77,7 +77,10 @@ void FConstructionPreferencesModule::StartupModule() {
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.ConveyorBelt.Length");
-			self->mMaxSplineLength = length * 100;
+			if (!FMath::IsNearlyEqual(self->mMaxSplineLength, 5600, 0.1)) // Check if default
+			{
+				self->mMaxSplineLength = length * 100;
+			}
 		});
 
 	AFGPipelineHologram* phg = GetMutableDefault<AFGPipelineHologram>();
@@ -85,19 +88,24 @@ void FConstructionPreferencesModule::StartupModule() {
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Pipeline.Length");
-			self->mMaxSplineLength = length * 100;
+			if (!FMath::IsNearlyEqual(self->mMaxSplineLength, 5600, 0.1)) // Check if default
+			{
+				self->mMaxSplineLength = length * 100;
+			}
 		});
 
 	AFGRailroadTrackHologram* rrhg = GetMutableDefault<AFGRailroadTrackHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGRailroadTrackHologram::BeginPlay, rrhg, [](AFGRailroadTrackHologram* self)
 		{
-			//UE_LOGFMT(LogConstructionPreferences, Display, "Railroad Max Length: {0}", self->mMaxLength);
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Railroad.Length");
-			self->mMaxLength = length * 100;
+			if (!FMath::IsNearlyEqual(self->mMaxLength, 10000, 0.1)) // Check if default
+			{
+				self->mMaxLength = length * 100;
+				//UE_LOGFMT(LogConstructionPreferences, Display, "Railroad Max Length: {0}", self->mMaxLength);
+			}
 		});
 #endif
-
 }
 
 IMPLEMENT_GAME_MODULE(FConstructionPreferencesModule, ConstructionPreferences);
