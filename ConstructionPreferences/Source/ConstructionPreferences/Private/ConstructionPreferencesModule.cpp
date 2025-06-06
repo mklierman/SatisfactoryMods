@@ -77,7 +77,7 @@ void FConstructionPreferencesModule::StartupModule() {
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.ConveyorBelt.Length");
-			if (!FMath::IsNearlyEqual(self->mMaxSplineLength, 5600, 0.1)) // Check if default
+			if (!FMath::IsNearlyEqual(length, 5600, 0.1)) // Check if default
 			{
 				self->mMaxSplineLength = length * 100;
 			}
@@ -88,7 +88,7 @@ void FConstructionPreferencesModule::StartupModule() {
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Pipeline.Length");
-			if (!FMath::IsNearlyEqual(self->mMaxSplineLength, 5600, 0.1)) // Check if default
+			if (!FMath::IsNearlyEqual(length, 5600, 0.1)) // Check if default
 			{
 				self->mMaxSplineLength = length * 100;
 			}
@@ -99,7 +99,7 @@ void FConstructionPreferencesModule::StartupModule() {
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Railroad.Length");
-			if (!FMath::IsNearlyEqual(self->mMaxLength, 10000, 0.1)) // Check if default
+			if (!FMath::IsNearlyEqual(length, 10000, 0.1)) // Check if default
 			{
 				self->mMaxLength = length * 100;
 				//UE_LOGFMT(LogConstructionPreferences, Display, "Railroad Max Length: {0}", self->mMaxLength);
