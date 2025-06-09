@@ -25,7 +25,7 @@ void FLoadBalancersModule::StartupModule() {
 	AFGGameMode* LocalGameMode = GetMutableDefault<AFGGameMode>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, &GameModePostLogin);
 		UFGAttachmentPointType* LocalAP = GetMutableDefault<UFGAttachmentPointType>();
-		SUBSCRIBE_METHOD_VIRTUAL(UFGAttachmentPointType::CanAttach, LocalAP, [this](auto& scope, const UFGAttachmentPointType* self, const struct FFGAttachmentPoint& point, const struct FFGAttachmentPoint& targetPoint)
+		/*SUBSCRIBE_METHOD_VIRTUAL(UFGAttachmentPointType::CanAttach, LocalAP, [this](auto& scope, const UFGAttachmentPointType* self, const struct FFGAttachmentPoint& point, const struct FFGAttachmentPoint& targetPoint)
 			{
 				if (auto targetBalancer = Cast< ALBBuild_ModularLoadBalancer>(targetPoint.Owner))
 				{
@@ -38,7 +38,7 @@ void FLoadBalancersModule::StartupModule() {
 						scope.Override(false);
 					}
 				}
-			});
+			});*/
 #endif
 }
 
