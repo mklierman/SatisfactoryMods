@@ -12,3 +12,13 @@ void UVU_BPFL::CalculateProductionCycleTime(AFGBuildableResourceExtractor* extra
 {
 	extractor->CalculateProductionCycleTime();
 }
+
+void UVU_BPFL::FuelGenBeginPlay(AFGBuildableGeneratorFuel* fuelGen)
+{
+	fuelGen->BeginPlay();
+}
+
+void UVU_BPFL::FactoryBeginPlay(AFGBuildableFactory* factory)
+{
+	factory->BeginPlay();
+}
