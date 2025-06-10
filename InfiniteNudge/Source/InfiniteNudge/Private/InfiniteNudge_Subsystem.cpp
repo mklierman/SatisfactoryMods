@@ -387,63 +387,66 @@ FVector AInfiniteNudge_Subsystem::CalcViewAxis(const EAxis::Type DesiredAxis, co
 
 int AInfiniteNudge_Subsystem::GetClosestLookAngle(AActor* actor, APlayerController* controller)
 {
-	float inverseRotation = roundf(actor->GetActorRotation().GetInverse().Yaw);
-	double inverseCameraRotation = controller->PlayerCameraManager->GetCameraRotation().Add(0, inverseRotation, 0).Yaw;
-	//double inverseCameraRotation = controller->PlayerCameraManager->GetCameraRotation().Yaw;
-	double angleToCheck = fmod(inverseCameraRotation, 360);
-	//angleToCheck = angleToCheck - 180;
-	if (angleToCheck < 0) angleToCheck += 360;
+	if (actor && controller)
+	{
+		float inverseRotation = roundf(actor->GetActorRotation().GetInverse().Yaw);
+		double inverseCameraRotation = controller->PlayerCameraManager->GetCameraRotation().Add(0, inverseRotation, 0).Yaw;
+		//double inverseCameraRotation = controller->PlayerCameraManager->GetCameraRotation().Yaw;
+		double angleToCheck = fmod(inverseCameraRotation, 360);
+		//angleToCheck = angleToCheck - 180;
+		if (angleToCheck < 0) angleToCheck += 360;
 
-	if (angleToCheck >= double(0.0) && angleToCheck < double(90.0))
-	{
-		double firstNum = 0.0;
-		double secondNum = 90.0;
-		if (abs(angleToCheck - firstNum) < abs(angleToCheck - secondNum))
+		if (angleToCheck >= double(0.0) && angleToCheck < double(90.0))
 		{
-			return firstNum;
+			double firstNum = 0.0;
+			double secondNum = 90.0;
+			if (abs(angleToCheck - firstNum) < abs(angleToCheck - secondNum))
+			{
+				return firstNum;
+			}
+			else
+			{
+				return secondNum;
+			}
 		}
-		else
+		else if (angleToCheck >= double(90.0) && angleToCheck < double(180.0))
 		{
-			return secondNum;
+			double firstNum = 90.0;
+			double secondNum = 180.0;
+			if (abs(angleToCheck - firstNum) < abs(angleToCheck - secondNum))
+			{
+				return firstNum;
+			}
+			else
+			{
+				return secondNum;
+			}
 		}
-	}
-	else if (angleToCheck >= double(90.0) && angleToCheck < double(180.0))
-	{
-		double firstNum = 90.0;
-		double secondNum = 180.0;
-		if (abs(angleToCheck - firstNum) < abs(angleToCheck - secondNum))
+		else if (angleToCheck >= double(180.0) && angleToCheck < double(270.0))
 		{
-			return firstNum;
+			double firstNum = 180.0;
+			double secondNum = 270.0;
+			if (abs(angleToCheck - firstNum) < abs(angleToCheck - secondNum))
+			{
+				return firstNum;
+			}
+			else
+			{
+				return secondNum;
+			}
 		}
-		else
+		else if (angleToCheck >= double(270.0) && angleToCheck <= double(360.0))
 		{
-			return secondNum;
-		}
-	}
-	else if (angleToCheck >= double(180.0) && angleToCheck < double(270.0))
-	{
-		double firstNum = 180.0;
-		double secondNum = 270.0;
-		if (abs(angleToCheck - firstNum) < abs(angleToCheck - secondNum))
-		{
-			return firstNum;
-		}
-		else
-		{
-			return secondNum;
-		}
-	}
-	else if (angleToCheck >= double(270.0) && angleToCheck <= double(360.0))
-	{
-		double firstNum = 270.0;
-		double secondNum = 360.0;
-		if (abs(angleToCheck - firstNum) < abs(angleToCheck - secondNum))
-		{
-			return firstNum;
-		}
-		else
-		{
-			return 0;
+			double firstNum = 270.0;
+			double secondNum = 360.0;
+			if (abs(angleToCheck - firstNum) < abs(angleToCheck - secondNum))
+			{
+				return firstNum;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 	}
 	return -1;
