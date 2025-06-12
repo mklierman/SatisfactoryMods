@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.1",
+	"VersionName": "1.0.2",
 	"FriendlyName": "This Sign Up",
 	"Description": "Provides arrows to show which way Up is when building a Sign",
 	"Category": "Modding",
@@ -18,10 +18,10 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.9.0"
+			"SemVersion": "^3.11.1"
 		}
 	],
-	"SemVersion": "1.0.1",
-	"GameVersion": ">=383729",
+	"SemVersion": "1.0.2",
+	"GameVersion": ">=416835",
 	"RequiredOnRemote": false
 }
