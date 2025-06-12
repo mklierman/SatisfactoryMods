@@ -105,6 +105,25 @@ void FConstructionPreferencesModule::StartupModule() {
 				//UE_LOGFMT(LogConstructionPreferences, Display, "Railroad Max Length: {0}", self->mMaxLength);
 			}
 		});
+
+	AFGWireHologram* whg = GetMutableDefault<AFGWireHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGWireHologram::BeginPlay, whg, [](AFGWireHologram* self)
+		{
+			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Wire.Length");
+			//UE_LOGFMT(LogConstructionPreferences, Display, "Wire Max Length: {0}", self->mMaxLength);
+			if (!FMath::IsNearlyEqual(length, 10000, 0.1)) // Check if default
+			{
+				self->mMaxLength = length * 100;
+			}
+
+			auto towerLength = SessionSettings->GetFloatOptionValue("ConstructionPreferences.TowerWire.Length");
+			//UE_LOGFMT(LogConstructionPreferences, Display, "Tower Wire Max Length: {0}", self->mMaxPowerTowerLength);
+			if (!FMath::IsNearlyEqual(length, 30000, 0.1)) // Check if default
+			{
+				self->mMaxPowerTowerLength = towerLength * 100;
+			}
+		});
 #endif
 }
 
