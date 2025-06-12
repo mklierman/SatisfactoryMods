@@ -9,6 +9,7 @@
 #include "Hologram/FGWallAttachmentHologram.h"
 #include "FGInputLibrary.h"
 #include "FGGameMode.h"
+#include <Hologram/FGSplineHologram.h>
 
 #pragma optimize("", off)
 
