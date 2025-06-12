@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.9",
-	"SemVersion": "1.0.9",
+	"VersionName": "1.0.10",
+	"SemVersion": "1.0.10",
 	"FriendlyName": "No Falling Gifts",
 	"Description": "Prevents Ficsmas Gifts falling from the sky",
 	"Category": "Modding",
@@ -18,9 +18,9 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.11.0",
+			"SemVersion": "^3.11.1",
 			"Enabled": true
 		}
 	],
-	"GameVersion": ">=404994"
+	"GameVersion": ">=416835"
 }
