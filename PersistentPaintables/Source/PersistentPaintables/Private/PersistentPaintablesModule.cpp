@@ -281,7 +281,12 @@ void FPersistentPaintablesModule::StartupModule() {
 			//UE_LOG(PersistentPaintables_Log, Display, TEXT("ConfigureActor"));
 			if (self)
 			{
-				AddBuildable(inBuildable, self);
+				USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+				auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
+				if (optionValue)
+				{
+					AddBuildable(inBuildable, self);
+				}
 				return;
 			}
 		});
@@ -292,7 +297,12 @@ void FPersistentPaintablesModule::StartupModule() {
 			AFGBuildable* buildable = Cast< AFGBuildable>(returnActor);
 			if (buildable)
 			{
-				AddBuildable(buildable, self);
+				USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+				auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
+				if (optionValue)
+				{
+					AddBuildable(buildable, self);
+				}
 			}
 		});
 
@@ -315,29 +325,35 @@ void FPersistentPaintablesModule::AddBuildable(AFGBuildable* buildable, const AF
 	{
 		if (auto pipe = Cast<AFGBuildablePipeline>(buildable))
 		{
-			TArray<AActor*> FoundActors;
-			UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), wallHoleClass, FoundActors);
-			PotentialSupports = FoundActors;
-			UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), floorHoleClass, FoundActors);
-			PotentialSupports.Append(FoundActors);
-			UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), wallSupportClass, FoundActors);
-			PotentialSupports.Append(FoundActors);
-			UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), pipeSupportClass, FoundActors);
-			PotentialSupports.Append(FoundActors);
-			UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), AFGBuildablePoleStackable::StaticClass(), FoundActors);
-			PotentialSupports.Append(FoundActors);
+			USessionSettingsManager* SessionSettings = buildable->GetWorld()->GetSubsystem<USessionSettingsManager>();
+			auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
+			if (optionValue)
+			{
+				TArray<AActor*> FoundActors;
+				UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), wallHoleClass, FoundActors);
+				PotentialSupports = FoundActors;
+				UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), floorHoleClass, FoundActors);
+				PotentialSupports.Append(FoundActors);
+				UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), wallSupportClass, FoundActors);
+				PotentialSupports.Append(FoundActors);
+				UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), pipeSupportClass, FoundActors);
+				PotentialSupports.Append(FoundActors);
+				UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), AFGBuildablePoleStackable::StaticClass(), FoundActors);
+				PotentialSupports.Append(FoundActors);
 
-			auto connComp = Cast<UFGPipeConnectionComponent>(pipe->GetConnection0());
-			auto pipeNetworkId = connComp->GetPipeNetworkID();
-			auto pipeSubsystem = AFGPipeSubsystem::Get(buildable->GetWorld());
-			auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
-			UpdateColorSingle(pipe, network);
+				auto connComp = Cast<UFGPipeConnectionComponent>(pipe->GetConnection0());
+				auto pipeNetworkId = connComp->GetPipeNetworkID();
+				auto pipeSubsystem = AFGPipeSubsystem::Get(buildable->GetWorld());
+				auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
+				UpdateColorSingle(pipe, network);
+			}
 		}
 	}
 }
 
 void FPersistentPaintablesModule::HookPipes()
 {
+#if !WITH_EDITOR
 	//UFGPipeConnectionComponent::OnFluidDescriptorUpdated_GameThread
 	SUBSCRIBE_METHOD_AFTER(UFGPipeConnectionComponent::OnFluidDescriptorUpdated_GameThread, [this](UFGPipeConnectionComponent* self)
 		{
@@ -401,7 +417,6 @@ void FPersistentPaintablesModule::HookPipes()
 			}
 		});
 
-#if !WITH_EDITOR
 	SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::AddFluidIntegrant, [this](AFGPipeNetwork* self, class IFGFluidIntegrantInterface* fluidIntegrant)
 		{
 			if (self)
