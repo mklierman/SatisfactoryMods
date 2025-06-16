@@ -1,6 +1,7 @@
 #include "ZippierModule.h"
 #include "Patching/NativeHookManager.h"
 #include "Zippier_ConfigStruct.h"
+#include <SessionSettings/SessionSettingsManager.h>
 
 #pragma optimize("", off)
 void FZippierModule::StartupModule() {
@@ -15,12 +16,17 @@ void FZippierModule::StartupModule() {
 
 void FZippierModule::SetZiplineStuff(UFGCharacterMovementComponent* movementComp)
 {
-	auto config = FZippier_ConfigStruct::GetActiveConfig(movementComp->GetWorld());
-	movementComp->mZiplineSpeed = config.ZiplineBaseSpeed;
-	movementComp->mZiplineSprintSpeed = config.ZiplineSprintSpeed;
-	movementComp->mZiplineContinuousTravelMaxAngle = config.ZiplineCheckAngle;
-	movementComp->mZiplineSpeedMultiplierDown = config.ZiplineDownSpeedMult;
-	movementComp->mZiplineSpeedMultiplierUp = config.ZiplineUpSpeedMult;
+	USessionSettingsManager* SessionSettings = movementComp->GetWorld()->GetSubsystem<USessionSettingsManager>();
+	auto baseSpeed = SessionSettings->GetFloatOptionValue("Zippier.BaseSpeed");
+	auto sprintSpeed = SessionSettings->GetFloatOptionValue("Zippier.SprintSpeed");
+	auto upMult = SessionSettings->GetFloatOptionValue("Zippier.UpSpeedMult");
+	auto downMult = SessionSettings->GetFloatOptionValue("Zippier.DownSpeedMult");
+	auto angle = SessionSettings->GetFloatOptionValue("Zippier.CheckAngle");
+	movementComp->mZiplineSpeed = baseSpeed;
+	movementComp->mZiplineSprintSpeed = sprintSpeed;
+	movementComp->mZiplineContinuousTravelMaxAngle = angle;
+	movementComp->mZiplineSpeedMultiplierDown = downMult;
+	movementComp->mZiplineSpeedMultiplierUp = upMult;
 }
 
 #pragma optimize("", on)
