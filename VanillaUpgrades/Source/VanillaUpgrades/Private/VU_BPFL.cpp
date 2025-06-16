@@ -22,3 +22,8 @@ void UVU_BPFL::FactoryBeginPlay(AFGBuildableFactory* factory)
 {
 	factory->BeginPlay();
 }
+
+void UVU_BPFL::StartPowerProduction(AFGBuildableGenerator* generator)
+{
+	generator->Factory_StartPowerProduction_Implementation();
+}

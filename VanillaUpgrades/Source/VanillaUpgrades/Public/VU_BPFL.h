@@ -30,4 +30,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static void FactoryBeginPlay(AFGBuildableFactory* factory);
+
+	UFUNCTION(BlueprintCallable)
+	static void StartPowerProduction(AFGBuildableGenerator* generator);
 };
