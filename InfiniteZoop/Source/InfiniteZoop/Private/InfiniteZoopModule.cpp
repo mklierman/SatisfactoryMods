@@ -322,6 +322,11 @@ void FInfiniteZoopModule::OnZoopUpdated(UFGBuildGunStateBuild* self, float curre
 	{
 		auto mult = fbhg->GetBaseCostMultiplier();
 		auto dz = fbhg->mDesiredZoop;
+
+		auto fhg = Cast< AFGFoundationHologram>(fbhg);
+		fbhg->mDesiredZoop.X = FoundationsBeingZooped[fhg]->X;
+		fbhg->mDesiredZoop.Y = FoundationsBeingZooped[fhg]->Y;
+		fbhg->mDesiredZoop.Z = FoundationsBeingZooped[fhg]->Z;
 	}
 }
 
@@ -702,7 +707,6 @@ void FInfiniteZoopModule::StartupModule()
 {
 #if !WITH_EDITOR
 	lockObj = new FCriticalSection();
-
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::ConfigureActor, bhg, [this](auto& scope, const AFGBuildableHologram* self, class AFGBuildable* inBuildable)
 		{
@@ -722,10 +726,10 @@ void FInfiniteZoopModule::StartupModule()
 			{
 				return;
 			}
-	if (!this->OnRep_DesiredZoop(self))
-	{
-		scope.Cancel();
-	}
+			if (!this->OnRep_DesiredZoop(self))
+			{
+				scope.Cancel();
+			}
 		});
 
 	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::SetZoopAmount, [this](auto& scope, AFGFactoryBuildingHologram* self, const FIntVector& Zoop)
