@@ -132,20 +132,26 @@ void FPersistentPaintablesModule::ColorConnectedSupports(AFGBuildablePipeline* p
 				}
 				else
 				{
-					auto components = actor->GetComponents();
-					for (auto component : components)
+					TSet<UActorComponent*> components = actor->GetComponents();
+					if (components.Num() > 0)
 					{
-						auto pipeConnection = Cast< UFGPipeConnectionComponent>(component);
-						if (pipeConnection)
+						for (auto component : components)
 						{
-							//Make sure it is actually near the connection
-							auto supportLocation = pipeConnection->GetConnectorLocation();
-							bool isNear = FVector::PointsAreNear(connLocation, supportLocation, 5);
-							auto dist = FVector::Distance(connLocation, supportLocation);
-							if (isNear)
+							if (component)
 							{
-								auto buildable = Cast<AFGBuildable>(actor);
-								ApplyColor(buildable, swatchClass, newData);
+								auto pipeConnection = Cast< UFGPipeConnectionComponent>(component);
+								if (pipeConnection)
+								{
+									//Make sure it is actually near the connection
+									auto supportLocation = pipeConnection->GetConnectorLocation();
+									bool isNear = FVector::PointsAreNear(connLocation, supportLocation, 5);
+									auto dist = FVector::Distance(connLocation, supportLocation);
+									if (isNear)
+									{
+										auto buildable = Cast<AFGBuildable>(actor);
+										ApplyColor(buildable, swatchClass, newData);
+									}
+								}
 							}
 						}
 					}
@@ -376,17 +382,26 @@ void FPersistentPaintablesModule::HookPipes()
 	UFGPipeConnectionComponent* pcb = GetMutableDefault<UFGPipeConnectionComponent>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(UFGPipeConnectionComponent::BeginPlay, pcb, [this](UFGPipeConnectionComponent* self)
 		{
-			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
-			auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
-			if (optionValue)
+			if (self)
 			{
-				auto PipeConnComp = Cast<UFGPipeConnectionComponent>(self);
-				auto pipeNetworkId = PipeConnComp->GetPipeNetworkID();
-				auto pipeSubsystem = AFGPipeSubsystem::Get(self->GetWorld());
-				auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
-				AsyncTask(ENamedThreads::GameThread, [=, this]() {
-					this->UpdateNetworkColor(network);
-					});
+				USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+				auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
+				if (optionValue)
+				{
+					auto PipeConnComp = Cast<UFGPipeConnectionComponent>(self);
+					if (PipeConnComp)
+					{
+						auto pipeNetworkId = PipeConnComp->GetPipeNetworkID();
+						auto pipeSubsystem = AFGPipeSubsystem::Get(self->GetWorld());
+						auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
+						if (network)
+						{
+							AsyncTask(ENamedThreads::GameThread, [=, this]() {
+								this->UpdateNetworkColor(network);
+								});
+						}
+					}
+				}
 			}
 		});
 	//TrySetFluidDescriptor(TSubclassOf< UFGItemDescriptor > newItemDescriptor);
