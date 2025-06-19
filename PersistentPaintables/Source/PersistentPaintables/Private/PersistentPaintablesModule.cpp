@@ -9,6 +9,7 @@
 #include "FGPipeSubsystem.h"
 #include "Buildables/FGBuildablePoleStackable.h"
 #include <FGBuildablePolePipe.h>
+#include "Buildables/FGBuildable.h"
 
 
 DEFINE_LOG_CATEGORY(PersistentPaintables_Log);
@@ -46,6 +47,10 @@ TArray<AActor*> FPersistentPaintablesModule::FindNearbySupports(AFGBuildable* pi
 	UKismetSystemLibrary::SphereOverlapActors(pipe->GetWorld(), connLoc, radius, traceObjectTypes, seekClass, ignoreActors, outActors);
 
 	return outActors;
+}
+
+void FPersistentPaintablesModule::AFGBuildableHologramConstruct(AFGBuildableHologram* self)
+{
 }
 
 void FPersistentPaintablesModule::UpdateNetworkColor(AFGPipeNetwork* pipeNetwork)
@@ -464,6 +469,25 @@ void FPersistentPaintablesModule::HookPipes()
 					//auto endTime = FDateTime::Now();
 					//auto elapsedTime = endTime - startTime;
 					//UE_LOGFMT(PersistentPaintables_Log, Display, "AFGPipeNetwork::AddFluidIntegrant time elapsed: {0}", elapsedTime);
+				}
+			}
+		});
+
+	AFGBuildableHologram* hg = GetMutableDefault<AFGBuildableHologram>();
+
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::Construct, hg, [this](auto& scope, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID constructionID)
+		{
+			AActor* upgraded = self->GetUpgradedActor();
+			AFGBuildable* buildable = Cast<AFGBuildable>(upgraded);
+			if (buildable)
+			{
+				auto customization = buildable->GetCustomizationData_Implementation();
+				AActor* constructedActor = scope(self, out_children, constructionID);
+				AFGBuildable* constructedBuildable = Cast<AFGBuildable>(constructedActor);
+				if (constructedBuildable)
+				{
+					constructedBuildable->ApplyCustomizationData_Implementation(customization);
+					constructedBuildable->SetCustomizationData_Implementation(customization);
 				}
 			}
 		});
