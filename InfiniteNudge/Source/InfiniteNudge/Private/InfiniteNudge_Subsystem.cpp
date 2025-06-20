@@ -8,6 +8,12 @@ void AInfiniteNudge_Subsystem::NudgeHologram(AFGHologram* hologram, float xDirec
 	if (hologram && hologram->IsHologramLocked())
 	{
 		GetConfigValues(hologram->GetWorld(), controller);
+
+		if (controller->IsInputKeyDown(VerticalNudgeKey))
+		{
+			zDirection = xDirection;
+		}
+
 		if (zDirection != 0.0)
 		{
 			hologram->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * zDirection));
