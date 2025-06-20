@@ -377,10 +377,16 @@ void FPersistentPaintablesModule::HookPipes()
 				{
 					auto pipeNetworkId = self->GetPipeNetworkID();
 					auto pipeSubsystem = AFGPipeSubsystem::Get(self->GetWorld());
-					auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
-					AsyncTask(ENamedThreads::GameThread, [=, this]() {
-						UpdateColorSingle(buildable, network);
-						});
+					if (pipeSubsystem)
+					{
+						auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
+						if (network)
+						{
+							AsyncTask(ENamedThreads::GameThread, [=, this]() {
+								UpdateColorSingle(buildable, network);
+								});
+						}
+					}
 				}
 			}
 		});
@@ -398,12 +404,15 @@ void FPersistentPaintablesModule::HookPipes()
 					{
 						auto pipeNetworkId = PipeConnComp->GetPipeNetworkID();
 						auto pipeSubsystem = AFGPipeSubsystem::Get(self->GetWorld());
-						auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
-						if (network)
+						if (pipeSubsystem)
 						{
-							AsyncTask(ENamedThreads::GameThread, [=, this]() {
-								this->UpdateNetworkColor(network);
-								});
+							auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
+							if (network)
+							{
+								AsyncTask(ENamedThreads::GameThread, [=, this]() {
+									this->UpdateNetworkColor(network);
+									});
+							}
 						}
 					}
 				}
