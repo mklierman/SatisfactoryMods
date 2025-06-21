@@ -1,10 +1,10 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "2.0.0",
-	"SemVersion": "2.0.0",
+	"VersionName": "2.0.2",
+	"SemVersion": "2.0.2",
 	"FriendlyName": "HoverPack Configurator",
-	"Description": "Allows configuration of some HoverPack variables",
+	"Description": "Allows configuration of some HoverPack attributes",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
 	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
@@ -18,9 +18,9 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.11.0",
+			"SemVersion": "^3.11.1",
 			"Enabled": true
 		}
 	],
-	"GameVersion": ">=404994"
+	"GameVersion": ">=416835"
 }
