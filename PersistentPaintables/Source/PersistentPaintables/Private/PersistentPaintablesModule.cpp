@@ -127,34 +127,37 @@ void FPersistentPaintablesModule::ColorConnectedSupports(AFGBuildablePipeline* p
 		{
 			for (auto conn : pipe->mPipeConnections)
 			{
-				auto connLocation = conn->GetConnectorLocation();
-				auto actorLocation = actor->GetActorLocation();
-				bool isNearActor = FVector::PointsAreNear(connLocation, actorLocation, 5);
-				if (isNearActor)
+				if (conn && actor)
 				{
-					auto buildable = Cast<AFGBuildable>(actor);
-					ApplyColor(buildable, swatchClass, newData);
-				}
-				else
-				{
-					TSet<UActorComponent*> components = actor->GetComponents();
-					if (components.Num() > 0)
+					auto connLocation = conn->GetConnectorLocation();
+					auto actorLocation = actor->GetActorLocation();
+					bool isNearActor = FVector::PointsAreNear(connLocation, actorLocation, 5);
+					if (isNearActor)
 					{
-						for (auto component : components)
+						auto buildable = Cast<AFGBuildable>(actor);
+						ApplyColor(buildable, swatchClass, newData);
+					}
+					else
+					{
+						TSet<UActorComponent*> components = actor->GetComponents();
+						if (components.Num() > 0)
 						{
-							if (component)
+							for (auto component : components)
 							{
-								auto pipeConnection = Cast< UFGPipeConnectionComponent>(component);
-								if (pipeConnection)
+								if (component)
 								{
-									//Make sure it is actually near the connection
-									auto supportLocation = pipeConnection->GetConnectorLocation();
-									bool isNear = FVector::PointsAreNear(connLocation, supportLocation, 5);
-									auto dist = FVector::Distance(connLocation, supportLocation);
-									if (isNear)
+									auto pipeConnection = Cast< UFGPipeConnectionComponent>(component);
+									if (pipeConnection)
 									{
-										auto buildable = Cast<AFGBuildable>(actor);
-										ApplyColor(buildable, swatchClass, newData);
+										//Make sure it is actually near the connection
+										auto supportLocation = pipeConnection->GetConnectorLocation();
+										bool isNear = FVector::PointsAreNear(connLocation, supportLocation, 5);
+										auto dist = FVector::Distance(connLocation, supportLocation);
+										if (isNear)
+										{
+											auto buildable = Cast<AFGBuildable>(actor);
+											ApplyColor(buildable, swatchClass, newData);
+										}
 									}
 								}
 							}
