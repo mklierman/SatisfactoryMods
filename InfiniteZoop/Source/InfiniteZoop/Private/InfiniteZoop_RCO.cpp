@@ -39,6 +39,14 @@ void UInfiniteZoop_RCO::SetHologramMaxZoop_Implementation(AFGFactoryBuildingHolo
 	}
 }
 
+void UInfiniteZoop_RCO::SetDesiredZoop_Implementation(AFGFactoryBuildingHologram* hologram, FIntVector newZoop)
+{
+	if (hologram)
+	{
+		hologram->mDesiredZoop = newZoop;
+	}
+}
+
 //void UInfiniteZoop_RCO::GetZoopCorners_Implementation(UWorld* world, bool const& OutZoopCorners)
 //{
 //

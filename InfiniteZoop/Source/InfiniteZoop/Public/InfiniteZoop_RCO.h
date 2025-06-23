@@ -28,11 +28,11 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
     UFUNCTION(BlueprintCallable, Category = "Networking", meta = (WorldContext = "WorldContext"))
-    static UInfiniteZoop_RCO* GetFFDefaultRCO(UObject* WorldContext, AFGPlayerController* Controller) { return Get(WorldContext, Controller); }
-    static UInfiniteZoop_RCO* Get(UObject* WorldContext, AFGPlayerController* Controller)
+    static UInfiniteZoop_RCO* GetFFDefaultRCO(UObject* WorldContext) { return Get(WorldContext); }
+    static UInfiniteZoop_RCO* Get(UObject* WorldContext)
     {
         if (WorldContext)
-            if (Controller)
+            if (AFGPlayerController* Controller = Cast<AFGPlayerController>(WorldContext->GetWorld()->GetFirstPlayerController()))
                 if (UInfiniteZoop_RCO* RCO = Controller->GetRemoteCallObjectOfClass<UInfiniteZoop_RCO>())
                     return RCO;
         return nullptr;
@@ -46,6 +46,10 @@ public:
 
     UFUNCTION(Reliable, Server)
     void SetHologramMaxZoop(AFGFactoryBuildingHologram* hologram, int newMaxZoop);
+
+
+    UFUNCTION(Reliable, Server)
+    void SetDesiredZoop(AFGFactoryBuildingHologram* hologram, FIntVector newZoop);
 private:
 
     /** Needed for RCO to work */

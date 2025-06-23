@@ -301,6 +301,8 @@ bool FInfiniteZoopModule::SetZoopAmount(AFGFactoryBuildingHologram* self, const 
 		{
 			auto zStruct = FoundationsBeingZooped[foundation];
 			FIntVector newZoop = FIntVector(zStruct->X, zStruct->Y, zStruct->Z);
+
+			//UE_LOGFMT(InfiniteZoop_Log, Display, "SetZoopAmount: {0},{1},{2}", newZoop.X, newZoop.Y, newZoop.Z);
 			if (newZoop.IsZero() || !zStruct->inScrollMode)
 			{
 				return false;
@@ -327,6 +329,10 @@ void FInfiniteZoopModule::OnZoopUpdated(UFGBuildGunStateBuild* self, float curre
 		fbhg->mDesiredZoop.X = FoundationsBeingZooped[fhg]->X;
 		fbhg->mDesiredZoop.Y = FoundationsBeingZooped[fhg]->Y;
 		fbhg->mDesiredZoop.Z = FoundationsBeingZooped[fhg]->Z;
+
+		fbhg->OnRep_DesiredZoop();
+		fbhg->ForceNetUpdate();
+		//UE_LOGFMT(InfiniteZoop_Log, Display, "OnZoopUpdated: {0},{1},{2}", FoundationsBeingZooped[fhg]->X, FoundationsBeingZooped[fhg]->Y, FoundationsBeingZooped[fhg]->Z);
 	}
 }
 
@@ -374,14 +380,26 @@ bool FInfiniteZoopModule::OnRep_DesiredZoop(AFGFactoryBuildingHologram* self)
 					//UE_LOGFMT(InfiniteZoop_Log, Display, "Max Zoop Amount: {0}", self->mMaxZoopAmount);
 					auto maxZ = self->mMaxZoopAmount;
 					auto minZ = (self->mMaxZoopAmount * -1);
-					self->mDesiredZoop.X = FMath::Clamp(zStruct->X, minZ, maxZ);
-					self->mDesiredZoop.Y = FMath::Clamp(zStruct->Y, minZ, maxZ);
-					self->mDesiredZoop.Z = FMath::Clamp(zStruct->Z, minZ, maxZ);
+					FIntVector newDesiredZoop;
 
+					newDesiredZoop.X = FMath::Clamp(zStruct->X, minZ, maxZ);
+					newDesiredZoop.Y = FMath::Clamp(zStruct->Y, minZ, maxZ);
+					newDesiredZoop.Z = FMath::Clamp(zStruct->Z, minZ, maxZ);
+					self->mDesiredZoop = newDesiredZoop;
+
+					AFGPlayerController* PlayerController = Cast<AFGPlayerController>(self->GetWorld()->GetFirstPlayerController());
+					if (PlayerController && !PlayerController->HasAuthority())
+					{
+						//UE_LOGFMT(InfiniteZoop_Log, Display, "Doing RCO");
+						auto rco = UInfiniteZoop_RCO::Get(self->GetWorld());
+						rco->SetDesiredZoop(self, newDesiredZoop);
+					}
+					self->ForceNetUpdate();
 					zStruct->firstPassComplete = false;
 					zStruct->secondPassComplete = false;
 					FoundationsBeingZooped[fhg] = zStruct;
 
+					//UE_LOGFMT(InfiniteZoop_Log, Display, "OnRep_DesiredZoop: {0},{1},{2}", self->mDesiredZoop.X, self->mDesiredZoop.Y, self->mDesiredZoop.Z);
 					SetSubsystemZoopAmounts(self->mDesiredZoop.X, self->mDesiredZoop.Y, self->mDesiredZoop.Z, true, self->GetWorld(), self);
 				}
 				self->mBlockedZoopDirectionMask = (uint8)EHologramZoopDirections::HZD_None;
@@ -458,8 +476,15 @@ void FInfiniteZoopModule::CreateDefaultFoundationZoop(AFGFoundationHologram* sel
 			zStruct->secondPassComplete = true;
 		}
 
+		//UE_LOGFMT(InfiniteZoop_Log, Display, "CreateDefaultFoundationZoop: {0},{1},{2}", zStruct->X, zStruct->Y, zStruct->Z);
 		FoundationsBeingZooped[self] = zStruct;
+		FIntVector newZoop;
+		newZoop.X = zStruct->X;
+		newZoop.Y = zStruct->Y;
+		newZoop.Z = zStruct->Z;
+		self->mDesiredZoop = newZoop;
 		self->OnRep_DesiredZoop();
+		self->ForceNetUpdate();
 	}
 }
 
@@ -507,6 +532,7 @@ void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AAct
 			self->mDesiredZoop.X = FMath::Clamp(zStruct->X, minZ, maxZ);
 			self->mDesiredZoop.Y = FMath::Clamp(zStruct->Y, minZ, maxZ);
 			self->mDesiredZoop.Z = FMath::Clamp(zStruct->Z, minZ, maxZ);
+			//UE_LOGFMT(InfiniteZoop_Log, Display, "ConstructZoop: {0},{1},{2}", self->mDesiredZoop.X, self->mDesiredZoop.Y, self->mDesiredZoop.Z);
 			//UE_LOG(InfiniteZoop_Log, Display, TEXT("ConstructZoop: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
 			self->OnRep_DesiredZoop();
 			//UE_LOG(InfiniteZoop_Log, Display, TEXT("ConstructZoop 2: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
