@@ -127,7 +127,7 @@ void FPersistentPaintablesModule::ColorConnectedSupports(AFGBuildablePipeline* p
 		{
 			for (auto conn : pipe->mPipeConnections)
 			{
-				if (conn && actor)
+				if (conn && actor && IsValid(conn) && IsValid(actor))
 				{
 					auto connLocation = conn->GetConnectorLocation();
 					auto actorLocation = actor->GetActorLocation();
@@ -140,14 +140,15 @@ void FPersistentPaintablesModule::ColorConnectedSupports(AFGBuildablePipeline* p
 					else
 					{
 						TSet<UActorComponent*> components = actor->GetComponents();
-						if (components.Num() > 0)
+						TSet<UActorComponent*> componentsCopy(components);
+						if (!componentsCopy.IsEmpty())
 						{
-							for (auto component : components)
+							for (auto component : componentsCopy)
 							{
-								if (component)
+								if (component && IsValid(component))
 								{
 									auto pipeConnection = Cast< UFGPipeConnectionComponent>(component);
-									if (pipeConnection)
+									if (pipeConnection && IsValid(pipeConnection))
 									{
 										//Make sure it is actually near the connection
 										auto supportLocation = pipeConnection->GetConnectorLocation();
