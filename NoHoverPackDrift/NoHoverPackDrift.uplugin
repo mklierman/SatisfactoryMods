@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "2.0.2",
-	"SemVersion": "2.0.2",
+	"VersionName": "2.1.0",
+	"SemVersion": "2.1.0",
 	"FriendlyName": "HoverPack Configurator",
 	"Description": "Allows configuration of some HoverPack attributes",
 	"Category": "Modding",
@@ -22,5 +22,12 @@
 			"Enabled": true
 		}
 	],
-	"GameVersion": ">=416835"
+	"GameVersion": ">=416835",
+	"Modules": [
+		{
+			"Name": "NoHoverPackDrift",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
 }
