@@ -22,6 +22,7 @@
 #include "InfiniteZoop_ConfigurationStruct.h"
 #include "InfiniteZoop_RCO.h"
 #include "Hologram/FGRampHologram.h"
+#include "FGBlueprintProxy.h"
 #include <Logging/StructuredLog.h>
 
 
@@ -653,6 +654,39 @@ void FInfiniteZoopModule::CheckBuildEffects(const AFGFactoryBuildingHologram* fb
 	}
 }
 
+void FInfiniteZoopModule::SetBlueprintProxy(const AFGFactoryBuildingHologram* fbHolo, AFGBuildable* inBuildable)
+{
+	auto x = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.X), 0, 99999);
+	auto y = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Y), 0, 99999);
+	auto z = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Z), 0, 99999);
+	auto total = x + y + z;
+	if (total > 0)
+	{
+		TArray<const AFGFactoryBuildingHologram*> keysToRemove;
+		for (TPair<const AFGFactoryBuildingHologram*, AFGBlueprintProxy*> holo : HoloProxies)
+		{
+			if (holo.Key == nullptr || !IsValid(holo.Key))
+			{
+				keysToRemove.Add(holo.Key);
+			}
+		}
+		for (auto key : keysToRemove)
+		{
+			HoloProxies.Remove(key);
+		}
+
+		if (!HoloProxies.Contains(fbHolo))
+		{
+			AFGBlueprintProxy* proxy = fbHolo->GetWorld()->SpawnActor<AFGBlueprintProxy>();
+			HoloProxies.Add(fbHolo, proxy);
+		}
+		AFGBlueprintProxy* blueprintProxy = HoloProxies[fbHolo];
+
+		inBuildable->SetBlueprintProxy(blueprintProxy);
+		blueprintProxy->RegisterBuildable(inBuildable);
+	}
+}
+
 void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 {
 	//TArray< TSubclassOf< UFGBuildGunModeDescriptor > > out_buildmodes;
@@ -742,6 +776,7 @@ void FInfiniteZoopModule::StartupModule()
 				if (fbHolo)
 				{
 					CheckBuildEffects(fbHolo, inBuildable);
+					SetBlueprintProxy(fbHolo, inBuildable);
 				}
 			}
 		});

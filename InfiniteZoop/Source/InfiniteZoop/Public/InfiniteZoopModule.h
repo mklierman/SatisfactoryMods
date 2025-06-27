@@ -54,6 +54,7 @@ public:
 	TMap< AFGFactoryBuildingHologram*, int32> LastMultiplier;
 	TMap<AFGHologram*, FIntVector> HologramsToZoop;
 	TMap<AFGFoundationHologram*, FZoopStruct*> FoundationsBeingZooped;
+	TMap<const AFGFactoryBuildingHologram*, AFGBlueprintProxy*> HoloProxies;
 
 	FVector CalcPivotAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat);
 
@@ -62,6 +63,8 @@ public:
 	FCriticalSection* lockObj;
 
 	void CheckBuildEffects(const AFGFactoryBuildingHologram* fbHolo, class AFGBuildable* inBuildable);
+
+	void SetBlueprintProxy(const AFGFactoryBuildingHologram* fbHolo, AFGBuildable* inBuildable);
 
 	void HGBeginPlay(AFGHologram* self);
 
