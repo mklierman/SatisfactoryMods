@@ -779,7 +779,7 @@ void FInfiniteZoopModule::StartupModule()
 				if (fbHolo)
 				{
 					CheckBuildEffects(fbHolo, inBuildable);
-					SetBlueprintProxy(fbHolo, inBuildable);
+					//SetBlueprintProxy(fbHolo, inBuildable);
 				}
 			}
 		});
