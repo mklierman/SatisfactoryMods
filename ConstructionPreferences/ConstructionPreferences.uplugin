@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.6.5",
-	"SemVersion": "1.6.5",
+	"VersionName": "1.6.6",
+	"SemVersion": "1.6.6",
 	"FriendlyName": "Construction Preferences",
 	"Description": "Set preferences for some construction defaults",
 	"Category": "Modding",

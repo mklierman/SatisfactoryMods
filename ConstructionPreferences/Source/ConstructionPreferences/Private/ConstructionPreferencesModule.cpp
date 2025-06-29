@@ -36,7 +36,6 @@ float FConstructionPreferencesModule::GetUseDistance(const AFGCharacterPlayer* s
 //#pragma optimize("", on)
 
 void FConstructionPreferencesModule::StartupModule() {
-#if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [this](auto& scope, const AFGCharacterPlayer* self)
 		{
 			float result = scope(self);
@@ -86,14 +85,29 @@ void FConstructionPreferencesModule::StartupModule() {
 	AFGPipelineHologram* phg = GetMutableDefault<AFGPipelineHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGPipelineHologram::BeginPlay, phg, [](AFGPipelineHologram* self)
 		{
+			// Determine if is pipe or hypertube
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
-			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Pipeline.Length");
-			if (!FMath::IsNearlyEqual(length, 5600, 0.1)) // Check if default
+			if (self->mBuildClass->GetName().ToLower().Contains("hyper"))
 			{
-				self->mMaxSplineLength = length * 100;
+				// Do hypertube stuff
+				//UE_LOGFMT(LogConstructionPreferences, Display, "Hypertube Max Length: {0}", self->mMaxSplineLength);
+				auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Hypertube.Length");
+				if (!FMath::IsNearlyEqual(length, 10000, 0.1)) // Check if default
+				{
+					self->mMaxSplineLength = length * 100;
+				}
+			}
+			else
+			{
+				auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Pipeline.Length");
+				if (!FMath::IsNearlyEqual(length, 5600, 0.1)) // Check if default
+				{
+					self->mMaxSplineLength = length * 100;
+				}
 			}
 		});
 
+#if !WITH_EDITOR
 	AFGRailroadTrackHologram* rrhg = GetMutableDefault<AFGRailroadTrackHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGRailroadTrackHologram::BeginPlay, rrhg, [](AFGRailroadTrackHologram* self)
 		{
