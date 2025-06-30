@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.2",
-	"SemVersion": "1.1.2",
+	"VersionName": "1.1.3",
+	"SemVersion": "1.1.3",
 	"FriendlyName": "Search-it",
 	"Description": "Sets mouse focus on the Search boxes",
 	"Category": "Modding",
@@ -24,5 +24,6 @@
 			"IsActive": false
 		}
 	],
-	"GameVersion": ">=416835"
+	"GameVersion": ">=416835",
+	"RequiredOnRemote": false
 }
