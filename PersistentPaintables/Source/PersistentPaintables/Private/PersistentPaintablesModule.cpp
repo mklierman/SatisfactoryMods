@@ -119,45 +119,52 @@ void FPersistentPaintablesModule::UpdateColorSingle(AFGBuildable* buildable, AFG
 
 void FPersistentPaintablesModule::ColorConnectedSupports(AFGBuildablePipeline* pipe, FFactoryCustomizationData& newData)
 {
+	if (!pipe)
+	{
+		return;
+	}
 	USessionSettingsManager* SessionSettings = pipe->GetWorld()->GetSubsystem<USessionSettingsManager>();
 	auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintSupports");
 	if (optionValue)
 	{
 		for (auto actor : PotentialSupports)
 		{
-			for (auto conn : pipe->mPipeConnections)
+			if (actor)
 			{
-				if (conn && actor && IsValid(conn) && IsValid(actor))
+				for (auto conn : pipe->mPipeConnections)
 				{
-					auto connLocation = conn->GetConnectorLocation();
-					auto actorLocation = actor->GetActorLocation();
-					bool isNearActor = FVector::PointsAreNear(connLocation, actorLocation, 5);
-					if (isNearActor)
+					if (conn && IsValid(conn) && IsValid(actor))
 					{
-						auto buildable = Cast<AFGBuildable>(actor);
-						ApplyColor(buildable, swatchClass, newData);
-					}
-					else
-					{
-						TSet<UActorComponent*> components = actor->GetComponents();
-						TSet<UActorComponent*> componentsCopy(components);
-						if (!componentsCopy.IsEmpty())
+						auto connLocation = conn->GetConnectorLocation();
+						auto actorLocation = actor->GetActorLocation();
+						bool isNearActor = FVector::PointsAreNear(connLocation, actorLocation, 5);
+						if (isNearActor)
 						{
-							for (auto component : componentsCopy)
+							auto buildable = Cast<AFGBuildable>(actor);
+							ApplyColor(buildable, swatchClass, newData);
+						}
+						else
+						{
+							TSet<UActorComponent*> components = actor->GetComponents();
+							TSet<UActorComponent*> componentsCopy(components);
+							if (!componentsCopy.IsEmpty())
 							{
-								if (component && IsValid(component))
+								for (auto component : componentsCopy)
 								{
-									auto pipeConnection = Cast< UFGPipeConnectionComponent>(component);
-									if (pipeConnection && IsValid(pipeConnection))
+									if (component && IsValid(component))
 									{
-										//Make sure it is actually near the connection
-										auto supportLocation = pipeConnection->GetConnectorLocation();
-										bool isNear = FVector::PointsAreNear(connLocation, supportLocation, 5);
-										auto dist = FVector::Distance(connLocation, supportLocation);
-										if (isNear)
+										auto pipeConnection = Cast< UFGPipeConnectionComponent>(component);
+										if (pipeConnection && IsValid(pipeConnection))
 										{
-											auto buildable = Cast<AFGBuildable>(actor);
-											ApplyColor(buildable, swatchClass, newData);
+											//Make sure it is actually near the connection
+											auto supportLocation = pipeConnection->GetConnectorLocation();
+											bool isNear = FVector::PointsAreNear(connLocation, supportLocation, 5);
+											auto dist = FVector::Distance(connLocation, supportLocation);
+											if (isNear)
+											{
+												auto buildable = Cast<AFGBuildable>(actor);
+												ApplyColor(buildable, swatchClass, newData);
+											}
 										}
 									}
 								}
