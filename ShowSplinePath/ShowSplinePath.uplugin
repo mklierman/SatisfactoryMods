@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.6",
-	"SemVersion": "1.1.6",
+	"VersionName": "1.1.7",
+	"SemVersion": "1.1.7",
 	"FriendlyName": "Vehicle Path Viewer",
 	"Description": "Shows vehicle spline paths",
 	"Category": "Modding",
@@ -18,7 +18,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.11.0",
+			"SemVersion": "^3.11.1",
 			"Enabled": true,
 			"IsActive": false
 		}
@@ -30,5 +30,5 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"GameVersion": ">=404994"
+	"GameVersion": ">=416835"
 }
