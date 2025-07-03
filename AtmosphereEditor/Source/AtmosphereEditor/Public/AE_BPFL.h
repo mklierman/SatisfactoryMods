@@ -22,6 +22,11 @@ class ATMOSPHEREEDITOR_API UAE_BPFL : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 	public:
+	UFUNCTION(BlueprintCallable)
+	static TArray<UFGBiome*> GetAllBiomes();
+
+	UFUNCTION(BlueprintCallable)
+	static UFGBiome* GetGrassyFieldsMain();
 	//UFUNCTION(BlueprintCallable)
 	//static FExponentialFogSettings GetFogSettings(AFGAtmosphereVolume* volume);
 	//UFUNCTION(BlueprintCallable)
@@ -29,8 +34,8 @@ class ATMOSPHEREEDITOR_API UAE_BPFL : public UBlueprintFunctionLibrary
 	//UFUNCTION(BlueprintCallable)
 	//static FSkyAtmosphereSettings GetAtmosphereSettings(AFGAtmosphereVolume* volume, float atTime);
 
-	//UFUNCTION(BlueprintCallable)
-	//static FPostProcessVolumeProperties GetPostProcessProperties(AFGAtmosphereVolume* volume);
+	////UFUNCTION(BlueprintCallable)
+	////static FPostProcessVolumeProperties GetPostProcessProperties(AFGAtmosphereVolume* volume);
 
 	//UFUNCTION(BlueprintCallable)
 	//static void GetBiomeExponentialFogSettings(UFGBiome* biome, float atTime, struct FExponentialFogSettings& out_settings);
