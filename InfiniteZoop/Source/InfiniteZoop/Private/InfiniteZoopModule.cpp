@@ -24,6 +24,7 @@
 #include "Hologram/FGRampHologram.h"
 #include "FGBlueprintProxy.h"
 #include <Logging/StructuredLog.h>
+#include <SessionSettings/SessionSettingsManager.h>
 
 
 DEFINE_LOG_CATEGORY(InfiniteZoop_Log);
@@ -658,6 +659,13 @@ void FInfiniteZoopModule::SetBlueprintProxy(const AFGFactoryBuildingHologram* fb
 {
 	if (fbHolo)
 	{
+		USessionSettingsManager* SessionSettings = fbHolo->GetWorld()->GetSubsystem<USessionSettingsManager>();
+		auto bpZoop = SessionSettings->GetBoolOptionValue("InfiniteZoop.BlueprintZoop");
+		if (!bpZoop)
+		{
+			return;
+		}
+
 		auto x = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.X), 0, 99999);
 		auto y = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Y), 0, 99999);
 		auto z = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Z), 0, 99999);
@@ -665,27 +673,30 @@ void FInfiniteZoopModule::SetBlueprintProxy(const AFGFactoryBuildingHologram* fb
 		if (total > 0)
 		{
 			TArray<const AFGFactoryBuildingHologram*> keysToRemove;
-			for (TPair<const AFGFactoryBuildingHologram*, AFGBlueprintProxy*> holo : HoloProxies)
+			if (HoloProxies.Num() > 0)
 			{
-				if (holo.Key == nullptr || !IsValid(holo.Key))
+				for (TPair<const AFGFactoryBuildingHologram*, AFGBlueprintProxy*> holo : HoloProxies)
 				{
-					keysToRemove.Add(holo.Key);
+					if (holo.Key == nullptr || !IsValid(holo.Key))
+					{
+						keysToRemove.Add(holo.Key);
+					}
+				}
+				for (auto key : keysToRemove)
+				{
+					HoloProxies.Remove(key);
 				}
 			}
-			for (auto key : keysToRemove)
-			{
-				HoloProxies.Remove(key);
-			}
-
-			if (!HoloProxies.Contains(fbHolo))
+			if (HoloProxies.Num() <= 0 || !HoloProxies.Contains(fbHolo))
 			{
 				AFGBlueprintProxy* proxy = fbHolo->GetWorld()->SpawnActor<AFGBlueprintProxy>();
 				HoloProxies.Add(fbHolo, proxy);
 			}
+
 			AFGBlueprintProxy* blueprintProxy = HoloProxies[fbHolo];
 
 			inBuildable->SetBlueprintProxy(blueprintProxy);
-			blueprintProxy->RegisterBuildable(inBuildable);
+			//blueprintProxy->RegisterBuildable(inBuildable);
 		}
 	}
 }
@@ -779,7 +790,7 @@ void FInfiniteZoopModule::StartupModule()
 				if (fbHolo)
 				{
 					CheckBuildEffects(fbHolo, inBuildable);
-					//SetBlueprintProxy(fbHolo, inBuildable);
+					SetBlueprintProxy(fbHolo, inBuildable);
 				}
 			}
 		});
