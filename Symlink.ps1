@@ -2,8 +2,8 @@ param (
     [string]$SingleFolder = ""
 )
 
-$SMLPath = "C:\Code\SF\SatisfactoryModLoader\Mods"
-$ModDir = "C:\Code\SF\SatisfactoryMods"
+$SMLPath = "C:\Modding\SatisfactoryModLoader\Mods"
+$ModDir = "C:\Modding\SatisfactoryMods"
 
 function New-Sym-Link ($Link) {
     Remove-Item ($SMLPath + "\" + $Link) -ErrorAction SilentlyContinue -Recurse

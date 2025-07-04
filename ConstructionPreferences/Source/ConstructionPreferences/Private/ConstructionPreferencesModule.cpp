@@ -36,6 +36,7 @@ float FConstructionPreferencesModule::GetUseDistance(const AFGCharacterPlayer* s
 //#pragma optimize("", on)
 
 void FConstructionPreferencesModule::StartupModule() {
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [this](auto& scope, const AFGCharacterPlayer* self)
 		{
 			float result = scope(self);
@@ -107,7 +108,6 @@ void FConstructionPreferencesModule::StartupModule() {
 			}
 		});
 
-#if !WITH_EDITOR
 	AFGRailroadTrackHologram* rrhg = GetMutableDefault<AFGRailroadTrackHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGRailroadTrackHologram::BeginPlay, rrhg, [](AFGRailroadTrackHologram* self)
 		{

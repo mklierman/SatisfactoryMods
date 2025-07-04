@@ -6,7 +6,6 @@ DEFINE_LOG_CATEGORY(UniversalVehiclePaths_Log);
 #pragma optimize("", off)
 void FUniversalVehiclePathsModule::StartupModule() {
 #if !WITH_EDITOR
-#endif
 	SUBSCRIBE_METHOD(AFGVehicleSubsystem::FindSavedWheeledVehiclePaths, [this](auto& scope, AFGVehicleSubsystem* self, const FString& textFilter, TSubclassOf< class AFGWheeledVehicle > typeFilter, const AFGWheeledVehicleInfo* vehicle, TArray< AFGSavedWheeledVehiclePath* >& result)
 		{
 			if (!self || !vehicle)
@@ -37,6 +36,7 @@ void FUniversalVehiclePathsModule::StartupModule() {
 			}
 
 		});
+#endif
 }
 
 void FUniversalVehiclePathsModule::FindSavedPaths(AFGVehicleSubsystem* self, const AFGWheeledVehicleInfo* vehicle)
