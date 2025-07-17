@@ -7,6 +7,7 @@
 #include "Equipment/FGBuildGunBuild.h"
 #include "Hologram/FGHologramBuildModeDescriptor.h"
 #include "LongerBeams_ConfigStruct.h"
+#include <SessionSettings/SessionSettingsManager.h>
 
 //#pragma optimize("", off)
 void FLongerBeamsModule::StartupModule() 
@@ -57,9 +58,11 @@ void FLongerBeamsModule::StartupModule()
 			auto pc = Cast<AFGPlayerController>(self->GetWorld()->GetFirstPlayerController());
 			if (!pc->IsInputKeyDown(EKeys::LeftShift) && pc->IsInputKeyDown(EKeys::LeftControl))
 			{
-				auto config = FLongerBeams_ConfigStruct::GetActiveConfig(self->GetWorld());
-				auto rotAmount = config.RotationAmount;
-				scope.Override(rotAmount);
+				USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+				auto RotationAmount = SessionSettings->GetFloatOptionValue("LongerBeams.RotationAmount");
+				//auto config = FLongerBeams_ConfigStruct::GetActiveConfig(self->GetWorld());
+				//auto rotAmount = config.RotationAmount;
+				scope.Override(RotationAmount);
 			}
 		});
 
@@ -99,8 +102,10 @@ void FLongerBeamsModule::ScrollHologram(AFGBeamHologram* self, int32 delta)
 	}
 	else if (pc->IsInputKeyDown(EKeys::LeftShift) && pc->IsInputKeyDown(EKeys::LeftControl))
 	{
-		auto config = FLongerBeams_ConfigStruct::GetActiveConfig(self->GetWorld());
-		auto length = config.ScrollAmount * 100;
+		USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+		auto ScrollAmount = SessionSettings->GetFloatOptionValue("LongerBeams.ScrollAmount");
+		//auto config = FLongerBeams_ConfigStruct::GetActiveConfig(self->GetWorld());
+		auto length = ScrollAmount * 100;
 		auto desiredLength = currentLength + (delta * length);
 		if (desiredLength > 0)
 		{
