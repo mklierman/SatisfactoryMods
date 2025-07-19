@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.3",
+	"VersionName": "1.0.4",
 	"FriendlyName": "Vanilla Upgrades",
 	"Description": "Upgrade your existing base-game machines via MAM Research trees!",
 	"Category": "Modding",
@@ -28,6 +28,6 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"SemVersion": "1.0.3",
+	"SemVersion": "1.0.4",
 	"GameVersion": ">=416835"
 }
