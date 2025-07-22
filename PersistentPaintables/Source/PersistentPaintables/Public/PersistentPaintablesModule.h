@@ -69,6 +69,7 @@ public:
 	TArray<AActor*> FindNearbySupports(AFGBuildable* pipe, UFGPipeConnectionComponentBase* pipeConn);
 
 	TArray<AActor*> PotentialSupports;
+	TArray<TWeakObjectPtr<AActor>> WeakPotentialSupports;
 
 	void AFGBuildableHologramConstruct(AFGBuildableHologram* self);
 };

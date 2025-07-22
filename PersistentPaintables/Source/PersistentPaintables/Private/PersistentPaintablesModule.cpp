@@ -77,6 +77,15 @@ void FPersistentPaintablesModule::UpdateNetworkColor(AFGPipeNetwork* pipeNetwork
 			PotentialSupports.Append(FoundActors);
 		}
 
+		WeakPotentialSupports.Empty();
+		for (auto pot : PotentialSupports)
+		{
+			if (IsValid(pot))
+			{
+				WeakPotentialSupports.Add(pot);
+			}
+		}
+
 		for (auto fi : pipeNetwork->mFluidIntegrants)
 		{
 			auto buildable = Cast< AFGBuildable>(fi);
@@ -136,21 +145,29 @@ void FPersistentPaintablesModule::ColorConnectedSupports(AFGBuildablePipeline* p
 	auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintSupports");
 	if (optionValue)
 	{
-		for (auto actor : PotentialSupports)
+		for (auto weakActor : WeakPotentialSupports)
 		{
-			if (actor)
+			if (weakActor.IsValid())
 			{
+				auto actor = weakActor.Get();
 				for (auto conn : pipe->mPipeConnections)
 				{
 					if (conn && IsValid(conn) && IsValid(actor))
 					{
 						auto connLocation = conn->GetConnectorLocation();
+						if (!actor)
+						{
+							break;
+						}
 						auto actorLocation = actor->GetActorLocation();
 						bool isNearActor = FVector::PointsAreNear(connLocation, actorLocation, 5);
 						if (isNearActor)
 						{
 							auto buildable = Cast<AFGBuildable>(actor);
-							ApplyColor(buildable, swatchClass, newData);
+							if (buildable)
+							{
+								ApplyColor(buildable, swatchClass, newData);
+							}
 						}
 						else
 						{
@@ -377,6 +394,15 @@ void FPersistentPaintablesModule::AddBuildable(AFGBuildable* buildable, const AF
 				{
 					UGameplayStatics::GetAllActorsOfClass(pipe->GetWorld(), AFGBuildablePipelineAttachment::StaticClass(), FoundActors);
 					PotentialSupports.Append(FoundActors);
+				}
+
+				WeakPotentialSupports.Empty();
+				for (auto pot : PotentialSupports)
+				{
+					if (IsValid(pot))
+					{
+						WeakPotentialSupports.Add(pot);
+					}
 				}
 
 				auto connComp = Cast<UFGPipeConnectionComponent>(pipe->GetConnection0());
