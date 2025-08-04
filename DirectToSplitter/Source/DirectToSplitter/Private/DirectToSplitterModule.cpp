@@ -252,16 +252,16 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 			if (factoryConn && IsSnappedOn(factoryConn))
 			{
 				auto otherConn = factoryConn->GetConnection();
+				auto buildingName = otherConn->GetOuterBuildable()->GetName();
 				factoryConn->ClearConnection();
 				auto connLoc = factoryConn->GetComponentLocation();
 				auto otherLoc = otherConn->GetComponentLocation();
 				auto distance = FVector::Distance(connLoc, otherLoc);
 				distance = FMath::RoundToDouble(distance);
 				auto offset = FDTS_ConfigStruct::GetActiveConfig(conveyorAttachment->GetWorld()).SnapOffset * 100.f / 2;
-				//if (distance != offset)
-				//{
-				//	return;
-				//}
+
+
+
 
 				//Mk6 belt blueprint class
 				UClass* beltClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk6/Build_ConveyorBeltMk6.Build_ConveyorBeltMk6_C"));
@@ -473,6 +473,8 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 	if (self->mSnappedConnection)
 	{
 		auto snappedConnectionName = self->mSnappedConnection->GetName();
+		auto otherConn = self->mSnappedConnection;
+
 		if (snappedConnectionName.Contains("ConveyorAny"))
 		{
 			return;
@@ -485,60 +487,46 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 		//	return;
 		//}
 		auto snappedBuildable = self->mSnappedConnection->GetOuterBuildable();
-		
+		auto buildingName = snappedBuildable->GetName();
 
 		bool shouldDisqualify = false;
 		auto direction = self->mSnappedConnection->GetDirection();
-		//if (direction == EFactoryConnectionDirection::FCD_OUTPUT)
-		//{
-		//	for (UActorComponent* ComponentsByClass : snappedBuildable->GetComponents())
-		//	{
-		//		if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
-		//		{
-		//			if (ConnectionComponent != self->mSnappedConnection
-		//				&& ConnectionComponent->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR
-		//				&& ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
-		//			{
-		//				shouldDisqualify = true;
-		//			}
-		//		}
-		//	}
-		//}
-		//else if (direction == EFactoryConnectionDirection::FCD_INPUT)
-		//{
-		//	auto trainCargo = Cast< AFGBuildableTrainPlatform>(snappedBuildable);
-		//	auto truckStation = Cast< AFGBuildableDockingStation>(snappedBuildable);
-		//	if (trainCargo || truckStation)
-		//	{
-		//		shouldDisqualify = true;
-		//	}
-		//	else if (auto storage = Cast<AFGBuildableStorage>(snappedBuildable))
-		//	{
-		//		for (UActorComponent* ComponentsByClass : snappedBuildable->GetComponents())
-		//		{
-		//			if (UFGFactoryConnectionComponent* ConnectionComponent = Cast<UFGFactoryConnectionComponent>(ComponentsByClass))
-		//			{
-		//				if (ConnectionComponent != self->mSnappedConnection
-		//					&& ConnectionComponent->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR
-		//					&& ConnectionComponent->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
-		//				{
-		//					shouldDisqualify = true;
-		//				}
-		//			}
-		//		}
-		//	}
-		//}
-		//if (shouldDisqualify)
-		//{
-		//	//UE_LOG(SnapOn_Log, Display, TEXT("Setting Disqualifier"));
-		//	self->ResetConstructDisqualifiers();
-		//	self->AddConstructDisqualifier(USnapOnDisqualifier::StaticClass());
-		//	return;
-		//}
 		
 		self->ResetConstructDisqualifiers();
 		retflag = false;
 		auto offset = FDTS_ConfigStruct::GetActiveConfig(self->GetWorld()).SnapOffset * 100.f;
+
+		if (buildingName.StartsWith("Build_Manufacturer") && otherConn->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
+		{
+			// Add additional 0.25 offset for Manufacturer inputs weirdness
+			offset += 25.f;
+		}
+		else if (buildingName.StartsWith("Build_HadronCollider") && otherConn->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
+		{
+			// Subtract 0.1 offset from Particle Accelerator output
+			offset -= 10.f;
+		}
+		else if (buildingName.StartsWith("Build_Converter"))
+		{
+			if (otherConn->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
+			{
+				// Add 0.2 offset to Converter Input
+				offset += 20.f;
+			}
+			else if (otherConn->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
+			{
+				// Add 0.4 offset to Converter Output
+				offset += 40.f;
+			}
+		}
+		else if (buildingName.StartsWith("Build_QuantumEncoder") && otherConn->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
+		{
+			if (snappedConnectionName == "Input1" || snappedConnectionName == "Input2")
+			{
+				// Add 0.4 offset to Encoder input
+				offset += 40.f;
+			}
+		}
 
 		auto compLocation = self->mSnappedConnection->GetConnectorLocation();
 		
