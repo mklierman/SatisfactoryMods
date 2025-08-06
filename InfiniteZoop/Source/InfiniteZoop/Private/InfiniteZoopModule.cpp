@@ -672,30 +672,70 @@ void FInfiniteZoopModule::SetBlueprintProxy(const AFGFactoryBuildingHologram* fb
 		auto total = x + y + z;
 		if (total > 0)
 		{
-			TArray<const AFGFactoryBuildingHologram*> keysToRemove;
+			//TArray<const AFGFactoryBuildingHologram*> keysToRemove;
+			//if (HoloProxies.Num() > 1)
+			//{
+			//	for (auto It = HoloProxies.CreateIterator(); It; ++It)
+			//	{
+			//		const AFGFactoryBuildingHologram* Key = It->Key;
+
+			//		// Check if key is null or has been garbage collected
+			//		if (Key == nullptr || !IsValid(Key))
+			//		{
+			//			keysToRemove.Add(Key);
+			//		}
+			//	}
+
+			//	//for (TPair<const AFGFactoryBuildingHologram*, AFGBlueprintProxy*>& holo : HoloProxies)
+			//	//{
+			//	//	if (&holo == nullptr)
+			//	//	{
+			//	//		break;
+			//	//	}
+			//	//	if (holo.Key == nullptr || !IsValid(holo.Key))
+			//	//	{
+			//	//		keysToRemove.Add(holo.Key);
+			//	//	}
+			//	//}
+			//	for (auto& key : keysToRemove)
+			//	{
+			//		HoloProxies.Remove(key);
+			//	}
+			//}
+			TArray<TWeakObjectPtr<const AFGFactoryBuildingHologram>> keysToRemove;
+
 			if (HoloProxies.Num() > 0)
 			{
-				for (TPair<const AFGFactoryBuildingHologram*, AFGBlueprintProxy*> holo : HoloProxies)
+				for (const auto& holo : HoloProxies)
 				{
-					if (holo.Key == nullptr || !IsValid(holo.Key))
+					// TWeakObjectPtr automatically handles destroyed objects
+					if (!holo.Key.IsValid()) // Safe - won't crash on destroyed objects
 					{
 						keysToRemove.Add(holo.Key);
 					}
 				}
-				for (auto key : keysToRemove)
+
+				for (const auto& key : keysToRemove)
 				{
 					HoloProxies.Remove(key);
 				}
 			}
+
 			if (HoloProxies.Num() <= 0 || !HoloProxies.Contains(fbHolo))
 			{
 				AFGBlueprintProxy* proxy = fbHolo->GetWorld()->SpawnActor<AFGBlueprintProxy>();
-				HoloProxies.Add(fbHolo, proxy);
+				TWeakObjectPtr<const AFGFactoryBuildingHologram> WeakHolo = fbHolo;
+				HoloProxies.Add(WeakHolo, proxy);
+				//HoloProxies.Add(fbHolo, proxy);
 			}
 
+			TWeakObjectPtr<const AFGFactoryBuildingHologram> WeakHolo = fbHolo;
+			if (auto* FoundProxy = HoloProxies.Find(WeakHolo))
+			{
+				// Use FoundProxy
+				inBuildable->SetBlueprintProxy(*FoundProxy);
+			}
 			AFGBlueprintProxy* blueprintProxy = HoloProxies[fbHolo];
-
-			inBuildable->SetBlueprintProxy(blueprintProxy);
 			//blueprintProxy->RegisterBuildable(inBuildable);
 		}
 	}

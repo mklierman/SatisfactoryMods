@@ -54,7 +54,8 @@ public:
 	TMap< AFGFactoryBuildingHologram*, int32> LastMultiplier;
 	TMap<AFGHologram*, FIntVector> HologramsToZoop;
 	TMap<AFGFoundationHologram*, FZoopStruct*> FoundationsBeingZooped;
-	TMap<const AFGFactoryBuildingHologram*, AFGBlueprintProxy*> HoloProxies;
+	//TMap<const AFGFactoryBuildingHologram*, AFGBlueprintProxy*> HoloProxies;
+	TMap<TWeakObjectPtr<const AFGFactoryBuildingHologram>, AFGBlueprintProxy*> HoloProxies;
 
 	FVector CalcPivotAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat);
 
