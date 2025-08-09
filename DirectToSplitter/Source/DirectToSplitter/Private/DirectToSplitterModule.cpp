@@ -13,6 +13,7 @@
 #include "Equipment/FGBuildGunDismantle.h"
 #include <Hologram/FGSplineHologram.h>
 #include <Hologram/FGConveyorPoleHologram.h>
+#include "FGInputLibrary.h"
 //#include <Hologram/FGPipelineSupportHologram.h>
 #include <Hologram/FGWallAttachmentHologram.h>
 #include <Hologram/FGWireHologram.h>
@@ -788,8 +789,13 @@ void FDirectToSplitterModule::HGConstruct(AFGBuildableHologram* hg, AActor* buil
 
 }
 
+
+bool DoOnce = false;
+int i = 0;
 bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
 {
+
+	
 	auto junction = Cast<AFGPipelineJunctionHologram>(self);
 	if (junction == nullptr)
 	{
@@ -841,7 +847,7 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 					connections.Add(fccomp);
 				}
 			}
-
+			
 			if (connections.Num() > 0)
 			{
 				//Find the closest pipe connection
@@ -859,33 +865,83 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 						closestDistance = distance;
 					}
 				}
-
+				
 				auto myPipeConns = self->GetCachedPipeConnectionComponents();
 				if (myPipeConns.Num() > 0 && closestConnection)
 				{
-					UFGPipeConnectionComponent* myCompToSnap = nullptr;
-					for (auto myConn : myPipeConns)
+					
+					auto hg = Cast<AFGHologram>(junction);
+					auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
+
+					if (contr->IsInputKeyDown(EKeys::Down) && !DoOnce)
 					{
-						auto myType = myConn->GetPipeConnectionType();
+						
+						if (i + 1 < myPipeConns.Num())
+						{
+							i++;
+							UE_LOG(LogNativeHookManager, Display, TEXT("Incrementing"));
+						}
+						else
+						{
+							i = 0;
+							UE_LOG(LogNativeHookManager, Display, TEXT("Rolling Over"));
+						}
+						DoOnce = true;
+					}
+					else if (!contr->IsInputKeyDown(EKeys::Up) && !contr->IsInputKeyDown(EKeys::Down))
+					{
+						if (DoOnce)
+						{
+							DoOnce = false;
+						}
+					}
+					else if (contr->IsInputKeyDown(EKeys::Up) && !DoOnce)
+					{
+						
+						if (i > 0)
+						{
+							i--;
+							UE_LOG(LogNativeHookManager, Display, TEXT("Decrementing"));
+						}
+						else
+						{
+							i = myPipeConns.Num() - 1;
+							UE_LOG(LogNativeHookManager, Display, TEXT("Rolling Over"));
+						}
+						DoOnce = true;
+					}
+					else if (!contr->IsInputKeyDown(EKeys::Down) && !contr->IsInputKeyDown(EKeys::Up))
+					{
+						if (DoOnce)
+						{
+							DoOnce = false;
+						}
+					}
+					
+						UFGPipeConnectionComponent* myCompToSnap = nullptr;
+						//for (auto myConn : myPipeConns)
+						//{
+
+						auto myType = myPipeConns[i]->GetPipeConnectionType();
 						if (myType == EPipeConnectionType::PCT_ANY || myType == EPipeConnectionType::PCT_SNAP_ONLY)
 						{
-							myCompToSnap = myConn;
-							break;
+							myCompToSnap = myPipeConns[i];
+							//break;
 						}
 
 						auto closestDirection = closestConnection->GetPipeConnectionType();
 						if (closestDirection == EPipeConnectionType::PCT_CONSUMER && myType == EPipeConnectionType::PCT_PRODUCER)
 						{
-							myCompToSnap = myConn;
-							break;
+							myCompToSnap = myPipeConns[i];
+							//break;
 						}
 						else if (closestDirection == EPipeConnectionType::PCT_PRODUCER && myType == EPipeConnectionType::PCT_CONSUMER)
 						{
-							myCompToSnap = myConn;
-							break;
+							myCompToSnap = myPipeConns[i];
+							//break;
 						}
-					}
-
+						//}
+					
 					if (myCompToSnap)
 					{
 						self->mSnappedConnectionComponent = closestConnection;
@@ -914,6 +970,7 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 		}
 	}
 	self->mSnappedConnectionComponent = nullptr;
+	i = 0;
 	return false;
 }
 
