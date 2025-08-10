@@ -176,7 +176,9 @@ void FDirectToSplitterModule::StartupModule() {
 		{
 			bool result = (bool)scope(self, hitResult);
 			auto pipeAttachHolo = Cast<AFGPipeAttachmentHologram>(self);
-			if (!result && pipeAttachHolo && hitResult.GetActor())
+			auto hg = Cast<AFGHologram>(self);
+			auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
+			if ((!result || contr->IsInputKeyDown(EKeys::LeftShift)) && pipeAttachHolo && hitResult.GetActor())
 			{
 				scope.Override(PipeSnap(pipeAttachHolo, hitResult));
 
@@ -918,29 +920,29 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 						}
 					}
 					
-						UFGPipeConnectionComponent* myCompToSnap = nullptr;
-						//for (auto myConn : myPipeConns)
-						//{
+					UFGPipeConnectionComponent* myCompToSnap = nullptr;
+					//for (auto myConn : myPipeConns)
+					//{
 
-						auto myType = myPipeConns[i]->GetPipeConnectionType();
-						if (myType == EPipeConnectionType::PCT_ANY || myType == EPipeConnectionType::PCT_SNAP_ONLY)
-						{
-							myCompToSnap = myPipeConns[i];
-							//break;
-						}
+					auto myType = myPipeConns[i]->GetPipeConnectionType();
+					auto closestDirection = closestConnection->GetPipeConnectionType();
 
-						auto closestDirection = closestConnection->GetPipeConnectionType();
-						if (closestDirection == EPipeConnectionType::PCT_CONSUMER && myType == EPipeConnectionType::PCT_PRODUCER)
-						{
-							myCompToSnap = myPipeConns[i];
-							//break;
-						}
-						else if (closestDirection == EPipeConnectionType::PCT_PRODUCER && myType == EPipeConnectionType::PCT_CONSUMER)
-						{
-							myCompToSnap = myPipeConns[i];
-							//break;
-						}
-						//}
+					if (myType == EPipeConnectionType::PCT_ANY || myType == EPipeConnectionType::PCT_SNAP_ONLY)
+					{
+						myCompToSnap = myPipeConns[i];
+						//break;
+					}
+					else if (closestDirection == EPipeConnectionType::PCT_CONSUMER && myType == EPipeConnectionType::PCT_PRODUCER)
+					{
+						myCompToSnap = myPipeConns[i];
+						//break;
+					}
+					else if (closestDirection == EPipeConnectionType::PCT_PRODUCER && myType == EPipeConnectionType::PCT_CONSUMER)
+					{
+						myCompToSnap = myPipeConns[i];
+						//break;
+					}
+					//}
 					
 					if (myCompToSnap)
 					{
@@ -963,6 +965,7 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 						auto compForward = closestConnection->GetForwardVector();
 						FVector addVector = compForward * offset;
 						self->SetActorLocation(newLocation + addVector);
+						self->mSnapConnectionIndex = i;
 						return true;
 					}
 				}
