@@ -176,7 +176,9 @@ void FDirectToSplitterModule::StartupModule() {
 		{
 			bool result = (bool)scope(self, hitResult);
 			auto pipeAttachHolo = Cast<AFGPipeAttachmentHologram>(self);
-			if (!result && pipeAttachHolo && hitResult.GetActor())
+			auto hg = Cast<AFGHologram>(self);
+			auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
+			if ((!result || contr->IsInputKeyDown(EKeys::LeftShift)) && pipeAttachHolo && hitResult.GetActor())
 			{
 				scope.Override(PipeSnap(pipeAttachHolo, hitResult));
 
@@ -873,105 +875,106 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 					auto hg = Cast<AFGHologram>(junction);
 					auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
 
-					if (contr->IsInputKeyDown(EKeys::Down) && !DoOnce)
-					{
-						
-						if (i + 1 < myPipeConns.Num())
-						{
-							i++;
-							UE_LOG(LogNativeHookManager, Display, TEXT("Incrementing"));
-						}
-						else
-						{
-							i = 0;
-							UE_LOG(LogNativeHookManager, Display, TEXT("Rolling Over"));
-						}
-						DoOnce = true;
-					}
-					else if (!contr->IsInputKeyDown(EKeys::Up) && !contr->IsInputKeyDown(EKeys::Down))
-					{
-						if (DoOnce)
-						{
-							DoOnce = false;
-						}
-					}
-					else if (contr->IsInputKeyDown(EKeys::Up) && !DoOnce)
-					{
-						
-						if (i > 0)
-						{
-							i--;
-							UE_LOG(LogNativeHookManager, Display, TEXT("Decrementing"));
-						}
-						else
-						{
-							i = myPipeConns.Num() - 1;
-							UE_LOG(LogNativeHookManager, Display, TEXT("Rolling Over"));
-						}
-						DoOnce = true;
-					}
-					else if (!contr->IsInputKeyDown(EKeys::Down) && !contr->IsInputKeyDown(EKeys::Up))
-					{
-						if (DoOnce)
-						{
-							DoOnce = false;
-						}
-					}
+									if (contr->IsInputKeyDown(EKeys::Down) && !DoOnce)
+				{
 					
-						UFGPipeConnectionComponent* myCompToSnap = nullptr;
-						//for (auto myConn : myPipeConns)
-						//{
-
-						auto myType = myPipeConns[i]->GetPipeConnectionType();
-						if (myType == EPipeConnectionType::PCT_ANY || myType == EPipeConnectionType::PCT_SNAP_ONLY)
-						{
-							myCompToSnap = myPipeConns[i];
-							//break;
-						}
-
-						auto closestDirection = closestConnection->GetPipeConnectionType();
-						if (closestDirection == EPipeConnectionType::PCT_CONSUMER && myType == EPipeConnectionType::PCT_PRODUCER)
-						{
-							myCompToSnap = myPipeConns[i];
-							//break;
-						}
-						else if (closestDirection == EPipeConnectionType::PCT_PRODUCER && myType == EPipeConnectionType::PCT_CONSUMER)
-						{
-							myCompToSnap = myPipeConns[i];
-							//break;
-						}
-						//}
-					
-					if (myCompToSnap)
+					if (i + 1 < myPipeConns.Num())
 					{
-						self->mSnappedConnectionComponent = closestConnection;
-						auto newConnectionLocation = closestConnection->GetComponentLocation();
-						auto newConnectionRotation = closestConnection->GetComponentRotation();
-						auto myConnectionLocation = myCompToSnap->GetComponentLocation();
-						auto myConnectionRotation = myCompToSnap->GetComponentRotation();
-
-						auto rotationDifference = newConnectionRotation - myConnectionRotation;
-						auto rotationDiffForwardVector = UKismetMathLibrary::GetForwardVector(rotationDifference) * -1.f;
-						auto rotationFromX = UKismetMathLibrary::MakeRotFromX(rotationDiffForwardVector);
-						self->AddActorWorldRotation(rotationFromX);
-
-						auto normalizedLocationDiff = newConnectionLocation - myConnectionLocation;
-						normalizedLocationDiff.Normalize(0.0001);
-						auto distanceBetweenComps = UKismetMathLibrary::Vector_Distance(newConnectionLocation, myConnectionLocation);
-						auto newLocation = (normalizedLocationDiff * distanceBetweenComps) + myConnectionLocation;
-						auto offset = FDTS_ConfigStruct::GetActiveConfig(self->GetWorld()).PipeSnapOffset * 100.f;
-						auto compForward = closestConnection->GetForwardVector();
-						FVector addVector = compForward * offset;
-						self->SetActorLocation(newLocation + addVector);
-						return true;
+						i++;
+						UE_LOG(LogNativeHookManager, Display, TEXT("Incrementing"));
 					}
+					else
+					{
+						i = 0;
+						UE_LOG(LogNativeHookManager, Display, TEXT("Rolling Over"));
+					}
+					DoOnce = true;
+				}
+				else if (!contr->IsInputKeyDown(EKeys::Up) && !contr->IsInputKeyDown(EKeys::Down))
+				{
+					if (DoOnce)
+					{
+						DoOnce = false;
+					}
+				}
+				else if (contr->IsInputKeyDown(EKeys::Up) && !DoOnce)
+				{
+					
+					if (i > 0)
+					{
+						i--;
+						UE_LOG(LogNativeHookManager, Display, TEXT("Decrementing"));
+					}
+					else
+					{
+						i = myPipeConns.Num() - 1;
+						UE_LOG(LogNativeHookManager, Display, TEXT("Rolling Over"));
+					}
+					DoOnce = true;
+				}
+				else if (!contr->IsInputKeyDown(EKeys::Down) && !contr->IsInputKeyDown(EKeys::Up))
+				{
+					if (DoOnce)
+					{
+						DoOnce = false;
+					}
+				}
+				
+				UFGPipeConnectionComponent* myCompToSnap = nullptr;
+				//for (auto myConn : myPipeConns)
+				//{
+
+				auto myType = myPipeConns[i]->GetPipeConnectionType();
+				auto closestDirection = closestConnection->GetPipeConnectionType();
+
+				if (myType == EPipeConnectionType::PCT_ANY || myType == EPipeConnectionType::PCT_SNAP_ONLY)
+				{
+					myCompToSnap = myPipeConns[i];
+					//break;
+				}
+				else if (closestDirection == EPipeConnectionType::PCT_CONSUMER && myType == EPipeConnectionType::PCT_PRODUCER)
+				{
+					myCompToSnap = myPipeConns[i];
+					//break;
+				}
+				else if (closestDirection == EPipeConnectionType::PCT_PRODUCER && myType == EPipeConnectionType::PCT_CONSUMER)
+				{
+					myCompToSnap = myPipeConns[i];
+					//break;
+				}
+				//}
+				
+				if (myCompToSnap)
+				{
+					self->mSnappedConnectionComponent = closestConnection;
+					auto newConnectionLocation = closestConnection->GetComponentLocation();
+					auto newConnectionRotation = closestConnection->GetComponentRotation();
+					auto myConnectionLocation = myCompToSnap->GetComponentLocation();
+					auto myConnectionRotation = myCompToSnap->GetComponentRotation();
+
+					auto rotationDifference = newConnectionRotation - myConnectionRotation;
+					auto rotationDiffForwardVector = UKismetMathLibrary::GetForwardVector(rotationDifference) * -1.f;
+					auto rotationFromX = UKismetMathLibrary::MakeRotFromX(rotationDiffForwardVector);
+					self->AddActorWorldRotation(rotationFromX);
+
+					auto normalizedLocationDiff = newConnectionLocation - myConnectionLocation;
+					normalizedLocationDiff.Normalize(0.0001);
+					auto distanceBetweenComps = UKismetMathLibrary::Vector_Distance(newConnectionLocation, myConnectionLocation);
+					auto newLocation = (normalizedLocationDiff * distanceBetweenComps) + myConnectionLocation;
+					auto offset = FDTS_ConfigStruct::GetActiveConfig(self->GetWorld()).PipeSnapOffset * 100.f;
+					auto compForward = closestConnection->GetForwardVector();
+					FVector addVector = compForward * offset;
+					self->SetActorLocation(newLocation + addVector);
+					self->mSnapConnectionIndex = i;
+					return true;
 				}
 			}
 		}
 	}
-	self->mSnappedConnectionComponent = nullptr;
-	i = 0;
-	return false;
+}
+self->mSnappedConnectionComponent = nullptr;
+i = 0;
+return false;
 }
 
 #pragma optimize("", on)
