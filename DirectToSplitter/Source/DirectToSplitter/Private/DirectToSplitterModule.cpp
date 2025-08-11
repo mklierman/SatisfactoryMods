@@ -24,6 +24,8 @@ DEFINE_LOG_CATEGORY(SnapOn_Log);
 void FDirectToSplitterModule::StartupModule() {
 	AFGConveyorAttachmentHologram* cah = GetMutableDefault<AFGConveyorAttachmentHologram>();
 	AFGFactoryHologram* fh = GetMutableDefault<AFGFactoryHologram>();
+	AFGBuildableHologram* bh = GetMutableDefault<AFGBuildableHologram>();
+	AFGPipeAttachmentHologram* pah = GetMutableDefault<AFGPipeAttachmentHologram>();
 	AFGBuildable* fgb = GetMutableDefault<AFGBuildable>();
 	AFGBuildableConveyorAttachment* bca = GetMutableDefault<AFGBuildableConveyorAttachment>();
 
@@ -40,6 +42,15 @@ void FDirectToSplitterModule::StartupModule() {
 	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CheckValidFloor, cah, [this](auto& scope, AFGConveyorAttachmentHologram* self)
 		{
 			CheckValidFloor(self);
+		});
+	
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::ScrollRotate, bh, [this](auto& scope, AFGBuildableHologram* self, int32 delta, int32 step)
+		{
+			scrollDelta = delta;			
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::ScrollRotate, pah, [this](auto& scope, AFGPipeAttachmentHologram* self, int32 delta, int32 step)
+		{
+			scrollDelta = delta;
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, fgb, [this](auto& scope, AFGBuildable* self)
@@ -302,10 +313,6 @@ void FDirectToSplitterModule::TrySnapToActor_Hook(TCallScope<bool(*)
 	
 }
 
-bool inputDoOnce = false;
-int inputIndex = 0;
-bool outputDoOnce = false;
-int outputIndex = 0;
 bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
 {
 	self->mSnappedConnection = nullptr;
@@ -399,23 +406,19 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 				int snapIndex = -1;
 				if (direction == EFactoryConnectionDirection::FCD_OUTPUT)
 				{
-					//UFGFactoryConnectionComponent* myConnection = nullptr;
 					TArray< UFGFactoryConnectionComponent*> myInputs;
 					for (auto myComp : self->mConnections)
 					{
 						if (myComp->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
 						{
 							myInputs.Add(myComp);
-							//myConnection = myComp;
-							//break;
 						}
 					}
 					if (myInputs.Num() == 1)
 					{
 						inputIndex = 0;
 					}
-					auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
-					if (contr->IsInputKeyDown(EKeys::Down) && !inputDoOnce)
+					if (scrollDelta == -1 && !inputDoOnce)
 					{
 						if (inputIndex + 1 < myInputs.Num())
 						{
@@ -427,14 +430,14 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 						}
 						inputDoOnce = true;
 					}
-					else if (!contr->IsInputKeyDown(EKeys::Up) && !contr->IsInputKeyDown(EKeys::Down))
+					else if (scrollDelta != 1 && scrollDelta != -1)
 					{
 						if (inputDoOnce)
 						{
 							inputDoOnce = false;
 						}
 					}
-					else if (contr->IsInputKeyDown(EKeys::Up) && !inputDoOnce)
+					else if (scrollDelta == 1 && !inputDoOnce)
 					{
 
 						if (inputIndex > 0)
@@ -446,13 +449,6 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 							inputIndex = myInputs.Num() - 1;
 						}
 						inputDoOnce = true;
-					}
-					else if (!contr->IsInputKeyDown(EKeys::Down) && !contr->IsInputKeyDown(EKeys::Up))
-					{
-						if (inputDoOnce)
-						{
-							inputDoOnce = false;
-						}
 					}
 
 					if (myInputs.Num() > inputIndex && myInputs[inputIndex])
@@ -469,6 +465,7 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 						self->SnapToConnection(closestConnection, myInputs[inputIndex], closestLocation);
 						self->mSnappedConnection = closestConnection;
 						self->mSnappingConnectionIndex = snapIndex;
+						scrollDelta = 0;
 						return true;
 					}
 
@@ -476,14 +473,11 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 				else if (direction == EFactoryConnectionDirection::FCD_INPUT)
 				{
 					TArray<UFGFactoryConnectionComponent*> myOutputs;
-					//UFGFactoryConnectionComponent* myConnection = nullptr;
 					for (auto myComp : self->mConnections)
 					{
 						if (myComp->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
 						{
 							myOutputs.Add(myComp);
-							//myConnection = myComp;
-							//break;
 						}
 					}
 
@@ -491,8 +485,7 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 					{
 						outputIndex = 0;
 					}
-					auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
-					if (contr->IsInputKeyDown(EKeys::Down) && !outputDoOnce)
+					if (scrollDelta == -1 && !outputDoOnce)
 					{
 						if (outputIndex + 1 < myOutputs.Num())
 						{
@@ -504,14 +497,14 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 						}
 						outputDoOnce = true;
 					}
-					else if (!contr->IsInputKeyDown(EKeys::Up) && !contr->IsInputKeyDown(EKeys::Down))
+					else if (scrollDelta != 1 && scrollDelta != -1)
 					{
 						if (outputDoOnce)
 						{
 							outputDoOnce = false;
 						}
 					}
-					else if (contr->IsInputKeyDown(EKeys::Up) && !outputDoOnce)
+					else if (scrollDelta == 1 && !outputDoOnce)
 					{
 
 						if (outputIndex > 0)
@@ -524,20 +517,13 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 						}
 						outputDoOnce = true;
 					}
-					else if (!contr->IsInputKeyDown(EKeys::Down) && !contr->IsInputKeyDown(EKeys::Up))
-					{
-						if (outputDoOnce)
-						{
-							outputDoOnce = false;
-						}
-					}
 
 					if (myOutputs.Num() > outputIndex && myOutputs[outputIndex])
 					{
 						for (auto myComp : self->mConnections)
 						{
 							snapIndex++;
-							if (myComp == myOutputs[inputIndex])
+							if (myComp == myOutputs[outputIndex])
 							{
 								break;
 							}
@@ -545,13 +531,14 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 						self->SnapToConnection(closestConnection, myOutputs[outputIndex], closestLocation);
 						self->mSnappedConnection = closestConnection;
 						self->mSnappingConnectionIndex = snapIndex;
+						scrollDelta = 0;
 						return true;
 					}
 				}
-
 			}
 		}
 	}
+	scrollDelta = 0;
 	return false;
 }
 
@@ -949,7 +936,7 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 					auto hg = Cast<AFGHologram>(junction);
 					auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
 
-					if (contr->IsInputKeyDown(EKeys::Down) && !DoOnce)
+					if (scrollDelta == -1 && !DoOnce)
 					{
 						if (i + 1 < myPipeConns.Num())
 						{
@@ -961,16 +948,15 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 						}
 						DoOnce = true;
 					}
-					else if (!contr->IsInputKeyDown(EKeys::Up) && !contr->IsInputKeyDown(EKeys::Down))
+					else if (scrollDelta != 1 && scrollDelta != -1)
 					{
 						if (DoOnce)
 						{
 							DoOnce = false;
 						}
 					}
-					else if (contr->IsInputKeyDown(EKeys::Up) && !DoOnce)
+					else if (scrollDelta == 1 && !DoOnce)
 					{
-
 						if (i > 0)
 						{
 							i--;
@@ -980,13 +966,6 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 							i = myPipeConns.Num() - 1;
 						}
 						DoOnce = true;
-					}
-					else if (!contr->IsInputKeyDown(EKeys::Down) && !contr->IsInputKeyDown(EKeys::Up))
-					{
-						if (DoOnce)
-						{
-							DoOnce = false;
-						}
 					}
 
 					UFGPipeConnectionComponent* myCompToSnap = nullptr;
@@ -1028,6 +1007,7 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 						FVector addVector = compForward * offset;
 						self->SetActorLocation(newLocation + addVector);
 						self->mSnapConnectionIndex = i;
+						scrollDelta = 0;
 						return true;
 					}
 				}

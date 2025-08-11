@@ -59,4 +59,11 @@ public:
 
 	TMap < AFGConveyorAttachmentHologram* ,ConveyorAttachmentInfo> AttachmentInfos;
 	TMap< AFGConveyorAttachmentHologram*, UFGFactoryConnectionComponent*> mSnappedConnections;
+
+
+	bool inputDoOnce = false;
+	int inputIndex = 0;
+	bool outputDoOnce = false;
+	int outputIndex = 0;
+	int scrollDelta = 0;
 };
