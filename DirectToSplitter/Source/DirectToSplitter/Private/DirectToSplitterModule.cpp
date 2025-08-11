@@ -302,6 +302,10 @@ void FDirectToSplitterModule::TrySnapToActor_Hook(TCallScope<bool(*)
 	
 }
 
+bool inputDoOnce = false;
+int inputIndex = 0;
+bool outputDoOnce = false;
+int outputIndex = 0;
 bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
 {
 	self->mSnappedConnection = nullptr;
@@ -353,6 +357,7 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 		auto components = hitBuildable->GetComponents();
 		if (components.Num() > 0)
 		{
+			// Get the connection we are snapping to
 			UFGFactoryConnectionComponent* closestConnection = nullptr;
 			FVector closestLocation = FVector(0,0,0);
 			for (auto component : components)
@@ -389,45 +394,157 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 
 			if (closestConnection)
 			{
+				// Determine which of my connections is being snapped
 				auto direction = closestConnection->GetDirection();
+				int snapIndex = -1;
 				if (direction == EFactoryConnectionDirection::FCD_OUTPUT)
 				{
-					UFGFactoryConnectionComponent* myConnection = nullptr;
+					//UFGFactoryConnectionComponent* myConnection = nullptr;
+					TArray< UFGFactoryConnectionComponent*> myInputs;
 					for (auto myComp : self->mConnections)
 					{
 						if (myComp->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
 						{
-							myConnection = myComp;
-							break;
+							myInputs.Add(myComp);
+							//myConnection = myComp;
+							//break;
+						}
+					}
+					if (myInputs.Num() == 1)
+					{
+						inputIndex = 0;
+					}
+					auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
+					if (contr->IsInputKeyDown(EKeys::Down) && !inputDoOnce)
+					{
+						if (inputIndex + 1 < myInputs.Num())
+						{
+							inputIndex++;
+						}
+						else
+						{
+							inputIndex = 0;
+						}
+						inputDoOnce = true;
+					}
+					else if (!contr->IsInputKeyDown(EKeys::Up) && !contr->IsInputKeyDown(EKeys::Down))
+					{
+						if (inputDoOnce)
+						{
+							inputDoOnce = false;
+						}
+					}
+					else if (contr->IsInputKeyDown(EKeys::Up) && !inputDoOnce)
+					{
+
+						if (inputIndex > 0)
+						{
+							inputIndex--;
+						}
+						else
+						{
+							inputIndex = myInputs.Num() - 1;
+						}
+						inputDoOnce = true;
+					}
+					else if (!contr->IsInputKeyDown(EKeys::Down) && !contr->IsInputKeyDown(EKeys::Up))
+					{
+						if (inputDoOnce)
+						{
+							inputDoOnce = false;
 						}
 					}
 
-					if (myConnection)
+					if (myInputs.Num() > inputIndex && myInputs[inputIndex])
 					{
-						self->SnapToConnection(closestConnection, myConnection, closestLocation);
+						for (auto myComp : self->mConnections)
+						{
+							snapIndex++;
+							if (myComp == myInputs[inputIndex])
+							{
+								break;
+							}
+						}
+
+						self->SnapToConnection(closestConnection, myInputs[inputIndex], closestLocation);
 						self->mSnappedConnection = closestConnection;
-						self->mSnappingConnectionIndex = 0;
+						self->mSnappingConnectionIndex = snapIndex;
 						return true;
 					}
 
 				}
 				else if (direction == EFactoryConnectionDirection::FCD_INPUT)
 				{
-					UFGFactoryConnectionComponent* myConnection = nullptr;
+					TArray<UFGFactoryConnectionComponent*> myOutputs;
+					//UFGFactoryConnectionComponent* myConnection = nullptr;
 					for (auto myComp : self->mConnections)
 					{
 						if (myComp->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
 						{
-							myConnection = myComp;
-							break;
+							myOutputs.Add(myComp);
+							//myConnection = myComp;
+							//break;
 						}
 					}
 
-					if (myConnection)
+					if (myOutputs.Num() == 1)
 					{
-						self->SnapToConnection(closestConnection, myConnection, closestLocation);
+						outputIndex = 0;
+					}
+					auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
+					if (contr->IsInputKeyDown(EKeys::Down) && !outputDoOnce)
+					{
+						if (outputIndex + 1 < myOutputs.Num())
+						{
+							outputIndex++;
+						}
+						else
+						{
+							outputIndex = 0;
+						}
+						outputDoOnce = true;
+					}
+					else if (!contr->IsInputKeyDown(EKeys::Up) && !contr->IsInputKeyDown(EKeys::Down))
+					{
+						if (outputDoOnce)
+						{
+							outputDoOnce = false;
+						}
+					}
+					else if (contr->IsInputKeyDown(EKeys::Up) && !outputDoOnce)
+					{
+
+						if (outputIndex > 0)
+						{
+							outputIndex--;
+						}
+						else
+						{
+							outputIndex = myOutputs.Num() - 1;
+						}
+						outputDoOnce = true;
+					}
+					else if (!contr->IsInputKeyDown(EKeys::Down) && !contr->IsInputKeyDown(EKeys::Up))
+					{
+						if (outputDoOnce)
+						{
+							outputDoOnce = false;
+						}
+					}
+
+					if (myOutputs.Num() > outputIndex && myOutputs[outputIndex])
+					{
+						for (auto myComp : self->mConnections)
+						{
+							snapIndex++;
+							if (myComp == myOutputs[inputIndex])
+							{
+								break;
+							}
+						}
+						self->SnapToConnection(closestConnection, myOutputs[outputIndex], closestLocation);
 						self->mSnappedConnection = closestConnection;
-						self->mSnappingConnectionIndex = 0;
+						self->mSnappingConnectionIndex = snapIndex;
 						return true;
 					}
 				}
