@@ -24,6 +24,8 @@ DEFINE_LOG_CATEGORY(SnapOn_Log);
 void FDirectToSplitterModule::StartupModule() {
 	AFGConveyorAttachmentHologram* cah = GetMutableDefault<AFGConveyorAttachmentHologram>();
 	AFGFactoryHologram* fh = GetMutableDefault<AFGFactoryHologram>();
+	AFGBuildableHologram* bh = GetMutableDefault<AFGBuildableHologram>();
+	AFGPipeAttachmentHologram* pah = GetMutableDefault<AFGPipeAttachmentHologram>();
 	AFGBuildable* fgb = GetMutableDefault<AFGBuildable>();
 	AFGBuildableConveyorAttachment* bca = GetMutableDefault<AFGBuildableConveyorAttachment>();
 
@@ -37,23 +39,18 @@ void FDirectToSplitterModule::StartupModule() {
 			}
 		});
 
-	//SUBSCRIBE_METHOD(AFGBuildableConveyorBelt::Merge, [this](auto& scope, TArray< AFGBuildableConveyorBelt* > conveyors)
-	//	{
-	//		auto recipe1 = conveyors[0]->GetBuiltWithRecipe();
-	//		auto recipe2 = conveyors[1]->GetBuiltWithRecipe();
-	//		if (recipe1 && recipe1->GetName() == "SnapOn_Recipe_C")
-	//		{
-	//			scope.Override(nullptr);
-	//		}
-	//		else if (recipe2 && recipe2->GetName() == "SnapOn_Recipe_C")
-	//		{
-	//			scope.Override(nullptr);
-	//		}
-	//		scope.Override(nullptr);
-	//	});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CheckValidFloor, cah, [this](auto& scope, AFGConveyorAttachmentHologram* self)
 		{
 			CheckValidFloor(self);
+		});
+	
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::ScrollRotate, bh, [this](auto& scope, AFGBuildableHologram* self, int32 delta, int32 step)
+		{
+			scrollDelta = delta;			
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::ScrollRotate, pah, [this](auto& scope, AFGPipeAttachmentHologram* self, int32 delta, int32 step)
+		{
+			scrollDelta = delta;
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, fgb, [this](auto& scope, AFGBuildable* self)
@@ -116,7 +113,6 @@ void FDirectToSplitterModule::StartupModule() {
 			{
 				scope.Override(true);
 			}
-			//scope.Override(true);
 		});
 
 	AFGPipeAttachmentHologram* pahg = GetMutableDefault<AFGPipeAttachmentHologram>();
@@ -172,6 +168,7 @@ void FDirectToSplitterModule::StartupModule() {
 				}
 			}
 		});
+
 	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::TrySnapToActor, pahg, [this](auto& scope, AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
 		{
 			bool result = (bool)scope(self, hitResult);
@@ -185,6 +182,7 @@ void FDirectToSplitterModule::StartupModule() {
 				return;
 			}
 		});
+
 	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::CheckValidPlacement, pahg, [this](auto& scope, AFGPipeAttachmentHologram* self)
 		{
 			auto junction = Cast<AFGPipelineJunctionHologram>(self);
@@ -208,7 +206,6 @@ void FDirectToSplitterModule::DismantleLeftoverBelt(UFGFactoryConnectionComponen
 			auto recipe = outer->GetBuiltWithRecipe();
 			if (recipe && recipe->GetName() == "SnapOn_Recipe_C")
 			{
-				//conn->ClearConnection();
 				outer->Dismantle_Implementation();
 			}
 		}
@@ -234,7 +231,6 @@ void FDirectToSplitterModule::HandleLeftoverBelts(AFGBuildable* conveyorAttachme
 					auto recipe = outer->GetBuiltWithRecipe();
 					if (recipe && recipe->GetName() == "SnapOn_Recipe_C")
 					{
-						//conn->ClearConnection();
 						outer->Dismantle_Implementation();
 					}
 				}
@@ -263,9 +259,6 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 				distance = FMath::RoundToDouble(distance);
 				auto offset = FDTS_ConfigStruct::GetActiveConfig(conveyorAttachment->GetWorld()).SnapOffset * 100.f / 2;
 
-
-
-
 				//Mk6 belt blueprint class
 				UClass* beltClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk6/Build_ConveyorBeltMk6.Build_ConveyorBeltMk6_C"));
 				auto Transform1 = conveyorAttachment->GetActorLocation();
@@ -279,7 +272,6 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 				auto beltActor = Subsystem->BeginSpawnBuildable(beltClass, TF);
 
 				beltActor->FinishSpawning(TF);
-				//auto beltActor = conveyorAttachment->GetWorld()->SpawnActor(beltClass, &Transform);
 				auto belt = Cast<AFGBuildableConveyorBase>(beltActor);
 				if (belt)
 				{
@@ -323,7 +315,6 @@ void FDirectToSplitterModule::TrySnapToActor_Hook(TCallScope<bool(*)
 
 bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
 {
-
 	self->mSnappedConnection = nullptr;
 	//Get the (possibly) hit buildable
 	AFGBuildable* hitBuildable = nullptr;
@@ -363,14 +354,6 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 		{
 			return false;
 		}
-		//else if (self->mBuildClass->GetName().Contains("ModularLoadBalancer"))
-		//{
-		//	return false;
-		//}
-		//else if (self->mBuildClass->GetName().Contains("CounterLimiter"))
-		//{
-		//	return false;
-		//}
 		else if (auto lift = Cast<AFGBuildableConveyorLift>(hitBuildable))
 		{
 			return false;
@@ -381,6 +364,7 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 		auto components = hitBuildable->GetComponents();
 		if (components.Num() > 0)
 		{
+			// Get the connection we are snapping to
 			UFGFactoryConnectionComponent* closestConnection = nullptr;
 			FVector closestLocation = FVector(0,0,0);
 			for (auto component : components)
@@ -415,61 +399,151 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 				}
 			}
 
-				//UFGFactoryConnectionComponent* conn = Cast<UFGFactoryConnectionComponent>(component);
-				if (closestConnection)
+			if (closestConnection)
+			{
+				// Determine which of my connections is being snapped
+				auto direction = closestConnection->GetDirection();
+				int snapIndex = -1;
+				if (direction == EFactoryConnectionDirection::FCD_OUTPUT)
 				{
-					auto direction = closestConnection->GetDirection();
-					if (direction == EFactoryConnectionDirection::FCD_OUTPUT)
+					TArray< UFGFactoryConnectionComponent*> myInputs;
+					for (auto myComp : self->mConnections)
 					{
-						UFGFactoryConnectionComponent* myConnection = nullptr;
+						if (myComp->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
+						{
+							myInputs.Add(myComp);
+						}
+					}
+					if (myInputs.Num() == 1)
+					{
+						inputIndex = 0;
+					}
+					if (scrollDelta == -1 && !inputDoOnce)
+					{
+						if (inputIndex + 1 < myInputs.Num())
+						{
+							inputIndex++;
+						}
+						else
+						{
+							inputIndex = 0;
+						}
+						inputDoOnce = true;
+					}
+					else if (scrollDelta != 1 && scrollDelta != -1)
+					{
+						if (inputDoOnce)
+						{
+							inputDoOnce = false;
+						}
+					}
+					else if (scrollDelta == 1 && !inputDoOnce)
+					{
+
+						if (inputIndex > 0)
+						{
+							inputIndex--;
+						}
+						else
+						{
+							inputIndex = myInputs.Num() - 1;
+						}
+						inputDoOnce = true;
+					}
+
+					if (myInputs.Num() > inputIndex && myInputs[inputIndex])
+					{
 						for (auto myComp : self->mConnections)
 						{
-							if (myComp->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
+							snapIndex++;
+							if (myComp == myInputs[inputIndex])
 							{
-								myConnection = myComp;
 								break;
 							}
 						}
 
-						if (myConnection)
-						{
-							self->SnapToConnection(closestConnection, myConnection, closestLocation);
-							self->mSnappedConnection = closestConnection;
-							self->mSnappingConnectionIndex = 0;
-							return true;
-						}
-						
+						self->SnapToConnection(closestConnection, myInputs[inputIndex], closestLocation);
+						self->mSnappedConnection = closestConnection;
+						self->mSnappingConnectionIndex = snapIndex;
+						scrollDelta = 0;
+						return true;
 					}
-					else if (direction == EFactoryConnectionDirection::FCD_INPUT)
+
+				}
+				else if (direction == EFactoryConnectionDirection::FCD_INPUT)
+				{
+					TArray<UFGFactoryConnectionComponent*> myOutputs;
+					for (auto myComp : self->mConnections)
 					{
-						UFGFactoryConnectionComponent* myConnection = nullptr;
+						if (myComp->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
+						{
+							myOutputs.Add(myComp);
+						}
+					}
+
+					if (myOutputs.Num() == 1)
+					{
+						outputIndex = 0;
+					}
+					if (scrollDelta == -1 && !outputDoOnce)
+					{
+						if (outputIndex + 1 < myOutputs.Num())
+						{
+							outputIndex++;
+						}
+						else
+						{
+							outputIndex = 0;
+						}
+						outputDoOnce = true;
+					}
+					else if (scrollDelta != 1 && scrollDelta != -1)
+					{
+						if (outputDoOnce)
+						{
+							outputDoOnce = false;
+						}
+					}
+					else if (scrollDelta == 1 && !outputDoOnce)
+					{
+
+						if (outputIndex > 0)
+						{
+							outputIndex--;
+						}
+						else
+						{
+							outputIndex = myOutputs.Num() - 1;
+						}
+						outputDoOnce = true;
+					}
+
+					if (myOutputs.Num() > outputIndex && myOutputs[outputIndex])
+					{
 						for (auto myComp : self->mConnections)
 						{
-							if (myComp->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT)
+							snapIndex++;
+							if (myComp == myOutputs[outputIndex])
 							{
-								myConnection = myComp;
 								break;
 							}
 						}
-
-						if (myConnection)
-						{
-							self->SnapToConnection(closestConnection, myConnection, closestLocation);
-							self->mSnappedConnection = closestConnection;
-							self->mSnappingConnectionIndex = 0;
-							return true;
-						}
+						self->SnapToConnection(closestConnection, myOutputs[outputIndex], closestLocation);
+						self->mSnappedConnection = closestConnection;
+						self->mSnappingConnectionIndex = snapIndex;
+						scrollDelta = 0;
+						return true;
 					}
-				
+				}
 			}
 		}
 	}
+	scrollDelta = 0;
 	return false;
 }
 
 void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram* self, bool& retflag)
 {
-
 	retflag = true;
 	TArray< TSubclassOf<  UFGConstructDisqualifier > >out_constructResults;
 	self->GetConstructDisqualifiers(out_constructResults);
@@ -483,12 +557,7 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 			return;
 		}
 		auto className = self->mBuildClass.Get()->GetName();
-		//if (className == "Build_ConveyorAttachmentSplitterSmart_C" || className == "Build_ConveyorAttachmentSplitterProgrammable_C")
-		//{
-		//	self->ResetConstructDisqualifiers();
-		//	self->AddConstructDisqualifier(USnapOnSplitterDisqualifier::StaticClass());
-		//	return;
-		//}
+
 		auto snappedBuildable = self->mSnappedConnection->GetOuterBuildable();
 		auto buildingName = snappedBuildable->GetName();
 
@@ -559,11 +628,6 @@ bool FDirectToSplitterModule::IsValidHitResult(const AFGConveyorAttachmentHologr
 	{
 		return false;
 	}
-	//auto pipelineHolo = Cast<AFGPipelineSupportHologram>(self);
-	//if (pipelineHolo)
-	//{
-	//	return false;
-	//}
 	auto wallHolo = Cast<AFGWallAttachmentHologram>(self);
 	if (wallHolo)
 	{
@@ -634,7 +698,7 @@ void FDirectToSplitterModule::HGConstruct(AFGBuildableHologram* hg, AActor* buil
 					if (otherDirection == EFactoryConnectionDirection::FCD_OUTPUT)
 					{
 						auto inputs = splitter->mInputs;
-						if (inputs.Num() > 0) 
+						if (inputs.Num() > 0)
 						{
 							UFGFactoryConnectionComponent* myConnection = nullptr;
 
@@ -796,8 +860,6 @@ bool DoOnce = false;
 int i = 0;
 bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
 {
-
-	
 	auto junction = Cast<AFGPipelineJunctionHologram>(self);
 	if (junction == nullptr)
 	{
@@ -831,7 +893,7 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 	{
 		FVector loc = self->GetActorLocation();
 		FVector normal = self->GetActorForwardVector();
-		
+
 		auto components = hitBuildable->GetComponents();
 		if (components.Num() > 0)
 		{
@@ -849,7 +911,7 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 					connections.Add(fccomp);
 				}
 			}
-			
+
 			if (connections.Num() > 0)
 			{
 				//Find the closest pipe connection
@@ -867,114 +929,94 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 						closestDistance = distance;
 					}
 				}
-				
+
 				auto myPipeConns = self->GetCachedPipeConnectionComponents();
 				if (myPipeConns.Num() > 0 && closestConnection)
 				{
-					
 					auto hg = Cast<AFGHologram>(junction);
 					auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
 
-									if (contr->IsInputKeyDown(EKeys::Down) && !DoOnce)
-				{
-					
-					if (i + 1 < myPipeConns.Num())
+					if (scrollDelta == -1 && !DoOnce)
 					{
-						i++;
-						UE_LOG(LogNativeHookManager, Display, TEXT("Incrementing"));
+						if (i + 1 < myPipeConns.Num())
+						{
+							i++;
+						}
+						else
+						{
+							i = 0;
+						}
+						DoOnce = true;
 					}
-					else
+					else if (scrollDelta != 1 && scrollDelta != -1)
 					{
-						i = 0;
-						UE_LOG(LogNativeHookManager, Display, TEXT("Rolling Over"));
+						if (DoOnce)
+						{
+							DoOnce = false;
+						}
 					}
-					DoOnce = true;
-				}
-				else if (!contr->IsInputKeyDown(EKeys::Up) && !contr->IsInputKeyDown(EKeys::Down))
-				{
-					if (DoOnce)
+					else if (scrollDelta == 1 && !DoOnce)
 					{
-						DoOnce = false;
+						if (i > 0)
+						{
+							i--;
+						}
+						else
+						{
+							i = myPipeConns.Num() - 1;
+						}
+						DoOnce = true;
 					}
-				}
-				else if (contr->IsInputKeyDown(EKeys::Up) && !DoOnce)
-				{
-					
-					if (i > 0)
-					{
-						i--;
-						UE_LOG(LogNativeHookManager, Display, TEXT("Decrementing"));
-					}
-					else
-					{
-						i = myPipeConns.Num() - 1;
-						UE_LOG(LogNativeHookManager, Display, TEXT("Rolling Over"));
-					}
-					DoOnce = true;
-				}
-				else if (!contr->IsInputKeyDown(EKeys::Down) && !contr->IsInputKeyDown(EKeys::Up))
-				{
-					if (DoOnce)
-					{
-						DoOnce = false;
-					}
-				}
-				
-				UFGPipeConnectionComponent* myCompToSnap = nullptr;
-				//for (auto myConn : myPipeConns)
-				//{
 
-				auto myType = myPipeConns[i]->GetPipeConnectionType();
-				auto closestDirection = closestConnection->GetPipeConnectionType();
+					UFGPipeConnectionComponent* myCompToSnap = nullptr;
+					auto myType = myPipeConns[i]->GetPipeConnectionType();
+					auto closestDirection = closestConnection->GetPipeConnectionType();
 
-				if (myType == EPipeConnectionType::PCT_ANY || myType == EPipeConnectionType::PCT_SNAP_ONLY)
-				{
-					myCompToSnap = myPipeConns[i];
-					//break;
-				}
-				else if (closestDirection == EPipeConnectionType::PCT_CONSUMER && myType == EPipeConnectionType::PCT_PRODUCER)
-				{
-					myCompToSnap = myPipeConns[i];
-					//break;
-				}
-				else if (closestDirection == EPipeConnectionType::PCT_PRODUCER && myType == EPipeConnectionType::PCT_CONSUMER)
-				{
-					myCompToSnap = myPipeConns[i];
-					//break;
-				}
-				//}
-				
-				if (myCompToSnap)
-				{
-					self->mSnappedConnectionComponent = closestConnection;
-					auto newConnectionLocation = closestConnection->GetComponentLocation();
-					auto newConnectionRotation = closestConnection->GetComponentRotation();
-					auto myConnectionLocation = myCompToSnap->GetComponentLocation();
-					auto myConnectionRotation = myCompToSnap->GetComponentRotation();
+					if (myType == EPipeConnectionType::PCT_ANY || myType == EPipeConnectionType::PCT_SNAP_ONLY)
+					{
+						myCompToSnap = myPipeConns[i];
+					}
+					else if (closestDirection == EPipeConnectionType::PCT_CONSUMER && myType == EPipeConnectionType::PCT_PRODUCER)
+					{
+						myCompToSnap = myPipeConns[i];
+					}
+					else if (closestDirection == EPipeConnectionType::PCT_PRODUCER && myType == EPipeConnectionType::PCT_CONSUMER)
+					{
+						myCompToSnap = myPipeConns[i];
+					}
 
-					auto rotationDifference = newConnectionRotation - myConnectionRotation;
-					auto rotationDiffForwardVector = UKismetMathLibrary::GetForwardVector(rotationDifference) * -1.f;
-					auto rotationFromX = UKismetMathLibrary::MakeRotFromX(rotationDiffForwardVector);
-					self->AddActorWorldRotation(rotationFromX);
+					if (myCompToSnap)
+					{
+						self->mSnappedConnectionComponent = closestConnection;
+						auto newConnectionLocation = closestConnection->GetComponentLocation();
+						auto newConnectionRotation = closestConnection->GetComponentRotation();
+						auto myConnectionLocation = myCompToSnap->GetComponentLocation();
+						auto myConnectionRotation = myCompToSnap->GetComponentRotation();
 
-					auto normalizedLocationDiff = newConnectionLocation - myConnectionLocation;
-					normalizedLocationDiff.Normalize(0.0001);
-					auto distanceBetweenComps = UKismetMathLibrary::Vector_Distance(newConnectionLocation, myConnectionLocation);
-					auto newLocation = (normalizedLocationDiff * distanceBetweenComps) + myConnectionLocation;
-					auto offset = FDTS_ConfigStruct::GetActiveConfig(self->GetWorld()).PipeSnapOffset * 100.f;
-					auto compForward = closestConnection->GetForwardVector();
-					FVector addVector = compForward * offset;
-					self->SetActorLocation(newLocation + addVector);
-					self->mSnapConnectionIndex = i;
-					return true;
+						auto rotationDifference = newConnectionRotation - myConnectionRotation;
+						auto rotationDiffForwardVector = UKismetMathLibrary::GetForwardVector(rotationDifference) * -1.f;
+						auto rotationFromX = UKismetMathLibrary::MakeRotFromX(rotationDiffForwardVector);
+						self->AddActorWorldRotation(rotationFromX);
+
+						auto normalizedLocationDiff = newConnectionLocation - myConnectionLocation;
+						normalizedLocationDiff.Normalize(0.0001);
+						auto distanceBetweenComps = UKismetMathLibrary::Vector_Distance(newConnectionLocation, myConnectionLocation);
+						auto newLocation = (normalizedLocationDiff * distanceBetweenComps) + myConnectionLocation;
+						auto offset = FDTS_ConfigStruct::GetActiveConfig(self->GetWorld()).PipeSnapOffset * 100.f;
+						auto compForward = closestConnection->GetForwardVector();
+						FVector addVector = compForward * offset;
+						self->SetActorLocation(newLocation + addVector);
+						self->mSnapConnectionIndex = i;
+						scrollDelta = 0;
+						return true;
+					}
 				}
 			}
 		}
 	}
-}
-self->mSnappedConnectionComponent = nullptr;
-i = 0;
-return false;
+	self->mSnappedConnectionComponent = nullptr;
+	i = 0;
+	return false;
 }
 
 #pragma optimize("", on)
