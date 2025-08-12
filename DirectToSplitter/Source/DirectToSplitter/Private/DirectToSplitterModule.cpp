@@ -43,10 +43,10 @@ void FDirectToSplitterModule::StartupModule() {
 		{
 			CheckValidFloor(self);
 		});
-	
+
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::ScrollRotate, bh, [this](auto& scope, AFGBuildableHologram* self, int32 delta, int32 step)
 		{
-			scrollDelta = delta;			
+			scrollDelta = delta;
 		});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::ScrollRotate, pah, [this](auto& scope, AFGPipeAttachmentHologram* self, int32 delta, int32 step)
 		{
@@ -192,7 +192,7 @@ void FDirectToSplitterModule::StartupModule() {
 				scope.Cancel();
 			}
 		});
-//#if !WITH_EDITOR
+	//#if !WITH_EDITOR
 #endif
 }
 
@@ -237,7 +237,7 @@ void FDirectToSplitterModule::HandleLeftoverBelts(AFGBuildable* conveyorAttachme
 			}
 		}
 	}
-	
+
 }
 
 void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAttachment)
@@ -307,10 +307,10 @@ bool FDirectToSplitterModule::IsSnappedOn(UFGFactoryConnectionComponent* Connect
 }
 
 void FDirectToSplitterModule::TrySnapToActor_Hook(TCallScope<bool(*)
-	(AFGConveyorAttachmentHologram*, const FHitResult&)>& scope ,
+	(AFGConveyorAttachmentHologram*, const FHitResult&)>& scope,
 	AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
 {
-	
+
 }
 
 bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
@@ -366,7 +366,7 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 		{
 			// Get the connection we are snapping to
 			UFGFactoryConnectionComponent* closestConnection = nullptr;
-			FVector closestLocation = FVector(0,0,0);
+			FVector closestLocation = FVector(0, 0, 0);
 			for (auto component : components)
 			{
 				TArray< UFGFactoryConnectionComponent*> connections;
@@ -563,7 +563,7 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 
 		bool shouldDisqualify = false;
 		auto direction = self->mSnappedConnection->GetDirection();
-		
+
 		self->ResetConstructDisqualifiers();
 		retflag = false;
 		auto offset = FDTS_ConfigStruct::GetActiveConfig(self->GetWorld()).SnapOffset * 100.f;
@@ -601,7 +601,7 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 		}
 
 		auto compLocation = self->mSnappedConnection->GetConnectorLocation();
-		
+
 		FVector addVector = self->mSnappedConnection->GetForwardVector() * offset;
 		auto newLoc = compLocation + addVector;
 		self->SetActorLocation(newLoc);
@@ -968,51 +968,51 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 						DoOnce = true;
 					}
 
-					UFGPipeConnectionComponent* myCompToSnap = nullptr;
-					auto myType = myPipeConns[i]->GetPipeConnectionType();
-					auto closestDirection = closestConnection->GetPipeConnectionType();
+					UFGPipeConnectionComponent* myCompToSnap = myPipeConns[i];
 
-					if (myType == EPipeConnectionType::PCT_ANY || myType == EPipeConnectionType::PCT_SNAP_ONLY)
-					{
-						myCompToSnap = myPipeConns[i];
-					}
-					else if (closestDirection == EPipeConnectionType::PCT_CONSUMER && myType == EPipeConnectionType::PCT_PRODUCER)
-					{
-						myCompToSnap = myPipeConns[i];
-					}
-					else if (closestDirection == EPipeConnectionType::PCT_PRODUCER && myType == EPipeConnectionType::PCT_CONSUMER)
-					{
-						myCompToSnap = myPipeConns[i];
-					}
+					self->mSnappedConnectionComponent = closestConnection;
+					auto newConnectionLocation = closestConnection->GetComponentLocation();
+					auto newConnectionRotation = closestConnection->GetComponentRotation();
+					auto myConnectionLocation = myCompToSnap->GetComponentLocation();
+					auto myConnectionRotation = myCompToSnap->GetRelativeRotation();
 
-					if (myCompToSnap)
+					auto normalizedLocationDiff = newConnectionLocation - myConnectionLocation;
+					normalizedLocationDiff.Normalize(0.0001);
+					auto distanceBetweenComps = UKismetMathLibrary::Vector_Distance(newConnectionLocation, myConnectionLocation);
+					auto newLocation = (normalizedLocationDiff * distanceBetweenComps) + myConnectionLocation;
+					auto offset = FDTS_ConfigStruct::GetActiveConfig(self->GetWorld()).PipeSnapOffset * 100.f;
+					auto compForward = closestConnection->GetForwardVector();
+					FVector addVector = compForward * offset;
+
+
+					if (!self->mBuildClass->GetName().Contains("Build_PipeCap-Cross"))
 					{
-						self->mSnappedConnectionComponent = closestConnection;
-						auto newConnectionLocation = closestConnection->GetComponentLocation();
-						auto newConnectionRotation = closestConnection->GetComponentRotation();
-						auto myConnectionLocation = myCompToSnap->GetComponentLocation();
-						auto myConnectionRotation = myCompToSnap->GetComponentRotation();
-
-						auto rotationDifference = newConnectionRotation - myConnectionRotation;
-						auto rotationDiffForwardVector = UKismetMathLibrary::GetForwardVector(rotationDifference) * -1.f;
-						auto rotationFromX = UKismetMathLibrary::MakeRotFromX(rotationDiffForwardVector);
-						self->AddActorWorldRotation(rotationFromX);
-
-						auto normalizedLocationDiff = newConnectionLocation - myConnectionLocation;
-						normalizedLocationDiff.Normalize(0.0001);
-						auto distanceBetweenComps = UKismetMathLibrary::Vector_Distance(newConnectionLocation, myConnectionLocation);
-						auto newLocation = (normalizedLocationDiff * distanceBetweenComps) + myConnectionLocation;
-						auto offset = FDTS_ConfigStruct::GetActiveConfig(self->GetWorld()).PipeSnapOffset * 100.f;
-						auto compForward = closestConnection->GetForwardVector();
-						FVector addVector = compForward * offset;
-						self->SetActorLocation(newLocation + addVector);
-						self->mSnapConnectionIndex = i;
-						scrollDelta = 0;
-						return true;
+						self->SetActorLocationAndRotation((newLocation + addVector), (myConnectionRotation * -1.f) + (newConnectionRotation - UKismetMathLibrary::MakeRotator(0, 0, 180)));
 					}
+					else
+					{
+						if (i != 3)
+						{
+							self->SetActorLocationAndRotation((newLocation + addVector), (myConnectionRotation * -1.f) + (newConnectionRotation - UKismetMathLibrary::MakeRotator(0, 0, 180)));
+						}
+						else
+						{
+							self->SetActorLocationAndRotation((newLocation + addVector), (myConnectionRotation * -1.f) + (newConnectionRotation + UKismetMathLibrary::MakeRotator(0, 0, 90)));
+						}
+					}
+					self->mSnapConnectionIndex = i;
+					scrollDelta = 0;
+					return true;
+
 				}
 			}
+			self->mSnappedConnectionComponent = nullptr;
+			i = 0;
+			return false;
 		}
+		self->mSnappedConnectionComponent = nullptr;
+		i = 0;
+		return false;
 	}
 	self->mSnappedConnectionComponent = nullptr;
 	i = 0;
