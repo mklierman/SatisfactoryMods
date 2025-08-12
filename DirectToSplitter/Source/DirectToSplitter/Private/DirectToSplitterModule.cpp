@@ -855,11 +855,17 @@ void FDirectToSplitterModule::HGConstruct(AFGBuildableHologram* hg, AActor* buil
 
 }
 
-
 bool DoOnce = false;
 int i = 0;
+AFGPipeAttachmentHologram* pah;
 bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
 {
+	if (pah != self)
+	{
+		i = 0;
+		pah = self;
+	}
+
 	auto junction = Cast<AFGPipelineJunctionHologram>(self);
 	if (junction == nullptr)
 	{
