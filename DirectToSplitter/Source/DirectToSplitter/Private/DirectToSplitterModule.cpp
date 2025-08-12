@@ -414,6 +414,10 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 							myInputs.Add(myComp);
 						}
 					}
+					if (myInputs.IsEmpty())
+					{
+						return false;
+					}
 					if (myInputs.Num() == 1)
 					{
 						inputIndex = 0;
@@ -481,6 +485,10 @@ bool FDirectToSplitterModule::TrySnapToActor(AFGConveyorAttachmentHologram* self
 						}
 					}
 
+					if (myOutputs.IsEmpty())
+					{
+						return false;
+					}
 					if (myOutputs.Num() == 1)
 					{
 						outputIndex = 0;
