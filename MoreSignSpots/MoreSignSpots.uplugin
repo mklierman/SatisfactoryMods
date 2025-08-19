@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.5",
-	"SemVersion": "1.0.5",
+	"VersionName": "1.1.0",
+	"SemVersion": "1.1.0",
 	"FriendlyName": "More Sign Spots",
 	"Description": "Adds more Sign attachment points to vanilla buildings",
 	"Category": "Modding",
@@ -19,10 +19,10 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.11.0",
+			"SemVersion": "^3.11.1",
 			"Enabled": true,
 			"IsActive": false
 		}
 	],
-	"GameVersion": ">=404994"
+	"GameVersion": ">=416835"
 }
