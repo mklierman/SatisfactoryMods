@@ -17,6 +17,7 @@
 //#include <Hologram/FGPipelineSupportHologram.h>
 #include <Hologram/FGWallAttachmentHologram.h>
 #include <Hologram/FGWireHologram.h>
+#include "FGCharacterPlayer.h"
 
 DEFINE_LOG_CATEGORY(SnapOn_Log);
 #pragma optimize("", off)
@@ -183,17 +184,17 @@ void FDirectToSplitterModule::StartupModule() {
 			}
 		});
 
-	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::CheckValidPlacement, pahg, [this](auto& scope, AFGPipeAttachmentHologram* self)
-		{
-			auto junction = Cast<AFGPipelineJunctionHologram>(self);
-			if (junction && self->mSnappedConnectionComponent)
-			{
-				self->ResetConstructDisqualifiers();
-				scope.Cancel();
-			}
-		});
-	//#if !WITH_EDITOR
+	//SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::CheckValidPlacement, pahg, [this](auto& scope, AFGPipeAttachmentHologram* self)
+	//	{
+	//		auto junction = Cast<AFGPipelineJunctionHologram>(self);
+	//		if (junction && self->mSnappedConnectionComponent)
+	//		{
+	//			self->ResetConstructDisqualifiers();
+	//			scope.Cancel();
+	//		}
+	//	});
 #endif
+	//#if !WITH_EDITOR
 }
 
 void FDirectToSplitterModule::DismantleLeftoverBelt(UFGFactoryConnectionComponent* conn)
