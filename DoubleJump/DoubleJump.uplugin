@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.5",
-	"SemVersion": "1.1.5",
+	"VersionName": "1.1.6",
+	"SemVersion": "1.1.6",
 	"FriendlyName": "Double Jump",
 	"Description": "Does what it says on the box, lets you jump twice in a row",
 	"Category": "Modding",
@@ -18,9 +18,9 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.11.0",
+			"SemVersion": "^3.11.3",
 			"Enabled": true
 		}
 	],
-	"GameVersion": ">=404994"
+	"GameVersion": ">=416835"
 }
