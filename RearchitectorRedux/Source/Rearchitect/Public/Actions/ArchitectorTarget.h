@@ -2,6 +2,7 @@
 #include "AbstractInstanceManager.h"
 #include "Buildables/FGBuildable.h"
 #include "Buildables/FGBuildableConveyorBase.h"
+#include "Buildables/FGBuildableConveyorAttachment.h"
 
 #include "ArchitectorTarget.generated.h"
 
@@ -62,8 +63,12 @@ public:
 		bool IsValidClass = (Actor->IsA<AFGBuildable>() && !Actor->HasAnyFlags(RF_WasLoaded)) && !HitResult.GetActor()->IsA<AAbstractInstanceManager>();
 		if (IsValidClass)
 		{
-			auto Belt = Cast<AFGBuildableConveyorBase>(Actor);
-			if (Belt)
+			
+			if (auto Belt = Cast<AFGBuildableConveyorBase>(Actor))
+			{
+				IsValidClass = false;
+			}
+			else if (auto Splitter = Cast<AFGBuildableConveyorAttachment>(Actor))
 			{
 				IsValidClass = false;
 			}

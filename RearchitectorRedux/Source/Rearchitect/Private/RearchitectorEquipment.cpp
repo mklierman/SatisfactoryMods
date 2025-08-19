@@ -7,6 +7,12 @@
 #include "RearchitectorSubsystem.h"
 #include "PhysicsEngine/PhysicsSettings.h"
 #include <Kismet/GameplayStatics.h>
+#include "Buildables/FGBuildableConveyorBase.h"
+#include "Buildables/FGBuildableConveyorAttachment.h"
+#include "FGLightweightBuildableSubsystem.h"
+#include "Buildables/FGBuildablePowerPole.h"
+#include "Buildables/FGBuildablePipeBase.h"
+#include "Buildables/FGBuildableRailroadTrack.h"
 
 
 void ARearchitectorEquipment::PerformMove(const FVector& MoveAmount)
@@ -244,7 +250,36 @@ void ARearchitectorEquipment::AddActor()
 	{
 		auto TargetData = FArchitectorToolTarget(Target);
 		if(!TargetData.Target) return;
-		
+
+		if (TargetData.Target->IsA<AFGBuildableConveyorBase>())
+		{
+			return;
+		}
+		else if (TargetData.Target->IsA<AFGBuildableConveyorAttachment>())
+		{
+			return;
+		}
+		else if (TargetData.Target->IsA<AAbstractInstanceManager>())
+		{
+			return;
+		}
+		else if (TargetData.Target->IsA<AFGLightweightBuildableSubsystem>())
+		{
+			return;
+		}
+		else if (TargetData.Target->IsA<AFGBuildablePowerPole>())
+		{
+			return;
+		}
+		else if (TargetData.Target->IsA<AFGBuildablePipeBase>())
+		{
+			return;
+		}
+		else if (TargetData.Target->IsA<AFGBuildableRailroadTrack>())
+		{
+			return;
+		}
+
 		if(TargetManager.HasTarget(TargetData)) TargetManager.RemoveTarget(TargetData);
 		else TargetManager.AddTarget(TargetData);
 				
