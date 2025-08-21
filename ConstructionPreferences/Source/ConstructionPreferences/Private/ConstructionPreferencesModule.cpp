@@ -133,7 +133,7 @@ void FConstructionPreferencesModule::StartupModule() {
 
 			auto towerLength = SessionSettings->GetFloatOptionValue("ConstructionPreferences.TowerWire.Length");
 			//UE_LOGFMT(LogConstructionPreferences, Display, "Tower Wire Max Length: {0}", self->mMaxPowerTowerLength);
-			if (!FMath::IsNearlyEqual(length, 30000, 0.1)) // Check if default
+			if (!FMath::IsNearlyEqual(towerLength, 30000, 0.1)) // Check if default
 			{
 				self->mMaxPowerTowerLength = towerLength * 100;
 			}
