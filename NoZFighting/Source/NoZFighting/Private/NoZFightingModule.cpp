@@ -131,7 +131,8 @@ void FNoZFightingModule::SetInstanced(AAbstractInstanceManager* manager, AActor*
 	ptr = (FInstanceData*)(&InstanceData);
 
 	if (Name.ToString().ToLower().Contains("foundation") || Name.ToString().ToLower().Contains("block")
-		|| Name.ToString().ToLower().Contains("catwalk") || Name.ToString().ToLower().Contains("walkway"))
+		|| Name.ToString().ToLower().Contains("catwalk") || Name.ToString().ToLower().Contains("walkway")
+		|| Name.ToString().ToLower().Contains("quarterpipe"))
 	{
 		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
 		auto min = config.FoundationMin;
