@@ -11,12 +11,4 @@ public:
 	virtual void StartupModule() override;
 
 	virtual bool IsGameModule() const override { return true; }
-
-	FTimerManager MyTimerManager;
-
-	void SpawnPumpHG();
-
-	TArray<AFGPipelinePumpHologram*> ActiveHolograms;
-
-	TMap< AFGPipelinePumpHologram*, FTimerHandle> ActiveHologramTimers;
 };

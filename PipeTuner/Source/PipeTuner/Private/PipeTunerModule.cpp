@@ -7,12 +7,9 @@
 #include "FGGameMode.h"
 #include "Hologram/FGPipelinePumpHologram.h"
 #include "Hologram/FGPipelineAttachmentHologram.h"
-
-void GameModePostLogin(CallScope<void(*)(AFGGameMode*, APlayerController*)>& scope, AFGGameMode* gm,
-	APlayerController* pc)
-{
-
-}
+#include <SessionSettings/SessionSettingsManager.h>
+#include "FGPipeSubsystem.h"
+#include "FGPipeNetwork.h"
 
 void FPipeTunerModule::StartupModule() {
 
@@ -20,15 +17,24 @@ void FPipeTunerModule::StartupModule() {
 	AFGBuildablePipeline* plCDO = GetMutableDefault<AFGBuildablePipeline>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildablePipeline::BeginPlay, plCDO, [=](AFGBuildablePipeline* self)
 		{
+			self->GetWorld();
+			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+			if (!SessionSettings)
+			{
+				return;
+			}
+			auto Mk1VolumeMultiplier = SessionSettings->GetFloatOptionValue("PipeTuner.Mk1VolumeMultiplier");
+			auto Mk2VolumeMultiplier = SessionSettings->GetFloatOptionValue("PipeTuner.Mk2VolumeMultiplier");
+			auto OverfillPercent = SessionSettings->GetFloatOptionValue("PipeTuner.OverfillPercent");
+			auto OverfillPressurePercent = SessionSettings->GetFloatOptionValue("PipeTuner.OverfillPressurePercent");
+			auto PressureLossPercent = SessionSettings->GetFloatOptionValue("PipeTuner.PressureLossPercent");
 
-			FPipeTuner_ConfigStruct ModConfig = FPipeTuner_ConfigStruct::GetActiveConfig(self->GetWorld());
-			float mk2mult = ModConfig.Mk2PipeVolumeMultiplier;
-			float mk1mult = ModConfig.Mk1PipeVolumeMultiplier;
-			FFluidBox::OVERFILL_USED_FOR_PRESSURE_PCT = ModConfig.OverfillPressurePercent;
-			FFluidBox::PRESSURE_LOSS = ModConfig.PressureLossPercent;
-			//self->mFlowLimit = self->mFlowLimit / FluidAmount;
-			//self->mFluidBox.MaxContent = self->mFluidBox.MaxContent / FluidAmount;
-			self->mFluidBox.MaxOverfillPct = ModConfig.OverfillPercent;
+
+			float mk2mult = Mk2VolumeMultiplier;
+			float mk1mult = Mk1VolumeMultiplier;
+			FFluidBox::OVERFILL_USED_FOR_PRESSURE_PCT = OverfillPressurePercent / 100.0;
+			FFluidBox::PRESSURE_LOSS = PressureLossPercent / 100.0;
+			self->mFluidBox.MaxOverfillPct = OverfillPercent / 100.0;
 
 			auto name = self->GetName();
 			if (name.Contains("MK2"))
@@ -41,60 +47,46 @@ void FPipeTunerModule::StartupModule() {
 			}
 		});
 
-	AFGGameMode* LocalGameMode = GetMutableDefault<AFGGameMode>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, &GameModePostLogin);
-
-
 	AFGPipelineAttachmentHologram* pah = GetMutableDefault<AFGPipelineAttachmentHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineAttachmentHologram::BeginPlay, pah, [=](auto scope, AFGPipelineAttachmentHologram* self)
 		{
 			auto pumphg = Cast< AFGPipelinePumpHologram>(self);
 			if (pumphg)
 			{
-				FPipeTuner_ConfigStruct ModConfig = FPipeTuner_ConfigStruct::GetActiveConfig(self->GetWorld());
-				pumphg->mMaxTraversalDistance = ModConfig.PumpTraversalDistance * 100;
-				pumphg->mMaxJunctionRecursions = ModConfig.PumpJunctionRecursions;
-				pumphg->mOffsetEstimationBinaryDivisionCount = ModConfig.PumpOffsetEstimationCount;
-				//if (ActiveHologramTimers.Find(pumphg) == nullptr)
-				//{
-				//	ActiveHologramTimers.Add(pumphg, PumpTimer);
-				//	FTimerHandle PumpTimer;
-				//	GetWorld()->GetTimerManager().SetTimer(PumpTimer, self, &FPipeTunerModule::SpawnPumpHG, 5.f, true, 5.f);
-				//}
+				USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+				if (!SessionSettings)
+				{
+					return;
+				}
+				auto MaxTraversalDistance = SessionSettings->GetFloatOptionValue("PipeTuner.PumpTraversalDistance");
+				auto PumpJunctionRecursions = (int32)SessionSettings->GetFloatOptionValue("PipeTuner.JunctionRecursions");
+				auto PumpOffsetEstimationCount = (int32)SessionSettings->GetFloatOptionValue("PipeTuner.PumpOffsetEstimationCount");
+
+				pumphg->mMaxTraversalDistance = MaxTraversalDistance * 100;
+				pumphg->mMaxJunctionRecursions = PumpJunctionRecursions;
+				pumphg->mOffsetEstimationBinaryDivisionCount = PumpOffsetEstimationCount;
 			}
+		});
+
+	SUBSCRIBE_METHOD_AFTER(AFGPipeSubsystem::RegisterPipeNetwork, [](AFGPipeSubsystem* self, AFGPipeNetwork* network) {
+		USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+		if (!SessionSettings)
+		{
+			return;
+		}
+		auto Gravity = SessionSettings->GetFloatOptionValue("PipeTuner.Gravity");
+		auto Friction = SessionSettings->GetFloatOptionValue("PipeTuner.Friction");
+		auto Density = SessionSettings->GetFloatOptionValue("PipeTuner.Density");
+		auto Viscosity = SessionSettings->GetFloatOptionValue("PipeTuner.Viscosity");
+
+		network->mGravity = Gravity;
+		network->mFluidFriction = Friction;
+		network->mFluidDensity = Density;
+		network->mFluidViscosity = Viscosity;
 		});
 
 #endif
 	//AFGPipelinePumpHologram* pdh = GetMutableDefault<AFGPipelinePumpHologram>();
 }
-
-void FPipeTunerModule::SpawnPumpHG()
-{
-	TArray< AFGPipelinePumpHologram*> hgs;
-	ActiveHologramTimers.GetKeys(hgs);
-	if (hgs.Num() > 0)
-	{
-		for (auto hg : hgs)
-		{
-			if (hg)
-			{
-				//FPumpHeadLiftLocationPath newPath;
-				FPumpHeadLiftLocationPath currentPath = hg->mCurrentHeadLiftPath;
-				//newPath.SetData(currentPath.Spline, currentPath.OffsetStart, currentPath.OffsetEnd, currentPath.ReverseSplineDirection);
-				const class USplineComponent* Spline = currentPath.Spline;
-				float OffsetStart = currentPath.OffsetStart;
-				float OffsetEnd = currentPath.OffsetEnd;
-				bool ReverseSplineDirection = currentPath.ReverseSplineDirection;
-				currentPath.AddNextPath(Spline, OffsetStart, OffsetEnd, ReverseSplineDirection);
-			}
-			else
-			{
-				//MyTimerManager.ClearTimer(ActiveHologramTimers[hg]);
-				ActiveHologramTimers.Remove(hg);
-			}
-		}
-	}
-}
-
 
 IMPLEMENT_GAME_MODULE(FPipeTunerModule, PipeTuner);
