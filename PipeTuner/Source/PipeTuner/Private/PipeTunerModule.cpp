@@ -9,6 +9,8 @@
 #include "Hologram/FGPipelineAttachmentHologram.h"
 #include <SessionSettings/SessionSettingsManager.h>
 #include "FGPipeSubsystem.h"
+#include <Subsystem/SubsystemActorManager.h>
+#include "PipeTuner_Subsystem.h"
 #include "FGPipeNetwork.h"
 
 void FPipeTunerModule::StartupModule() {
@@ -29,13 +31,17 @@ void FPipeTunerModule::StartupModule() {
 			auto OverfillPressurePercent = SessionSettings->GetFloatOptionValue("PipeTuner.OverfillPressurePercent");
 			auto PressureLossPercent = SessionSettings->GetFloatOptionValue("PipeTuner.PressureLossPercent");
 
-
 			float mk2mult = Mk2VolumeMultiplier;
 			float mk1mult = Mk1VolumeMultiplier;
 			FFluidBox::OVERFILL_USED_FOR_PRESSURE_PCT = OverfillPressurePercent / 100.0;
 			FFluidBox::PRESSURE_LOSS = PressureLossPercent / 100.0;
 			self->mFluidBox.MaxOverfillPct = OverfillPercent / 100.0;
 
+			USubsystemActorManager* SubsystemActorManager = self->GetWorld()->GetSubsystem<USubsystemActorManager>();
+			APipeTuner_Subsystem* tunerSubsystem = SubsystemActorManager->GetSubsystemActor<APipeTuner_Subsystem>();
+			if (!tunerSubsystem)
+				return;
+			tunerSubsystem->PipeVolumes.Add(self, self->mFluidBox.MaxContent);
 			auto name = self->GetName();
 			if (name.Contains("MK2"))
 			{

@@ -6,7 +6,9 @@
 #include "FGPipeSubsystem.h"
 #include "FGPipeNetwork.h"
 #include "Buildables/FGBuildablePipeline.h"
+#include "PipeTuner_Subsystem.h"
 #include <Kismet/GameplayStatics.h>
+#include <Subsystem/SubsystemActorManager.h>
 
 void UPipeTuner_BPFL::UpdateValues(UGameInstance* instance)
 {
@@ -30,8 +32,17 @@ void UPipeTuner_BPFL::UpdateValues(UGameInstance* instance)
 	float mk1mult = Mk1VolumeMultiplier;
 	FFluidBox::OVERFILL_USED_FOR_PRESSURE_PCT = OverfillPressurePercent / 100.0;
 	FFluidBox::PRESSURE_LOSS = PressureLossPercent / 100.0;
+
+	USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
+	APipeTuner_Subsystem* tunerSubsystem = SubsystemActorManager->GetSubsystemActor<APipeTuner_Subsystem>();
+	if (!tunerSubsystem)
+		return;
+
+	auto pipeVolumes = tunerSubsystem->PipeVolumes;
+
 	for (auto actor : out_Actors)
 	{
+
 		auto pipeline = Cast< AFGBuildablePipeline>(actor);
 		if (!pipeline)
 		{
@@ -39,14 +50,17 @@ void UPipeTuner_BPFL::UpdateValues(UGameInstance* instance)
 		}
 		pipeline->mFluidBox.MaxOverfillPct = OverfillPercent / 100.0;
 
-		auto name = pipeline->GetName();
-		if (name.Contains("MK2"))
+		if (auto content = pipeVolumes.Find(pipeline))
 		{
-			pipeline->mFluidBox.MaxContent = 5.0 * mk2mult;
-		}
-		else
-		{
-			pipeline->mFluidBox.MaxContent = 5.0 * mk1mult;
+			auto name = pipeline->GetName();
+			if (name.Contains("MK2"))
+			{
+				pipeline->mFluidBox.MaxContent = *content * mk2mult;
+			}
+			else
+			{
+				pipeline->mFluidBox.MaxContent = *content * mk1mult;
+			}
 		}
 	}
 
