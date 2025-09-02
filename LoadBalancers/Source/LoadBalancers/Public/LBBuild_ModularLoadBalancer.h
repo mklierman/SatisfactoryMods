@@ -266,9 +266,6 @@ private:
 	 */
 	bool CollectInput(ALBBuild_ModularLoadBalancer* Module);
 
-	/** Process filter-specific inputs when normal input collection fails */
-	void ProcessFilterInputs();
-
 	bool isLookedAtForColor = false;
 
 	//void ApplyCustomization(ALBBuild_ModularLoadBalancer* instigator, const FFactoryCustomizationData& customizationData);
