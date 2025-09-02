@@ -39,7 +39,7 @@ bool FLBBalancerData::HasAnyValidFilter() const
         mFilterMap.GenerateKeyArray(Keys);
         return !(mFilterMap.Num() == 1 && Keys.Contains(UFGNoneDescriptor::StaticClass()));
     }
-    return true;
+    return false;
 }
 
 bool FLBBalancerData::HasAnyValidOverflow() const
@@ -50,7 +50,7 @@ bool FLBBalancerData::HasAnyValidOverflow() const
             if(Overflower.IsValid())
                 return true;
     }
-    return true;
+    return false;
 }
 
 void FLBBalancerData::SetFilterItemForBalancer(ALBBuild_ModularLoadBalancer* Balancer, TSubclassOf<UFGItemDescriptor> Item)
@@ -379,96 +379,133 @@ TArray<ALBBuild_ModularLoadBalancer*> ALBBuild_ModularLoadBalancer::GetGroupModu
 
 bool ALBBuild_ModularLoadBalancer::SendToOverflowBalancer(FInventoryItem Item) const
 {
-    if(!GroupLeader)
+    if (!GroupLeader)
         return false;
 
-    if(HasOverflowModule())
+    // Early return if no overflow module
+    if (!HasOverflowModule())
+        return false;
+
+    // Get or create indexing for this item type
+    FLBBalancerIndexing* Indexing = GroupLeader->mNormalLoaderData.mIndexMapping.Find(Item.GetItemClass());
+    if (!Indexing)
     {
-        FLBBalancerIndexing* Indexing = GroupLeader->mNormalLoaderData.mIndexMapping.Find(Item.GetItemClass());
-        if(!Indexing)
-        {
-            GroupLeader->mNormalLoaderData.mIndexMapping.Add(Item.GetItemClass(), FLBBalancerIndexing());
-            Indexing = GroupLeader->mNormalLoaderData.mIndexMapping.Find(Item.GetItemClass());
-        }
-
-        if(Indexing)
-        {
-            if(Indexing->mOverflowIndex == -1)
-                Indexing->mOverflowIndex = 0;
-        }
-        else
+        GroupLeader->mNormalLoaderData.mIndexMapping.Add(Item.GetItemClass(), FLBBalancerIndexing());
+        Indexing = GroupLeader->mNormalLoaderData.mIndexMapping.Find(Item.GetItemClass());
+        if (!Indexing)
             return false;
+    }
 
-        for(int i = 0; i < GroupLeader->mNormalLoaderData.mOverflowBalancer.Num(); i++)
+    // Initialize overflow index if needed
+    if (Indexing->mOverflowIndex == -1)
+        Indexing->mOverflowIndex = 0;
+
+    // Get the overflow balancers array
+    const TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>>& OverflowBalancers = 
+        GroupLeader->mNormalLoaderData.mOverflowBalancer;
+    
+    if (OverflowBalancers.Num() == 0)
+        return false;
+
+    // Try to find a valid overflow balancer with available space
+    const int32 StartIndex = Indexing->mOverflowIndex;
+    int32 CurrentIndex = StartIndex;
+    
+    do
+    {
+        if (!OverflowBalancers.IsValidIndex(CurrentIndex))
         {
-            TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer = GroupLeader->mNormalLoaderData.mOverflowBalancer.IsValidIndex(Indexing->mOverflowIndex) ? GroupLeader->mNormalLoaderData.mOverflowBalancer[Indexing->mOverflowIndex] : nullptr;
-            Indexing->mOverflowIndex++;
+            CurrentIndex = 0;
+            continue;
+        }
 
-            if(!GroupLeader->mNormalLoaderData.mOverflowBalancer.IsValidIndex(Indexing->mOverflowIndex))
-                Indexing->mOverflowIndex = 0;
+        TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer = OverflowBalancers[CurrentIndex];
+        CurrentIndex++;
+        
+        // Wrap around to beginning if we've reached the end
+        if (CurrentIndex >= OverflowBalancers.Num())
+            CurrentIndex = 0;
 
-            if(OverflowBalancer.IsValid())
+        if (OverflowBalancer.IsValid() && OverflowBalancer->GetBufferInventory())
+        {
+            if (GetNumItems(OverflowBalancer->GetBufferInventory(), Item.GetItemClass()) < mOverwriteSlotSize)
             {
-                if(OverflowBalancer->GetBufferInventory())
-                {
-                    if(GetNumItems(OverflowBalancer->GetBufferInventory(), Item.GetItemClass()) < mOverwriteSlotSize)
-                    {
-                        OverflowBalancer->GetBufferInventory()->AddItem(Item);
-                        return true;
-                    }
-                }
+                // Update the index for next time
+                Indexing->mOverflowIndex = CurrentIndex;
+                
+                // Add item to the overflow balancer
+                OverflowBalancer->GetBufferInventory()->AddItem(Item);
+                return true;
             }
         }
-    }
+    } while (CurrentIndex != StartIndex); // Stop if we've checked all balancers
+
     return false;
 }
 
 bool ALBBuild_ModularLoadBalancer::SendToFilterBalancer(FInventoryItem Item) const
 {
-    if(!GroupLeader)
+    if (!GroupLeader)
         return false;
 
-    if(HasFilterModule())
-        if(GroupLeader->mNormalLoaderData.HasItemFilterBalancer(Item.GetItemClass()))
+    // Early return if no filter module or no filter balancer for this item
+    if (!HasFilterModule() || !GroupLeader->mNormalLoaderData.HasItemFilterBalancer(Item.GetItemClass()))
+        return false;
+
+    // Get or create indexing for this item type
+    FLBBalancerIndexing* Indexing = GroupLeader->mNormalLoaderData.mIndexMapping.Find(Item.GetItemClass());
+    if (!Indexing)
+    {
+        GroupLeader->mNormalLoaderData.mIndexMapping.Add(Item.GetItemClass(), FLBBalancerIndexing());
+        Indexing = GroupLeader->mNormalLoaderData.mIndexMapping.Find(Item.GetItemClass());
+        if (!Indexing)
+            return false;
+    }
+
+    // Initialize filter index if needed
+    if (Indexing->mFilterIndex == -1)
+        Indexing->mFilterIndex = 0;
+
+    // Get the filter balancers for this item type
+    const TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>>& FilterBalancers = 
+        GroupLeader->mNormalLoaderData.mFilterMap[Item.GetItemClass()].mBalancer;
+    
+    if (FilterBalancers.Num() == 0)
+        return false;
+
+    // Try to find a valid filter balancer with available space
+    const int32 StartIndex = Indexing->mFilterIndex;
+    int32 CurrentIndex = StartIndex;
+    
+    do
+    {
+        if (!FilterBalancers.IsValidIndex(CurrentIndex))
         {
-            FLBBalancerIndexing* Indexing = GroupLeader->mNormalLoaderData.mIndexMapping.Find(Item.GetItemClass());
-            if(!Indexing)
-            {
-                GroupLeader->mNormalLoaderData.mIndexMapping.Add(Item.GetItemClass(), FLBBalancerIndexing());
-                Indexing = GroupLeader->mNormalLoaderData.mIndexMapping.Find(Item.GetItemClass());
-            }
+            CurrentIndex = 0;
+            continue;
+        }
 
-            if(Indexing)
-            {
-                if(Indexing->mFilterIndex == -1)
-                    Indexing->mFilterIndex = 0;
-            }
-            else
-            {
-                return false;
-            }
+        TWeakObjectPtr<ALBBuild_ModularLoadBalancer> FilterBalancer = FilterBalancers[CurrentIndex];
+        CurrentIndex++;
+        
+        // Wrap around to beginning if we've reached the end
+        if (CurrentIndex >= FilterBalancers.Num())
+            CurrentIndex = 0;
 
-            for(int i = 0; i < GroupLeader->mNormalLoaderData.mFilterMap[Item.GetItemClass()].mBalancer.Num(); i++)
+        if (FilterBalancer.IsValid() && FilterBalancer->GetBufferInventory())
+        {
+            if (GetNumItems(FilterBalancer->GetBufferInventory(), Item.GetItemClass()) < mOverwriteSlotSize)
             {
-                TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer = GroupLeader->mNormalLoaderData.mFilterMap[Item.GetItemClass()].mBalancer.IsValidIndex(Indexing->mFilterIndex) ? GroupLeader->mNormalLoaderData.mFilterMap[Item.GetItemClass()].mBalancer[Indexing->mFilterIndex] : nullptr;
-                Indexing->mFilterIndex++;
-
-                if(!GroupLeader->mNormalLoaderData.mFilterMap[Item.GetItemClass()].mBalancer.IsValidIndex(Indexing->mFilterIndex))
-                    Indexing->mFilterIndex = 0;
-
-                if(OverflowBalancer.IsValid())
-                {
-                    if(OverflowBalancer->GetBufferInventory())
-                    {
-                        if(GetNumItems(OverflowBalancer->GetBufferInventory(), Item.GetItemClass()) < mOverwriteSlotSize)
-                        {
-                            OverflowBalancer->GetBufferInventory()->AddItem(Item);
-                            return true;
-                        }
-                    }
-                }
+                // Update the index for next time
+                Indexing->mFilterIndex = CurrentIndex;
+                
+                // Add item to the filter balancer
+                FilterBalancer->GetBufferInventory()->AddItem(Item);
+                return true;
             }
         }
+    } while (CurrentIndex != StartIndex); // Stop if we've checked all balancers
+
     return false;
 }
 
@@ -853,78 +890,88 @@ void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()
 {
     Super::Factory_CollectInput_Implementation();
 
+    // Only the leader with authority should collect input
     if (!IsLeader() || !HasAuthority())
     {
         return;
     }
 
-    TArray<ALBBuild_ModularLoadBalancer*> Balancers;
-    GroupLeader->mNormalLoaderData.GetInputBalancers(Balancers);
-
-    if (Balancers.Num() == 0)
+    // Early return if no connected inputs exist
+    if (GroupLeader->mNormalLoaderData.mConnectedInputs.Num() == 0)
     {
         return;
     }
-    auto Indexing = GroupLeader->mNormalLoaderData.mInputIndex;
 
-    if (Indexing)
+    // Get and validate the current input index
+    int32 Indexing = GroupLeader->mNormalLoaderData.mInputIndex;
+    if (Indexing < 0 || !GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(Indexing))
     {
-        if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(Indexing))
-            Indexing = 0;
-
-        if (Indexing == -1)
-            Indexing = 0;
+        Indexing = 0;
     }
 
-    if (GroupLeader->mNormalLoaderData.mConnectedInputs.Num() > 0)
+    // Get reference to connected inputs for efficiency
+    const TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>>& ConnectedInputs = GroupLeader->mNormalLoaderData.mConnectedInputs;
+
+    // Process input from connected balancers
+    for (int unused = 0; unused < ConnectedInputs.Num(); unused++)
     {
-        for (int i = 0; i < GroupLeader->mNormalLoaderData.mConnectedInputs.Num(); i++)
+        // Get the current input balancer at the current index
+        TWeakObjectPtr<ALBBuild_ModularLoadBalancer> InputBalancer = 
+            ConnectedInputs.IsValidIndex(Indexing) ? ConnectedInputs[Indexing] : nullptr;
+
+        if (InputBalancer.IsValid() && !InputBalancer->IsPendingKill())
         {
-            TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer = GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(Indexing) ? GroupLeader->mNormalLoaderData.mConnectedInputs[Indexing] : nullptr;
-
-
-            if (OverflowBalancer.IsValid() && !OverflowBalancer->IsPendingKill())
+            // Try to collect input from the current balancer
+            if (CollectInput(InputBalancer.Get()))
             {
-                if (CollectInput(OverflowBalancer.Get()))
+                // Successfully collected input, move to next balancer
+                Indexing++;
+                if (!ConnectedInputs.IsValidIndex(Indexing))
                 {
-                    Indexing++;
-                    if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(Indexing))
-                        Indexing = 0;
+                    Indexing = 0; // Wrap around to beginning
                 }
-                else if (GroupLeader->mNormalLoaderData.HasAnyValidFilter())
-                {
-                    for (TPair<TSubclassOf<UFGItemDescriptor>, int32> filterInputIdx : GroupLeader->mNormalLoaderData.mFilterInputMap)
-                    {
-                        auto FilterIndexing = filterInputIdx.Value;
-                        if (FilterIndexing)
-                        {
-                            if (FilterIndexing == -1)
-                                FilterIndexing = 0;
-                        }
-                        TWeakObjectPtr<ALBBuild_ModularLoadBalancer> FilterBalancer = GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(FilterIndexing) ? GroupLeader->mNormalLoaderData.mConnectedInputs[FilterIndexing] : nullptr;
-                        if (FilterBalancer.IsValid() && !FilterBalancer->IsPendingKill())
-                        {
-                            CollectInput(FilterBalancer.Get());
-                            FilterIndexing++;
-                            if (!GroupLeader->mNormalLoaderData.mConnectedInputs.IsValidIndex(FilterIndexing))
-                                FilterIndexing = 0;
-
-                            GroupLeader->mNormalLoaderData.mFilterInputMap[filterInputIdx.Key] = FilterIndexing;
-                        }
-                    }
-                }
+            }
+            else if (GroupLeader->mNormalLoaderData.HasAnyValidFilter())
+            {
+                // Try to collect from filter-specific inputs if normal collection failed
+                TryCollectFromFilterInputs(ConnectedInputs);
             }
         }
     }
-    GroupLeader->mNormalLoaderData.mInputIndex = Indexing;
 
-    //for (ALBBuild_ModularLoadBalancer* Balancer : Balancers)
-    //{
-    //    if(!Balancer->IsPendingKill())
-    //    {
-    //        Balancer->Balancer_CollectInput();
-    //    }
-    //}
+    // Update the input index for next time
+    GroupLeader->mNormalLoaderData.mInputIndex = Indexing;
+}
+
+void ALBBuild_ModularLoadBalancer::TryCollectFromFilterInputs(const TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>>& ConnectedInputs)
+{
+    // Try to collect from filter-specific inputs when normal collection failed
+    for (TPair<TSubclassOf<UFGItemDescriptor>, int32>& FilterInputPair : GroupLeader->mNormalLoaderData.mFilterInputMap)
+    {
+        int32& FilterIndexing = FilterInputPair.Value;
+        
+        // Initialize filter indexing if needed
+        if (FilterIndexing == -1)
+        {
+            FilterIndexing = 0;
+        }
+
+        // Get the filter balancer at the current index
+        TWeakObjectPtr<ALBBuild_ModularLoadBalancer> FilterBalancer = 
+            ConnectedInputs.IsValidIndex(FilterIndexing) ? ConnectedInputs[FilterIndexing] : nullptr;
+
+        if (FilterBalancer.IsValid() && !FilterBalancer->IsPendingKill())
+        {
+            CollectInput(FilterBalancer.Get());
+            FilterIndexing++;
+            
+            // Wrap around to beginning if we've reached the end
+            if (!ConnectedInputs.IsValidIndex(FilterIndexing))
+            {
+                FilterIndexing = 0;
+            }
+        }
+    }
 }
 
 bool ALBBuild_ModularLoadBalancer::Balancer_CollectInput()
@@ -957,26 +1004,40 @@ bool ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Mo
         return false;
     }
 
-    if (connection->IsConnected())
+    if (!connection->IsConnected())
     {
-        TArray<FInventoryItem> peeker;
-        if (connection->Factory_PeekOutput(peeker))
-        {
-            FInventoryItem Item = peeker[0];
-            float offset;
-
-            if(SendToFilterBalancer(Item))
-                return connection->Factory_GrabOutput(Item, offset);
-
-            if (SendToNormalBalancer(Item))
-                return connection->Factory_GrabOutput(Item, offset);
-
-            if (SendToOverflowBalancer(Item))
-                return connection->Factory_GrabOutput(Item, offset);
-        }
-        else
-            return true;
+        return false;
     }
+
+    // Try to peek at available items
+    TArray<FInventoryItem> peeker;
+    if (!connection->Factory_PeekOutput(peeker) || peeker.Num() == 0)
+    {
+        return true; // No items available, but connection is valid
+    }
+
+    FInventoryItem Item = peeker[0];
+    float offset;
+
+    // Try to send item to filter balancer first (highest priority)
+    if (SendToFilterBalancer(Item))
+    {
+        return connection->Factory_GrabOutput(Item, offset);
+    }
+
+    // Try to send item to normal balancer second
+    if (SendToNormalBalancer(Item))
+    {
+        return connection->Factory_GrabOutput(Item, offset);
+    }
+
+    // Try to send item to overflow balancer last (lowest priority)
+    if (SendToOverflowBalancer(Item))
+    {
+        return connection->Factory_GrabOutput(Item, offset);
+    }
+
+    // No balancer could accept the item
     return false;
 }
 #pragma optimize("", on)

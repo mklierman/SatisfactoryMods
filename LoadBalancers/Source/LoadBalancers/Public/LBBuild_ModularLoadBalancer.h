@@ -266,6 +266,9 @@ private:
 	 */
 	bool CollectInput(ALBBuild_ModularLoadBalancer* Module);
 
+	/** Try to collect input from filter-specific inputs when normal collection fails */
+	void TryCollectFromFilterInputs(const TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>>& ConnectedInputs);
+
 	bool isLookedAtForColor = false;
 
 	//void ApplyCustomization(ALBBuild_ModularLoadBalancer* instigator, const FFactoryCustomizationData& customizationData);
