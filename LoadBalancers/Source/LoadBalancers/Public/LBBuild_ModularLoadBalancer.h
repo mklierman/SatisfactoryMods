@@ -126,7 +126,6 @@ public:
 	virtual void GetLifetimeReplicatedProps( TArray<FLifetimeProperty>& OutLifetimeProps ) const override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	virtual void Tick(float dt) override;
 	// End AActor interface
 
 	virtual void Dismantle_Implementation() override;
@@ -195,15 +194,19 @@ public:
 	/* Do we have a overflow loader? (return true if pointer valid) */
 	FORCEINLINE bool HasOverflowModule() const
 	{
-		if(GroupLeader)
+		if (GroupLeader)
+		{
 			return GroupLeader->mNormalLoaderData.HasAnyValidOverflow();
+		}
 		return false;
 	}
 
 	FORCEINLINE bool HasFilterModule() const
 	{
-		if(GroupLeader)
+		if (GroupLeader)
+		{
 			return GroupLeader->mNormalLoaderData.HasAnyValidFilter();
+		}
 		return false;
 	}
 
@@ -251,18 +254,18 @@ public:
 
 	/* All Loaders */
 	UPROPERTY(SaveGame)
-		FLBBalancerData mNormalLoaderData;
+	FLBBalancerData mNormalLoaderData;
 
 	/** All our group modules */
 	UPROPERTY(Replicated)
-		TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mGroupModules;
+	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mGroupModules;
 
 private:
 	/** Update our cached In and Outputs */
 	void UpdateCache();
 
 	/** Collect Logic for an Input
-	 * Return true if the Item was store into a balancer
+	 * Return true if the Item was stored into a balancer
 	 */
 	bool CollectInput(ALBBuild_ModularLoadBalancer* Module);
 
