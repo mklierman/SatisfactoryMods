@@ -60,6 +60,8 @@ public:
 	FKey TinyNudgeKey;
 	FKey SmallNudgeKey;
 	FKey LargeNudgeKey;
+	FKey TinyNudgeGamepadKey;
+	FKey SmallNudgeGamepadKey;
 	FKey VerticalNudgeKey;
 	FKey IncreaseScaleKey;
 	FKey DecreaseScaleKey;

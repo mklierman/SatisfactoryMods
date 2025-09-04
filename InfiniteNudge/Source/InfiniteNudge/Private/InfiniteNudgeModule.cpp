@@ -12,7 +12,6 @@
 #include <Hologram/FGSplineHologram.h>
 
 #pragma optimize("", off)
-
 void DoNudge(UFGBuildGunStateBuild* self, const FInputActionValue& actionValue)
 {
 	auto holo = self->GetHologram();
@@ -48,14 +47,12 @@ void FInfiniteNudgeModule::StartupModule() {
 		{
 			self->mCanNudgeHologram = true;
 			self->mCanLockHologram = true;
-			//self->mMaxNudgeDistance = 50000;
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGGenericBuildableHologram::BeginPlay, bh, [this](AFGGenericBuildableHologram* self)
 		{
 			self->mCanNudgeHologram = true;
 			self->mCanLockHologram = true;
-			//self->mMaxNudgeDistance = 50000;
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::CanNudgeHologram, bh, [this](auto& scope, const AFGHologram* self)
@@ -79,13 +76,6 @@ void FInfiniteNudgeModule::StartupModule() {
 			self->mCanLockHologram = true;
 		});
 
-	// Broke by 1.1
-	//SUBSCRIBE_METHOD(AFGHologram::GetMaxNudgeDistance, [this](auto scope, const AFGHologram* self)
-	//	{
-	//		FVector ret = FVector(50000, 50000, 50000);
-	//		scope.Override(ret);
-	//	});
-
 	//ENudgeFailReason AFGHologram::AddNudgeOffset(const FVector & Offset, const FVector & MaxNudgeDistance) { return ENudgeFailReason(); }
 	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::AddNudgeOffset, bh, [this](auto& scope, AFGHologram* self, const FVector& Offset, const FVector& MaxNudgeDistance)
 		{
@@ -96,7 +86,6 @@ void FInfiniteNudgeModule::StartupModule() {
 		{
 			if (self->IsHologramLocked())
 			{
-				//DebugChecker();
 				RotateLockedHologram(self, delta);
 			}
 		});
@@ -107,6 +96,18 @@ void FInfiniteNudgeModule::StartupModule() {
 FVector FInfiniteNudgeModule::NudgeTowardsWorldDirection(AFGHologram* self, const FVector& Direction)
 {
 	return Direction;
+}
+
+bool AreModifiersDown(APlayerController* contr, const TArray<FKey>& Modifiers)
+{
+	for (const FKey& Key : Modifiers)
+	{
+		if (!contr->IsInputKeyDown(Key))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 void FInfiniteNudgeModule::NudgeHologram(const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
@@ -123,41 +124,26 @@ void FInfiniteNudgeModule::NudgeHologram(const AFGHologram* self, const FVector&
 		FKey TinyNudgeKey;
 		FKey SmallNudgeKey;
 		FKey LargeNudgeKey;
-		TArray<FKey> ModifierKeys;
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.LargeNudge", LargeNudgeKey, ModifierKeys);
+		TArray<FKey> TinyModifierKeys;
+		TArray<FKey> SmallModifierKeys;
+		TArray<FKey> LargeModifierKeys;
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, TinyModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, SmallModifierKeys);
+		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.LargeNudge", LargeNudgeKey, LargeModifierKeys);
 
-		if (!contr->IsInputKeyDown(EKeys::LeftShift) && !contr->IsInputKeyDown(EKeys::RightShift)
-			&& !contr->IsInputKeyDown(EKeys::LeftAlt) && !contr->IsInputKeyDown(EKeys::RightAlt))
+		if (TinyNudgeKey.IsValid() && contr->IsInputKeyDown(TinyNudgeKey) && AreModifiersDown(contr, TinyModifierKeys))
 		{
-			if (contr->IsInputKeyDown(EKeys::LeftControl))
-			{
-				if (TinyNudgeKey == EKeys::LeftControl)
-				{
-					TinyNudgeAmount = TinyNudgeAmount * 2;
-				}
-				else if (SmallNudgeKey == EKeys::LeftControl)
-				{
-					SmallNudgeAmount = SmallNudgeAmount * 2;
-				}
-				else if (LargeNudgeKey == EKeys::LeftControl)
-				{
-					LargeNudgeAmount = LargeNudgeAmount * 2;
-				}
-			}
-		}
-
-		if (TinyNudgeKey.IsValid() && contr->IsInputKeyDown(TinyNudgeKey))
-		{
+			TinyNudgeAmount *= 2;
 			hg->mDefaultNudgeDistance = TinyNudgeAmount;
 		}
-		else if (SmallNudgeKey.IsValid() && contr->IsInputKeyDown(SmallNudgeKey))
+		else if (SmallNudgeKey.IsValid() && contr->IsInputKeyDown(SmallNudgeKey) && AreModifiersDown(contr, SmallModifierKeys))
 		{
+			SmallNudgeAmount *= 2;
 			hg->mDefaultNudgeDistance = SmallNudgeAmount;
 		}
-		else if (LargeNudgeKey.IsValid() && contr->IsInputKeyDown(LargeNudgeKey))
+		else if (LargeNudgeKey.IsValid() && contr->IsInputKeyDown(LargeNudgeKey) && AreModifiersDown(contr, LargeModifierKeys))
 		{
+			LargeNudgeAmount *= 2;
 			hg->mDefaultNudgeDistance = LargeNudgeAmount;
 		}
 		else
@@ -463,14 +449,6 @@ void FInfiniteNudgeModule::ScaleHologram(AFGHologram* self)
 	}
 }
 
-#pragma optimize("", off)
-void FInfiniteNudgeModule::DebugChecker()
-{
-	FString thisThing = "Hi";
-	FString thatThing = "Hello";
-	auto themThings = thisThing + thatThing;
-}
+
 #pragma optimize("", on)
-
-
 IMPLEMENT_GAME_MODULE(FInfiniteNudgeModule, InfiniteNudge);

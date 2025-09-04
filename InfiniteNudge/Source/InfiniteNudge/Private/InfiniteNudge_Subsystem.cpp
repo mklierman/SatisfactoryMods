@@ -9,7 +9,7 @@ void AInfiniteNudge_Subsystem::NudgeHologram(AFGHologram* hologram, float xDirec
 	{
 		GetConfigValues(hologram->GetWorld(), controller);
 
-		if (controller->IsInputKeyDown(VerticalNudgeKey))
+		if (controller->IsInputKeyDown(VerticalNudgeKey) || controller->IsInputKeyDown(EKeys::Gamepad_RightShoulder))
 		{
 			zDirection = xDirection;
 		}
@@ -277,6 +277,9 @@ void AInfiniteNudge_Subsystem::GetConfigValues(UObject* worldContext, APlayerCon
 	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.IncreaseScale", IncreaseScaleKey, ModifierKeys);
 	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.DecreaseScale", DecreaseScaleKey, ModifierKeys);
 
+	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.TinyNudgeController", TinyNudgeGamepadKey, ModifierKeys);
+	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.SmallNudgeController", SmallNudgeGamepadKey, ModifierKeys);
+
 	auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(worldContext);
 	TinyNudgeAmount = (float)config.LeftCtrlNudgeAmount;
 	SmallNudgeAmount = (float)config.LeftAltNudgeAmount;
@@ -288,11 +291,11 @@ void AInfiniteNudge_Subsystem::GetConfigValues(UObject* worldContext, APlayerCon
 
 float AInfiniteNudge_Subsystem::GetCurrentNudgeAmount(APlayerController* controller)
 {
-	if (controller->IsInputKeyDown(TinyNudgeKey))
+	if (controller->IsInputKeyDown(TinyNudgeKey) || controller->IsInputKeyDown(TinyNudgeGamepadKey))
 	{
 		return TinyNudgeAmount;
 	}
-	else if (controller->IsInputKeyDown(SmallNudgeKey))
+	else if (controller->IsInputKeyDown(SmallNudgeKey) || controller->IsInputKeyDown(SmallNudgeGamepadKey))
 	{
 		return SmallNudgeAmount;
 	}
