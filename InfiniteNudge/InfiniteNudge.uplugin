@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "2.3.8",
-	"SemVersion": "2.3.8",
+	"VersionName": "2.3.9",
+	"SemVersion": "2.3.9",
 	"FriendlyName": "Infinite Nudge",
 	"Description": "Nudge forever, vertically, in smaller increments, and rotate on any axis. Also nudge extractors!",
 	"Category": "Modding",
