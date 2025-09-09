@@ -637,6 +637,7 @@ void ALBBuild_ModularLoadBalancer::CheckWeakArray(TArray<TWeakObjectPtr<ALBBuild
     }
 }
 
+// Needed because of WeMod
 int32 ALBBuild_ModularLoadBalancer::GetNumItems(UFGInventoryComponent* bufferInventory, TSubclassOf< UFGItemDescriptor > itemClass) const
 {
     TArray< FInventoryStack > out_stacks;
