@@ -23,6 +23,9 @@ public:
 	static void PowerStorageBeginPlay(AFGBuildablePowerStorage* powerStorage);
 
 	UFUNCTION(BlueprintCallable)
+	static void PowerStorageRestart(AFGBuildablePowerStorage* powerStorage);
+
+	UFUNCTION(BlueprintCallable)
 	static void CalculateProductionCycleTime(AFGBuildableResourceExtractor* extractor);
 	
 	UFUNCTION(BlueprintCallable)
