@@ -455,6 +455,7 @@ bool ALBBuild_ModularLoadBalancer::SendToOverflowBalancer(FInventoryItem Item) c
     // Try to find a valid overflow balancer with available space
     const int32 StartIndex = Indexing->mOverflowIndex;
     int32 CurrentIndex = StartIndex;
+    int32 CheckedCount = 0;
     
     do
     {
@@ -465,27 +466,25 @@ bool ALBBuild_ModularLoadBalancer::SendToOverflowBalancer(FInventoryItem Item) c
         }
 
         TWeakObjectPtr<ALBBuild_ModularLoadBalancer> OverflowBalancer = OverflowBalancers[CurrentIndex];
-        CurrentIndex++;
         
-        // Wrap around to beginning if we've reached the end
-        if (CurrentIndex >= OverflowBalancers.Num())
-        {
-            CurrentIndex = 0;
-        }
-
         if (OverflowBalancer.IsValid() && OverflowBalancer->GetBufferInventory())
         {
             if (GetNumItems(OverflowBalancer->GetBufferInventory(), Item.GetItemClass()) < mOverwriteSlotSize)
             {
-                // Update the index for next time
-                Indexing->mOverflowIndex = CurrentIndex;
+                // Update the index for next time (increment after successful use)
+                Indexing->mOverflowIndex = (CurrentIndex + 1) % OverflowBalancers.Num();
                 
                 // Add item to the overflow balancer
                 OverflowBalancer->GetBufferInventory()->AddItem(Item);
                 return true;
             }
         }
-    } while (CurrentIndex != StartIndex); // Stop if we've checked all balancers
+        
+        // Move to next balancer
+        CurrentIndex = (CurrentIndex + 1) % OverflowBalancers.Num();
+        CheckedCount++;
+        
+    } while (CheckedCount < OverflowBalancers.Num()); // Stop after checking all balancers
 
     return false;
 }
@@ -533,6 +532,7 @@ bool ALBBuild_ModularLoadBalancer::SendToFilterBalancer(FInventoryItem Item) con
     // Try to find a valid filter balancer with available space
     const int32 StartIndex = Indexing->mFilterIndex;
     int32 CurrentIndex = StartIndex;
+    int32 CheckedCount = 0;
     
     do
     {
@@ -543,27 +543,25 @@ bool ALBBuild_ModularLoadBalancer::SendToFilterBalancer(FInventoryItem Item) con
         }
 
         TWeakObjectPtr<ALBBuild_ModularLoadBalancer> FilterBalancer = FilterBalancers[CurrentIndex];
-        CurrentIndex++;
         
-        // Wrap around to beginning if we've reached the end
-        if (CurrentIndex >= FilterBalancers.Num())
-        {
-            CurrentIndex = 0;
-        }
-
         if (FilterBalancer.IsValid() && FilterBalancer->GetBufferInventory())
         {
             if (GetNumItems(FilterBalancer->GetBufferInventory(), Item.GetItemClass()) < mOverwriteSlotSize)
             {
-                // Update the index for next time
-                Indexing->mFilterIndex = CurrentIndex;
+                // Update the index for next time (increment after successful use)
+                Indexing->mFilterIndex = (CurrentIndex + 1) % FilterBalancers.Num();
                 
                 // Add item to the filter balancer
                 FilterBalancer->GetBufferInventory()->AddItem(Item);
                 return true;
             }
         }
-    } while (CurrentIndex != StartIndex); // Stop if we've checked all balancers
+        
+        // Move to next balancer
+        CurrentIndex = (CurrentIndex + 1) % FilterBalancers.Num();
+        CheckedCount++;
+        
+    } while (CheckedCount < FilterBalancers.Num()); // Stop after checking all balancers
 
     return false;
 }
