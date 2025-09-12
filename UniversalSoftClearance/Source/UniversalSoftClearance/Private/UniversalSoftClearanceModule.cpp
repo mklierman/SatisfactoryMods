@@ -1,41 +1,15 @@
 #include "UniversalSoftClearanceModule.h"
 #include "Patching/NativeHookManager.h"
+#include "Hologram/FGElevatorHologram.h"
 
 #pragma optimize("", off)
-void FUniversalSoftClearanceModule::StartupModule() {
+void FUniversalSoftClearanceModule::StartupModule() 
+{
 	AFGHologram* hCDO = GetMutableDefault<AFGHologram>();
 	AFGBuildable* bCDO = GetMutableDefault<AFGBuildable>();
+	AFGElevatorHologram* eCDO = GetMutableDefault<AFGElevatorHologram>();
+	AFGBuildableElevator* evCDO = GetMutableDefault<AFGBuildableElevator>();
 
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, bCDO, [this](auto scope, AFGBuildable* self)
-	//{
-	//		BeginPlay(self);
-	//});
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [this](auto scope, AFGHologram* self)
-	//	{
-	//		self->mClearanceDetector = nullptr;
-	//		//HBeginPlay(self);
-	//	});
-	////EClearanceOverlapResult TestClearanceOverlap(const FFGClearanceData & clearanceData, const FFGClearanceData & otherClearanceData, AActor * otherActor) const;
-	//SUBSCRIBE_METHOD(AFGHologram::TestClearanceOverlap, [this](auto scope, const AFGHologram* self, const FFGClearanceData& clearanceData, const FFGClearanceData& otherClearanceData, AActor* otherActor)
-	//	{
-	//		auto bld = Cast<AFGBuildable>(otherActor);
-	//		if (bld)
-	//		{
-	//			for (auto cd : bld->mClearanceData)
-	//			{
-	//				cd.Type = EClearanceType::CT_Soft;
-	//			}
-	//		}
-	//		auto hg = const_cast<AFGHologram*>(self);
-	//		if (hg)
-	//		{
-	//			for (auto cdh : hg->mClearanceData)
-	//			{
-	//				cdh.Type = EClearanceType::CT_Soft;
-	//			}
-	//		}
-	//		scope.Override(EClearanceOverlapResult::COR_Soft);
-	//	});
 
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGHologram::SetupClearanceDetector, [this](auto scope, AFGHologram* self)
@@ -56,49 +30,27 @@ void FUniversalSoftClearanceModule::StartupModule() {
 				{
 					self->mClearanceData.Add(newcdata);
 				}
-
-				//auto cd1 = cd[0];
-				//self->mClearanceData.Empty();
-				//cd1.Type = EClearanceType::CT_Soft;
-				//self->mClearanceData.Add(cd1);
 			}
-
 		});
-	// 
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::BeginPlay, hCDO, [this](auto scope, AFGHologram* self)
-	//	{
-	//		auto cd = self->mClearanceData;
-	//		if (cd.Num() > 0)
-	//		{
-	//			auto cd1 = cd[0];
-	//			self->mClearanceData.Empty();
-	//			cd1.Type = EClearanceType::CT_Soft;
-	//			self->mClearanceData.Add(cd1);
-	//		}
-	//	});
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::GetClearanceData, hCDO, [this](auto scope, const AFGHologram* self, TArray< const FFGClearanceData* >& out_ClearanceData)
-	//	{
-	//		auto cd = self->mClearanceData;
-	//		for (FFGClearanceData c : cd)
-	//		{
-	//			c.Type = EClearanceType::CT_Soft;
-	//		}
-	//	});
 
-//
-//	SUBSCRIBE_METHOD_AFTER(AFGBlueprintHologram::GenerateCollisionObjects, [this](AFGBlueprintHologram* self, const TArray< AFGBuildable* >& buildables)
-//		{
-//			GenerateCollisionObjects(self, buildables);
-//		});
+
+	SUBSCRIBE_METHOD_AFTER(AFGElevatorHologram::UpdateClearance, [this](AFGElevatorHologram* self)
+	{
+		FFGClearanceData cd = self->mClearanceData;
+		FFGClearanceData new_cd = cd;
+		new_cd.Type = EClearanceType::CT_Soft;
+		new_cd.SoftClearanceResponse = ESoftClearanceOverlapResponse::SCOR_Default;
+		new_cd.ClearanceBox.IsValid = true;
+		self->mClearanceData = new_cd;
+	});
+
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableElevator::GetChildClearanceOutlineActors_Implementation, evCDO, [this](const AFGBuildableElevator* self, TArray<AActor*>& out_actors)
+		{
+			GetChildClearanceOutlineActors(self, out_actors);
+		});
 #endif
 }
 
-//void FUniversalSoftClearanceModule::SetupClearance(AFGHologram* self)
-//{
-//	auto newthing = self;
-//	self->mClearanceData
-//	//clearanceComponent->mIsSoftClearance = true;
-//}
 void FUniversalSoftClearanceModule::GenerateCollisionObjects(AFGBlueprintHologram* self, const TArray<AFGBuildable*>& buildables)
 {
 	//if (self && self->mClearanceComponents.Num() > 0)
@@ -148,7 +100,6 @@ void FUniversalSoftClearanceModule::HBeginPlay(AFGHologram* self)
 				ncd.Type = EClearanceType::CT_Soft;
 				hg->mClearanceData.Add(ncd);
 			}
-			//buildableClass->GetClearanceData(clearanceData);
 		}
 		else
 		{
@@ -172,6 +123,28 @@ void FUniversalSoftClearanceModule::HBeginPlay(AFGHologram* self)
 		}
 	}
 
+}
+
+void FUniversalSoftClearanceModule::GetChildClearanceOutlineActors(const AFGBuildableElevator* self, TArray<AActor*>& actors)
+{
+	for (auto actor : actors)
+	{
+		auto buildable = Cast<AFGBuildable>(actor);
+		if (buildable)
+		{
+			TArray<FFGClearanceData> out_data;
+			TArray<FFGClearanceData> new_data;
+			buildable->GetClearanceData_Implementation(out_data);
+			for (auto data : out_data)
+			{
+				data.Type = EClearanceType::CT_Soft;
+				data.SoftClearanceResponse = ESoftClearanceOverlapResponse::SCOR_Default;
+				data.ClearanceBox.IsValid = true;
+				new_data.Add(data);
+			}
+			buildable->mClearanceData = new_data;
+		}
+	}
 }
 #pragma optimize("", on)
 
