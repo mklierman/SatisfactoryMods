@@ -114,3 +114,8 @@ float UHologramLocation_BPLib::GetBeamLength(AFGBuildableBeam* beam)
 {
     return beam->GetLength();
 }
+
+float UHologramLocation_BPLib::GetElevatorHeight(AFGBuildableElevator* elevator)
+{
+    return elevator->GetElevatorHeight();
+}

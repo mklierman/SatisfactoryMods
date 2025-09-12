@@ -8,6 +8,7 @@
 #include "Hologram/FGConveyorLiftHologram.h"
 #include <Buildables/FGBuildableConveyorLift.h>
 #include <FGBuildableBeam.h>
+#include "Buildables/FGBuildableElevator.h"
 #include "HologramLocation_BPLib.generated.h"
 
 
@@ -51,4 +52,7 @@ class HOLOGRAMLOCATION_API UHologramLocation_BPLib : public UBlueprintFunctionLi
 
 	UFUNCTION(BlueprintCallable, Category = "HologramLocation")
 		static float GetBeamLength(AFGBuildableBeam* beam);
+
+	UFUNCTION(BlueprintCallable, Category = "HologramLocation")
+		static float GetElevatorHeight(AFGBuildableElevator* elevator);
 };
