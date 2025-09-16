@@ -10,12 +10,6 @@
 //DEFINE_LOG_CATEGORY(LoadBalancers_Log);
 #pragma optimize("", off)
 
-// Build step
-
-// Step 1 - placement
-// Step 2 - Stretch along axis player is looking in 1m increments until collision with line trace
-// Step 2.5 - If collided with snap point don't go past it
-
 void ALBModularLoadBalancer_Hologram::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -94,42 +88,6 @@ void ALBModularLoadBalancer_Hologram::SetHologramLocationAndRotation(const FHitR
 			LastSnapped = cl;
 			break;
 		}
-
-
-		//if (hitResult.ImpactNormal.Z <= -0.75)
-		//{
-		//	SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, -200), cl->GetActorRotation() + addedRotation);
-		//}
-		//else if (hitResult.ImpactNormal.Z >= 0.75)
-		//{
-		//	SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, 200), cl->GetActorRotation() + addedRotation);
-		//	this->mSnappedBuilding = cl;
-		//	LastSnapped = cl;
-		//	this->CheckValidPlacement();
-		//}
-		//else if ((hitResult.ImpactNormal * yVector).Y <= -0.05)
-		//{
-		//	// Snapping to left
-		//	SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * -200), cl->GetActorRotation() + addedRotation);
-		//	this->mSnappedBuilding = cl;
-		//	LastSnapped = cl;
-		//	this->CheckValidPlacement();
-		//}
-		//else if ((hitResult.ImpactNormal * yVector).Y >= 0.05)
-		//{
-		//	// Snapping to right
-		//	SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * 200), cl->GetActorRotation() + addedRotation);
-		//	this->mSnappedBuilding = cl;
-		//	LastSnapped = cl;
-		//	this->CheckValidPlacement();
-		//}
-		//else
-		//{
-		//	Super::SetHologramLocationAndRotation(hitResult);
-		//	SetActorLocation(GetActorLocation() + FVector(0, 0, -100));
-		//	LastSnapped = cl;
-		//}
-		//this->TrySnapToActor(hitResult);
 	}
 	else
 	{
@@ -150,7 +108,6 @@ void ALBModularLoadBalancer_Hologram::Destroyed()
 bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult)
 {
 	bool SnapResult = Super::TrySnapToActor(hitResult);
-	//SnapResult = false;
 	if (!SnapResult)
 	{
 		ALBBuild_ModularLoadBalancer* Default = GetDefaultBuildable<ALBBuild_ModularLoadBalancer>();
@@ -167,8 +124,6 @@ bool ALBModularLoadBalancer_Hologram::TrySnapToActor(const FHitResult& hitResult
 			HighlightAll(SnappedBalancer->GetGroupModules());
 			FRotator Rot = GetActorRotation();
 			Rot.Yaw += 180 * GetScrollRotateValue();
-
-			//SetActorRotation(Rot);
 		}
 	}
 	else
@@ -248,28 +203,23 @@ void ALBModularLoadBalancer_Hologram::ConfigureComponents(AFGBuildable* inBuilda
 
 void ALBModularLoadBalancer_Hologram::Scroll(int32 delta)
 {
-	//Super::SetScrollMode(EHologramScrollMode::HSM_ROTATE);
 	if(GetSnappedBuilding() && Cast<ALBBuild_ModularLoadBalancer>(GetSnappedBuilding()))
 	{
-		//auto contr = Cast<APlayerController>(GetConstructionInstigator()->GetController());
 		auto pContr = this->GetNetOwningPlayer()->GetPlayerController(GetWorld());
 		if (pContr && pContr->IsInputKeyDown(EKeys::LeftControl))
 		{
 			//UE_LOG(LoadBalancers_Log, Display, TEXT("LeftControl"));
 			mRotationAmount += delta * 5;
 			SetScrollRotateValue(GetScrollRotateValue() + delta * 5);
-			//Super::Scroll(delta);
 		}
 		else if (pContr && pContr->IsInputKeyDown(EKeys::LeftShift))
 		{
 			//UE_LOG(LoadBalancers_Log, Display, TEXT("LeftShift"));
-			//Super::SetScrollMode(EHologramScrollMode::HSM_RAISE_LOWER);
 			mRotationAmount += delta * 90;
 			Super::Scroll(delta);
 		}
 		else
 		{
-			//SetScrollRotateValue(GetScrollRotateValue() + delta);
 			mRotationAmount += delta * 45;
 			Super::Scroll(delta);
 		}
@@ -341,37 +291,20 @@ void ALBModularLoadBalancer_Hologram::UnHighlightAll()
 						if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(component))
 						{
 							mesh->SetMaterial(0, mMainMaterial);
-							//mesh->SetMaterial(1, mSecondaryMaterial);
-							//mesh->SetMaterial(2, mSymbolMaterial);
 							mesh->SetInstanced(false);
 							mesh->SetInstanced(true);
 						}
 					}
 				}
 			}
-			//auto comp = actor->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass());
-			//if (comp)
-			//{
-			//	if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(comp))
-			//	{
-			//		mesh->SetMaterial(0, mMainMaterial);
-			//		mesh->SetMaterial(1, mSecondaryMaterial);
-			//		mesh->SetMaterial(2, mSymbolMaterial);
-			//		mesh->SetInstanced(false);
-			//		mesh->SetInstanced(true);
-			//	}
-			//}
 		}
 	}
 	mHighlightedActors.Empty();
-	//if (mOutlineSubsystem)
-	//{
-	//	mOutlineSubsystem->ClearOutlines(true);
-	//}
 }
 
 void ALBModularLoadBalancer_Hologram::ConfigureActor(AFGBuildable* inBuildable) const
 {
+	Super::ConfigureActor(inBuildable);
 	if (ALBBuild_ModularLoadBalancer* Balancer = Cast<ALBBuild_ModularLoadBalancer>(inBuildable))
 	{
 		if (LastSnapped)
@@ -386,12 +319,7 @@ void ALBModularLoadBalancer_Hologram::ConfigureActor(AFGBuildable* inBuildable) 
 		{
 			Balancer->GroupLeader = Balancer;
 		}
-
 	}
-
-	Super::ConfigureActor(inBuildable);
-
-
 }
 
 void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBalancer*> actorsToOutline)
@@ -403,7 +331,6 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 
 	if (ActiveGroupLeader)
 	{
-		//mOutlineSubsystem->SetOutlineColor(mHoloColor, true);
 		for (ALBBuild_ModularLoadBalancer* OutlineActor : actorsToOutline)
 		{
 			auto components = OutlineActor->GetComponents();
@@ -424,20 +351,6 @@ void ALBModularLoadBalancer_Hologram::HighlightAll(TArray<ALBBuild_ModularLoadBa
 					}
 				}
 			}
-
-			//auto comp = OutlineActor->GetComponentByClass(UFGColoredInstanceMeshProxy::StaticClass());
-			//if (auto mesh = Cast<UFGColoredInstanceMeshProxy>(comp))
-			//{
-			//	mesh->SetMaterial(0, mHoloMaterial);
-			//	mesh->SetMaterial(1, mHoloMaterial);
-			//	mesh->SetInstanced(false);
-			//	mesh->SetInstanced(true);
-			//	mHighlightedActors.Add(OutlineActor);
-			//}
-			/*if (mOutlineSubsystem)
-			{
-				mOutlineSubsystem->CreateOutline(OutlineActor, true);
-			}*/
 		}
 	}
 }
