@@ -1,13 +1,3 @@
-//
-//
-//
-//
-//void ULB_RCO::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-//{
-//	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-//	DOREPLIFETIME(ULB_RCO, Dummy);
-//}
-
 #include "LBDefaultRCO.h"
 #include <LB_BPFL.h>
 
@@ -81,4 +71,9 @@ void ULBDefaultRCO::Server_MergeBalancerGroups_Implementation(ALBBuild_ModularLo
 void ULBDefaultRCO::Server_SplitBalancers_Implementation(const TArray< ALBBuild_ModularLoadBalancer*>& modulesToBeSplit)
 {
 	ULB_BPFL::SplitBalancers(modulesToBeSplit);
+}
+
+void ULBDefaultRCO::Server_SetIsAimedAtForColor_Implementation(ALBBuild_ModularLoadBalancer* balancer, bool isAimedAt)
+{
+	balancer->isLookedAtForColor = isAimedAt;
 }

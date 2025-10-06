@@ -818,12 +818,26 @@ void ALBBuild_ModularLoadBalancer::StartIsAimedAtForColor_Implementation(AFGChar
 {
     Super::StartIsAimedAtForColor_Implementation(byCharacter, isValid);
     isLookedAtForColor = true;
+    if (!HasAuthority())
+    {
+        if (ULBDefaultRCO* RCO = ULBDefaultRCO::Get(GetWorld()))
+        {
+            RCO->Server_SetIsAimedAtForColor(this, true);
+        }
+    }
 }
 
 void ALBBuild_ModularLoadBalancer::StopIsAimedAtForColor_Implementation(AFGCharacterPlayer* byCharacter)
 {
     Super::StopIsAimedAtForColor_Implementation(byCharacter);
     isLookedAtForColor = false;
+    if (!HasAuthority())
+    {
+        if (ULBDefaultRCO* RCO = ULBDefaultRCO::Get(GetWorld()))
+        {
+            RCO->Server_SetIsAimedAtForColor(this, false);
+        }
+    }
 }
 
 bool ALBBuild_ModularLoadBalancer::ShouldSave_Implementation() const

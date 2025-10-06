@@ -260,7 +260,9 @@ public:
 	UPROPERTY(Replicated)
 	TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>> mGroupModules;
 
-private:
+	void SetCustomization(ALBBuild_ModularLoadBalancer* instigator, const FFactoryCustomizationData& customizationData);
+
+
 	/** Update our cached In and Outputs */
 	void UpdateCache();
 
@@ -272,14 +274,12 @@ private:
 	/** Try to collect input from filter-specific inputs when normal collection fails */
 	void TryCollectFromFilterInputs(const TArray<TWeakObjectPtr<ALBBuild_ModularLoadBalancer>>& ConnectedInputs);
 
+	UPROPERTY(Replicated)
 	bool isLookedAtForColor = false;
-
-	//void ApplyCustomization(ALBBuild_ModularLoadBalancer* instigator, const FFactoryCustomizationData& customizationData);
-	void SetCustomization(ALBBuild_ModularLoadBalancer* instigator, const FFactoryCustomizationData& customizationData);
-
 
 	UPROPERTY(SaveGame)
 	float mTimer;
+	
 protected:
 	// Begin AActor Interface
 	virtual void PostInitializeComponents() override;

@@ -4,6 +4,7 @@
 #include "FGRemoteCallObject.h"
 #include "LBBuild_ModularLoadBalancer.h"
 #include "LBOutlineSubsystem.h"
+#include "FGFactoryColoringTypes.h"
 #include "LBDefaultRCO.generated.h"
 
 /**
@@ -58,6 +59,10 @@ public:
 	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
 	void Server_SplitBalancers(const TArray< ALBBuild_ModularLoadBalancer*>& modulesToBeSplit);
 	FORCEINLINE bool Server_SplitBalancers_Validate(const TArray< ALBBuild_ModularLoadBalancer*>& modulesToBeSplit) { return true; }
+
+	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
+	void Server_SetIsAimedAtForColor(ALBBuild_ModularLoadBalancer* balancer, bool isAimedAt);
+	FORCEINLINE bool Server_SetIsAimedAtForColor_Validate(ALBBuild_ModularLoadBalancer* balancer, bool isAimedAt) { return true; }
 
 
 	UPROPERTY(Replicated)
