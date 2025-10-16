@@ -123,6 +123,20 @@ void FNoZFightingModule::SetInstanced(AAbstractInstanceManager* manager, AActor*
 		loc.X = loc.X + randomFloat;
 		ptr->RelativeTransform.SetLocation(loc);
 	}
+	else if (Name.ToString().ToLower().Contains("beam"))
+	{
+		ptr->bApplyRandomOffsetOnInstance = false;
+
+		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
+		auto min = config.BeamMin;
+		auto max = config.BeamMax;
+		float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
+		auto loc = ptr->RelativeTransform.GetLocation();
+		loc.X = loc.X + randomFloat;
+		loc.Y = loc.Y + randomFloat;
+		loc.Z = loc.Z + randomFloat;
+		ptr->RelativeTransform.SetLocation(loc);
+	}
 	return;
 }
 

@@ -21,6 +21,12 @@ public:
     UPROPERTY(BlueprintReadWrite)
     float WallMax {};
 
+    UPROPERTY(BlueprintReadWrite)
+    float BeamMin {};
+
+    UPROPERTY(BlueprintReadWrite)
+    float BeamMax {};
+
     /* Retrieves active configuration value and returns object of this struct containing it */
     static FNoZFighting_ConfigStruct GetActiveConfig(UObject* WorldContext) {
         FNoZFighting_ConfigStruct ConfigStruct{};
