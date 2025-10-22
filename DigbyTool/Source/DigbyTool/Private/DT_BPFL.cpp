@@ -33,3 +33,13 @@ void UDT_BPFL::UpdateTargetList(AFGVehicleSubsystem* vehicleSubsystem, AFGDrivin
 {
 	vehicleSubsystem->UpdateTargetList(targetList);
 }
+
+void UDT_BPFL::UpdateTargetLists(AFGVehicleSubsystem* vehicleSubsystem)
+{
+	vehicleSubsystem->UpdateTargetLists();
+}
+
+void UDT_BPFL::UpdateTargetPoints(AFGVehicleSubsystem* vehicleSubsystem)
+{
+	vehicleSubsystem->UpdateTargetPoints();
+}
