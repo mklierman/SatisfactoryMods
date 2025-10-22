@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
-	"Version": 1,
-	"VersionName": "1.1.7",
-	"SemVersion": "1.1.7",
+	"Version": 2,
+	"VersionName": "2.0.0",
+	"SemVersion": "2.0.0",
 	"FriendlyName": "Vehicle Path Viewer",
 	"Description": "Shows vehicle spline paths",
 	"Category": "Modding",

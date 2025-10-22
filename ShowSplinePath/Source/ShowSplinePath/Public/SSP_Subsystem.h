@@ -10,15 +10,9 @@
 
 #include "SSP_Subsystem.generated.h"
 
-USTRUCT(BlueprintType)
-struct FSSP_MeshPoolStruct
-{
-	GENERATED_BODY()
+// Forward declarations
+class USSP_RemoteCallObject;
 
-public:
-	UPROPERTY(BlueprintReadWrite)
-	TArray<USplineMeshComponent*> MeshPool;
-};
 
 UCLASS()
 class SHOWSPLINEPATH_API ASSP_Subsystem : public AModSubsystem, public IFGSaveInterface
@@ -34,6 +28,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void HandlePathSplines(AFGDrivingTargetList* targetList, bool show);
+
+	// Helper function to get the RCO
+	class USSP_RemoteCallObject* GetRCO();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ShowTargetPath(AFGTargetPoint* targetPoint);
@@ -60,15 +57,28 @@ public:
 	void HideAllVehiclePaths(AActor* actor);
 
 
+
+
+
 	UPROPERTY(BlueprintReadWrite)
 	UStaticMesh* splinePathMesh;
 
 	UPROPERTY(BlueprintReadWrite)
 	UStaticMesh* mantaPathMesh;
 
+	// Store created spline meshes for cleanup
 	UPROPERTY(BlueprintReadWrite)
-	TMap<AFGDrivingTargetList*, FSSP_MeshPoolStruct> TargetListMeshPools;
+	TArray<USplineMeshComponent*> AllCreatedMeshes;
+
+	// Separate arrays for different path types
+	UPROPERTY(BlueprintReadWrite)
+	TArray<USplineMeshComponent*> VehicleMeshes;
 
 	UPROPERTY(BlueprintReadWrite)
-	TMap<AFGManta*, FSSP_MeshPoolStruct> MantaMeshPools;
+	TArray<USplineMeshComponent*> MantaMeshes;
+
+private:
+	// Flag to prevent recursion when calling SetPathVisible
+	bool bIsUpdatingPathVisibility = false;
+
 };

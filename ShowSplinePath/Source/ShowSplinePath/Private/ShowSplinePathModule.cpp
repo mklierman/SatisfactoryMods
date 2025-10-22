@@ -1,10 +1,11 @@
 #include "ShowSplinePathModule.h"
+#include "SSP_RemoteCallObject.h"
+#include "FGPlayerController.h"
 
 //#pragma optimize("", off)
 void FShowSplinePathModule::StartupModule()
 {
 #if !WITH_EDITOR
-	//void RemoveTargetPoint(class AFGTargetPoint* targetToRemove, bool updateList = true);
 	SUBSCRIBE_METHOD_AFTER(AFGVehicleSubsystem::UpdateTargetList, [this](AFGVehicleSubsystem* self, AFGDrivingTargetList* targetList)
 		{
 				UWorld* WorldObject = targetList->GetWorld();
@@ -19,33 +20,30 @@ void FShowSplinePathModule::StartupModule()
 				UWorld* WorldObject = self->GetWorld();
 				USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
 				ASSP_Subsystem* subsystem = SubsystemActorManager->GetSubsystemActor<ASSP_Subsystem>();
-				this->ShowPathSpline(self, subsystem);
+				subsystem->HandlePathSplines(self, self->mIsPathVisible);
 		});
 
 	SUBSCRIBE_METHOD_AFTER(AFGDrivingTargetList::OnRep_IsPathVisible, [this](AFGDrivingTargetList* self)
 		{
-				UWorld* WorldObject = self->GetWorld();
-				USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
-				ASSP_Subsystem* subsystem = SubsystemActorManager->GetSubsystemActor<ASSP_Subsystem>();
-				subsystem->HandlePathSplines(self, self->mIsPathVisible);
+			UWorld* WorldObject = self->GetWorld();
+			USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
+			ASSP_Subsystem* subsystem = SubsystemActorManager->GetSubsystemActor<ASSP_Subsystem>();
+			subsystem->HandlePathSplines(self, self->mIsPathVisible);
 		});
 
 	SUBSCRIBE_METHOD_AFTER(AFGVehicleSubsystem::AddTargetPoint, [this](AFGVehicleSubsystem* self, class AFGTargetPoint* target)
 		{
-				if (!target)
-				{
-					return;
-				}
-				AFGDrivingTargetList* targetList = target->GetOwningList();
-				if (targetList)
-				{
-					UWorld* WorldObject = targetList->GetWorld();
-					USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
-					ASSP_Subsystem* subsystem = SubsystemActorManager->GetSubsystemActor<ASSP_Subsystem>();
-					//this->ShowPathSpline(targetList, subsystem);
-					subsystem->HandlePathSplines(targetList, false);
-					subsystem->HandlePathSplines(targetList, true);
-				}
+			if (!target)
+			{
+				return;
+			}
+			AFGDrivingTargetList* targetList = target->GetOwningList();
+			if (targetList)
+			{
+				UWorld* WorldObject = targetList->GetWorld();
+				AFGVehicleSubsystem* vehicleSubsystem = AFGVehicleSubsystem::Get(WorldObject);
+				vehicleSubsystem->UpdateTargetList(targetList);
+			}
 		});
 
 	SUBSCRIBE_METHOD(AFGVehicleSubsystem::RemoveTargetPoint, [this](auto& scope, AFGVehicleSubsystem* self, class AFGTargetPoint* targetToRemove, bool updateList)
@@ -70,7 +68,7 @@ void FShowSplinePathModule::StartupModule()
 
 void FShowSplinePathModule::ShowPathSpline(AFGDrivingTargetList* targetList, ASSP_Subsystem* subsystem)
 {
-	if (subsystem && subsystem->TargetListMeshPools.Contains(targetList))
+	if (subsystem)
 	{
 		subsystem->HandlePathSplines(targetList, false);
 		subsystem->HandlePathSplines(targetList, true);

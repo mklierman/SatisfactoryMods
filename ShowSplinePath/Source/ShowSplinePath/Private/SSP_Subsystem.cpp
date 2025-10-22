@@ -1,6 +1,8 @@
 #include "SSP_Subsystem.h"
 #include "FGSplineMeshGenerationLibrary.h"
 #include <Kismet/GameplayStatics.h>
+#include "SSP_RemoteCallObject.h"
+#include "FGPlayerController.h"
 
 #pragma optimize("", off)
 
@@ -8,7 +10,7 @@ ASSP_Subsystem::ASSP_Subsystem() : Super(), splinePathMesh(nullptr), mantaPathMe
 {
 	//Spawn on client will help us catch exceptions where the server tries to spawn the path mesh components itself.
 	//We don't want that as other players should not be bothered with our path visualization.
-	ReplicationPolicy = ESubsystemReplicationPolicy::SpawnOnClient;
+	ReplicationPolicy = ESubsystemReplicationPolicy::SpawnLocal;
 }
 
 bool ASSP_Subsystem::GetHasAuthority()
@@ -27,47 +29,39 @@ USplineMeshComponent* SplineMeshConstructor(USplineComponent* spline)
 		spline, USplineMeshComponent::StaticClass());
 	newComponent->SetupAttachment(spline);
 	newComponent->Mobility = EComponentMobility::Static;
+	
+	// Ensure proper setup for multiplayer
+	newComponent->SetVisibility(true);
+	newComponent->SetHiddenInGame(false);
+	newComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
 	return newComponent;
 }
 
-void BuildSplineMeshes(
+TArray<USplineMeshComponent*> BuildSplineMeshes(
 	class USplineComponent* spline,
 	float maxSplineLengthToFill,
 	UStaticMesh* mesh,
 	float meshLength,
-	TArray<USplineMeshComponent*>& localMeshPool,
 	bool makeMovable = false)
 {
+	TArray<USplineMeshComponent*> createdMeshes;
+	
 	const float splineLengthToFill = FMath::Clamp(spline->GetSplineLength(), 0.f, maxSplineLengthToFill);
 	const int32 numMeshes = splineLengthToFill > SMALL_NUMBER
 		                        ? FMath::Max(1, FMath::RoundToInt(splineLengthToFill / meshLength))
 		                        : 0;
 
-	// Create more or remove the excess meshes.
-	if (numMeshes < localMeshPool.Num())
+	// Create all required meshes directly
+	for (int32 i = 0; i < numMeshes; ++i)
 	{
-		while (localMeshPool.Num() > numMeshes)
+		if (auto newMesh = SplineMeshConstructor(spline))
 		{
-			localMeshPool.Last()->DestroyComponent();
-			localMeshPool.Pop();
-		}
-	}
-	else if (numMeshes > localMeshPool.Num())
-	{
-		while (localMeshPool.Num() < numMeshes)
-		{
-			if (auto newMesh = SplineMeshConstructor(spline))
+			if (makeMovable)
 			{
-				if (makeMovable)
-				{
-					newMesh->SetMobility(EComponentMobility::Movable);
-				}
-				localMeshPool.Push(newMesh);
+				newMesh->SetMobility(EComponentMobility::Movable);
 			}
-			else
-			{
-				break;
-			}
+			createdMeshes.Push(newMesh);
 		}
 	}
 
@@ -75,7 +69,7 @@ void BuildSplineMeshes(
 	{
 		const float segmentLength = splineLengthToFill / numMeshes;
 
-		for (int32 i = 0; i < localMeshPool.Num(); ++i)
+		for (int32 i = 0; i < createdMeshes.Num(); ++i)
 		{
 			const float startDistance = (float)i * segmentLength;
 			const float endDistance = (float)(i + 1) * segmentLength;
@@ -87,57 +81,108 @@ void BuildSplineMeshes(
 			const FVector endTangent = spline->GetTangentAtDistanceAlongSpline(
 				endDistance, ESplineCoordinateSpace::Local).GetSafeNormal() * segmentLength;
 
-			localMeshPool[i]->SetStartAndEnd(startPos, startTangent, endPos, endTangent, true);
-			localMeshPool[i]->SetStaticMesh(mesh);
+			createdMeshes[i]->SetStartAndEnd(startPos, startTangent, endPos, endTangent, true);
+			createdMeshes[i]->SetStaticMesh(mesh);
 		}
 	}
 
 	// Register new meshes, needs to happen after the properties are set for static components.
-	for (auto meshComp : localMeshPool)
+	for (auto meshComp : createdMeshes)
 	{
 		if (!meshComp->IsRegistered())
 		{
 			meshComp->RegisterComponent();
 		}
+		
+		// Ensure visibility in multiplayer - set after registration
+		meshComp->SetVisibility(true);
+		meshComp->SetHiddenInGame(false);
+		meshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		
+		// Force update for multiplayer
+		meshComp->MarkRenderStateDirty();
 	}
+	
+	return createdMeshes;
 }
 
 void ASSP_Subsystem::HandlePathSplines(AFGDrivingTargetList* targetList, bool show)
 {
-	if (targetList)
+	if (targetList && !bIsUpdatingPathVisibility)
 	{
-		//targetList->SetPathVisible(show);
+		bIsUpdatingPathVisibility = true;
+
 		if (show)
 		{
-			targetList->CalculateTargetCount();
-			targetList->CreatePath();
+			// Clean up existing vehicle meshes first
+			for (auto meshComp : VehicleMeshes)
+			{
+				if (meshComp && meshComp->IsRegistered())
+				{
+					meshComp->UnregisterComponent();
+				}
+			}
+			VehicleMeshes.Empty();
+
+			targetList->SetPathVisible(true);
+
+			// Show splines using the existing path
 			auto spline = targetList->GetPath();
 			if (spline)
 			{
-				TArray<USplineMeshComponent*> localPool;
-				BuildSplineMeshes(spline, spline->GetSplineLength(), splinePathMesh, 100, localPool);
-
-				FSSP_MeshPoolStruct pool;
-				pool.MeshPool = localPool;
-				TargetListMeshPools.Add(targetList, pool);
+				TArray<USplineMeshComponent*> createdMeshes = BuildSplineMeshes(spline, spline->GetSplineLength(), splinePathMesh, 100);
+				VehicleMeshes.Append(createdMeshes);
+			}
+			else
+			{
+				// For multiplayer, try to create the path if we have authority
+				bool bHasAuthority = GetHasAuthority();
+				if (bHasAuthority)
+				{
+					targetList->CreatePath();
+					spline = targetList->GetPath();
+					if (spline)
+					{
+						TArray<USplineMeshComponent*> createdMeshes = BuildSplineMeshes(spline, spline->GetSplineLength(), splinePathMesh, 100);
+						VehicleMeshes.Append(createdMeshes);
+					}
+				}
+				else
+				{
+					// For clients, wait for the path to be replicated
+					// Use a single retry with a longer delay
+					if (targetList && targetList->GetWorld())
+					{
+						FTimerHandle RetryTimer;
+						targetList->GetWorld()->GetTimerManager().SetTimer(RetryTimer, [this, targetList]()
+							{
+								auto spline = targetList->GetPath();
+								if (spline)
+								{
+									TArray<USplineMeshComponent*> createdMeshes = BuildSplineMeshes(spline, spline->GetSplineLength(), splinePathMesh, 100);
+									VehicleMeshes.Append(createdMeshes);
+								}
+							}, 1.0f, false); // Wait 1 second for replication
+					}
+				}
 			}
 		}
 		else
 		{
-			if (TargetListMeshPools.Contains(targetList))
+			targetList->SetPathVisible(false);
+
+			// Clean up vehicle meshes when hiding paths
+			for (auto meshComp : VehicleMeshes)
 			{
-				TArray<USplineMeshComponent*> meshPool = TargetListMeshPools[targetList].MeshPool;
-				for (auto meshComp : meshPool)
+				if (meshComp && meshComp->IsRegistered())
 				{
-					if (meshComp && meshComp->IsRegistered())
-					{
-						meshComp->UnregisterComponent();
-					}
+					meshComp->UnregisterComponent();
 				}
-				meshPool.Empty();
-				TargetListMeshPools.Remove(targetList);
 			}
+			VehicleMeshes.Empty();
 		}
+
+		bIsUpdatingPathVisibility = false;
 	}
 }
 
@@ -146,7 +191,6 @@ void ASSP_Subsystem::ShowTargetPath(AFGTargetPoint* targetPoint)
 	auto targetList = targetPoint->GetOwningList();
 	if (targetList)
 	{
-		targetList->SetPathVisible(true);
 		HandlePathSplines(targetList, true);
 	}
 }
@@ -156,7 +200,6 @@ void ASSP_Subsystem::HideTargetPath(AFGTargetPoint* targetPoint)
 	auto targetList = targetPoint->GetOwningList();
 	if (targetList)
 	{
-		targetList->SetPathVisible(false);
 		HandlePathSplines(targetList, false);
 	}
 }
@@ -189,8 +232,25 @@ void ASSP_Subsystem::ShowInitialPaths(AActor* actor)
 
 void ASSP_Subsystem::ShowAllMantaPaths(AActor* actor)
 {
+	// Clean up existing manta meshes first
+	for (auto meshComp : MantaMeshes)
+	{
+		if (meshComp && meshComp->IsRegistered())
+		{
+			meshComp->UnregisterComponent();
+		}
+	}
+	MantaMeshes.Empty();
+
+	// Check if mantaPathMesh is null
+	if (!mantaPathMesh)
+	{
+		return;
+	}
+
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(actor->GetWorld(), AFGManta::StaticClass(), FoundActors);
+	
 	if (FoundActors.Num() > 0)
 	{
 		for (auto actor1 : FoundActors)
@@ -201,13 +261,8 @@ void ASSP_Subsystem::ShowAllMantaPaths(AActor* actor)
 				auto spline = manta->mCachedSpline;
 				if (spline)
 				{
-					TArray<USplineMeshComponent*> localPool;
-					BuildSplineMeshes(spline, spline->GetSplineLength(), mantaPathMesh, 2500, localPool,
-					                  true);
-
-					FSSP_MeshPoolStruct pool;
-					pool.MeshPool = localPool;
-					MantaMeshPools.Add(manta, pool);
+					TArray<USplineMeshComponent*> createdMeshes = BuildSplineMeshes(spline, spline->GetSplineLength(), mantaPathMesh, 2500, true);
+					MantaMeshes.Append(createdMeshes);
 				}
 			}
 		}
@@ -216,19 +271,15 @@ void ASSP_Subsystem::ShowAllMantaPaths(AActor* actor)
 
 void ASSP_Subsystem::HideAllMantaPaths(AActor* actor)
 {
-	for (auto mantaPair : MantaMeshPools)
+	// Clean up manta meshes when hiding manta paths
+	for (auto meshComp : MantaMeshes)
 	{
-		TArray<USplineMeshComponent*> meshPool = mantaPair.Value.MeshPool;
-		for (auto meshComp : meshPool)
+		if (meshComp && meshComp->IsRegistered())
 		{
-			if (meshComp && meshComp->IsRegistered())
-			{
-				meshComp->UnregisterComponent();
-			}
+			meshComp->UnregisterComponent();
 		}
-		meshPool.Empty();
 	}
-	MantaMeshPools.Empty();
+	MantaMeshes.Empty();
 }
 
 void ASSP_Subsystem::ShowAllVehiclePaths(AActor* actor)
@@ -241,6 +292,7 @@ void ASSP_Subsystem::ShowAllVehiclePaths(AActor* actor)
 		{
 			auto tpList = Cast<AFGDrivingTargetList>(actor1);
 			tpList->SetPathVisible(true);
+			HandlePathSplines(tpList, tpList->mIsPathVisible);
 		}
 	}
 }
@@ -255,6 +307,7 @@ void ASSP_Subsystem::HideAllVehiclePaths(AActor* actor)
 		{
 			auto tpList = Cast<AFGDrivingTargetList>(actor1);
 			tpList->SetPathVisible(false);
+			HandlePathSplines(tpList, tpList->mIsPathVisible);
 		}
 	}
 }
