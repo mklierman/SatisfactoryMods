@@ -11,7 +11,7 @@
 #include <Hologram/FGFoundationHologram.h>
 
 
-#pragma optimize("", off)
+//#pragma optimize("", off)
 void FNoZFightingModule::StartupModule() {
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AAbstractInstanceManager::SetInstanced, [this](auto& scope, AAbstractInstanceManager* self, AActor* OwnerActor, const FTransform& ActorTransform, const FInstanceData& InstanceData, FInstanceOwnerHandlePtr& OutHandle, bool bInitializeHidden)
@@ -19,58 +19,6 @@ void FNoZFightingModule::StartupModule() {
 			SetInstanced(self, OwnerActor, ActorTransform, InstanceData, OutHandle, bInitializeHidden);
 		});
 #endif
-}
-
-void FNoZFightingModule::OnConstruction(AFGBuildable* self, const FTransform& transform)
-{
-	if (self->GetWorld()->GetName() == "FactoryBlueprintWorld")
-	{
-		return;
-	}
-	auto buildFoundation = Cast<AFGBuildableFoundation>(self);
-	auto buildWall = Cast<AFGBuildableWall>(self);
-	auto buildWalkway = Cast<AFGBuildableWalkway>(self);
-	if (buildFoundation || buildWalkway || self)
-	{
-		auto ic = self->GetInstigatorController();
-		UWorld* world = self->GetWorld();
-		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(world);
-		auto min = config.FoundationMin;
-		auto max = config.FoundationMax;
-		auto meshes = self->GetComponents();
-		for (auto mesh : meshes)
-		{
-			auto sMesh = Cast<UStaticMeshComponent>(mesh);
-			if (sMesh)
-			{
-				float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
-				sMesh->AddRelativeLocation(FVector(0.0, 0.0, randomFloat));
-			}
-			auto cMesh = Cast<UFGColoredInstanceMeshProxy>(mesh);
-			if (cMesh)
-			{
-				float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
-				cMesh->AddRelativeLocation(FVector(0.0, 0.0, randomFloat));
-			}
-		}
-	}
-	else if (buildWall)
-	{
-		auto ic = self->GetInstigatorController();
-		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(buildWall->GetWorld());
-		auto min = config.WallMin;
-		auto max = config.WallMax;
-		auto meshes = self->GetComponents();
-		for (auto mesh : meshes)
-		{
-			auto sMesh = Cast<UStaticMeshComponent>(mesh);
-			if (sMesh)
-			{
-				float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
-				sMesh->AddRelativeLocation(FVector(randomFloat, 0.0, 0.0));
-			}
-		}
-	}
 }
 
 void FNoZFightingModule::SetInstanced(AAbstractInstanceManager* manager, AActor* OwnerActor, const FTransform& ActorTransform, const FInstanceData& InstanceData, FInstanceOwnerHandlePtr& OutHandle, bool bInitializeHidden)
@@ -99,48 +47,138 @@ void FNoZFightingModule::SetInstanced(AAbstractInstanceManager* manager, AActor*
 	FInstanceData* ptr;
 	ptr = (FInstanceData*)(&InstanceData);
 
+	FRandomStream RandStream;
+	RandStream.Initialize(GetTypeHash(ActorTransform));
+	
 	if (Name.ToString().ToLower().Contains("foundation") || Name.ToString().ToLower().Contains("block")
-		|| Name.ToString().ToLower().Contains("catwalk") || Name.ToString().ToLower().Contains("walkway")
 		|| Name.ToString().ToLower().Contains("quarterpipe") || Name.ToString().ToLower().Contains("ramp"))
 	{
+		// Foundations and Ramps
 		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
-		auto min = config.FoundationMin;
-		auto max = config.FoundationMax;
-		float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
+		auto xMin = config.Foundations.FoundationX * -1.f;
+		auto xMax = config.Foundations.FoundationX;
+		auto yMin = config.Foundations.FoundationY * -1.f;
+		auto yMax = config.Foundations.FoundationY;
+		auto zMin = config.Foundations.FoundationZ * -1.f;
+		auto zMax = config.Foundations.FoundationZ;
+		float xRandomFloat = RandStream.FRandRange(xMin, xMax);
+		float yRandomFloat = RandStream.FRandRange(yMin, yMax);
+		float zRandomFloat = RandStream.FRandRange(zMin, zMax);
+
 		auto loc = ptr->RelativeTransform.GetLocation();
-		loc.Z = loc.Z + randomFloat;
+		loc.X = loc.X + xRandomFloat;
+		loc.Y = loc.Y + yRandomFloat;
+		loc.Z = loc.Z + zRandomFloat;
 		ptr->RelativeTransform.SetLocation(loc);
 	}
 	else if (Name.ToString().ToLower().Contains("wall"))
 	{
+		// Walls
 		ptr->bApplyRandomOffsetOnInstance = false;
 
 		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
-		auto min = config.WallMin;
-		auto max = config.WallMax;
-		float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
+		auto xMin = config.Walls.WallX * -1.f;
+		auto xMax = config.Walls.WallX;
+		auto yMin = config.Walls.WallY * -1.f;
+		auto yMax = config.Walls.WallY;
+		auto zMin = config.Walls.WallZ * -1.f;
+		auto zMax = config.Walls.WallZ;
+		float xRandomFloat = RandStream.FRandRange(xMin, xMax);
+		float yRandomFloat = RandStream.FRandRange(yMin, yMax);
+		float zRandomFloat = RandStream.FRandRange(zMin, zMax);
 		auto loc = ptr->RelativeTransform.GetLocation();
-		loc.X = loc.X + randomFloat;
+		loc.X = loc.X + xRandomFloat;
+		loc.Y = loc.Y + yRandomFloat;
+		loc.Z = loc.Z + zRandomFloat;
 		ptr->RelativeTransform.SetLocation(loc);
 	}
-	else if (Name.ToString().ToLower().Contains("beam") || Name.ToString().ToLower().Contains("pillar")
-		|| Name.ToString().ToLower().Contains("smallMiddle"))
+	else if (Name.ToString().ToLower().Contains("catwalk") || Name.ToString().ToLower().Contains("walkway"))
 	{
+		// Catwalks
 		ptr->bApplyRandomOffsetOnInstance = false;
 
 		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
-		auto min = config.BeamMin;
-		auto max = config.BeamMax;
-		float randomFloat = UKismetMathLibrary::RandomFloatInRange(min, max);
+		auto xMin = config.Catwalks.CatwalkX * -1.f;
+		auto xMax = config.Catwalks.CatwalkX;
+		auto yMin = config.Catwalks.CatwalkY * -1.f;
+		auto yMax = config.Catwalks.CatwalkY;
+		auto zMin = config.Catwalks.CatwalkZ * -1.f;
+		auto zMax = config.Catwalks.CatwalkZ;
+		float xRandomFloat = RandStream.FRandRange(xMin, xMax);
+		float yRandomFloat = RandStream.FRandRange(yMin, yMax);
+		float zRandomFloat = RandStream.FRandRange(zMin, zMax);
 		auto loc = ptr->RelativeTransform.GetLocation();
-		loc.X = loc.X + randomFloat;
-		loc.Y = loc.Y + randomFloat;
-		loc.Z = loc.Z + randomFloat;
+		loc.X = loc.X + xRandomFloat;
+		loc.Y = loc.Y + yRandomFloat;
+		loc.Z = loc.Z + zRandomFloat;
 		ptr->RelativeTransform.SetLocation(loc);
 	}
+	else if (Name.ToString().ToLower().Contains("beam"))
+	{
+		// Beams
+		ptr->bApplyRandomOffsetOnInstance = false;
+
+		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
+		auto xMin = config.Beams.BeamX * -1.f;
+		auto xMax = config.Beams.BeamX;
+		auto yMin = config.Beams.BeamY * -1.f;
+		auto yMax = config.Beams.BeamY;
+		auto zMin = config.Beams.BeamZ * -1.f;
+		auto zMax = config.Beams.BeamZ;
+		float xRandomFloat = RandStream.FRandRange(xMin, xMax);
+		float yRandomFloat = RandStream.FRandRange(yMin, yMax);
+		float zRandomFloat = RandStream.FRandRange(zMin, zMax);
+		auto loc = ptr->RelativeTransform.GetLocation();
+		loc.X = loc.X + xRandomFloat;
+		loc.Y = loc.Y + yRandomFloat;
+		loc.Z = loc.Z + zRandomFloat;
+		ptr->RelativeTransform.SetLocation(loc);
+	}
+	else if (Name.ToString().ToLower().Contains("pillar") || Name.ToString().ToLower().Contains("smallMiddle"))
+	{
+		// Pillars
+		ptr->bApplyRandomOffsetOnInstance = false;
+
+		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
+		auto xMin = config.Pillars.PillarX * -1.f;
+		auto xMax = config.Pillars.PillarX;
+		auto yMin = config.Pillars.PillarY * -1.f;
+		auto yMax = config.Pillars.PillarY;
+		auto zMin = config.Pillars.PillarZ * -1.f;
+		auto zMax = config.Pillars.PillarZ;
+		float xRandomFloat = RandStream.FRandRange(xMin, xMax);
+		float yRandomFloat = RandStream.FRandRange(yMin, yMax);
+		float zRandomFloat = RandStream.FRandRange(zMin, zMax);
+		auto loc = ptr->RelativeTransform.GetLocation();
+		loc.X = loc.X + xRandomFloat;
+		loc.Y = loc.Y + yRandomFloat;
+		loc.Z = loc.Z + zRandomFloat;
+		ptr->RelativeTransform.SetLocation(loc);
+	}
+	else if (Name.ToString().ToLower().Contains("roof"))
+	{
+		// Roofs
+		ptr->bApplyRandomOffsetOnInstance = false;
+
+		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
+		auto xMin = config.Roofs.RoofX * -1.f;
+		auto xMax = config.Roofs.RoofX;
+		auto yMin = config.Roofs.RoofY * -1.f;
+		auto yMax = config.Roofs.RoofY;
+		auto zMin = config.Roofs.RoofZ * -1.f;
+		auto zMax = config.Roofs.RoofZ;
+		float xRandomFloat = RandStream.FRandRange(xMin, xMax);
+		float yRandomFloat = RandStream.FRandRange(yMin, yMax);
+		float zRandomFloat = RandStream.FRandRange(zMin, zMax);
+		auto loc = ptr->RelativeTransform.GetLocation();
+		loc.X = loc.X + xRandomFloat;
+		loc.Y = loc.Y + yRandomFloat;
+		loc.Z = loc.Z + zRandomFloat;
+		ptr->RelativeTransform.SetLocation(loc);
+		}
 	return;
 }
 
-#pragma optimize("", on)
+//#pragma optimize("", on)
 
 IMPLEMENT_GAME_MODULE(FNoZFightingModule, NoZFighting);
