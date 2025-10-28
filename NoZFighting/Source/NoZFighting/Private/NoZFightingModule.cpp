@@ -101,8 +101,7 @@ void FNoZFightingModule::SetInstanced(AAbstractInstanceManager* manager, AActor*
 
 	if (Name.ToString().ToLower().Contains("foundation") || Name.ToString().ToLower().Contains("block")
 		|| Name.ToString().ToLower().Contains("catwalk") || Name.ToString().ToLower().Contains("walkway")
-		|| Name.ToString().ToLower().Contains("quarterpipe") || Name.ToString().ToLower().Contains("ramp")
-		|| Name.ToString().ToLower().Contains("pillar"))
+		|| Name.ToString().ToLower().Contains("quarterpipe") || Name.ToString().ToLower().Contains("ramp"))
 	{
 		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
 		auto min = config.FoundationMin;
@@ -124,7 +123,8 @@ void FNoZFightingModule::SetInstanced(AAbstractInstanceManager* manager, AActor*
 		loc.X = loc.X + randomFloat;
 		ptr->RelativeTransform.SetLocation(loc);
 	}
-	else if (Name.ToString().ToLower().Contains("beam"))
+	else if (Name.ToString().ToLower().Contains("beam") || Name.ToString().ToLower().Contains("pillar")
+		|| Name.ToString().ToLower().Contains("smallMiddle"))
 	{
 		ptr->bApplyRandomOffsetOnInstance = false;
 
