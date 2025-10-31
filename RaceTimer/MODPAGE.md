@@ -7,7 +7,7 @@ If server hosts want to disable the ability to leave races, add `RaceTimer:Clear
 
 Unlocked via a Tier 1 Milestone.
 
-This mod also makes Factory Carts deploy instantly by default. This is controlled by a
+This mod also makes Factory Carts allow players to enter immediately upon placement by default. This is controlled by a
 [Mod Savegame Setting](https://docs.ficsit.app/satisfactory-modding/latest/ForUsers/ConfiguringMods.html#_mod_savegame_settings).
 
 ---
@@ -16,3 +16,5 @@ This mod also makes Factory Carts deploy instantly by default. This is controlle
 <a href="https://ko-fi.com/sirdigbymodding">SirDigby's completely optional tip jar</a>
 
 Robb added multiplayer and dedicated server support in version 2.0.0. If you enjoy his work, please consider his [completely optional tip jar](https://ko-fi.com/robb4).
+
+![Screenshot of timer in action](https://raw.githubusercontent.com/mklierman/SatisfactoryMods/refs/heads/main/RaceTimer/Screenshots/1.png)
