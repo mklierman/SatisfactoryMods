@@ -1,4 +1,6 @@
 #include "InfiniteNudge_Subsystem.h"
+#include "Windows/WindowsApplication.h"
+
 DEFINE_LOG_CATEGORY(InfiniteNudge_Log);
 #pragma optimize("", off)
 //Get Building direction closest to camera direction
@@ -16,7 +18,14 @@ void AInfiniteNudge_Subsystem::NudgeHologram(AFGHologram* hologram, float xDirec
 
 		if (zDirection != 0.0)
 		{
-			hologram->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * zDirection));
+			if (ShouldWorldOffset())
+			{
+				hologram->AddActorWorldOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * zDirection));
+			}
+			else
+			{
+				hologram->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * zDirection));
+			}
 		}
 		else if (auto beltHolo = Cast< AFGConveyorBeltHologram>(hologram))
 		{
@@ -42,13 +51,23 @@ void AInfiniteNudge_Subsystem::NudgeHologram(AFGHologram* hologram, float xDirec
 		{
 			NudgeSign(signHolo, xDirection, yDirection, zDirection, controller);
 		}
+		else if (auto beamHolo = Cast<AFGBeamHologram>(hologram))
+		{
+			NudgeBeam(beamHolo, xDirection, yDirection, zDirection, controller);
+		}
 		else
 		{
 			int lookAngle = GetClosestLookAngle(hologram, controller);
 			FVector lookVector = GetLookVector(lookAngle);
 			FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
-
-			hologram->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+			if (ShouldWorldOffset())
+			{
+				hologram->AddActorWorldOffset(rVectorz * GetCurrentNudgeAmount(controller));
+			}
+			else
+			{
+				hologram->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+			}
 		}
 		hologram->mHologramLockLocation = hologram->GetActorLocation();
 	}
@@ -63,7 +82,14 @@ void AInfiniteNudge_Subsystem::NudgeBelt(AFGConveyorBeltHologram* hologram, floa
 	}
 	else if (controller->IsInputKeyDown(VerticalNudgeKey))
 	{
-		nudgeTarget->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+		if (ShouldWorldOffset())
+		{
+			nudgeTarget->AddActorWorldOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+		}
+		else
+		{
+			nudgeTarget->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+		}
 	}
 	else
 	{
@@ -71,7 +97,14 @@ void AInfiniteNudge_Subsystem::NudgeBelt(AFGConveyorBeltHologram* hologram, floa
 		FVector lookVector = GetLookVector(lookAngle);
 		FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
 
-		nudgeTarget->AddActorLocalOffset((rVectorz) * GetCurrentNudgeAmount(controller));
+		if (ShouldWorldOffset())
+		{
+			nudgeTarget->AddActorWorldOffset((rVectorz)*GetCurrentNudgeAmount(controller));
+		}
+		else
+		{
+			nudgeTarget->AddActorLocalOffset((rVectorz)*GetCurrentNudgeAmount(controller));
+		}
 	}
 	nudgeTarget->mHologramLockLocation = nudgeTarget->GetActorLocation();
 }
@@ -85,7 +118,14 @@ void AInfiniteNudge_Subsystem::NudgePipe(AFGPipelineHologram* hologram, float xD
 	}
 	else if (controller->IsInputKeyDown(VerticalNudgeKey))
 	{
-		nudgeTarget->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+		if (ShouldWorldOffset())
+		{
+			nudgeTarget->AddActorWorldOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+		}
+		else
+		{
+			nudgeTarget->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+		}
 	}
 	else
 	{
@@ -93,7 +133,14 @@ void AInfiniteNudge_Subsystem::NudgePipe(AFGPipelineHologram* hologram, float xD
 		FVector lookVector = GetLookVector(lookAngle);
 		FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
 
-		nudgeTarget->AddActorLocalOffset((rVectorz) * GetCurrentNudgeAmount(controller));
+		if (ShouldWorldOffset())
+		{
+			nudgeTarget->AddActorWorldOffset((rVectorz)*GetCurrentNudgeAmount(controller));
+		}
+		else
+		{
+			nudgeTarget->AddActorLocalOffset((rVectorz)*GetCurrentNudgeAmount(controller));
+		}
 	}
 	nudgeTarget->mHologramLockLocation = nudgeTarget->GetActorLocation();
 }
@@ -103,7 +150,14 @@ void AInfiniteNudge_Subsystem::NudgeWire(AFGWireHologram* hologram, float xDirec
 	auto nudgeTarget = hologram->GetNudgeHologramTarget();
 	if (controller->IsInputKeyDown(VerticalNudgeKey))
 	{
-		nudgeTarget->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+		if (ShouldWorldOffset())
+		{
+			nudgeTarget->AddActorWorldOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+		}
+		else
+		{
+			nudgeTarget->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+		}
 	}
 	else
 	{
@@ -111,7 +165,14 @@ void AInfiniteNudge_Subsystem::NudgeWire(AFGWireHologram* hologram, float xDirec
 		FVector lookVector = GetLookVector(lookAngle);
 		FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
 
-		nudgeTarget->AddActorLocalOffset((rVectorz) * GetCurrentNudgeAmount(controller));
+		if (ShouldWorldOffset())
+		{
+			nudgeTarget->AddActorWorldOffset((rVectorz)*GetCurrentNudgeAmount(controller));
+		}
+		else
+		{
+			nudgeTarget->AddActorLocalOffset((rVectorz)*GetCurrentNudgeAmount(controller));
+		}
 	}
 	nudgeTarget->mHologramLockLocation = nudgeTarget->GetActorLocation();
 }
@@ -121,14 +182,29 @@ void AInfiniteNudge_Subsystem::NudgeRailroadTrack(AFGRailroadTrackHologram* holo
 	auto nudgeTarget = hologram->GetNudgeHologramTarget();
 	if (zDirection != 0.0)
 	{
-		nudgeTarget->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * zDirection));
+		if (ShouldWorldOffset())
+		{
+			nudgeTarget->AddActorWorldOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * zDirection));
+		}
+		else
+		{
+			nudgeTarget->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * zDirection));
+		}
 	}
 	else
 	{
 		int lookAngle = GetClosestLookAngle(hologram, controller);
 		FVector lookVector = GetLookVector(lookAngle);
 		FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
-		nudgeTarget->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+
+		if (ShouldWorldOffset())
+		{
+			nudgeTarget->AddActorWorldOffset(rVectorz * GetCurrentNudgeAmount(controller));
+		}
+		else
+		{
+			nudgeTarget->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+		}
 	}
 	nudgeTarget->mHologramLockLocation = nudgeTarget->GetActorLocation();
 }
@@ -140,7 +216,14 @@ void AInfiniteNudge_Subsystem::NudgeWallAttachment(AFGWallAttachmentHologram* ho
 		int lookAngle = GetClosestLookAngle(hologram, controller);
 		FVector lookVector = GetLookVector(lookAngle);
 		FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
-		hologram->AddActorLocalOffset(FVector(GetCurrentNudgeAmount(controller) * (xDirection * -1), 0, 0));
+		if (ShouldWorldOffset())
+		{
+			hologram->AddActorWorldOffset(FVector(GetCurrentNudgeAmount(controller) * (xDirection * -1), 0, 0));
+		}
+		else
+		{
+			hologram->AddActorLocalOffset(FVector(GetCurrentNudgeAmount(controller) * (xDirection * -1), 0, 0));
+		}
 	}
 	else
 	{
@@ -149,14 +232,28 @@ void AInfiniteNudge_Subsystem::NudgeWallAttachment(AFGWallAttachmentHologram* ho
 			int lookAngle = GetClosestLookAngle(hologram, controller);
 			FVector lookVector = GetLookVector(lookAngle);
 			FVector rVectorz = FVector(0, yDirection, (xDirection * -1)).RotateAngleAxis(lookAngle, FVector(0, 1, 0));
-			hologram->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+			if (ShouldWorldOffset())
+			{
+				hologram->AddActorWorldOffset(rVectorz * GetCurrentNudgeAmount(controller));
+			}
+			else
+			{
+				hologram->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+			}
 		}
 		else
 		{
 			int lookAngle = GetClosestLookAngle(hologram, controller);
 			FVector lookVector = GetLookVector(lookAngle);
-			FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
-			hologram->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+			FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1)); 
+			if (ShouldWorldOffset())
+			{
+				hologram->AddActorWorldOffset(rVectorz * GetCurrentNudgeAmount(controller));
+			}
+			else
+			{
+				hologram->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+			}
 		}
 	}
 	hologram->mHologramLockLocation = hologram->GetActorLocation();
@@ -169,7 +266,14 @@ void AInfiniteNudge_Subsystem::NudgeSign(AFGStandaloneSignHologram* hologram, fl
 		//Standard nudging	auto nudgeTarget = hologram->GetNudgeHologramTarget();
 		if (controller->IsInputKeyDown(VerticalNudgeKey))
 		{
-			nudgeTarget->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+			if (ShouldWorldOffset())
+			{
+				nudgeTarget->AddActorWorldOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+			}
+			else
+			{
+				nudgeTarget->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+			}
 		}
 		else
 		{
@@ -177,7 +281,14 @@ void AInfiniteNudge_Subsystem::NudgeSign(AFGStandaloneSignHologram* hologram, fl
 			FVector lookVector = GetLookVector(lookAngle);
 			FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
 
-			nudgeTarget->AddActorLocalOffset((rVectorz) * GetCurrentNudgeAmount(controller));
+			if (ShouldWorldOffset())
+			{
+				nudgeTarget->AddActorWorldOffset((rVectorz)*GetCurrentNudgeAmount(controller));
+			}
+			else
+			{
+				nudgeTarget->AddActorLocalOffset((rVectorz)*GetCurrentNudgeAmount(controller));
+			}
 		}
 		nudgeTarget->mHologramLockLocation = nudgeTarget->GetActorLocation();
 	}
@@ -189,7 +300,14 @@ void AInfiniteNudge_Subsystem::NudgeSign(AFGStandaloneSignHologram* hologram, fl
 			int lookAngle = GetClosestLookAngle(hologram, controller);
 			FVector lookVector = GetLookVector(lookAngle);
 			FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
-			hologram->AddActorLocalOffset((rVectorz) * GetCurrentNudgeAmount(controller));
+			if (ShouldWorldOffset())
+			{
+				hologram->AddActorWorldOffset((rVectorz)*GetCurrentNudgeAmount(controller));
+			}
+			else
+			{
+				hologram->AddActorLocalOffset((rVectorz)*GetCurrentNudgeAmount(controller));
+			}
 		}
 		else
 		{
@@ -198,17 +316,64 @@ void AInfiniteNudge_Subsystem::NudgeSign(AFGStandaloneSignHologram* hologram, fl
 				int lookAngle = GetClosestLookAngle(hologram, controller);
 				FVector lookVector = GetLookVector(lookAngle);
 				FVector rVectorz = FVector(0, yDirection, xDirection).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
-				hologram->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+				if (ShouldWorldOffset())
+				{
+					hologram->AddActorWorldOffset(rVectorz * GetCurrentNudgeAmount(controller));
+				}
+				else
+				{
+					hologram->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+				}
 			}
 			else
 			{
 				int lookAngle = GetClosestLookAngle(hologram, controller);
 				FVector lookVector = GetLookVector(lookAngle);
 				FVector rVectorz = FVector(xDirection, yDirection,0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
-				hologram->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+				if (ShouldWorldOffset())
+				{
+					hologram->AddActorWorldOffset(rVectorz * GetCurrentNudgeAmount(controller));
+				}
+				else
+				{
+					hologram->AddActorLocalOffset(rVectorz * GetCurrentNudgeAmount(controller));
+				}
 			}
 		}
 	}
+}
+
+void AInfiniteNudge_Subsystem::NudgeBeam(AFGBeamHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller)
+{
+	auto nudgeTarget = hologram->GetNudgeHologramTarget();
+	auto forwardVec = nudgeTarget->GetActorForwardVector();
+	if (controller->IsInputKeyDown(VerticalNudgeKey))
+	{
+		if (ShouldWorldOffset())
+		{
+			nudgeTarget->AddActorWorldOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+		}
+		else
+		{
+			nudgeTarget->AddActorLocalOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * xDirection));
+		}
+	}
+	else
+	{
+		int lookAngle = GetClosestLookAngle(nudgeTarget, controller);
+		FVector lookVector = GetLookVector(lookAngle);
+		FVector rVectorz = FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
+
+		if (ShouldWorldOffset())
+		{
+			nudgeTarget->AddActorWorldOffset((rVectorz)*GetCurrentNudgeAmount(controller));
+		}
+		else
+		{
+			nudgeTarget->AddActorLocalOffset((rVectorz)*GetCurrentNudgeAmount(controller));
+		}
+	}
+	nudgeTarget->mHologramLockLocation = nudgeTarget->GetActorLocation();
 }
 
 void AInfiniteNudge_Subsystem::ScaleHologram(AFGHologram* hologram, AFGPlayerController* controller)
@@ -307,6 +472,15 @@ float AInfiniteNudge_Subsystem::GetCurrentNudgeAmount(APlayerController* control
 	{
 		return 100.0f;
 	}
+}
+
+bool AInfiniteNudge_Subsystem::ShouldWorldOffset()
+{
+#if PLATFORM_WINDOWS
+		return (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
+#else
+		return false;
+#endif
 }
 
 FVector AInfiniteNudge_Subsystem::GetFrontOffset(TSubclassOf<AFGGenericBuildableHologram> hologram)
