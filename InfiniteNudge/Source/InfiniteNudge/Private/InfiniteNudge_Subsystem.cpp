@@ -1,5 +1,7 @@
 #include "InfiniteNudge_Subsystem.h"
+#if PLATFORM_WINDOWS
 #include "Windows/WindowsApplication.h"
+#endif
 
 DEFINE_LOG_CATEGORY(InfiniteNudge_Log);
 #pragma optimize("", off)
