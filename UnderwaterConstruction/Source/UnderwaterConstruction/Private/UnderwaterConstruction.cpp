@@ -11,15 +11,27 @@ void FUnderwaterConstructionModule::StartupModule()
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGCharacterPlayer::CanEquipBuildGun, [this](auto& scope, const AFGCharacterPlayer* self)
 		{
-			scope.Override(true);
+			auto moveComp = self->GetCharacterMovement();
+			if (moveComp->MovementMode == EMovementMode::MOVE_Swimming)
+			{
+				scope.Override(true);
+			}
 		});
 	SUBSCRIBE_METHOD(AFGCharacterPlayer::CanEquipBuildGunForDismantle, [this](auto& scope, const AFGCharacterPlayer* self)
 		{
-			scope.Override(true);
+			auto moveComp = self->GetCharacterMovement();
+			if (moveComp->MovementMode == EMovementMode::MOVE_Swimming)
+			{
+				scope.Override(true);
+			}
 		});
 	SUBSCRIBE_METHOD(AFGCharacterPlayer::CanEquipBuildGunForPaint, [this](auto& scope, const AFGCharacterPlayer* self)
 		{
-			scope.Override(true);
+			auto moveComp = self->GetCharacterMovement();
+			if (moveComp->MovementMode == EMovementMode::MOVE_Swimming)
+			{
+				scope.Override(true);
+			}
 		});
 #endif
 }
