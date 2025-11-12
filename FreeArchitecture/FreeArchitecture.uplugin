@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.1",
+	"VersionName": "1.0.2",
 	"FriendlyName": "Free Architecture",
 	"Description": "",
 	"Category": "Modding",
@@ -18,9 +18,9 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.11.1"
+			"SemVersion": "^3.11.3"
 		}
 	],
-	"SemVersion": "1.0.1",
+	"SemVersion": "1.0.2",
 	"GameVersion": ">=416835"
 }
