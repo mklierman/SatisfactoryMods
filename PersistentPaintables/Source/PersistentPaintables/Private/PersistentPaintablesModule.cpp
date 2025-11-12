@@ -152,7 +152,7 @@ void FPersistentPaintablesModule::ColorConnectedSupports(AFGBuildablePipeline* p
 				auto actor = weakActor.Get();
 				for (auto conn : pipe->mPipeConnections)
 				{
-					if (conn && IsValid(conn) && IsValid(actor))
+					if (IsValid(conn) && IsValid(actor))
 					{
 						auto connLocation = conn->GetConnectorLocation();
 						if (!actor)

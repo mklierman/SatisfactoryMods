@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.4.7",
-	"SemVersion": "1.4.7",
+	"VersionName": "1.4.8",
+	"SemVersion": "1.4.8",
 	"FriendlyName": "Persistent Paintables",
 	"Description": "Paint-Focused QoL Tweaks",
 	"Category": "Modding",
@@ -25,7 +25,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.11.1",
+			"SemVersion": "^3.11.3",
 			"Enabled": true
 		}
 	],
