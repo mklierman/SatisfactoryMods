@@ -26,10 +26,4 @@ void UInfiniteNudge_RCO::Server_SetHologramScale_Implementation(AFGPlayerControl
 			}
 		}
 	}
-	//if (hologram)
-	//{
-	//	UE_LOG(InfiniteNudge_Log, Display, TEXT("Server_SetHologramScale - NewScale: %s"), *newScale.ToString());
-	//	hologram->SetActorRelativeScale3D(newScale);
-	//	hologram->ForceNetUpdate();
-	//}
 }

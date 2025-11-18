@@ -406,11 +406,25 @@ void AInfiniteNudge_Subsystem::ScaleHologram(AFGHologram* hologram, AFGPlayerCon
 
 			if (scaleAmount != 0.0)
 			{
-				auto currentScale = hologram->GetActorRelativeScale3D();
-				auto newScale = currentScale + (scaleAmount / 100);
-				//UE_LOG(InfiniteNudge_Log, Display, TEXT("ScaleHologram - NewScale: %s"), *newScale.ToString());
-				//UE_LOG(InfiniteNudge_Log, Display, TEXT("ScaleHologram - NewScale: %s"), *newScale.ToString());
-				//auto netMode = hologram->GetNetMode();
+				FVector currentScale = hologram->GetActorRelativeScale3D();
+				FVector newScale = currentScale;
+				if (controller->IsInputKeyDown(EKeys::RightControl))
+				{
+					newScale.X = newScale.X + (scaleAmount / 100);
+				}
+				else if (controller->IsInputKeyDown(EKeys::RightAlt))
+				{
+					newScale.Y = newScale.Y + (scaleAmount / 100);
+				}
+				else if (controller->IsInputKeyDown(EKeys::RightShift))
+				{
+					newScale.Z = newScale.Z + (scaleAmount / 100);
+				}
+				else
+				{
+					newScale = newScale + (scaleAmount / 100);
+				}
+
 				if (HasAuthority() && false)
 				{
 					hologram->SetActorRelativeScale3D(newScale);
@@ -424,11 +438,6 @@ void AInfiniteNudge_Subsystem::ScaleHologram(AFGHologram* hologram, AFGPlayerCon
 						RCO->Server_SetHologramScale(controller, newScale);
 					}
 				}
-
-				//auto currentTransform = hologram->GetActorTransform();
-				//FTransform newTransform = currentTransform;
-				//newTransform.SetScale3D(currentScale + (scaleAmount / 100));
-				//hologram->SetActorTransform(newTransform);
 			}
 		}
 	}
