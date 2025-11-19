@@ -18,6 +18,9 @@
 #include <Hologram/FGWallAttachmentHologram.h>
 #include <Hologram/FGWireHologram.h>
 #include "FGCharacterPlayer.h"
+#include "FGBackgroundThread.h"
+
+#include "FGColoredInstanceMeshProxy.h"
 
 DEFINE_LOG_CATEGORY(SnapOn_Log);
 #pragma optimize("", off)
@@ -264,16 +267,19 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 				UClass* beltClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk6/Build_ConveyorBeltMk6.Build_ConveyorBeltMk6_C"));
 				auto Transform1 = conveyorAttachment->GetActorLocation();
 				auto OtherLocation = otherConn->GetOwner()->GetActorLocation();
-				auto Location = Transform1 - OtherLocation; // Has to be moved physically away so it doesn't get auto-merged
-				FVector Midpoint = UKismetMathLibrary::VLerp(Transform1, OtherLocation, 0.5f);
+				//auto Location = Transform1 - OtherLocation; // Has to be moved physically away so it doesn't get auto-merged
+				//FVector Midpoint = UKismetMathLibrary::VLerp(Transform1, OtherLocation, 0.5f);
 				FTransform TF = conveyorAttachment->GetActorTransform();
-				TF.SetLocation(Midpoint);
+				
+				TF.SetLocation(otherLoc);
+
+				//TF.SetScale3D(FVector(0.0000001, 0.0000001, 0.0000001));
 
 				AFGBuildableSubsystem* Subsystem = AFGBuildableSubsystem::Get(conveyorAttachment);
 				auto beltActor = Subsystem->BeginSpawnBuildable(beltClass, TF);
 
 				beltActor->FinishSpawning(TF);
-				auto belt = Cast<AFGBuildableConveyorBase>(beltActor);
+				auto belt = Cast<AFGBuildableConveyorBelt>(beltActor);
 				if (belt)
 				{
 					belt->mLength = 200;
@@ -289,6 +295,7 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 						factoryConn->SetConnection(belt->GetConnection1());
 						otherConn->SetConnection(belt->GetConnection0());
 					}
+					
 				}
 			}
 		}
