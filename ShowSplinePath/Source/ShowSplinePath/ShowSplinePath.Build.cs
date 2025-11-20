@@ -39,6 +39,6 @@ public class ShowSplinePath : ModuleRules
         if (Target.Type == TargetRules.TargetType.Editor) {
 			PublicDependencyModuleNames.AddRange(new string[] {"OnlineBlueprintSupport", "AnimGraph"});
 		}
-        PublicDependencyModuleNames.AddRange(new string[] {"FactoryGame", "SML"});
+        PublicDependencyModuleNames.AddRange(new string[] {"FactoryGame", "SML", "InstancedSplinesComponent"});
     }
 }

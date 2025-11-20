@@ -6,11 +6,11 @@
 #include "WheeledVehicles/FGTargetPoint.h"
 #include "WheeledVehicles/FGWheeledVehicle.h"
 #include "Components/SplineMeshComponent.h"
+#include "InstancedSplineMeshComponent.h"
 #include "FGManta.h"
 
 #include "SSP_Subsystem.generated.h"
 
-// Forward declarations
 class USSP_RemoteCallObject;
 
 
@@ -29,7 +29,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void HandlePathSplines(AFGDrivingTargetList* targetList, bool show);
 
-	// Helper function to get the RCO
 	class USSP_RemoteCallObject* GetRCO();
 
 	UFUNCTION(BlueprintCallable)
@@ -56,29 +55,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void HideAllVehiclePaths(AActor* actor);
 
-
-
-
-
 	UPROPERTY(BlueprintReadWrite)
 	UStaticMesh* splinePathMesh;
 
 	UPROPERTY(BlueprintReadWrite)
 	UStaticMesh* mantaPathMesh;
 
-	// Store created spline meshes for cleanup
 	UPROPERTY(BlueprintReadWrite)
-	TArray<USplineMeshComponent*> AllCreatedMeshes;
-
-	// Separate arrays for different path types
-	UPROPERTY(BlueprintReadWrite)
-	TArray<USplineMeshComponent*> VehicleMeshes;
+	TMap<AFGDrivingTargetList*, UInstancedSplineMeshComponent*> VehicleMeshComponents;
 
 	UPROPERTY(BlueprintReadWrite)
-	TArray<USplineMeshComponent*> MantaMeshes;
+	TMap<AFGManta*, UInstancedSplineMeshComponent*> MantaMeshComponents;
 
 private:
-	// Flag to prevent recursion when calling SetPathVisible
 	bool bIsUpdatingPathVisibility = false;
 
 };
