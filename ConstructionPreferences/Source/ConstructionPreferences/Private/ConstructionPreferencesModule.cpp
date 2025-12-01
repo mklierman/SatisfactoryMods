@@ -125,7 +125,7 @@ void FConstructionPreferencesModule::StartupModule() {
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Wire.Length");
-			UE_LOGFMT(LogConstructionPreferences, Display, "Wire Length: {0}", length);
+			//UE_LOGFMT(LogConstructionPreferences, Display, "Wire Length: {0}", length);
 			if (!FMath::IsNearlyEqual(length, 100, 0.1)) // Check if default
 			{
 				self->mMaxLength = length * 100;
