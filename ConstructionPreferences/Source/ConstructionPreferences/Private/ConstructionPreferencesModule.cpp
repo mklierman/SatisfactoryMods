@@ -77,7 +77,7 @@ void FConstructionPreferencesModule::StartupModule() {
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.ConveyorBelt.Length");
-			if (!FMath::IsNearlyEqual(length, 5600, 0.1)) // Check if default
+			if (!FMath::IsNearlyEqual(length, 56, 0.1)) // Check if default
 			{
 				self->mMaxSplineLength = length * 100;
 			}
@@ -93,7 +93,7 @@ void FConstructionPreferencesModule::StartupModule() {
 				// Do hypertube stuff
 				//UE_LOGFMT(LogConstructionPreferences, Display, "Hypertube Max Length: {0}", self->mMaxSplineLength);
 				auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Hypertube.Length");
-				if (!FMath::IsNearlyEqual(length, 10000, 0.1)) // Check if default
+				if (!FMath::IsNearlyEqual(length, 100, 0.1)) // Check if default
 				{
 					self->mMaxSplineLength = length * 100;
 				}
@@ -101,7 +101,7 @@ void FConstructionPreferencesModule::StartupModule() {
 			else
 			{
 				auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Pipeline.Length");
-				if (!FMath::IsNearlyEqual(length, 5600, 0.1)) // Check if default
+				if (!FMath::IsNearlyEqual(length, 56, 0.1)) // Check if default
 				{
 					self->mMaxSplineLength = length * 100;
 				}
@@ -113,7 +113,7 @@ void FConstructionPreferencesModule::StartupModule() {
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Railroad.Length");
-			if (!FMath::IsNearlyEqual(length, 10000, 0.1)) // Check if default
+			if (!FMath::IsNearlyEqual(length, 100, 0.1)) // Check if default
 			{
 				self->mMaxLength = length * 100;
 				//UE_LOGFMT(LogConstructionPreferences, Display, "Railroad Max Length: {0}", self->mMaxLength);
@@ -125,15 +125,15 @@ void FConstructionPreferencesModule::StartupModule() {
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Wire.Length");
-			//UE_LOGFMT(LogConstructionPreferences, Display, "Wire Max Length: {0}", self->mMaxLength);
-			if (!FMath::IsNearlyEqual(length, 10000, 0.1)) // Check if default
+			UE_LOGFMT(LogConstructionPreferences, Display, "Wire Length: {0}", length);
+			if (!FMath::IsNearlyEqual(length, 100, 0.1)) // Check if default
 			{
 				self->mMaxLength = length * 100;
 			}
 
 			auto towerLength = SessionSettings->GetFloatOptionValue("ConstructionPreferences.TowerWire.Length");
 			//UE_LOGFMT(LogConstructionPreferences, Display, "Tower Wire Max Length: {0}", self->mMaxPowerTowerLength);
-			if (!FMath::IsNearlyEqual(towerLength, 30000, 0.1)) // Check if default
+			if (!FMath::IsNearlyEqual(towerLength, 300, 0.1)) // Check if default
 			{
 				self->mMaxPowerTowerLength = towerLength * 100;
 			}
