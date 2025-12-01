@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.7",
+	"VersionName": "1.2.0",
 	"FriendlyName": "Quick Blueprint",
 	"Description": "Quickly generate a blueprint from Dismantle mode",
 	"Category": "Modding",
@@ -18,9 +18,9 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.11.1"
+			"SemVersion": "^3.11.3"
 		}
 	],
-	"SemVersion": "1.1.7",
+	"SemVersion": "1.2.0",
 	"GameVersion": ">=416835"
 }
