@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0",
-	"FriendlyName": "NewChat",
+	"VersionName": "1.0.0",
+	"FriendlyName": "New Chat",
 	"Description": "",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby, Deantendo",
@@ -13,5 +13,7 @@
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
-	"Installed": false
+	"Installed": false,
+	"SemVersion": "1.0.0",
+	"GameVersion": ">=416835"
 }
