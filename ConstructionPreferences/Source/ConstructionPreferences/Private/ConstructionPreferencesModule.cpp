@@ -23,6 +23,10 @@
 #include "Hologram/FGBlueprintHologram.h"
 #include <SessionSettings/SessionSettingsManager.h>
 #include <Logging/StructuredLog.h>
+#include "Equipment/FGBuildGunBuild.h"
+#include "Buildables/FGBuildablePoleStackable.h"
+#include "Hologram/FGStackablePoleHologram.h"
+#include "Hologram/FGPipelinePoleHologram.h"
 
 DEFINE_LOG_CATEGORY(LogConstructionPreferences);
 
@@ -36,6 +40,100 @@ float FConstructionPreferencesModule::GetUseDistance(const AFGCharacterPlayer* s
 //#pragma optimize("", on)
 
 void FConstructionPreferencesModule::StartupModule() {
+	SUBSCRIBE_METHOD(UFGBuildGunStateBuild::SetActiveRecipe, [this](auto& scope, UFGBuildGunStateBuild* self, TSubclassOf< class UFGRecipe > recipe)
+		{
+			if (recipe)
+			{
+				auto recipeName = recipe->GetName();
+				UE_LOGFMT(LogConstructionPreferences, Display, "SetActiveRecipe: {0}", recipeName);
+
+				if (recipeName == "Recipe_ConveyorPoleStackable_C")
+				{
+					//Set Hologram Class to vanilla
+					UClass* stackablePoleClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorPoleStackable/Build_ConveyorPoleStackable.Build_ConveyorPoleStackable_C"));
+					UClass* hologramClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/-Shared/Holo_ConveyorStackable.Holo_ConveyorStackable_C"));
+					if (stackablePoleClass && hologramClass)
+					{
+						AFGBuildablePoleStackable* stackable = Cast<AFGBuildablePoleStackable>(stackablePoleClass->GetDefaultObject());
+						stackable->mHologramClass = hologramClass;
+					}
+				}
+				else if (recipeName.StartsWith("Recipe_ConveyorBeltMk"))
+				{
+					USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+					auto beltOption = SessionSettings->GetIntOptionValue("ConstructionPreferences.ConveyorPoleType");
+					if (beltOption == 1)
+					{
+						UClass* stackablePoleClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorPoleStackable/Build_ConveyorPoleStackable.Build_ConveyorPoleStackable_C"));
+						UClass* hologramClass = LoadObject<UClass>(NULL, TEXT("/ConstructionPreferences/Holograms/Holo_Stackable_Belt.Holo_Stackable_Belt_C"));
+						//Set Hologram Class to mods
+						if (stackablePoleClass && hologramClass)
+						{
+							AFGBuildablePoleStackable* stackable = Cast<AFGBuildablePoleStackable>(stackablePoleClass->GetDefaultObject());
+							stackable->mHologramClass = hologramClass;
+						}
+					}
+				}
+				//else if (recipeName == "Recipe_PipeSupportStackable_C")
+				//{
+				//	//Set Hologram Class to vanilla
+				//	UClass* stackablePoleClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupport/Build_PipeSupportStackable.Build_PipeSupportStackable_C"));
+				//	UClass* hologramClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/-Shared/Holo_PipelineStackable.Holo_PipelineStackable_C"));
+				//	if (stackablePoleClass && hologramClass)
+				//	{
+				//		AFGBuildablePoleStackable* stackable = Cast<AFGBuildablePoleStackable>(stackablePoleClass->GetDefaultObject());
+				//		stackable->mHologramClass = hologramClass;
+				//	}
+				//}
+				//else if (recipeName == "Recipe_Pipeline_C" || recipeName == "Recipe_Pipeline_NoIndicator_C" || 
+				//	recipeName == "Recipe_PipelineMK2_C" || recipeName == "Recipe_PipelineMK2_NoIndicator_C")
+				//{
+
+				//	USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+				//	auto pipeOption = SessionSettings->GetIntOptionValue("ConstructionPreferences.PipePoleType");
+				//	if (pipeOption == 1)
+				//	{
+				//		UClass* stackablePoleClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupport/Build_PipeSupportStackable.Build_PipeSupportStackable_C"));
+				//		UClass* hologramClass = LoadObject<UClass>(NULL, TEXT("/ConstructionPreferences/Holograms/Holo_Stackable_Pipeline.Holo_Stackable_Pipeline_C"));
+				//		//Set Hologram Class to mods
+				//		if (stackablePoleClass && hologramClass)
+				//		{
+				//			AFGBuildablePoleStackable* stackable = Cast<AFGBuildablePoleStackable>(stackablePoleClass->GetDefaultObject());
+				//			stackable->mHologramClass = hologramClass;
+				//		}
+				//	}
+				//}
+				//else if (recipeName == "Recipe_HyperPoleStackable_C")
+				//{
+				//	//Set Hologram Class to vanilla
+				//	UClass* stackablePoleClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupport/Build_HyperPoleStackable.Build_HyperPoleStackable_C"));
+				//	UClass* hologramClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/-Shared/Holo_PipelineStackable.Holo_PipelineStackable_C"));
+				//	if (stackablePoleClass && hologramClass)
+				//	{
+				//		AFGBuildablePoleStackable* stackable = Cast<AFGBuildablePoleStackable>(stackablePoleClass->GetDefaultObject());
+				//		stackable->mHologramClass = hologramClass;
+				//	}
+				//}
+				//else if (recipeName == "Recipe_PipeHyper_C")
+				//{
+
+				//	USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+				//	auto pipeOption = SessionSettings->GetIntOptionValue("ConstructionPreferences.HyperTubePoleType");
+				//	UE_LOGFMT(LogConstructionPreferences, Display, "pipeOption: {0}", pipeOption);
+				//	if (pipeOption == 1)
+				//	{
+				//		UClass* stackablePoleClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupport/Build_HyperPoleStackable.Build_HyperPoleStackable_C"));
+				//		UClass* hologramClass = LoadObject<UClass>(NULL, TEXT("/ConstructionPreferences/Holograms/Holo_Stackable_Pipeline.Holo_Stackable_Pipeline_C"));
+				//		//Set Hologram Class to mods
+				//		if (stackablePoleClass && hologramClass)
+				//		{
+				//			AFGBuildablePoleStackable* stackable = Cast<AFGBuildablePoleStackable>(stackablePoleClass->GetDefaultObject());
+				//			stackable->mHologramClass = hologramClass;
+				//		}
+				//	}
+				//}
+			}
+		});
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [this](auto& scope, const AFGCharacterPlayer* self)
 		{
