@@ -243,7 +243,6 @@ void ACL_CounterLimiter::CalculateIPM()
 		//UE_LOG(CounterLimiter_Log, Display, TEXT("CalculateIPM - DisplayIPM: %f"), DisplayIPM);
 		ForceNetUpdate();
 		OnUpdateDisplay.Broadcast(DisplayIPM);
-		UpdateAttachedSigns();
 		mItemCounts.Reset();
 	}
 	else
