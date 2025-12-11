@@ -7,44 +7,46 @@
 ACL_Hologram::ACL_Hologram()
 {
 }
+
 void ACL_Hologram::BeginPlay()
 {
     Super::BeginPlay();
-
 }
+
 void ACL_Hologram::SetHologramLocationAndRotation(const FHitResult& hitResult)
 {
-        AActor* hitActor = hitResult.GetActor();
-        ACL_CounterLimiter* cl = Cast <ACL_CounterLimiter>(hitActor);
-        if (hitActor && cl)
+    AActor* hitActor = hitResult.GetActor();
+    ACL_CounterLimiter* cl = Cast <ACL_CounterLimiter>(hitActor);
+    if (hitActor && cl)
+    {
+        FRotator addedRotation = FRotator(0, 0, 0);
+        if (this->GetRotationStep() != 0)
         {
-            FRotator addedRotation = FRotator(0, 0, 0);
-            if (this->GetRotationStep() != 0)
-            {
-                addedRotation.Yaw = mRotationAmount;
-            }
-            if (hitResult.ImpactNormal.Z <= -0.75)
-            {
-                SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, -200), cl->GetActorRotation() + addedRotation);
-                this->mSnappedBuilding = cl;
-                this->CheckValidPlacement();
-            }
-            else if (hitResult.ImpactNormal.Z >= 0.75)
-            {
-                SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, 200), cl->GetActorRotation() + addedRotation);
-                this->mSnappedBuilding = cl;
-                this->CheckValidPlacement();
-            }
-            else
-            {
-                Super::SetHologramLocationAndRotation(hitResult);
-            }
+            addedRotation.Yaw = mRotationAmount;
         }
-    else 
+        if (hitResult.ImpactNormal.Z <= -0.75)
         {
+            SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, -200), cl->GetActorRotation() + addedRotation);
+            this->mSnappedBuilding = cl;
+            this->CheckValidPlacement();
+        }
+        else if (hitResult.ImpactNormal.Z >= 0.75)
+        {
+            SetActorLocationAndRotation(cl->GetActorLocation() + FVector(0, 0, 200), cl->GetActorRotation() + addedRotation);
+            this->mSnappedBuilding = cl;
+            this->CheckValidPlacement();
+        }
+        else
+        {
+            Super::SetHologramLocationAndRotation(hitResult);
+        }
+    }
+    else
+    {
         Super::SetHologramLocationAndRotation(hitResult);
     }
 }
+
 bool ACL_Hologram::IsValidHitResult(const FHitResult& hitResult) const
 {
     AActor* hitActor = hitResult.GetActor();
@@ -55,9 +57,9 @@ bool ACL_Hologram::IsValidHitResult(const FHitResult& hitResult) const
     }
     return Super::IsValidHitResult(hitResult);
 }
+
 void ACL_Hologram::Scroll(int32 delta)
 {
-    //Super::SetScrollMode(EHologramScrollMode::HSM_ROTATE);
     if (GetSnappedBuilding() && Cast<ACL_CounterLimiter>(GetSnappedBuilding()))
     {
         auto pContr = this->GetNetOwningPlayer()->GetPlayerController(GetWorld());
@@ -77,9 +79,8 @@ void ACL_Hologram::Scroll(int32 delta)
         Super::Scroll(delta);
     }
 }
-//#pragma optimize("", on)
 
-#pragma optimize("", off)
+//#pragma optimize("", off)
 void ACL_Hologram::ConfigureComponents(AFGBuildable* inBuildable) const
 {
 	Super::ConfigureComponents(inBuildable);
@@ -124,4 +125,4 @@ void ACL_Hologram::ConfigureComponents(AFGBuildable* inBuildable) const
 		}
 	}
 }
-#pragma optimize("", on)
+//#pragma optimize("", on)

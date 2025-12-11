@@ -34,9 +34,6 @@ public:
 
 	float GetSecondsPerItem();
 
-	//UFUNCTION(BlueprintImplementableEvent)
-	void UpdateAttachedSigns();
-
 	UFGInventoryComponent* GetBufferInventory();
 
 
@@ -85,7 +82,7 @@ public:
 	float GetThroughputLimit();
 
 	UFUNCTION(BlueprintPure)
-		float GetCurrentIPM();
+	float GetCurrentIPM();
 
 
 	UFUNCTION()
@@ -96,13 +93,13 @@ public:
 
 	//FIN Functions
 	UFUNCTION()
-		void netFunc_SetThroughputLimit(float newLimit);
+	void netFunc_SetThroughputLimit(float newLimit);
 
 	UFUNCTION()
-		float netFunc_GetThroughputLimit();
+	float netFunc_GetThroughputLimit();
 
 	UFUNCTION()
-		float netFunc_GetCurrentIPM();
+	float netFunc_GetCurrentIPM();
 
 private:
 	friend class AFGAttachmentSplitterHologram;
