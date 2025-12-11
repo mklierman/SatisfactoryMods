@@ -13,7 +13,7 @@
 
 
 DEFINE_LOG_CATEGORY(PersistentPaintables_Log);
-#pragma optimize("", off)
+//#pragma optimize("", off)
 void FPersistentPaintablesModule::ApplyColor(AFGBuildable* buildable, UClass* inSwatchClass, FFactoryCustomizationData customizationData)
 {
 	if (buildable && buildable->GetCanBeColored_Implementation())
@@ -490,45 +490,6 @@ void FPersistentPaintablesModule::HookPipes()
 			}
 		});
 	UFGPipeConnectionComponent* pcb = GetMutableDefault<UFGPipeConnectionComponent>();
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(UFGPipeConnectionComponent::BeginPlay, pcb, [this](UFGPipeConnectionComponent* self)
-		{
-			/*if (self)
-			{
-				USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
-				auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
-				if (optionValue)
-				{
-					auto PipeConnComp = Cast<UFGPipeConnectionComponent>(self);
-					if (PipeConnComp)
-					{
-						auto pipeNetworkId = PipeConnComp->GetPipeNetworkID();
-						auto pipeSubsystem = AFGPipeSubsystem::Get(self->GetWorld());
-						if (pipeSubsystem)
-						{
-							auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
-							if (network)
-							{
-								AsyncTask(ENamedThreads::GameThread, [=, this]() {
-									this->UpdateNetworkColor(network);
-									});
-							}
-						}
-					}
-				}
-			}*/
-		});
-	//TrySetFluidDescriptor(TSubclassOf< UFGItemDescriptor > newItemDescriptor);
-	//SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::TrySetFluidDescriptor, [this](AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > newItemDescriptor)
-	//	{
-	//		USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
-	//		auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
-	//		if (optionValue)
-	//		{
-	//			AsyncTask(ENamedThreads::GameThread, [=, this]() {
-	//				this->UpdateNetworkColor(self);
-	//				});
-	//		}
-	//	});
 
 	AFGPipeNetwork* pn = GetMutableDefault<AFGPipeNetwork>();
 
@@ -543,42 +504,6 @@ void FPersistentPaintablesModule::HookPipes()
 					this->UpdateNetworkColor(self);
 					});
 			}
-		});
-
-	SUBSCRIBE_METHOD_AFTER(AFGPipeNetwork::AddFluidIntegrant, [this](AFGPipeNetwork* self, class IFGFluidIntegrantInterface* fluidIntegrant)
-		{
-			//if (self)
-			//{
-			//	USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
-			//	auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
-			//	//FPersistentPaintables_ConfigStruct config = FPersistentPaintables_ConfigStruct::GetActiveConfig(self->GetWorld());
-			//	if (optionValue)
-			//	{
-			//		//auto startTime = FDateTime::Now();
-			//		auto pipeBase = Cast<UFGPipeConnectionComponentBase>(fluidIntegrant);
-			//		if (pipeBase && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_CONSUMER && pipeBase->GetPipeConnectionType() != EPipeConnectionType::PCT_PRODUCER)
-			//		{
-			//			auto pipeCons = fluidIntegrant->GetPipeConnections();
-			//			if (pipeCons.Num() > 0)
-			//			{
-			//				if (auto owner = pipeCons[0]->GetOwner())
-			//				{
-			//					if (auto buildable = Cast<AFGBuildablePipeline>(owner))
-			//					{
-
-			//						AsyncTask(ENamedThreads::GameThread, [=, this]() {
-			//							UpdateColorSingle(buildable, self);
-			//							});
-			//					}
-			//				}
-			//			}
-			//		}
-
-			//		//auto endTime = FDateTime::Now();
-			//		//auto elapsedTime = endTime - startTime;
-			//		//UE_LOGFMT(PersistentPaintables_Log, Display, "AFGPipeNetwork::AddFluidIntegrant time elapsed: {0}", elapsedTime);
-			//	}
-			//}
 		});
 
 	AFGBuildableHologram* hg = GetMutableDefault<AFGBuildableHologram>();
@@ -602,6 +527,6 @@ void FPersistentPaintablesModule::HookPipes()
 #endif
 }
 
-#pragma optimize("", on)
+//#pragma optimize("", on)
 
 IMPLEMENT_GAME_MODULE(FPersistentPaintablesModule, PersistentPaintables);
