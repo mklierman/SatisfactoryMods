@@ -40,6 +40,7 @@ float FConstructionPreferencesModule::GetUseDistance(const AFGCharacterPlayer* s
 //#pragma optimize("", on)
 
 void FConstructionPreferencesModule::StartupModule() {
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD(UFGBuildGunStateBuild::SetActiveRecipe, [this](auto& scope, UFGBuildGunStateBuild* self, TSubclassOf< class UFGRecipe > recipe)
 		{
 			if (recipe)
@@ -134,7 +135,6 @@ void FConstructionPreferencesModule::StartupModule() {
 				//}
 			}
 		});
-#if !WITH_EDITOR
 	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [this](auto& scope, const AFGCharacterPlayer* self)
 		{
 			float result = scope(self);
