@@ -1,30 +1,43 @@
 #include "PersistentPaintablesModule.h"
-#include "SessionSettings/SessionSettingsManager.h"
-#include <Buildables/FGBuildableFoundation.h>
-#include "FGLightweightBuildableSubsystem.h"
-#include <Logging/StructuredLog.h>
-#include "Hologram/FGFoundationHologram.h"
-#include <PP_ActorComponent.h>
-#include <Kismet/GameplayStatics.h>
-#include "FGPipeSubsystem.h"
-#include "Buildables/FGBuildablePoleStackable.h"
-#include <FGBuildablePolePipe.h>
-#include "Buildables/FGBuildable.h"
 
+#include "Buildables/FGBuildable.h"
+#include "Buildables/FGBuildablePoleStackable.h"
+#include "FGLightweightBuildableSubsystem.h"
+#include "FGPipeSubsystem.h"
+#include "Hologram/FGFoundationHologram.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "PP_ActorComponent.h"
+#include "Resources/FGItemDescriptor.h"
+#include "SessionSettings/SessionSettingsManager.h"
+#include "Subsystem/ModSubsystem.h"
+#include "Subsystem/SubsystemActorManager.h"
+#include "Buildables/FGBuildable.h"
+#include <Logging/StructuredLog.h>
+
+#include <FGBuildablePolePipe.h>
+#include <Buildables/FGBuildableFoundation.h>
 
 DEFINE_LOG_CATEGORY(PersistentPaintables_Log);
-//#pragma optimize("", off)
+
+// Local constants to avoid magic numbers
+static constexpr float SUPPORT_DIST = 5.0f;                 // distance threshold used for "nearby" checks
+static constexpr float SUPPORT_DIST_SQ = SUPPORT_DIST * SUPPORT_DIST; // squared threshold so we don't call sqrt
+static constexpr float NEARBY_SUPPORT_SEARCH_RADIUS = 5.0f;
+
+// Helper: apply color to a buildable
+// Sets the swatch on the actor and calls the buildable's apply/set methods.
 void FPersistentPaintablesModule::ApplyColor(AFGBuildable* buildable, UClass* inSwatchClass, FFactoryCustomizationData customizationData)
 {
 	if (buildable && buildable->GetCanBeColored_Implementation())
 	{
+		// Mark this as a custom-painted buildable and push the data down to the actor
 		buildable->mColorSlot = 255;
 		buildable->mDefaultSwatchCustomizationOverride = inSwatchClass;
 		buildable->ApplyCustomizationData_Implementation(customizationData);
 		buildable->SetCustomizationData_Implementation(customizationData);
 	}
 }
-
 
 TArray<AActor*> FPersistentPaintablesModule::FindNearbySupports(AFGBuildable* pipe, UFGPipeConnectionComponentBase* pipeConn)
 {
@@ -38,125 +51,126 @@ TArray<AActor*> FPersistentPaintablesModule::FindNearbySupports(AFGBuildable* pi
 	ignoreActors.Init(pipe, 1);
 
 	TArray<AActor*> outActors;
-	outActors.Reserve(8); // small expected number
-	TArray<UPrimitiveComponent*> outComponents;
-	TArray<FHitResult> outHits;
 
-	float radius = 5.0f;
-
-	UClass* seekClass = AActor::StaticClass(); // NULL;
-	UKismetSystemLibrary::SphereOverlapActors(pipe->GetWorld(), connLoc, radius, traceObjectTypes, seekClass, ignoreActors, outActors);
+	UClass* seekClass = AActor::StaticClass();
+	UKismetSystemLibrary::SphereOverlapActors(pipe->GetWorld(), connLoc, NEARBY_SUPPORT_SEARCH_RADIUS, traceObjectTypes, seekClass, ignoreActors, outActors);
 
 	return outActors;
 }
 
-void FPersistentPaintablesModule::AFGBuildableHologramConstruct(AFGBuildableHologram* self)
-{
-}
-
 void FPersistentPaintablesModule::UpdateNetworkColor(AFGPipeNetwork* pipeNetwork)
 {
-	if (pipeNetwork && pipeNetwork->mFluidIntegrants.Num() > 0)
+	if (!pipeNetwork || pipeNetwork->mFluidIntegrants.Num() == 0)
 	{
-		TArray<AActor*> FoundActors;
-		UGameplayStatics::GetAllActorsOfClass(pipeNetwork->GetWorld(), wallHoleClass, FoundActors);
-		PotentialSupports = FoundActors;
-		UGameplayStatics::GetAllActorsOfClass(pipeNetwork->GetWorld(), floorHoleClass, FoundActors);
-		PotentialSupports.Append(FoundActors);
-		UGameplayStatics::GetAllActorsOfClass(pipeNetwork->GetWorld(), wallSupportClass, FoundActors);
-		PotentialSupports.Append(FoundActors);
-		UGameplayStatics::GetAllActorsOfClass(pipeNetwork->GetWorld(), pipeSupportClass, FoundActors);
-		PotentialSupports.Append(FoundActors);
-		UGameplayStatics::GetAllActorsOfClass(pipeNetwork->GetWorld(), AFGBuildablePoleStackable::StaticClass(), FoundActors);
-		PotentialSupports.Append(FoundActors);
+		return;
+	}
 
-		USessionSettingsManager* SessionSettings = pipeNetwork->GetWorld()->GetSubsystem<USessionSettingsManager>();
-		auto PaintAttachments = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintAttachments");
-		if (PaintAttachments)
-		{
-			UGameplayStatics::GetAllActorsOfClass(pipeNetwork->GetWorld(), AFGBuildablePipelineAttachment::StaticClass(), FoundActors);
-			PotentialSupports.Append(FoundActors);
-		}
+	// Collect potential supports once per network update so we don't repeatedly call GetAllActorsOfClass
+	TArray<AActor*> FoundActors;
 
-		// Avoid repeated reallocations when copying to weak list
-		WeakPotentialSupports.Empty();
-		WeakPotentialSupports.Reserve(PotentialSupports.Num());
-		for (auto& pot : PotentialSupports)
-		{
-			if (IsValid(pot))
-			{
-				WeakPotentialSupports.Add(pot);
-			}
-		}
+	UGameplayStatics::GetAllActorsOfClass(pipeNetwork->GetWorld(), wallHoleClass, FoundActors);
+	PotentialSupports = FoundActors;
 
-		for (auto& fi : pipeNetwork->mFluidIntegrants)
+	UGameplayStatics::GetAllActorsOfClass(pipeNetwork->GetWorld(), floorHoleClass, FoundActors);
+	PotentialSupports.Append(FoundActors);
+
+	UGameplayStatics::GetAllActorsOfClass(pipeNetwork->GetWorld(), wallSupportClass, FoundActors);
+	PotentialSupports.Append(FoundActors);
+
+	UGameplayStatics::GetAllActorsOfClass(pipeNetwork->GetWorld(), pipeSupportClass, FoundActors);
+	PotentialSupports.Append(FoundActors);
+
+	UGameplayStatics::GetAllActorsOfClass(pipeNetwork->GetWorld(), AFGBuildablePoleStackable::StaticClass(), FoundActors);
+	PotentialSupports.Append(FoundActors);
+
+	USessionSettingsManager* SessionSettings = pipeNetwork->GetWorld()->GetSubsystem<USessionSettingsManager>();
+	auto PaintAttachments = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintAttachments");
+	if (PaintAttachments)
+	{
+		UGameplayStatics::GetAllActorsOfClass(pipeNetwork->GetWorld(), AFGBuildablePipelineAttachment::StaticClass(), FoundActors);
+		PotentialSupports.Append(FoundActors);
+	}
+
+	WeakPotentialSupports.Empty();
+	WeakPotentialSupports.Reserve(PotentialSupports.Num());
+	for (auto& pot : PotentialSupports)
+	{
+		if (IsValid(pot))
 		{
-			auto buildable = Cast< AFGBuildable>(fi);
-			UpdateColorSingle(buildable, pipeNetwork);
+			WeakPotentialSupports.Add(pot);
 		}
+	}
+
+	// Color every fluid integrant in this network
+	for (auto& fi : pipeNetwork->mFluidIntegrants)
+	{
+		auto buildable = Cast<AFGBuildable>(fi);
+		UpdateColorSingle(buildable, pipeNetwork);
 	}
 }
 
 void FPersistentPaintablesModule::UpdateColorSingle(AFGBuildable* buildable, AFGPipeNetwork* pipeNetwork)
 {
-	if (pipeNetwork)
+	if (!pipeNetwork || !buildable)
 	{
-		auto desc = pipeNetwork->GetFluidDescriptor();
-		if (desc != nullptr && buildable)
+		return;
+	}
+
+	if (!buildable->GetCanBeColored_Implementation())
+	{
+		return;
+	}
+
+	auto desc = pipeNetwork->GetFluidDescriptor();
+	if (!desc)
+	{
+		return;
+	}
+
+	auto pipe = Cast<AFGBuildablePipeline>(buildable);
+	auto junction = Cast<AFGBuildablePipelineJunction>(buildable);
+	auto attachment = Cast<AFGBuildablePipelineAttachment>(buildable);
+
+	if (!(pipe || junction || attachment))
+	{
+		return;
+	}
+
+	auto fluidColor = UFGItemDescriptor::GetFluidColorLinear(pipeNetwork->GetFluidDescriptor());
+
+			// Build the customization data to apply
+			FFactoryCustomizationData newData;
+			newData.SwatchDesc = swatchClass;
+			newData.ColorSlot = 255;
+			newData.OverrideColorData.PrimaryColor = fluidColor;
+			newData.OverrideColorData.SecondaryColor = fluidColor;
+			newData.Data = buildable->mCustomizationData.Data;
+			newData.ExtraData = buildable->mCustomizationData.ExtraData;
+			newData.NeedsSkinUpdate = true;
+ 
+	UWorld* World = buildable->GetWorld();
+	USessionSettingsManager* SessionSettings = World->GetSubsystem<USessionSettingsManager>();
+	auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipesMetallic");
+	if (optionValue)
+	{
+		static UClass* CachedPaintFinishClass = nullptr;
+		if (!CachedPaintFinishClass)
 		{
-			// Cheap early-out: if buildable cannot be colored, skip everything
-			if (!buildable->GetCanBeColored_Implementation())
-			{
-				return;
-			}
-
-			auto pipe = Cast<AFGBuildablePipeline>(buildable);
-			auto junction = Cast<AFGBuildablePipelineJunction>(buildable);
-			auto attachment = Cast < AFGBuildablePipelineAttachment>(buildable);
-
-			if (pipe || junction || attachment)
-			{
-				auto fluidColor = UFGItemDescriptor::GetFluidColorLinear(pipeNetwork->GetFluidDescriptor());
-
-				if (buildable->mDefaultSwatchCustomizationOverride == swatchClass &&
-					buildable->mCustomizationData.OverrideColorData.PrimaryColor.Equals(fluidColor, 0.001f))
-				{
-					return;
-				}
-
-				FFactoryCustomizationData newData;
-				newData.SwatchDesc = swatchClass;
-				newData.ColorSlot = 255;
-				newData.OverrideColorData.PrimaryColor = fluidColor;
-				newData.OverrideColorData.SecondaryColor = fluidColor;
-				newData.Data = buildable->mCustomizationData.Data;
-				newData.ExtraData = buildable->mCustomizationData.ExtraData;
-				newData.NeedsSkinUpdate = true;
-
-				UWorld* World = buildable->GetWorld();
-				USessionSettingsManager* SessionSettings = World->GetSubsystem<USessionSettingsManager>();
-				auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipesMetallic");
-				if (optionValue)
-				{
-					static UClass* CachedPaintFinishClass = nullptr;
-					if (!CachedPaintFinishClass)
-					{
-						CachedPaintFinishClass = LoadObject<UClass>(nullptr, TEXT("/PersistentPaintables/PersistentPaintables_CustomFinish.PersistentPaintables_CustomFinish_C"));
-					}
-					if (CachedPaintFinishClass)
-					{
-						newData.OverrideColorData.PaintFinish = CachedPaintFinishClass;
-					}
-				}
-
-				ApplyColor(buildable, swatchClass, newData);
-				if (pipe)
-				{
-					// Use the original support-coloring logic (cheaper than world-overlap queries)
-					ColorSupports(pipe, newData);
-				}
-			}
+			CachedPaintFinishClass = LoadObject<UClass>(nullptr, TEXT("/PersistentPaintables/PersistentPaintables_CustomFinish.PersistentPaintables_CustomFinish_C"));
 		}
+		if (CachedPaintFinishClass)
+		{
+			newData.OverrideColorData.PaintFinish = CachedPaintFinishClass;
+		}
+	}
+
+	// Apply to the buildable itself first
+	ApplyColor(buildable, swatchClass, newData);
+
+	// If this is a pipeline actor, try to color connected supports as well
+	if (pipe)
+	{
+		ColorSupports(pipe, newData);
 	}
 }
 
@@ -166,62 +180,69 @@ void FPersistentPaintablesModule::ColorConnectedSupports(AFGBuildablePipeline* p
 	{
 		return;
 	}
+
 	USessionSettingsManager* SessionSettings = pipe->GetWorld()->GetSubsystem<USessionSettingsManager>();
 	auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintSupports");
-	if (optionValue)
+	if (!optionValue)
 	{
-		for (auto weakActor : WeakPotentialSupports)
+		return;
+	}
+
+	for (auto weakActor : WeakPotentialSupports)
+	{
+		if (!weakActor.IsValid())
 		{
-			if (weakActor.IsValid())
+			continue;
+		}
+
+		auto actor = weakActor.Get();
+
+		for (auto conn : pipe->mPipeConnections)
+		{
+			if (!IsValid(conn) || !IsValid(actor))
 			{
-				auto actor = weakActor.Get();
-				for (auto conn : pipe->mPipeConnections)
+				continue;
+			}
+
+			auto connLocation = conn->GetConnectorLocation();
+
+			// Fast check against actor origin
+			float actorDistSq = FVector::DistSquared(connLocation, actor->GetActorLocation());
+			if (actorDistSq <= SUPPORT_DIST_SQ)
+			{
+				auto buildable = Cast<AFGBuildable>(actor);
+				if (buildable)
 				{
-					if (IsValid(conn) && IsValid(actor))
+					ApplyColor(buildable, swatchClass, newData);
+				}
+				continue;
+			}
+
+			// Inspect actor components for pipe connection components and compare connector positions
+			TArray<UActorComponent*> components;
+			actor->GetComponents(components);
+			for (auto* component : components)
+			{
+				if (!component || !IsValid(component))
+				{
+					continue;
+				}
+
+				auto pipeConnection = Cast<UFGPipeConnectionComponent>(component);
+				if (!pipeConnection || !IsValid(pipeConnection))
+				{
+					continue;
+				}
+
+				float distSq = FVector::DistSquared(connLocation, pipeConnection->GetConnectorLocation());
+				if (distSq <= SUPPORT_DIST_SQ)
+				{
+					auto buildable = Cast<AFGBuildable>(actor);
+					if (buildable)
 					{
-						auto connLocation = conn->GetConnectorLocation();
-						if (!actor)
-						{
-							break;
-						}
-						auto actorLocation = actor->GetActorLocation();
-						bool isNearActor = FVector::PointsAreNear(connLocation, actorLocation, 5);
-						if (isNearActor)
-						{
-							auto buildable = Cast<AFGBuildable>(actor);
-							if (buildable)
-							{
-								ApplyColor(buildable, swatchClass, newData);
-							}
-						}
-						else
-						{
-							TSet<UActorComponent*> components = actor->GetComponents();
-							TSet<UActorComponent*> componentsCopy(components);
-							if (!componentsCopy.IsEmpty())
-							{
-								for (auto component : componentsCopy)
-								{
-									if (component && IsValid(component))
-									{
-										auto pipeConnection = Cast< UFGPipeConnectionComponent>(component);
-										if (pipeConnection && IsValid(pipeConnection))
-										{
-											//Make sure it is actually near the connection
-											auto supportLocation = pipeConnection->GetConnectorLocation();
-											bool isNear = FVector::PointsAreNear(connLocation, supportLocation, 5);
-											auto dist = FVector::Distance(connLocation, supportLocation);
-											if (isNear)
-											{
-												auto buildable = Cast<AFGBuildable>(actor);
-												ApplyColor(buildable, swatchClass, newData);
-											}
-										}
-									}
-								}
-							}
-						}
+						ApplyColor(buildable, swatchClass, newData);
 					}
+					break;
 				}
 			}
 		}
@@ -248,35 +269,32 @@ void FPersistentPaintablesModule::ColorSupports(AFGBuildablePipeline* pipe, FFac
 				{
 					ApplyColor(pipeSupport, swatchClass, newData);
 				}
-				else if (auto newPipe = Cast<AFGBuildablePipeline>(owner)) // Might be connected to a pipe through a support
+				else if (auto newPipe = Cast<AFGBuildablePipeline>(owner))
 				{
 					auto supports = FindNearbySupports(pipe, conn);
-					if (supports.Num() > 0)
+					for (auto& support : supports)
 					{
-						for (auto& support : supports)
+						if (auto fgpipeSupport = Cast<AFGBuildable>(support))
 						{
-							if (auto fgpipeSupport = Cast<AFGBuildable>(support))
+							if (Cast<AFGBuildablePoleStackable>(fgpipeSupport) || fgpipeSupport->GetClass() == pipeSupportClass || fgpipeSupport->GetClass() == wallHoleClass || fgpipeSupport->GetClass() == floorHoleClass || fgpipeSupport->GetClass() == wallSupportClass)
 							{
-								if (auto pipeSupport2 = Cast<AFGBuildablePoleStackable>(fgpipeSupport) || fgpipeSupport->GetClass() == pipeSupportClass || fgpipeSupport->GetClass() == wallHoleClass || fgpipeSupport->GetClass() == floorHoleClass || fgpipeSupport->GetClass() == wallSupportClass)
-								{
-									ApplyColor(fgpipeSupport, swatchClass, newData);
-								}
+								ApplyColor(fgpipeSupport, swatchClass, newData);
 							}
-							else if (auto aim = Cast<AAbstractInstanceManager>(support))
+						}
+						else if (auto aim = Cast<AAbstractInstanceManager>(support))
+						{
+							for (auto& instance : aim->InstanceMap)
 							{
-								for (auto& instance : aim->InstanceMap)
+								FString keyStr = instance.Key.ToString();
+								if (keyStr.StartsWith("SM_PipelineSupport"))
 								{
-									FString keyStr = instance.Key.ToString();
-									if (keyStr.StartsWith("SM_PipelineSupport"))
+									for (auto& ihandle : instance.Value.InstanceHandles)
 									{
-										for (auto& ihandle : instance.Value.InstanceHandles)
+										for (auto& handle : ihandle.Value)
 										{
-											for (auto& handle : ihandle.Value)
+											if (auto wallSupport = Cast<AFGBuildable>(handle->GetOwner()))
 											{
-												if (auto wallSupport = Cast<AFGBuildable>(handle->GetOwner()))
-												{
-													ApplyColor(wallSupport, swatchClass, newData);
-												}
+												ApplyColor(wallSupport, swatchClass, newData);
 											}
 										}
 									}
@@ -287,14 +305,14 @@ void FPersistentPaintablesModule::ColorSupports(AFGBuildablePipeline* pipe, FFac
 				}
 			}
 		}
-		else //Connection isn't connected to anything. May be connected to a support
+		else
 		{
 			auto supports = FindNearbySupports(pipe, conn);
 			for (auto& support : supports)
 			{
 				if (auto fgpipeSupport = Cast<AFGBuildable>(support))
 				{
-					if (auto pipeSupport = Cast<AFGBuildablePoleStackable>(fgpipeSupport) || fgpipeSupport->GetClass() == pipeSupportClass || fgpipeSupport->GetClass() == wallHoleClass || fgpipeSupport->GetClass() == floorHoleClass || fgpipeSupport->GetClass() == wallSupportClass)
+					if (Cast<AFGBuildablePoleStackable>(fgpipeSupport) || fgpipeSupport->GetClass() == pipeSupportClass || fgpipeSupport->GetClass() == wallHoleClass || fgpipeSupport->GetClass() == floorHoleClass || fgpipeSupport->GetClass() == wallSupportClass)
 					{
 						ApplyColor(fgpipeSupport, swatchClass, newData);
 					}
@@ -317,12 +335,10 @@ void FPersistentPaintablesModule::ColorSupports(AFGBuildablePipeline* pipe, FFac
 										{
 											if (auto pipeConnection = Cast<UFGPipeConnectionComponent>(component))
 											{
-												//Make sure it is actually near the connection
 												auto connLocation = conn->GetConnectorLocation();
 												auto supportLocation = pipeConnection->GetConnectorLocation();
-												// Use squared distance to avoid sqrt
 												float distSq = FVector::DistSquared(connLocation, supportLocation);
-												if (distSq <= 25.0f) // 5 units squared
+												if (distSq <= SUPPORT_DIST_SQ)
 												{
 													ApplyColor(wallSupport, swatchClass, newData);
 												}
@@ -338,7 +354,6 @@ void FPersistentPaintablesModule::ColorSupports(AFGBuildablePipeline* pipe, FFac
 		}
 	}
 }
-
 
 void FPersistentPaintablesModule::StartupModule() {
 
@@ -463,7 +478,6 @@ void FPersistentPaintablesModule::AddBuildable(AFGBuildable* buildable, const AF
 void FPersistentPaintablesModule::HookPipes()
 {
 #if !WITH_EDITOR
-	//UFGPipeConnectionComponent::OnFluidDescriptorUpdated_GameThread
 	SUBSCRIBE_METHOD_AFTER(UFGPipeConnectionComponent::OnFluidDescriptorUpdated_GameThread, [this](UFGPipeConnectionComponent* self)
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
@@ -493,13 +507,13 @@ void FPersistentPaintablesModule::HookPipes()
 
 	AFGPipeNetwork* pn = GetMutableDefault<AFGPipeNetwork>();
 
+	// When a pipe network starts we want to color it once if the option is enabled.
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGPipeNetwork::BeginPlay, pn, [this](AFGPipeNetwork* self)
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
 			if (optionValue)
 			{
-				//UE_LOG(PersistentPaintables_Log, Display, TEXT("AFGPipeNetwork::UpdateFluidDescriptor"));
 				AsyncTask(ENamedThreads::GameThread, [=, this]() {
 					this->UpdateNetworkColor(self);
 					});
@@ -526,7 +540,5 @@ void FPersistentPaintablesModule::HookPipes()
 		});
 #endif
 }
-
-//#pragma optimize("", on)
 
 IMPLEMENT_GAME_MODULE(FPersistentPaintablesModule, PersistentPaintables);
