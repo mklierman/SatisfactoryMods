@@ -11,6 +11,8 @@ public class ConstructionPreferences : ModuleRules
 
         CppStandard = CppStandardVersion.Cpp20;
 
+		bUseUnity = false;
+
         //SML transitive dependencies
         PublicDependencyModuleNames.AddRange(new[] {
             "Json",
