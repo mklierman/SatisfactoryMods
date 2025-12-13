@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Subsystem/ModSubsystem.h"
 #include "FGSaveInterface.h"
+#include "Hologram/FGHologramBuildModeDescriptor.h"
+#include "FGRecipe.h"
 #include "CP_Subsystem.generated.h"
 
 USTRUCT(BlueprintType, Category = "Construction Preferences")
