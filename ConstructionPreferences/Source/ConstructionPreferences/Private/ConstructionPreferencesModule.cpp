@@ -27,6 +27,7 @@
 #include "Buildables/FGBuildablePoleStackable.h"
 #include "Hologram/FGStackablePoleHologram.h"
 #include "Hologram/FGPipelinePoleHologram.h"
+#include "CP_GameInstanceModule.h"
 
 DEFINE_LOG_CATEGORY(LogConstructionPreferences);
 
@@ -43,36 +44,24 @@ void FConstructionPreferencesModule::StartupModule() {
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD(UFGBuildGunStateBuild::SetActiveRecipe, [this](auto& scope, UFGBuildGunStateBuild* self, TSubclassOf< class UFGRecipe > recipe)
 		{
-			if (recipe)
-			{
+			if (!IsValid(recipe)) {
+				return;
+			}
+			if (UCP_GameInstanceModule* CP_Instance = UCP_GameInstanceModule::Get(GWorld)) {
 				auto recipeName = recipe->GetName();
 				UE_LOGFMT(LogConstructionPreferences, Display, "SetActiveRecipe: {0}", recipeName);
 
-				if (recipeName == "Recipe_ConveyorPoleStackable_C")
-				{
+				if (recipe == CP_Instance->Recipe_ConveyorPoleStackable) {
 					//Set Hologram Class to vanilla
-					UClass* stackablePoleClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorPoleStackable/Build_ConveyorPoleStackable.Build_ConveyorPoleStackable_C"));
-					UClass* hologramClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/-Shared/Holo_ConveyorStackable.Holo_ConveyorStackable_C"));
-					if (stackablePoleClass && hologramClass)
-					{
-						AFGBuildablePoleStackable* stackable = Cast<AFGBuildablePoleStackable>(stackablePoleClass->GetDefaultObject());
-						stackable->mHologramClass = hologramClass;
-					}
-				}
-				else if (recipeName.StartsWith("Recipe_ConveyorBeltMk"))
-				{
+					AFGBuildablePoleStackable* Stackable = CP_Instance->Build_ConveyorPoleStackable.GetDefaultObject();
+					Stackable->mHologramClass = CP_Instance->Holo_ConveyorStackable;
+				} else if (CP_Instance->ConveyorBeltRecipes.Contains(recipe)) {
 					USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 					auto beltOption = SessionSettings->GetIntOptionValue("ConstructionPreferences.ConveyorPoleType");
-					if (beltOption == 1)
-					{
-						UClass* stackablePoleClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/ConveyorPoleStackable/Build_ConveyorPoleStackable.Build_ConveyorPoleStackable_C"));
-						UClass* hologramClass = LoadObject<UClass>(NULL, TEXT("/ConstructionPreferences/Holograms/Holo_Stackable_Belt.Holo_Stackable_Belt_C"));
+					if (beltOption == 1) {
 						//Set Hologram Class to mods
-						if (stackablePoleClass && hologramClass)
-						{
-							AFGBuildablePoleStackable* stackable = Cast<AFGBuildablePoleStackable>(stackablePoleClass->GetDefaultObject());
-							stackable->mHologramClass = hologramClass;
-						}
+						AFGBuildablePoleStackable* Stackable = CP_Instance->Build_ConveyorPoleStackable.GetDefaultObject();
+						Stackable->mHologramClass = CP_Instance->Holo_CP_Stackable_Belt;
 					}
 				}
 				//else if (recipeName == "Recipe_PipeSupportStackable_C")
