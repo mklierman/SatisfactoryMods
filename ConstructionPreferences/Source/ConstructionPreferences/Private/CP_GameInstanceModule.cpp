@@ -89,10 +89,10 @@ void UCP_GameInstanceModule::ScanOneRecipe(TSubclassOf<UFGRecipe> Recipe)
 			return;
 		}
 		if (BuildableClass->IsChildOf<AFGBuildableConveyorBelt>()) {
-			UE_LOG(LogConstructionPreferences, Warning, TEXT("Recipe '%s' is a conveyor recipe"), *RecipeCDO->GetName());
+			//UE_LOG(LogConstructionPreferences, Warning, TEXT("Recipe '%s' is a conveyor recipe"), *RecipeCDO->GetName());
 			ConveyorBeltRecipes.Add(Recipe);
 		}
-		UE_LOG(LogConstructionPreferences, Error, TEXT("Recipe '%s' buildable class %s"), *RecipeCDO->GetName(), *BuildableClass->GetName());
+		//UE_LOG(LogConstructionPreferences, Error, TEXT("Recipe '%s' buildable class %s"), *RecipeCDO->GetName(), *BuildableClass->GetName());
 	}
 }
 
@@ -100,7 +100,7 @@ void UCP_GameInstanceModule::DispatchLifecycleEvent(ELifecyclePhase Phase)
 {
 	Super::DispatchLifecycleEvent(Phase);
 
-	UE_LOG(LogConstructionPreferences, Error, TEXT("HELLO"));
+	//UE_LOG(LogConstructionPreferences, Error, TEXT("HELLO"));
 
 	if (Phase == ELifecyclePhase::POST_INITIALIZATION) {
 		StackablePoleCDO = Build_ConveyorPoleStackable.GetDefaultObject();
@@ -111,12 +111,12 @@ void UCP_GameInstanceModule::DispatchLifecycleEvent(ELifecyclePhase Phase)
 		TArray<FSoftObjectPath> SoftPaths;
 		Algo::Transform(AssetPaths, SoftPaths, [](const FTopLevelAssetPath& AssetPath) { return FSoftObjectPath(AssetPath); });
 
-		UE_LOG(LogConstructionPreferences, Display, TEXT("Scanning %d recipes..."), AssetPaths.Num());
+		//UE_LOG(LogConstructionPreferences, Display, TEXT("Scanning %d recipes..."), AssetPaths.Num());
 		TSharedPtr<FStreamableHandle> Handle = UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPaths, [this, SoftPaths]() {
 			Algo::ForEach(SoftPaths, [this](const FSoftObjectPath& SoftPath) {
 				ScanOneRecipe(TSoftClassPtr<UFGRecipe>(SoftPath).Get());
 			});
-			UE_LOG(LogConstructionPreferences, Display, TEXT("Done, found %d conveyor belt recipes"), ConveyorBeltRecipes.Num());
+			//UE_LOG(LogConstructionPreferences, Display, TEXT("Done, found %d conveyor belt recipes"), ConveyorBeltRecipes.Num());
 		}, FStreamableManager::AsyncLoadHighPriority);
 		if (Handle) {
 			Handle->WaitUntilComplete();

@@ -49,7 +49,7 @@ void FConstructionPreferencesModule::StartupModule() {
 			}
 			if (UCP_GameInstanceModule* CP_Instance = UCP_GameInstanceModule::Get(GWorld)) {
 				auto recipeName = recipe->GetName();
-				UE_LOGFMT(LogConstructionPreferences, Display, "SetActiveRecipe: {0}", recipeName);
+				//UE_LOGFMT(LogConstructionPreferences, Display, "SetActiveRecipe: {0}", recipeName);
 
 				if (recipe == CP_Instance->Recipe_ConveyorPoleStackable) {
 					//Set Hologram Class to vanilla
