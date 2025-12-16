@@ -80,7 +80,7 @@ void UCP_GameInstanceModule::ScanOneRecipe(TSubclassOf<UFGRecipe> Recipe)
 		const TSubclassOf<UFGBuildingDescriptor> BuildingDesc(RecipeCDO->GetProducts()[0].ItemClass);
 		/* Check if class downcast succeeded */
 		if (!IsValid(*BuildingDesc)) {
-			UE_LOG(LogConstructionPreferences, Error, TEXT("Recipe '%s' product class %s"), *RecipeCDO->GetName(), *RecipeCDO->GetProducts()[0].ItemClass->GetName());
+			UE_LOG(LogConstructionPreferences, Error, TEXT("Recipe '%s' first product class invalid"), *RecipeCDO->GetName());
 			return;
 		}
 		TSubclassOf<AFGBuildable> BuildableClass = UFGBuildingDescriptor::GetBuildableClass(BuildingDesc);
@@ -122,4 +122,5 @@ void UCP_GameInstanceModule::DispatchLifecycleEvent(ELifecyclePhase Phase)
 			Handle->WaitUntilComplete();
 		}
 	}
+
 }
