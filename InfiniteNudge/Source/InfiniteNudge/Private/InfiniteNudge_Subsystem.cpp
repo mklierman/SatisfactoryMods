@@ -4,12 +4,11 @@
 #endif
 
 DEFINE_LOG_CATEGORY(InfiniteNudge_Log);
-//UE_LOG(InfiniteNudge_Log, Warning, TEXT("For Easy Copy-Paste"));
 #pragma optimize("", off)
 
 namespace
 {
-	// Helper: apply vector as world or local offset depending on toggle
+	// Apply vector as world or local offset
 	static void ApplyOffset(AActor* target, const FVector& vec, float amount, bool useWorld)
 	{
 		if (!target)
@@ -26,7 +25,7 @@ namespace
 		}
 	}
 
-	// Helper: compute nudge vector by using subsystem to get look angle and rotating input
+	// Compute nudge vector using look angle
 	static FVector ComputeNudgeVector(AInfiniteNudge_Subsystem* subsystem, AActor* target, float xDirection, float yDirection, AFGPlayerController* controller)
 	{
 		if (!subsystem || !target)
@@ -37,7 +36,7 @@ namespace
 		return FVector(xDirection, yDirection, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
 	}
 
-	// Helper: apply nudge to target with optional custom vector calculator
+	// Apply nudge with optional custom vector calculator
 	static void ApplyNudgeToTarget(AInfiniteNudge_Subsystem* subsystem, AActor* target, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller, TFunction<FVector(AActor*, float, float, AFGPlayerController*)> computeVec = nullptr)
 	{
 		if (!subsystem || !target || !controller)
@@ -48,22 +47,21 @@ namespace
 		const float amount = subsystem->GetCurrentNudgeAmount(controller);
 		const bool useWorld = subsystem->ShouldWorldOffset();
 
-		// Vertical nudge via modifier key maps to X input being used as vertical amount in many cases
+		// Vertical nudge
 		if (controller->IsInputKeyDown(subsystem->VerticalNudgeKey) || controller->IsInputKeyDown(EKeys::Gamepad_RightShoulder))
 		{
-			// Default vertical behavior: move along Z by xDirection
 			ApplyOffset(target, FVector(0, 0, xDirection), amount, useWorld);
 			return;
 		}
 
-		// explicit Z direction (gamepad shoulder mapping etc)
+		// Z direction
 		if (zDirection != 0.0f)
 		{
 			ApplyOffset(target, FVector(0, 0, zDirection), amount, useWorld);
 			return;
 		}
 
-		// Default or custom XY mapping
+		// XY nudge with custom or default vector
 		FVector vec;
 		if (computeVec)
 		{
@@ -140,7 +138,18 @@ void AInfiniteNudge_Subsystem::NudgeHologram(AFGHologram* hologram, float xDirec
 		{
 			if (auto wallAttachmentHolo = Cast< AFGWallAttachmentHologram>(wireHolo->GetNudgeHologramTarget()))
 			{
-				NudgeWallAttachment(wallAttachmentHolo, xDirection, yDirection, zDirection, controller);
+				auto target = wireHolo->GetNudgeHologramTarget();
+				auto location = target->GetActorLocation();
+				auto rotation = target->GetActorRotation();
+				if (rotation.Pitch == -90.0)
+				{
+					//Is on ceiling
+					NudgeCeilingAttachment(wallAttachmentHolo, xDirection, yDirection, zDirection, controller);
+				}
+				else
+				{
+					NudgeWallAttachment(wallAttachmentHolo, xDirection, yDirection, zDirection, controller);
+				}
 			}
 			else
 			{
@@ -221,48 +230,91 @@ void AInfiniteNudge_Subsystem::NudgeRailroadTrack(AFGRailroadTrackHologram* holo
 // Refactor NudgeWallAttachment: keep vertical special-case and use custom compute for the xDirection!=0 branch
 void AInfiniteNudge_Subsystem::NudgeWallAttachment(AFGWallAttachmentHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller)
 {
-	// Vertical nudge case handled in earlier code, so only do anything if we're not doing that
 	if (!controller->IsInputKeyDown(VerticalNudgeKey))
 	{
-		// custom mapping used previously: FVector(0, yDirection, (xDirection * -1)).RotateAngleAxis(lookAngle, FVector(0, 1, 0))
-		 
-		// No need for look angle; Adjust y for case of ceiling wall attachment, otherwise just move it relative to itself and the inputs 
+		// Map input based on snap axis and handle ceiling vs wall orientation
 		auto compute = [this, xDirection](AActor* target, float x, float y, AFGPlayerController* pc) -> FVector
 			{
 				FRotator rot = target->GetActorRotation();
 				FVector v;
 				auto holo = Cast<AFGGenericBuildableHologram>(target);
-				auto offset = FVector(1, 0, 0);
 				auto snapAxis = holo->GetmSnapAxis();
+				
 				switch (snapAxis)
 				{
 				case EAxis::X:
 					v = FVector(0.0f, y, x);
 					break;
-
 				case EAxis::Y:
 					v = FVector(0.0f, y, x);
 					break;
-
 				case EAxis::Z:
 					v = FVector(x, y, 0.0f);
 					break;
-
 				default:
 					break;
 				}
-				if (FMath::IsNearlyEqual(rot.Pitch, -90, 0.01f))
+				
+				// Flip Y for walls (not ceilings)
+				if (!FMath::IsNearlyEqual(rot.Pitch, -90, 0.01f))
 				{
-					return v;
+					v = v * FVector(1, -1, 1);
 				}
-				else
-				{
-					return v = v * FVector(1, -1, 1);
-				}
+				return v;
 			};
 
 		ApplyNudgeToTarget(this, hologram, xDirection, yDirection, zDirection, controller, compute);
+		hologram->mHologramLockLocation = hologram->GetActorLocation();
+	}
+}
 
+void AInfiniteNudge_Subsystem::NudgeCeilingAttachment(AFGWallAttachmentHologram* hologram, float xDirection, float yDirection, float zDirection, AFGPlayerController* controller)
+{
+	if (!controller->IsInputKeyDown(VerticalNudgeKey))
+	{
+		// Ceiling attachments need special handling - swap axes and fix signs at 0/180 degrees
+		auto compute = [this](AActor* target, float x, float y, AFGPlayerController* pc) -> FVector
+		{
+			int lookAngle = this->GetClosestLookAngle(target, pc);
+			auto holo = Cast<AFGGenericBuildableHologram>(target);
+			
+			if (!holo)
+			{
+				return FVector(y, x, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
+			}
+			
+			auto snapAxis = holo->GetmSnapAxis();
+			FVector v;
+			
+			// Fix reversed controls at certain angles
+			float xSign = (lookAngle == 0 || lookAngle == 180) ? -1.0f : 1.0f;
+			float ySign = (lookAngle == 0 || lookAngle == 180) ? -1.0f : 1.0f;
+			
+			switch (snapAxis)
+			{
+			case EAxis::X:
+				v = FVector(y * ySign, x * xSign, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
+				v = FVector(0.0f, v.X, v.Y);
+				break;
+
+			case EAxis::Y:
+				v = FVector(y * ySign, x * xSign, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
+				v = FVector(v.X, 0.0f, v.Y);
+				break;
+
+			case EAxis::Z:
+				v = FVector(y * ySign, x * xSign, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
+				break;
+
+			default:
+				v = FVector(y * ySign, x * xSign, 0).RotateAngleAxis(lookAngle, FVector(0, 0, 1));
+				break;
+			}
+			
+			return v;
+		};
+
+		ApplyNudgeToTarget(this, hologram, xDirection, yDirection, zDirection, controller, compute);
 		hologram->mHologramLockLocation = hologram->GetActorLocation();
 	}
 }
