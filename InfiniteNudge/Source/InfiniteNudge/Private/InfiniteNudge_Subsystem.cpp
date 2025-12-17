@@ -138,7 +138,14 @@ void AInfiniteNudge_Subsystem::NudgeHologram(AFGHologram* hologram, float xDirec
 		}
 		else if (auto wireHolo = Cast<AFGWireHologram>(hologram))
 		{
-			NudgeWire(wireHolo, xDirection, yDirection, zDirection, controller);
+			if (auto wallAttachmentHolo = Cast< AFGWallAttachmentHologram>(wireHolo->GetNudgeHologramTarget()))
+			{
+				NudgeWallAttachment(wallAttachmentHolo, xDirection, yDirection, zDirection, controller);
+			}
+			else
+			{
+				NudgeWire(wireHolo, xDirection, yDirection, zDirection, controller);
+			}
 		}
 		else if (auto trackHolo = Cast<AFGRailroadTrackHologram>(hologram))
 		{
