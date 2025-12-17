@@ -101,7 +101,26 @@ void AInfiniteNudge_Subsystem::NudgeHologram(AFGHologram* hologram, float xDirec
 				// Handle wall attachment's "vertical" movement
 				if (auto wallAttachmentHolo = Cast<AFGWallAttachmentHologram>(hologram))
 				{
-					hologram->GetNudgeHologramTarget()->AddActorLocalOffset(FVector((GetCurrentNudgeAmount(controller) * -zDirection), 0, 0));
+					auto offset = FVector(1, 0, 0);
+					auto snapAxis = wallAttachmentHolo->GetmSnapAxis();
+					switch (snapAxis)
+					{
+					case EAxis::X:
+						offset = FVector(1, 0, 0);
+						break;
+
+					case EAxis::Y:
+						offset = FVector(0, 1, 0);
+						break;
+
+					case EAxis::Z:
+						offset = FVector(0, 0, 1);
+						break;
+
+					default:
+						break;
+					}
+					hologram->GetNudgeHologramTarget()->AddActorLocalOffset(offset * (GetCurrentNudgeAmount(controller) * -zDirection));
 				}
 				else
 				{
@@ -205,13 +224,33 @@ void AInfiniteNudge_Subsystem::NudgeWallAttachment(AFGWallAttachmentHologram* ho
 			{
 				FRotator rot = target->GetActorRotation();
 				FVector v;
+				auto holo = Cast<AFGGenericBuildableHologram>(target);
+				auto offset = FVector(1, 0, 0);
+				auto snapAxis = holo->GetmSnapAxis();
+				switch (snapAxis)
+				{
+				case EAxis::X:
+					v = FVector(0.0f, y, x);
+					break;
+
+				case EAxis::Y:
+					v = FVector(0.0f, y, x);
+					break;
+
+				case EAxis::Z:
+					v = FVector(x, y, 0.0f);
+					break;
+
+				default:
+					break;
+				}
 				if (FMath::IsNearlyEqual(rot.Pitch, -90, 0.01f))
 				{
-					return v = FVector(0.0f, y, x);
+					return v;
 				}
 				else
 				{
-					return v = FVector(0.0f, -y, x);
+					return v = v * FVector(1, -1, 1);
 				}
 			};
 
