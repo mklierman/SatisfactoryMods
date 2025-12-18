@@ -248,6 +248,11 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 {
 	if (conveyorAttachment)
 	{
+		auto className = conveyorAttachment->GetClass()->GetName();
+		if (className.Contains("Build_ABConveyorCap") || className.Contains("Build_ABPipeCap"))
+		{
+			return;
+		}
 		auto& components = conveyorAttachment->GetComponents();
 		for (auto component : components)
 		{
