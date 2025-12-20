@@ -249,7 +249,7 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 	if (conveyorAttachment)
 	{
 		auto className = conveyorAttachment->GetClass()->GetName();
-		if (className.Contains("Build_ABConveyorCap") || className.Contains("Build_ABPipeCap"))
+		if (className.StartsWith("Build_ABConveyorCap") || className.StartsWith("Build_ABPipeCap"))
 		{
 			return;
 		}
@@ -260,7 +260,11 @@ void FDirectToSplitterModule::HandleExistingSnappedOn(AFGBuildable* conveyorAtta
 			if (factoryConn && IsSnappedOn(factoryConn))
 			{
 				auto otherConn = factoryConn->GetConnection();
-				auto buildingName = otherConn->GetOuterBuildable()->GetName();
+				auto otherConnOwnerName = otherConn->GetOwner()->GetName();
+				if (otherConnOwnerName.StartsWith("Build_ABConveyorCap") || otherConnOwnerName.StartsWith("Build_ABPipeCap"))
+				{
+					continue;
+				}
 				factoryConn->ClearConnection();
 				auto connLoc = factoryConn->GetComponentLocation();
 				auto otherLoc = otherConn->GetComponentLocation();
