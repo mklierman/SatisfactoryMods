@@ -581,6 +581,12 @@ void FDirectToSplitterModule::CheckValidPlacement(AFGConveyorAttachmentHologram*
 		{
 			return;
 		}
+		auto snappedOwnerName = self->mSnappedConnection->GetOwner()->GetName();
+		if (snappedOwnerName.StartsWith("Build_ABConveyorCap") || snappedOwnerName.StartsWith("Build_ABPipeCap"))
+		{
+			retflag = false;
+			return;
+		}
 		auto className = self->mBuildClass.Get()->GetName();
 
 		auto snappedBuildable = self->mSnappedConnection->GetOuterBuildable();
