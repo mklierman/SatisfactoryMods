@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.10",
+	"VersionName": "1.0.11",
 	"FriendlyName": "Vanilla Upgrades",
 	"Description": "Upgrade your existing base-game machines via MAM Research trees!",
 	"Category": "Modding",
@@ -18,7 +18,7 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.11.1"
+			"SemVersion": "^3.11.3"
 		}
 	],
 	"Modules": [
@@ -28,6 +28,6 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"SemVersion": "1.0.10",
+	"SemVersion": "1.0.11",
 	"GameVersion": ">=416835"
 }
