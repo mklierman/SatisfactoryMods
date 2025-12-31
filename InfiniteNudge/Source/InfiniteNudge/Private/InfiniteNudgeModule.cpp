@@ -9,6 +9,7 @@
 #include "Hologram/FGWallAttachmentHologram.h"
 #include "FGInputLibrary.h"
 #include "FGGameMode.h"
+#include "Hologram/FGRailroadSignalHologram.h"
 #include <Hologram/FGSplineHologram.h>
 
 #pragma optimize("", off)
@@ -90,7 +91,33 @@ void FInfiniteNudgeModule::StartupModule() {
 			}
 		});
 
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGRailroadSignalHologram::ConfigureActor, GetMutableDefault<AFGRailroadSignalHologram>(), [](const AFGRailroadSignalHologram* self, AFGBuildable* inBuildable)
+		{
+			float Scale = 1.0f;
+			bool isLeftHanded = false;
+
+			if (self && self->GetRootComponent())
+			{
+				FVector ScaleVec = self->GetRootComponent()->GetComponentScale();
+				Scale = (ScaleVec.X + ScaleVec.Y + ScaleVec.Z) / 3.0f;
+				isLeftHanded = self->mIsLeftHanded;
+			}
+
+			if (inBuildable)
+			{
+				float yLocation = -280.0f * Scale + 280.0f;
+
+				if (isLeftHanded)
+				{
+					yLocation = yLocation * -1.0f;
+				}
+
+				FVector location = FVector(0.0f, yLocation, 0.0f);
+				inBuildable->GetRootComponent()->AddLocalOffset(location);
+			}
+		});
 #endif
+
 }
 
 FVector FInfiniteNudgeModule::NudgeTowardsWorldDirection(AFGHologram* self, const FVector& Direction)
