@@ -95,15 +95,17 @@ void FInfiniteNudgeModule::StartupModule() {
 		{
 			float Scale = 1.0f;
 			bool isLeftHanded = false;
+			class AFGBuildableRailroadSignal* UpgradeTarget = nullptr;
 
 			if (self && self->GetRootComponent())
 			{
 				FVector ScaleVec = self->GetRootComponent()->GetComponentScale();
 				Scale = (ScaleVec.X + ScaleVec.Y + ScaleVec.Z) / 3.0f;
 				isLeftHanded = self->mIsLeftHanded;
+				UpgradeTarget = self->mUpgradeTarget;
 			}
 
-			if (inBuildable)
+			if (inBuildable && !UpgradeTarget)
 			{
 				float yLocation = -280.0f * Scale + 280.0f;
 
