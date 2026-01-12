@@ -1,4 +1,5 @@
 #include "DT_BPFL.h"
+#include "WheeledVehicles/FGTargetPointLinkedList.h"
 
 static TAutoConsoleVariable<bool> CVarDigbyToolDebugMode(
 	TEXT("DigbyTool.DebugMode"),
@@ -31,7 +32,10 @@ void UDT_BPFL::OpenURL(FString URL)
 
 void UDT_BPFL::UpdateTargetList(AFGVehicleSubsystem* vehicleSubsystem, AFGDrivingTargetList* targetList)
 {
-	vehicleSubsystem->UpdateTargetList(targetList);
+	if (targetList)
+	{
+		vehicleSubsystem->UpdateTargetList(targetList);
+	}
 }
 
 void UDT_BPFL::UpdateTargetLists(AFGVehicleSubsystem* vehicleSubsystem)
