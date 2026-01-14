@@ -10,6 +10,7 @@
 #include "FGInputLibrary.h"
 #include "FGGameMode.h"
 #include "Hologram/FGRailroadSignalHologram.h"
+#include "Buildables/FGBuildableRailroadSignal.h"
 #include <Hologram/FGSplineHologram.h>
 
 #pragma optimize("", off)
@@ -96,6 +97,7 @@ void FInfiniteNudgeModule::StartupModule() {
 			float Scale = 1.0f;
 			bool isLeftHanded = false;
 			class AFGBuildableRailroadSignal* UpgradeTarget = nullptr;
+			bool UpgradeChangedSides = false;
 
 			if (self && self->GetRootComponent())
 			{
@@ -103,9 +105,15 @@ void FInfiniteNudgeModule::StartupModule() {
 				Scale = (ScaleVec.X + ScaleVec.Y + ScaleVec.Z) / 3.0f;
 				isLeftHanded = self->mIsLeftHanded;
 				UpgradeTarget = self->mUpgradeTarget;
+				
+				if (UpgradeTarget)
+				{
+					bool isUpgradeTargetLeftHanded = UpgradeTarget->mIsLeftHanded;
+					UpgradeChangedSides = isLeftHanded != isUpgradeTargetLeftHanded;
+				}
 			}
 
-			if (inBuildable && !UpgradeTarget)
+			if (inBuildable)
 			{
 				float yLocation = -280.0f * Scale + 280.0f;
 
@@ -115,7 +123,16 @@ void FInfiniteNudgeModule::StartupModule() {
 				}
 
 				FVector location = FVector(0.0f, yLocation, 0.0f);
-				inBuildable->GetRootComponent()->AddLocalOffset(location);
+				
+				if (!UpgradeTarget)
+				{
+					inBuildable->GetRootComponent()->AddLocalOffset(location);
+				}
+				
+				if (UpgradeChangedSides)
+				{
+					inBuildable->GetRootComponent()->AddLocalOffset(2*location);
+				}
 			}
 		});
 #endif
