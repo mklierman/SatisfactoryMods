@@ -17,6 +17,7 @@
 
 #include <FGBuildablePolePipe.h>
 #include <Buildables/FGBuildableFoundation.h>
+#include <UObject/UObjectGlobals.h>
 
 DEFINE_LOG_CATEGORY(PersistentPaintables_Log);
 
@@ -29,9 +30,11 @@ static constexpr float NEARBY_SUPPORT_SEARCH_RADIUS = 5.0f;
 // Sets the swatch on the actor and calls the buildable's apply/set methods.
 void FPersistentPaintablesModule::ApplyColor(AFGBuildable* buildable, UClass* inSwatchClass, FFactoryCustomizationData customizationData)
 {
-	if (buildable && buildable->GetCanBeColored_Implementation())
+	if (buildable && buildable->GetCanBeColored_Implementation() && inSwatchClass)
 	{
+
 		// Mark this as a custom-painted buildable and push the data down to the actor
+
 		buildable->mColorSlot = 255;
 		buildable->mDefaultSwatchCustomizationOverride = inSwatchClass;
 		buildable->ApplyCustomizationData_Implementation(customizationData);
@@ -153,14 +156,12 @@ void FPersistentPaintablesModule::UpdateColorSingle(AFGBuildable* buildable, AFG
 	auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipesMetallic");
 	if (optionValue)
 	{
-		static UClass* CachedPaintFinishClass = nullptr;
-		if (!CachedPaintFinishClass)
+		static FSoftObjectPath FinishPath(TEXT("/PersistentPaintables/PersistentPaintables_CustomFinish.PersistentPaintables_CustomFinish_C"));
+		UClass* LoadedClass = Cast<UClass>(FinishPath.TryLoad());
+
+		if (LoadedClass)
 		{
-			CachedPaintFinishClass = LoadObject<UClass>(nullptr, TEXT("/PersistentPaintables/PersistentPaintables_CustomFinish.PersistentPaintables_CustomFinish_C"));
-		}
-		if (CachedPaintFinishClass)
-		{
-			newData.OverrideColorData.PaintFinish = CachedPaintFinishClass;
+			newData.OverrideColorData.PaintFinish = LoadedClass;
 		}
 	}
 
