@@ -14,7 +14,9 @@
 #include "Buildables/FGBuildableStorage.h"
 #include "Buildables/FGBuildableTrainPlatformCargo.h"
 #include "Buildables/FGBuildableDockingStation.h"
+#include <SessionSettings/SessionSettingsManager.h>
 #include <Logging/StructuredLog.h>
+#include "LocalUserInfo.h"
 
 #define LOCTEXT_NAMESPACE "FAutoSignsModule"
 DEFINE_LOG_CATEGORY(AutoSigns_Log);
@@ -24,7 +26,8 @@ void FAutoSignsModule::StartupModule()
 {
 	AFGBuildableHologram* bh = GetMutableDefault<AFGBuildableHologram>();
 	AFGBuildableWidgetSign* bws = GetMutableDefault<AFGBuildableWidgetSign>();
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableWidgetSign::InitializeSignPrefabData, bh, [this](AFGBuildableWidgetSign* sign)
+#if !WITH_EDITOR
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableWidgetSign::InitializeSignPrefabData, bws, [this](AFGBuildableWidgetSign* sign)
 		{
 			InitializeSignPrefabData(sign);
 		});
@@ -34,7 +37,18 @@ void FAutoSignsModule::StartupModule()
 			ConfigureActor(self, inBuildable);
 		});
 
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableWidgetSign::UpdateSignElements, bws, [this](AFGBuildableWidgetSign* sign, FPrefabSignData& prefabSignData)
+		{
+			UpdateSignElements(sign, prefabSignData);
+		});
 
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableWidgetSign::OnBuildEffectFinished, bws, [this](AFGBuildableWidgetSign* sign)
+		{
+			FPrefabSignData signData;
+			sign->GetSignPrefabData(signData);
+			SetDefaultSignData(sign);
+		});
+#endif
 }
 
 void FAutoSignsModule::ConfigureActor(const AFGBuildableHologram* self, class AFGBuildable* inBuildable)
@@ -57,6 +71,7 @@ void FAutoSignsModule::InitializeSignPrefabData(AFGBuildableWidgetSign* sign)
 		{
 			FPrefabSignData signData;
 			sign->GetSignPrefabData(signData);
+
 			FString nameText = *signData.TextElementData.Find("Name");
 			int32 iconId = *signData.IconElementData.Find("Icon");
 			AFGBuildableManufacturer* manufacturer = Cast<AFGBuildableManufacturer>(snapped);
@@ -132,7 +147,20 @@ void FAutoSignsModule::InitializeSignPrefabData(AFGBuildableWidgetSign* sign)
 
 			signData.TextElementData["Name"] = nameText;
 			signData.IconElementData["Icon"] = iconId;
-
+			if (DefaultTextElementToDataMap.Num() > 0 || DefaultIconElementToDataMap.Num() > 0)
+			{
+				USessionSettingsManager* SessionSettings = sign->GetWorld()->GetSubsystem<USessionSettingsManager>();
+				auto copyLayout = SessionSettings->GetBoolOptionValue("AutoSigns.CopyLayout");
+				if (copyLayout)
+				{
+					signData.PrefabLayout = LastSignData.PrefabLayout;
+					signData.ForegroundColor = LastSignData.ForegroundColor;
+					signData.BackgroundColor = LastSignData.BackgroundColor;
+					signData.AuxiliaryColor = LastSignData.AuxiliaryColor;
+					signData.Emissive = LastSignData.Emissive;
+					signData.Glossiness = LastSignData.Glossiness;
+				}
+			}
 			sign->SetPrefabSignData(signData);
 			SignSnaps.Remove(sign);
 		}
@@ -162,6 +190,31 @@ int32 FAutoSignsModule::GetIconIdForDescriptor(UObject* worldContext, TSubclassO
 	}
 
 	return fallback;
+}
+
+void FAutoSignsModule::UpdateSignElements(AFGBuildableWidgetSign* sign, FPrefabSignData& prefabSignData)
+{
+	UE_LOGFMT(AutoSigns_Log, Display, "UpdateSignElements");
+
+	if (DefaultTextElementToDataMap.Num() > 1 || DefaultIconElementToDataMap.Num() > 0)
+	{
+		bool textIsEqual = prefabSignData.TextElementData.OrderIndependentCompareEqual(DefaultTextElementToDataMap);
+		bool iconIsEqual = prefabSignData.IconElementData.OrderIndependentCompareEqual(DefaultIconElementToDataMap);
+		if (textIsEqual && iconIsEqual)
+			return;
+
+		LastSignData = prefabSignData;
+	}
+}
+
+void FAutoSignsModule::SetDefaultSignData(AFGBuildableWidgetSign* sign)
+{
+	//UE_LOGFMT(AutoSigns_Log, Display, "SetDefaultSignData");
+	
+	if (DefaultTextElementToDataMap.Num() < 1 && DefaultIconElementToDataMap.Num() < 1)
+	{
+		sign->GetDefaultSignMaps(DefaultTextElementToDataMap, DefaultIconElementToDataMap);
+	}
 }
 
 void FAutoSignsModule::ShutdownModule()

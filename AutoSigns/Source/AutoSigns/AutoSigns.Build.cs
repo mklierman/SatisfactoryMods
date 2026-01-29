@@ -59,7 +59,7 @@ public class AutoSigns : ModuleRules
 		if (Target.Type == TargetRules.TargetType.Editor) {
 			PublicDependencyModuleNames.AddRange(new string[] {/*"OnlineBlueprintSupport",*/ "AnimGraph"});
 		}
-		PublicDependencyModuleNames.AddRange(new string[] {"FactoryGame", "SML"});
+		PublicDependencyModuleNames.AddRange(new string[] {"FactoryGame", "SML", "OnlineIntegration" });
 		
 		PublicIncludePaths.AddRange(new string[] {
 			// ... add public include paths required here ...

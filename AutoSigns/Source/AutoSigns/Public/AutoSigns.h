@@ -14,10 +14,22 @@ public:
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+
 	void ConfigureActor(const AFGBuildableHologram* self, AFGBuildable* inBuildable);
 	void InitializeSignPrefabData(AFGBuildableWidgetSign* sign);
 	int32 GetIconIdForDescriptor(UObject* worldContext, TSubclassOf<UFGItemDescriptor> descriptor, int32 fallback);
+	void UpdateSignElements(AFGBuildableWidgetSign* sign, FPrefabSignData& prefabSignData);
+	void SetDefaultSignData(AFGBuildableWidgetSign* sign);
 
 	UPROPERTY()
 	TMap<AFGBuildableWidgetSign*, AFGBuildable*> SignSnaps;
+
+	UPROPERTY()
+	FPrefabSignData LastSignData;
+
+	UPROPERTY()
+	TMap< FString, FString > DefaultTextElementToDataMap;
+
+	UPROPERTY()
+	TMap< FString, int32 > DefaultIconElementToDataMap;
 };
