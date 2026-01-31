@@ -45,7 +45,7 @@ namespace
 		}
 
 		const float amount = subsystem->GetCurrentNudgeAmount(controller);
-		const bool useWorld = subsystem->ShouldWorldOffset();
+		const bool useWorld = subsystem->ShouldWorldOffset(controller);
 
 		// Vertical nudge
 		if (controller->IsInputKeyDown(subsystem->VerticalNudgeKey) || controller->IsInputKeyDown(EKeys::Gamepad_RightShoulder))
@@ -90,7 +90,7 @@ void AInfiniteNudge_Subsystem::NudgeHologram(AFGHologram* hologram, float xDirec
 
 		if (zDirection != 0.0)
 		{
-			if (ShouldWorldOffset())
+			if (ShouldWorldOffset(controller))
 			{
 				hologram->GetNudgeHologramTarget()->AddActorWorldOffset(FVector(0, 0, GetCurrentNudgeAmount(controller) * zDirection));
 			}
@@ -175,7 +175,7 @@ void AInfiniteNudge_Subsystem::NudgeHologram(AFGHologram* hologram, float xDirec
 		else
 		{
 			FVector rVectorz = ComputeNudgeVector(this, hologram, xDirection, yDirection, controller);
-			ApplyOffset(hologram, rVectorz, GetCurrentNudgeAmount(controller), ShouldWorldOffset());
+			ApplyOffset(hologram, rVectorz, GetCurrentNudgeAmount(controller), ShouldWorldOffset(controller));
 		}
 		hologram->mHologramLockLocation = hologram->GetActorLocation();
 		hologram->GetNudgeHologramTarget()->mHologramLockLocation = hologram->GetNudgeHologramTarget()->GetActorLocation();
@@ -415,6 +415,7 @@ void AInfiniteNudge_Subsystem::GetConfigValues(UObject* worldContext, APlayerCon
 	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.VerticalNudge", VerticalNudgeKey, ModifierKeys);
 	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.IncreaseScale", IncreaseScaleKey, ModifierKeys);
 	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.DecreaseScale", DecreaseScaleKey, ModifierKeys);
+	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.WorldOffset", WorldOffsetKey, ModifierKeys);
 
 	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.TinyNudgeController", TinyNudgeGamepadKey, ModifierKeys);
 	UFGInputLibrary::GetCurrentMappingForAction(controller, "InfiniteNudge.SmallNudgeController", SmallNudgeGamepadKey, ModifierKeys);
@@ -448,8 +449,14 @@ float AInfiniteNudge_Subsystem::GetCurrentNudgeAmount(APlayerController* control
 	}
 }
 
-bool AInfiniteNudge_Subsystem::ShouldWorldOffset()
+bool AInfiniteNudge_Subsystem::ShouldWorldOffset(APlayerController* controller)
 {
+	if (controller->IsInputKeyDown(WorldOffsetKey))
+	{
+		return true;
+	}
+	return false;
+
 #if PLATFORM_WINDOWS
 	return (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
 #else

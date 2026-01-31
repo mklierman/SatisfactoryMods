@@ -45,7 +45,7 @@ public:
 
 	void GetConfigValues(UObject* worldContext, APlayerController* controller);
 	float GetCurrentNudgeAmount(APlayerController* controller);
-	bool ShouldWorldOffset();
+	bool ShouldWorldOffset(APlayerController* controller);
 	FVector GetFrontOffset(TSubclassOf<AFGGenericBuildableHologram> hologram);
 
 	FVector CalcPivotAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat);
@@ -68,4 +68,5 @@ public:
 	FKey VerticalNudgeKey;
 	FKey IncreaseScaleKey;
 	FKey DecreaseScaleKey;
+	FKey WorldOffsetKey;
 };
