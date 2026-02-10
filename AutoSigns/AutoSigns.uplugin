@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.0",
-	"FriendlyName": "AutoSigns",
+	"VersionName": "1.0.1",
+	"FriendlyName": "Auto Signs",
 	"Description": "",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
@@ -21,8 +21,8 @@
 			"SemVersion": "^3.11.3"
 		}
 	],
-	"SemVersion": "1.0.0",
-	"GameVersion": ">=416835",
+	"SemVersion": "1.0.1",
+	"GameVersion": ">=455399",
 	"Modules": [
 		{
 			"Name": "AutoSigns",

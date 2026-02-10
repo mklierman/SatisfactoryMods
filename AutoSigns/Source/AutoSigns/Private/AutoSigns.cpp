@@ -78,10 +78,16 @@ void FAutoSignsModule::InitializeSignPrefabData(AFGBuildableWidgetSign* sign)
 			if (manufacturer)
 			{
 				auto recipe = manufacturer->GetCurrentRecipe();
-				auto products = UFGRecipe::GetProducts(recipe);
-				auto itemDesc = products[0].ItemClass;
-				nameText = UFGItemDescriptor::GetItemName(itemDesc).ToString();
-				iconId = GetIconIdForDescriptor(sign->GetWorld(), itemDesc, iconId);
+				if (IsValid(recipe))
+				{
+					auto products = UFGRecipe::GetProducts(recipe);
+					if (products.Num() > 0)
+					{
+						auto itemDesc = products[0].ItemClass;
+						nameText = UFGItemDescriptor::GetItemName(itemDesc).ToString();
+						iconId = GetIconIdForDescriptor(sign->GetWorld(), itemDesc, iconId);
+					}
+				}
 			}
 			AFGBuildableResourceExtractor* extractor = Cast<AFGBuildableResourceExtractor>(snapped);
 			if (extractor)
