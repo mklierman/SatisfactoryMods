@@ -89,7 +89,36 @@ int GetClosestZoopAngle(double angleToCheck)
 
 void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 {
-	auto pc = Cast<AFGPlayerController>(self->GetConstructionInstigator()->GetController());
+	UWorld* World = self ? self->GetWorld() : nullptr;
+	if (!World)
+	{
+		return;
+	}
+
+	// Only let the owning client (and the local player on a listen server)
+	// drive camera-based zoop orientation. The server should rely on the
+	// replicated desired zoop instead, to avoid client/server divergence.
+	auto pc = Cast<AFGPlayerController>(self->GetConstructionInstigator() ? self->GetConstructionInstigator()->GetController() : nullptr);
+	if (!pc)
+	{
+		return;
+	}
+
+	ENetMode NetMode = World->GetNetMode();
+	if (NetMode == NM_DedicatedServer)
+	{
+		// Never run camera-based zoop logic on a dedicated server.
+		return;
+	}
+	if (NetMode != NM_Client)
+	{
+		// On a listen server, only process input for the local player controller.
+		if (pc != World->GetFirstPlayerController())
+		{
+			return;
+		}
+	}
+
 	AFGFactoryBuildingHologram* Fhg = Cast<AFGFactoryBuildingHologram>(self);
 	if (Fhg)
 	{
@@ -114,7 +143,8 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 			auto invRotation = roundf(self->GetActorRotation().GetInverse().Yaw);
 			if (foundation)
 			{
-				auto camInvRotator2 = pc->PlayerCameraManager->GetCameraRotation().Add(0, invRotation, 0).Yaw;
+				FRotator CamRot = pc->PlayerCameraManager ? pc->PlayerCameraManager->GetCameraRotation() : FRotator::ZeroRotator;
+				auto camInvRotator2 = CamRot.Add(0, invRotation, 0).Yaw;
 				auto newAngle = fmod(camInvRotator2, 360);
 				if (newAngle < 0) newAngle += 360;
 				auto lookedAtZoopAxis = GetClosestZoopAngle(newAngle);
@@ -328,9 +358,13 @@ void FInfiniteZoopModule::OnZoopUpdated(UFGBuildGunStateBuild* self, float curre
 		auto dz = fbhg->mDesiredZoop;
 
 		auto fhg = Cast< AFGFoundationHologram>(fbhg);
-		fbhg->mDesiredZoop.X = FoundationsBeingZooped[fhg]->X;
-		fbhg->mDesiredZoop.Y = FoundationsBeingZooped[fhg]->Y;
-		fbhg->mDesiredZoop.Z = FoundationsBeingZooped[fhg]->Z;
+		auto* zStruct = FoundationsBeingZooped.Contains(fhg) ? FoundationsBeingZooped[fhg] : nullptr;
+		if (zStruct)
+		{
+			fbhg->mDesiredZoop.X = zStruct->X;
+			fbhg->mDesiredZoop.Y = zStruct->Y;
+			fbhg->mDesiredZoop.Z = zStruct->Z;
+		}
 
 		fbhg->OnRep_DesiredZoop();
 		fbhg->ForceNetUpdate();
@@ -534,7 +568,6 @@ void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AAct
 			self->mDesiredZoop.X = FMath::Clamp(zStruct->X, minZ, maxZ);
 			self->mDesiredZoop.Y = FMath::Clamp(zStruct->Y, minZ, maxZ);
 			self->mDesiredZoop.Z = FMath::Clamp(zStruct->Z, minZ, maxZ);
-			//UE_LOGFMT(InfiniteZoop_Log, Display, "ConstructZoop: {0},{1},{2}", self->mDesiredZoop.X, self->mDesiredZoop.Y, self->mDesiredZoop.Z);
 			//UE_LOG(InfiniteZoop_Log, Display, TEXT("ConstructZoop: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
 			self->OnRep_DesiredZoop();
 			//UE_LOG(InfiniteZoop_Log, Display, TEXT("ConstructZoop 2: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
@@ -841,6 +874,18 @@ void FInfiniteZoopModule::StartupModule()
 			{
 				return;
 			}
+			// Only skip our custom OnRep logic on dedicated/listen servers.
+			// In standalone (single player) we still want the old behavior.
+			if (self->HasAuthority())
+			{
+				UWorld* World = self->GetWorld();
+				if (World && World->GetNetMode() != NM_Standalone)
+				{
+					// Multiplayer server: let vanilla OnRep_DesiredZoop run.
+					return;
+				}
+				// Standalone: fall through and run our custom handler.
+			}
 			if (!this->OnRep_DesiredZoop(self))
 			{
 				scope.Cancel();
@@ -856,7 +901,10 @@ void FInfiniteZoopModule::StartupModule()
 			if (this->SetZoopAmount(self, Zoop))
 			{
 				scope.Cancel();
+				return;
 			}
+			// Let the original implementation run
+			scope(self, Zoop);
 		});
 	SUBSCRIBE_METHOD(UFGBuildGunStateBuild::OnZoopUpdated, [this](auto& scope, UFGBuildGunStateBuild* self, float currentZoop, float maxZoop, const FVector& zoopLocation)
 		{
