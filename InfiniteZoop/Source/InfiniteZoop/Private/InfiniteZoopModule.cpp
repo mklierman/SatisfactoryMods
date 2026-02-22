@@ -526,12 +526,14 @@ void FInfiniteZoopModule::CreateDefaultFoundationZoop(AFGFoundationHologram* sel
 
 int32 FInfiniteZoopModule::GetBaseCostMultiplier(const AFGFactoryBuildingHologram* self)
 {
-
 	auto nonConst = const_cast<AFGFactoryBuildingHologram*>(self);
 	auto fhg = Cast< AFGFoundationHologram>(nonConst);
 	if (fhg)
 	{
+		SetSubsystemZoopAmounts(fhg->mDesiredZoop.X, fhg->mDesiredZoop.Y, fhg->mDesiredZoop.Z, true, fhg->GetWorld(), fhg);
+		//UE_LOGFMT(InfiniteZoop_Log, Display, "GetBaseCostMultiplier mDesiredZoop: {0},{1},{2}", fhg->mDesiredZoop.X, fhg->mDesiredZoop.Y, fhg->mDesiredZoop.Z);
 		auto zStruct = GetStruct(fhg);
+		//UE_LOGFMT(InfiniteZoop_Log, Display, "GetBaseCostMultiplier: {0},{1},{2}", zStruct->X, zStruct->Y, zStruct->Z);
 		auto x = abs(zStruct->X);
 		auto y = abs(zStruct->Y);
 		auto z = abs(zStruct->Z);
@@ -542,6 +544,7 @@ int32 FInfiniteZoopModule::GetBaseCostMultiplier(const AFGFactoryBuildingHologra
 		return result;
 	}
 
+	SetSubsystemZoopAmounts(nonConst->mDesiredZoop.X, nonConst->mDesiredZoop.Y, nonConst->mDesiredZoop.Z, false, nonConst->GetWorld(), nonConst);
 	//UE_LOG(InfiniteZoop_Log, Display, TEXT("GetBaseCostMultiplier: X:%d, Y:%d"), self->mDesiredZoop.X, self->mDesiredZoop.Y);
 	auto x = abs(self->mDesiredZoop.X);
 	auto y = abs(self->mDesiredZoop.Y);
@@ -894,6 +897,7 @@ void FInfiniteZoopModule::StartupModule()
 
 	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::SetZoopAmount, [this](auto& scope, AFGFactoryBuildingHologram* self, const FIntVector& Zoop)
 		{
+			//UE_LOGFMT(InfiniteZoop_Log, Display, "AFGFactoryBuildingHologram::SetZoopAmount. Zoop: {0},{1}", Zoop.X, Zoop.Y);
 			if (auto ramphg = Cast<AFGRampHologram>(self))
 			{
 				return;
@@ -908,39 +912,40 @@ void FInfiniteZoopModule::StartupModule()
 		});
 	SUBSCRIBE_METHOD(UFGBuildGunStateBuild::OnZoopUpdated, [this](auto& scope, UFGBuildGunStateBuild* self, float currentZoop, float maxZoop, const FVector& zoopLocation)
 		{
+			//UE_LOGFMT(InfiniteZoop_Log, Display, "UFGBuildGunStateBuild::OnZoopUpdated. currentZoop: {0}", currentZoop);
 			// Fix for incorrect # showing when 2D zooping
 			auto hg = self->GetHologram();
-	auto fbhg = Cast< AFGFactoryBuildingHologram>(hg);
-	if (fbhg)
-	{
-		if (auto ramphg = Cast<AFGRampHologram>(fbhg))
-		{
-			return;
-		}
-		auto mult = fbhg->GetBaseCostMultiplier();
-		if (LastMultiplier.Num() > 0)
-		{
-			if (LastMultiplier.Contains(fbhg))
+			auto fbhg = Cast< AFGFactoryBuildingHologram>(hg);
+			if (fbhg)
 			{
-				if (LastMultiplier[fbhg] == mult)
+				if (auto ramphg = Cast<AFGRampHologram>(fbhg))
 				{
-					scope.Cancel();
 					return;
 				}
-				LastMultiplier[fbhg] = mult;
+				auto mult = fbhg->GetBaseCostMultiplier();
+				if (LastMultiplier.Num() > 0)
+				{
+					if (LastMultiplier.Contains(fbhg))
+					{
+						if (LastMultiplier[fbhg] == mult)
+						{
+							scope.Cancel();
+							return;
+						}
+						LastMultiplier[fbhg] = mult;
+					}
+					else
+					{
+						LastMultiplier.Add(fbhg, mult);
+					}
+				}
+				else
+				{
+					LastMultiplier.Add(fbhg, mult);
+				}
+				mult = mult > 0 ? mult - 1 : 0;
+				scope(self, (float)mult, maxZoop, zoopLocation);
 			}
-			else
-			{
-				LastMultiplier.Add(fbhg, mult);
-			}
-		}
-		else
-		{
-			LastMultiplier.Add(fbhg, mult);
-		}
-		mult = mult > 0 ? mult - 1 : 0;
-		scope(self, (float)mult, maxZoop, zoopLocation);
-	}
 		});
 
 	SUBSCRIBE_METHOD(UFGBuildGunState::SecondaryFire, [this](auto& scope, UFGBuildGunState* self)
@@ -958,19 +963,21 @@ void FInfiniteZoopModule::StartupModule()
 	AFGFactoryBuildingHologram* fbhgCDO = GetMutableDefault<AFGFactoryBuildingHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGFactoryBuildingHologram::GetBaseCostMultiplier, fbhgCDO, [this](auto& scope, const AFGFactoryBuildingHologram* self)
 		{
+			
+			//UE_LOGFMT(InfiniteZoop_Log, Display, "AFGFactoryBuildingHologram::GetBaseCostMultiplier");
 			if (auto ramphg = Cast<AFGRampHologram>(self))
 			{
 				return;
 			}
-	if (auto fhg = Cast< AFGFoundationHologram>(self))
-	{
-		if (self->IsCurrentBuildMode(fhg->mBuildModeVerticalZoop))
-		{
-			return;
-		}
-	}
-	auto result = this->GetBaseCostMultiplier(self);
-	scope.Override(result);
+			if (auto fhg = Cast< AFGFoundationHologram>(self))
+			{
+				if (self->IsCurrentBuildMode(fhg->mBuildModeVerticalZoop))
+				{
+					return;
+				}
+			}
+			auto result = this->GetBaseCostMultiplier(self);
+			scope.Override(result);
 		});
 
 	AFGFoundationHologram* fhCDO = GetMutableDefault<AFGFoundationHologram>();
@@ -1110,6 +1117,12 @@ FVector FInfiniteZoopModule::CalcPivotAxis(const EAxis::Type DesiredAxis, const 
 
 void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFoundation, UWorld* world, AFGHologram* hologram)
 {
+	//We can't make cubes
+	if (x == 2 && y == 2 && z == 2)
+	{
+		return;
+	}
+
 	USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
 	AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
 	bool isZoopMode = false;
