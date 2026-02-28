@@ -855,9 +855,9 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 
 void FInfiniteZoopModule::StartupModule() 
 {
-#if !WITH_EDITOR
 	lockObj = new FCriticalSection();
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
+#if !WITH_EDITOR
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::ConfigureActor, bhg, [this](auto& scope, const AFGBuildableHologram* self, class AFGBuildable* inBuildable)
 		{
 			if (self->CanBeZooped())
@@ -868,6 +868,12 @@ void FInfiniteZoopModule::StartupModule()
 					CheckBuildEffects(fbHolo, inBuildable);
 					SetBlueprintProxy(fbHolo, inBuildable);
 				}
+
+			}
+			auto holo = const_cast<AFGBuildableHologram*>(self);
+			if (holo)
+			{
+				SetSubsystemZoopAmounts(-1, -1, -1, true, holo->GetWorld(), holo);
 			}
 		});
 
@@ -1117,11 +1123,12 @@ FVector FInfiniteZoopModule::CalcPivotAxis(const EAxis::Type DesiredAxis, const 
 
 void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFoundation, UWorld* world, AFGHologram* hologram)
 {
+	//UE_LOGFMT(InfiniteZoop_Log, Display, "SetSubsystemZoopAmounts x:{0},y:{1},z:{2}",x,y,z);
 	//We can't make cubes
-	if (x == 2 && y == 2 && z == 2)
+	/*if (x == 2 && y == 2 && z == 2)
 	{
 		return;
-	}
+	}*/
 
 	USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
 	AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
@@ -1179,6 +1186,12 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 	}
 
 	//UE_LOGFMT(InfiniteZoop_Log, Display, "SetPublicZoopAmount: {0},{1},{2}", newX, newY, newZ);
+
+	if (newX == 2 && newY == 2 && newZ == 2)
+	{
+		zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
+		return;
+	}
 	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
 	zoopSubsystem->ForceNetUpdate();
 }
