@@ -859,18 +859,18 @@ void FInfiniteZoopModule::StartupModule()
 			{
 				return;
 			}
-			// Only skip our custom OnRep logic on dedicated/listen servers.
-			// In standalone (single player) we still want the old behavior.
-			if (self->HasAuthority())
+
+			if (UWorld* World = self->GetWorld())
 			{
-				UWorld* World = self->GetWorld();
-				if (World && World->GetNetMode() != NM_Standalone)
+				ENetMode NetMode = World->GetNetMode();
+
+				// Never run on dedicated server
+				if (NetMode == NM_DedicatedServer)
 				{
-					// Multiplayer server: let vanilla OnRep_DesiredZoop run.
 					return;
 				}
-				// Standalone: fall through and run our custom handler.
 			}
+
 			if (!this->OnRep_DesiredZoop(self))
 			{
 				scope.Cancel();
