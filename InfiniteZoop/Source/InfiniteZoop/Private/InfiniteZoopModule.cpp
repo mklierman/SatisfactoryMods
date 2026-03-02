@@ -89,34 +89,10 @@ int GetClosestZoopAngle(double angleToCheck)
 
 void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 {
-	UWorld* World = self ? self->GetWorld() : nullptr;
-	if (!World)
-	{
-		return;
-	}
-
-	// Only let the owning client (and the local player on a listen server)
-	// drive camera-based zoop orientation. The server should rely on the
-	// replicated desired zoop instead, to avoid client/server divergence.
-	auto pc = Cast<AFGPlayerController>(self->GetConstructionInstigator() ? self->GetConstructionInstigator()->GetController() : nullptr);
+	auto pc = Cast<AFGPlayerController>(self->GetConstructionInstigator()->GetController());
 	if (!pc)
 	{
 		return;
-	}
-
-	ENetMode NetMode = World->GetNetMode();
-	if (NetMode == NM_DedicatedServer)
-	{
-		// Never run camera-based zoop logic on a dedicated server.
-		return;
-	}
-	if (NetMode != NM_Client)
-	{
-		// On a listen server, only process input for the local player controller.
-		if (pc != World->GetFirstPlayerController())
-		{
-			return;
-		}
 	}
 
 	AFGFactoryBuildingHologram* Fhg = Cast<AFGFactoryBuildingHologram>(self);
