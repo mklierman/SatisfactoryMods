@@ -22,27 +22,7 @@ class ATMOSPHEREEDITOR_API UAE_BPFL : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 	public:
-	UFUNCTION(BlueprintCallable)
-	static TArray<UFGBiome*> GetAllBiomes();
 
-	UFUNCTION(BlueprintCallable)
-	static UFGBiome* GetGrassyFieldsMain();
-	//UFUNCTION(BlueprintCallable)
-	//static FExponentialFogSettings GetFogSettings(AFGAtmosphereVolume* volume);
-	//UFUNCTION(BlueprintCallable)
-	//static FSkySphereSettings GetSkySphereSettings(AFGAtmosphereVolume* volume, float atTime);
-	//UFUNCTION(BlueprintCallable)
-	//static FSkyAtmosphereSettings GetAtmosphereSettings(AFGAtmosphereVolume* volume, float atTime);
-
-	////UFUNCTION(BlueprintCallable)
-	////static FPostProcessVolumeProperties GetPostProcessProperties(AFGAtmosphereVolume* volume);
-
-	//UFUNCTION(BlueprintCallable)
-	//static void GetBiomeExponentialFogSettings(UFGBiome* biome, float atTime, struct FExponentialFogSettings& out_settings);
-
-	//UFUNCTION(BlueprintCallable)
-	//static void GetBiomeSkySphereSettings(UFGBiome* biome, float atTime, struct FSkySphereSettings& out_settings);
-
-	//UFUNCTION(BlueprintCallable)
-	//static void GetBiomeAtmosphereSettings(UFGBiome* biome, float atTime, struct FSkyAtmosphereSettings& out_settings);
+	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"))
+	static AActor* CloneActor(UObject* WorldContextObject, AActor* ActorToClone, FTransform NewTransform, FName Tag);
 };
