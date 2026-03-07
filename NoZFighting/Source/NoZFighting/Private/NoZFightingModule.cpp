@@ -175,7 +175,20 @@ void FNoZFightingModule::SetInstanced(AAbstractInstanceManager* manager, AActor*
 		loc.Y = loc.Y + yRandomFloat;
 		loc.Z = loc.Z + zRandomFloat;
 		ptr->RelativeTransform.SetLocation(loc);
-		}
+	}
+	else if (Name.ToString().ToLower().Contains("traintrack"))
+	{
+		// Train Tracks
+		ptr->bApplyRandomOffsetOnInstance = false;
+
+		auto config = FNoZFighting_ConfigStruct::GetActiveConfig(OwnerActor->GetWorld());
+		auto zMin = config.TrainTracks.TrainTrackZ * -1.f;
+		auto zMax = config.TrainTracks.TrainTrackZ;
+		float zRandomFloat = RandStream.FRandRange(zMin, zMax);
+		auto loc = ptr->RelativeTransform.GetLocation();
+		loc.Z = loc.Z + zRandomFloat;
+		ptr->RelativeTransform.SetLocation(loc);
+	}
 	return;
 }
 

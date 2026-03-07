@@ -10,6 +10,7 @@ struct FNoZFighting_ConfigStruct_Catwalks;
 struct FNoZFighting_ConfigStruct_Beams;
 struct FNoZFighting_ConfigStruct_Pillars;
 struct FNoZFighting_ConfigStruct_Roofs;
+struct FNoZFighting_ConfigStruct_TrainTracks;
 
 USTRUCT(BlueprintType)
 struct FNoZFighting_ConfigStruct_Foundations {
@@ -95,6 +96,14 @@ public:
     float RoofZ{};
 };
 
+USTRUCT(BlueprintType)
+struct FNoZFighting_ConfigStruct_TrainTracks {
+    GENERATED_BODY()
+public:
+    UPROPERTY(BlueprintReadWrite)
+    float TrainTrackZ{};
+};
+
 /* Struct generated from Mod Configuration Asset '/NoZFighting/NoZFighting_Config' */
 USTRUCT(BlueprintType)
 struct FNoZFighting_ConfigStruct {
@@ -117,6 +126,9 @@ public:
 
     UPROPERTY(BlueprintReadWrite)
     FNoZFighting_ConfigStruct_Roofs Roofs{};
+
+    UPROPERTY(BlueprintReadWrite)
+    FNoZFighting_ConfigStruct_TrainTracks TrainTracks{};
 
     /* Retrieves active configuration value and returns object of this struct containing it */
     static FNoZFighting_ConfigStruct GetActiveConfig(UObject* WorldContext) {
