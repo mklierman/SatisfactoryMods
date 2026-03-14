@@ -25,4 +25,7 @@ class ATMOSPHEREEDITOR_API UAE_BPFL : public UBlueprintFunctionLibrary
 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"))
 	static AActor* CloneActor(UObject* WorldContextObject, AActor* ActorToClone, FTransform NewTransform, FName Tag);
+
+	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"))
+	static AActor* CloneActorLocal(UObject* WorldContextObject, AActor* ActorToClone, FTransform NewTransform, FName Tag);
 };

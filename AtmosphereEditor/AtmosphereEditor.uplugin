@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "2.0.1",
-	"SemVersion": "2.0.1",
+	"VersionName": "2.0.2",
+	"SemVersion": "2.0.2",
 	"FriendlyName": "Biome Shader Selector",
 	"Description": "",
 	"Category": "Modding",
