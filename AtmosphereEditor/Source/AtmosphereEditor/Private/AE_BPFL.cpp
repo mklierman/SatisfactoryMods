@@ -66,4 +66,13 @@ AActor* UAE_BPFL::CloneActorLocal(UObject* WorldContextObject, AActor* ActorToCl
 
     return NewActor;
 }
+
+UObject* UAE_BPFL::GetCDO_NoLog(UClass* Class)
+{
+    if (IsValid(Class))
+    {
+        return Class->GetDefaultObject();
+    }
+    return nullptr;
+}
 #pragma optimize("", on)
