@@ -84,6 +84,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void ReadyForShoot();
 
+	// Fires at the exact moment a shot is committed in C++ Shoot().
+	UFUNCTION(BlueprintImplementableEvent, Category = "Waste Cannon")
+	void OnShoot(const FTransform& ShotTransform);
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "Waste Cannon")
 	void OnShotTriggered(const FTransform& ShotTransform);
 

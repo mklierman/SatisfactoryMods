@@ -252,6 +252,7 @@ void AWC_Railgun::Shoot(const FTransform& position)
 
 	//UE_LOGFMT(WasteCannon_Log, Display, "SHOOTING. State: {0}", UEnum::GetValueAsString(animationState));
 	this->Loaded = false;
+	OnShoot(position);
 	OnShotTriggered(position);
 	netSig_Shooted(position.GetLocation());
 }
