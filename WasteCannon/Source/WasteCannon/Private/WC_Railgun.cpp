@@ -34,14 +34,14 @@ void AWC_Railgun::BeginPlay()
 			FuelInventoryComponent->SetReplicationRelevancyOwner(this);
 			FuelInventoryComponent->SetLocked(false);
 			FuelInventoryComponent->Resize(1);
-			FuelInventoryComponent->AddArbitrarySlotSize(0, 20);
+			FuelInventoryComponent->AddArbitrarySlotSize(0, 100);
 		}
 		if (StorageInventoryComponent)
 		{
 			StorageInventoryComponent->SetReplicationRelevancyOwner(this);
 			StorageInventoryComponent->SetLocked(false);
-			StorageInventoryComponent->Resize(1);
-			StorageInventoryComponent->AddArbitrarySlotSize(0, 20);
+			StorageInventoryComponent->Resize(9);
+			//StorageInventoryComponent->AddArbitrarySlotSize(0, 20);
 		}
 
 		InputConnections.Empty();
@@ -285,7 +285,7 @@ void AWC_Railgun::Shoot(const FTransform& position)
 	{
 		return;
 	}
-	if (!ConsumeOneFuelItem())
+	if (!ConsumeFuel())
 	{
 		return;
 	}
@@ -361,7 +361,7 @@ bool AWC_Railgun::IsWasteInventoryFull() const
 	return StorageInventoryComponent->FindEmptyIndex() < 0;
 }
 
-bool AWC_Railgun::ConsumeOneFuelItem()
+bool AWC_Railgun::ConsumeFuel()
 {
 	if (!FuelInventoryComponent)
 	{
@@ -377,9 +377,9 @@ bool AWC_Railgun::ConsumeOneFuelItem()
 		}
 		bHasValidWhitelistEntry = true;
 
-		if (FuelInventoryComponent->HasItems(AllowedDescriptor, 1))
+		if (FuelInventoryComponent->HasItems(AllowedDescriptor, 100))
 		{
-			FuelInventoryComponent->Remove(AllowedDescriptor, 1);
+			FuelInventoryComponent->Empty();
 			return true;
 		}
 	}
@@ -416,7 +416,7 @@ bool AWC_Railgun::CanShootWithCurrentAmmo() const
 		}
 		bHasValidWhitelistEntry = true;
 
-		if (FuelInventoryComponent->GetNumItems(AllowedDescriptor) > 0)
+		if (FuelInventoryComponent->GetNumItems(AllowedDescriptor) > 100)
 		{
 			return true;
 		}

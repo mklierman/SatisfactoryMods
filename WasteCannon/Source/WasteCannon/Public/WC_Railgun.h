@@ -189,7 +189,7 @@ protected:
 	UFUNCTION()
 	void FinishShotCycleFallback();
 
-	bool ConsumeOneFuelItem();
+	bool ConsumeFuel();
 	void RemoveAllWasteItems();
 
 	// If true, ammo/fuel must match one of AllowedAmmoDescriptors.
