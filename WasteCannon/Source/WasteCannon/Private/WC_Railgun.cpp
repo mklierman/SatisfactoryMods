@@ -20,6 +20,7 @@ AWC_Railgun::AWC_Railgun()
 	this->AutoShootCheckIntervalSeconds = 0.25f;
 	this->LastShotWasteCount = 0;
 	this->bUseAmmoWhitelist = true;
+	this->ShouldShoot = true;
 }
 
 void AWC_Railgun::BeginPlay()
@@ -104,6 +105,10 @@ void AWC_Railgun::Factory_Tick(float dt)
 				{
 					continue;
 				}
+				if (TargetInventory == FuelInventoryComponent && !IsItemClassAllowedOnFuelInput(PeekItem.GetItemClass()))
+				{
+					continue;
+				}
 				if (!TargetInventory->HasEnoughSpaceForItem(PeekItem))
 				{
 					continue;
@@ -111,7 +116,9 @@ void AWC_Railgun::Factory_Tick(float dt)
 
 				FInventoryItem GrabbedItem;
 				float OffsetBeyond = 100.0f;
-				if (!Connection->Factory_GrabOutput(GrabbedItem, OffsetBeyond, nullptr))
+				const TSubclassOf<UFGItemDescriptor> GrabType =
+					(TargetInventory == FuelInventoryComponent) ? PeekItem.GetItemClass() : nullptr;
+				if (!Connection->Factory_GrabOutput(GrabbedItem, OffsetBeyond, GrabType))
 				{
 					continue;
 				}
@@ -124,17 +131,32 @@ void AWC_Railgun::Factory_Tick(float dt)
 
 	if (this->isMoving)
 	{
-		this->towerMovement.current = FMath::FInterpConstantTo(this->towerMovement.current, this->towerMovement.target, dt, this->RotationSpeed);
-		this->barrelMovement.current = FMath::FInterpConstantTo(this->barrelMovement.current, this->barrelMovement.target, dt, this->RotationSpeed);
-
-		if (FMath::Abs(this->towerMovement.current - this->towerMovement.target) < 0.01f &&
-			FMath::Abs(this->barrelMovement.current - this->barrelMovement.target) < 0.01f)
+		// Stop aim movement if shooting is disabled
+		if (!ShouldShoot && this->animationState != ERailgunState::RESETTING)
 		{
 			this->isMoving = false;
-			AsyncTask(ENamedThreads::GameThread, [this]()
+			OnStopMoving();
+			if (HasAuthority())
 			{
-				this->MovementComplete();
-			});
+				SetAimDirectionDirect(FVector2D(this->towerMovement.current, this->barrelMovement.current));
+				Loaded = false;
+				this->animationState = ERailgunState::IDLE;
+			}
+		}
+		else
+		{
+			this->towerMovement.current = FMath::FInterpConstantTo(this->towerMovement.current, this->towerMovement.target, dt, this->RotationSpeed);
+			this->barrelMovement.current = FMath::FInterpConstantTo(this->barrelMovement.current, this->barrelMovement.target, dt, this->RotationSpeed);
+
+			if (FMath::Abs(this->towerMovement.current - this->towerMovement.target) < 0.01f &&
+				FMath::Abs(this->barrelMovement.current - this->barrelMovement.target) < 0.01f)
+			{
+				this->isMoving = false;
+				AsyncTask(ENamedThreads::GameThread, [this]()
+				{
+					this->MovementComplete();
+				});
+			}
 		}
 	}
 }
@@ -185,12 +207,20 @@ void AWC_Railgun::MovementComplete()
 			ReadyForShoot();
 			if (this->animationState == ERailgunState::AIMING)
 			{
-				Shoot(GetActorTransform());
+				if (ShouldShoot)
+				{
+					Shoot(GetActorTransform());
+				}
+				else
+				{
+					Loaded = false;
+					this->animationState = ERailgunState::IDLE;
+				}
 			}
 		}
 		else if (this->animationState == ERailgunState::RESETTING)
 		{
-			// Reset completes the shot cycle; next cycle will begin from loading.
+			// Reset completes the shot cycle. Next cycle will begin from loading.
 			this->animationState = ERailgunState::IDLE;
 			netSig_Finished();
 			//UE_LOGFMT(WasteCannon_Log, Display, "transition to idle");
@@ -221,6 +251,16 @@ void AWC_Railgun::AnimationComplete()
 	}
 	else if (this->animationState == ERailgunState::LOADING)
 	{
+		if (!ShouldShoot)
+		{
+			Loaded = false;
+			this->animationState = ERailgunState::IDLE;
+			return;
+		}
+		if (bUseAimTargetWorldLocation)
+		{
+			ApplyAimFromWorldTarget();
+		}
 		AimToDirection(AimDirection, ERailgunState::AIMING);
 	}
 }
@@ -228,6 +268,11 @@ void AWC_Railgun::AnimationComplete()
 void AWC_Railgun::Shoot(const FTransform& position)
 {
 	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (!ShouldShoot)
 	{
 		return;
 	}
@@ -260,8 +305,42 @@ void AWC_Railgun::Shoot(const FTransform& position)
 void AWC_Railgun::AimToDirection(const FVector2D & direction, ERailgunState newState)
 {
 	//UE_LOGFMT(WasteCannon_Log, Display, "AimToDirection. State: {0}", UEnum::GetValueAsString(animationState));
+	if (!ShouldShoot && newState != ERailgunState::RESETTING)
+	{
+		Loaded = false;
+		this->animationState = ERailgunState::IDLE;
+		return;
+	}
+
 	this->animationState = newState;
-	UpdateAimDirection(FVector::ZeroVector, direction);
+	const FVector AimReferenceWorld =
+		bUseAimTargetWorldLocation ? AimTargetWorldLocation : FVector::ZeroVector;
+	UpdateAimDirection(AimReferenceWorld, direction);
+}
+
+void AWC_Railgun::ApplyAimFromWorldTarget()
+{
+	const FVector Origin = GetActorLocation();
+	FVector ToTarget = AimTargetWorldLocation - Origin;
+	const float DistSq = ToTarget.SizeSquared();
+	if (DistSq < KINDA_SMALL_NUMBER)
+	{
+		return;
+	}
+
+	// Unit direction to target in actor space (+X forward, +Y right, +Z up).
+	const FVector LocalDir = GetActorTransform().InverseTransformVectorNoScale(ToTarget.GetSafeNormal());
+
+	const float TowerDeg = FMath::RadiansToDegrees(FMath::Atan2(LocalDir.Y, LocalDir.X));
+	float BarrelDeg = FMath::RadiansToDegrees(FMath::Atan2(LocalDir.Z,
+		FMath::Sqrt(FMath::Square(LocalDir.X) + FMath::Square(LocalDir.Y))));
+
+	if (bClampWorldTargetBarrelToTiltLimits)
+	{
+		BarrelDeg = FMath::Clamp(BarrelDeg, MinTilt, MaxTilt);
+	}
+
+	AimDirection = FVector2D(TowerDeg, BarrelDeg);
 }
 
 int32 AWC_Railgun::GetWasteItemCount() const
@@ -405,12 +484,48 @@ UFGInventoryComponent* AWC_Railgun::ResolveInventoryForConnection(UFGFactoryConn
 	return StorageInventoryComponent;
 }
 
+bool AWC_Railgun::IsItemClassAllowedOnFuelInput(TSubclassOf<UFGItemDescriptor> ItemClass) const
+{
+	if (!ItemClass)
+	{
+		return false;
+	}
+	if (!bUseAmmoWhitelist)
+	{
+		return true;
+	}
+
+	bool bHasValidWhitelistEntry = false;
+	for (const TSubclassOf<UFGItemDescriptor>& AllowedDescriptor : AllowedAmmoDescriptors)
+	{
+		if (!AllowedDescriptor)
+		{
+			continue;
+		}
+		bHasValidWhitelistEntry = true;
+		if (ItemClass == AllowedDescriptor)
+		{
+			return true;
+		}
+	}
+
+	// Same as CanShootWithCurrentAmmo / ConsumeOneFuelItem: no valid list entries means no descriptor restriction.
+	return !bHasValidWhitelistEntry;
+}
+
 bool AWC_Railgun::TryAutoShoot()
 {
 	//UE_LOGFMT(WasteCannon_Log, Display, "TryAutoShoot. State: {0}", UEnum::GetValueAsString(animationState));
 	if (!HasAuthority())
 	{
 		return false;
+	}
+
+	// If shooting was disabled mid-cycle, drop out of LOADING.
+	if (!ShouldShoot && animationState == ERailgunState::LOADING)
+	{
+		Loaded = false;
+		this->animationState = ERailgunState::IDLE;
 	}
 
 	if (animationState != ERailgunState::IDLE && animationState != ERailgunState::GUARDING)
@@ -436,6 +551,15 @@ bool AWC_Railgun::TryAutoShoot()
 		return false;
 	}
 
+	// Let Blueprint run first (e.g. set ShouldShoot true) before any movement or LOADING.
+	Loaded = true;
+	ReadyForShoot();
+	if (!ShouldShoot)
+	{
+		Loaded = false;
+		return false;
+	}
+
 	// Ensure barrel is back to load angle before entering LOADING.
 	if (FMath::Abs(this->barrelMovement.current) > 0.01f)
 	{
@@ -443,10 +567,7 @@ bool AWC_Railgun::TryAutoShoot()
 		return true;
 	}
 
-	Loaded = true;
-
 	this->animationState = ERailgunState::LOADING;
-	ReadyForShoot();
 
 	return true;
 }

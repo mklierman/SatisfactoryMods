@@ -72,6 +72,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	void AimToDirection(const FVector2D& direction, ERailgunState newState);
 
+	// Sets AimDirection from AimTargetWorldLocation (tower = X deg, barrel = Y deg in actor-local space, +X forward).
+	UFUNCTION(BlueprintCallable, Category = "Waste Cannon|Aim")
+	void ApplyAimFromWorldTarget();
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void OnStartMoving();
 
@@ -123,6 +127,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, SaveGame)
 	bool Loaded = false;
 
+	// When false: no shooting, no LOADING, no aim movement. TryAutoShoot still calls ReadyForShoot first so BP can set this true before barrel/LOADING. Post-shot RESETTING still runs.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Waste Cannon")
+	bool ShouldShoot = true;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float MinTilt = 45;
 
@@ -137,6 +145,18 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, SaveGame)
 	FVector2D AimDirection;
+
+	// World position to aim at; used when bUseAimTargetWorldLocation is true (see ApplyAimFromWorldTarget).
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Waste Cannon|Aim")
+	FVector AimTargetWorldLocation = FVector::ZeroVector;
+
+	// If true, LOADING -> AIMING uses ApplyAimFromWorldTarget() so AimDirection is derived from AimTargetWorldLocation.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Waste Cannon|Aim")
+	bool bUseAimTargetWorldLocation = false;
+
+	// When true, barrel elevation from world aim is clamped to [MinTilt, MaxTilt].
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Waste Cannon|Aim")
+	bool bClampWorldTargetBarrelToTiltLimits = true;
 
 	UPROPERTY(BlueprintReadOnly, SaveGame)
 	bool isMoving;
@@ -160,6 +180,9 @@ public:
 	bool CanShootWithCurrentAmmo() const;
 
 protected:
+	/** When fuel uses the ammo whitelist, only these descriptors may enter via the fuel input (see Factory_Tick). */
+	bool IsItemClassAllowedOnFuelInput(TSubclassOf<UFGItemDescriptor> ItemClass) const;
+
 	UFUNCTION()
 	void EvaluateAutoShoot();
 	UFGInventoryComponent* ResolveInventoryForConnection(UFGFactoryConnectionComponent* Connection) const;
