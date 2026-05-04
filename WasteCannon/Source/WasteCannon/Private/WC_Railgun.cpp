@@ -416,7 +416,7 @@ bool AWC_Railgun::CanShootWithCurrentAmmo() const
 		}
 		bHasValidWhitelistEntry = true;
 
-		if (FuelInventoryComponent->GetNumItems(AllowedDescriptor) > 100)
+		if (FuelInventoryComponent->GetNumItems(AllowedDescriptor) >= 100)
 		{
 			return true;
 		}
