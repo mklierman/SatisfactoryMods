@@ -36,4 +36,19 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static void StartPowerProduction(AFGBuildableGenerator* generator);
+
+	UFUNCTION(BlueprintPure, Category = "Vanilla Upgrades", meta = (DeterminesOutputType = "Class"))
+	static UObject* GetCDOQuiet(UClass* Class);
+
+	DECLARE_FUNCTION(execGetCDO) {
+		P_GET_OBJECT(UClass, Class);
+		P_FINISH;
+		checkf(Class, TEXT("GetClassDefaultObject: received NULL class"));
+
+		P_NATIVE_BEGIN;
+		UPackage* OutermostPackage = Stack.Node->GetOutermost();
+
+		*(UObject**)RESULT_PARAM = GetCDOQuiet(Class);
+		P_NATIVE_END;
+	}
 };
