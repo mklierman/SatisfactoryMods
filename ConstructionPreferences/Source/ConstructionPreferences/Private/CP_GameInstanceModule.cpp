@@ -74,18 +74,18 @@ void UCP_GameInstanceModule::ScanOneRecipe(TSubclassOf<UFGRecipe> Recipe)
 	}
 	if (UFGRecipe* RecipeCDO = Recipe.GetDefaultObject()) {
 		if (RecipeCDO->GetProducts().Num() != 1) {
-			UE_LOG(LogConstructionPreferences, Error, TEXT("Recipe '%s' products %d != 1"), *RecipeCDO->GetName(), RecipeCDO->GetProducts().Num());
+			//UE_LOG(LogConstructionPreferences, Error, TEXT("Recipe '%s' products %d != 1"), *RecipeCDO->GetName(), RecipeCDO->GetProducts().Num());
 			return;
 		}
 		const TSubclassOf<UFGBuildingDescriptor> BuildingDesc(RecipeCDO->GetProducts()[0].ItemClass);
 		/* Check if class downcast succeeded */
 		if (!IsValid(*BuildingDesc)) {
-			UE_LOG(LogConstructionPreferences, Error, TEXT("Recipe '%s' first product class invalid"), *RecipeCDO->GetName());
+			//UE_LOG(LogConstructionPreferences, Error, TEXT("Recipe '%s' first product class invalid"), *RecipeCDO->GetName());
 			return;
 		}
 		TSubclassOf<AFGBuildable> BuildableClass = UFGBuildingDescriptor::GetBuildableClass(BuildingDesc);
 		if (!IsValid(BuildableClass)) {
-			UE_LOG(LogConstructionPreferences, Error, TEXT("Recipe '%s' bad buildable class"), *RecipeCDO->GetName());
+			//UE_LOG(LogConstructionPreferences, Error, TEXT("Recipe '%s' bad buildable class"), *RecipeCDO->GetName());
 			return;
 		}
 		if (BuildableClass->IsChildOf<AFGBuildableConveyorBelt>()) {
