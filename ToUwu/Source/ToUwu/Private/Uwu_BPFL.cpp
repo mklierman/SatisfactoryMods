@@ -1,9 +1,6 @@
 #include "Uwu_BPFL.h"
 
-FString UUwu_BPFL::RegexReplace(
-    const FString& Input,
-    const FString& Pattern,
-    const FString& Replacement)
+FString UUwu_BPFL::RegexReplace(const FString& Input, const FString& Pattern, const FString& Replacement)
 {
     FString Result;
 
@@ -14,9 +11,7 @@ FString UUwu_BPFL::RegexReplace(
 
     while (Matcher.FindNext())
     {
-        Result += Input.Mid(
-            LastIndex,
-            Matcher.GetMatchBeginning() - LastIndex);
+        Result += Input.Mid(LastIndex, Matcher.GetMatchBeginning() - LastIndex);
 
         FString ExpandedReplacement = Replacement;
 
@@ -29,9 +24,7 @@ FString UUwu_BPFL::RegexReplace(
                 continue;
             }
 
-            ExpandedReplacement.ReplaceInline(
-                *FString::Printf(TEXT("$%d"), GroupIndex),
-                *Capture);
+            ExpandedReplacement.ReplaceInline(*FString::Printf(TEXT("$%d"), GroupIndex), *Capture);
         }
 
         Result += ExpandedReplacement;
@@ -112,8 +105,7 @@ FString UUwu_BPFL::UwuifyString(const FString & Input)
         {
             FString Tag = Matcher.GetCaptureGroup(0);
 
-            FString Placeholder =
-                FString::Printf(TEXT("%%UWUTAG%d%%"), TagIndex);
+            FString Placeholder = FString::Printf(TEXT("%%UWUTAG%d%%"), TagIndex);
 
             PreservedTags.Add(Tag);
 
@@ -143,6 +135,7 @@ FString UUwu_BPFL::UwuifyString(const FString & Input)
     //Result.ReplaceInline(TEXT("l"), TEXT("w"), ESearchCase::CaseSensitive);
     //Result.ReplaceInline(TEXT("R"), TEXT("W"), ESearchCase::CaseSensitive);
     //Result.ReplaceInline(TEXT("L"), TEXT("W"), ESearchCase::CaseSensitive);
+
     Result.ReplaceInline(TEXT("qui"), TEXT("kwi"), ESearchCase::CaseSensitive);
     Result.ReplaceInline(TEXT("Qui"), TEXT("Kwi"), ESearchCase::CaseSensitive);
 
@@ -161,12 +154,9 @@ FString UUwu_BPFL::UwuifyString(const FString & Input)
 
     for (int32 i = 0; i < PreservedTags.Num(); ++i)
     {
-        FString Placeholder =
-            FString::Printf(TEXT("%%UWUTAG%d%%"), i);
+        FString Placeholder = FString::Printf(TEXT("%%UWUTAG%d%%"), i);
 
-        Result.ReplaceInline(
-            *Placeholder,
-            *PreservedTags[i]);
+        Result.ReplaceInline(*Placeholder, *PreservedTags[i]);
     }
 
     return Result;

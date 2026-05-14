@@ -9,14 +9,11 @@
 #include "Buildables/FGBuildable.h"
 #include "Uwu_BPFL.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class TOUWU_API UUwu_BPFL : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
-
+public:
 	UFUNCTION(BlueprintCallable, Category = "UWU")
 	static void PatchDescriptors();
 

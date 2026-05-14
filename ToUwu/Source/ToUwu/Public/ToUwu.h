@@ -8,6 +8,7 @@
 #include "Internationalization/StringTableRegistry.h"
 #include "StringTableRegistry.h"
 #include "StringTableCore.h"
+#include "Uwu_BPFL.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(ToUwu_Log, Display, All);
 
@@ -27,11 +28,5 @@ public:
 
 	TArray<FStringTableDump> DumpAllStringTables();
 
-	FString UwuifyString(const FString& Input);
-
 	void PatchStringTableEntry(FName TableId, FString Key, FString NewValue);
-
-	void PatchDescriptors();
-
-	void PatchBuildables();
 };
