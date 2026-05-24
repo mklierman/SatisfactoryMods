@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(CTBP_Log, Display, All);
 class FCopyToBPModule : public IModuleInterface
 {
 public:

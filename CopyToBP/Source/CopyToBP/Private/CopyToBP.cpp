@@ -6,8 +6,11 @@
 #include "Hologram/FGBlueprintHologram.h"
 #include "FGPlayerController.h"
 #include "FGCharacterPlayer.h"
+#include "Buildables/FGBuildableManufacturer.h"
+#include "CTBP_ConfigStruct.h"
 
 #define LOCTEXT_NAMESPACE "FCopyToBPModule"
+DEFINE_LOG_CATEGORY(CTBP_Log);
 
 void FCopyToBPModule::StartupModule()
 {
@@ -15,18 +18,24 @@ void FCopyToBPModule::StartupModule()
 	AFGBlueprintHologram* bph = GetMutableDefault<AFGBlueprintHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBlueprintHologram::Construct, bph, [this](AActor* result, AFGBlueprintHologram* self, TArray< AActor* >& out_children, FNetConstructionID NetConstructionID)
 		{
+
 			auto instPawn = self->GetConstructionInstigator();
 			auto cont = instPawn->GetController();
 			auto fgCont = Cast<AFGPlayerController>(cont);
 			auto character = Cast<AFGCharacterPlayer>(fgCont->GetCharacter());
 			auto state = character->GetControllingPlayerState();
-			//auto clipboard = state->mFactoryClipboard;
-			//auto firstItem = clipboard[0];
-			//clipboard.Empty();
-			//clipboard.Add(firstItem);
-			for (auto child : out_children)
+			auto config = FCTBP_ConfigStruct::GetActiveConfig(fgCont->GetWorld());
+			
+			//UE_LOGFMT(CTBP_Log, Display, "AFGBlueprintHologram::Construct");
+			if (config.ShouldPaste)
 			{
-				state->PasteFactoryClipboard(child);
+				for (auto child : out_children)
+				{
+					if (auto buildable = Cast<AFGBuildableManufacturer>(child))
+					{
+						state->PasteFactoryClipboard(child);
+					}
+				}
 			}
 		});
 #endif
