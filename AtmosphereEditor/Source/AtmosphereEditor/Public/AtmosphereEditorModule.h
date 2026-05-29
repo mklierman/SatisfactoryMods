@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Modules/ModuleManager.h"
+#include "FGAtmosphereVolume.h"
+#include "Atmosphere/UFGBiome.h"
 
 class FAtmosphereEditorModule : public FDefaultGameModuleImpl {
 public:

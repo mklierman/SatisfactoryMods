@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "FGColoredInstanceMeshProxy.h"
-#include <FGVehicleSubsystem.h>
 #include "DT_BPFL.generated.h"
 
 UCLASS()
@@ -21,14 +20,4 @@ class DIGBYTOOL_API UDT_BPFL : public UBlueprintFunctionLibrary
 
 		UFUNCTION(BlueprintCallable)
 		static void OpenURL(FString URL);
-
-
-		UFUNCTION(BlueprintCallable)
-		static void UpdateTargetList(AFGVehicleSubsystem* vehicleSubsystem, AFGDrivingTargetList* targetList);
-
-		UFUNCTION(BlueprintCallable)
-		static void UpdateTargetLists(AFGVehicleSubsystem* vehicleSubsystem);
-
-		UFUNCTION(BlueprintCallable)
-		static void UpdateTargetPoints(AFGVehicleSubsystem* vehicleSubsystem);
 };

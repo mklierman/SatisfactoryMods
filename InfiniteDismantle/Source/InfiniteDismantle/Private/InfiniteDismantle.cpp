@@ -9,11 +9,13 @@
 
 void FInfiniteDismantleModule::StartupModule()
 {
+#if !WITH_EDITOR
 	UFGBuildGunStateDismantle* bgsd = GetMutableDefault<UFGBuildGunStateDismantle>();
 	SUBSCRIBE_METHOD_VIRTUAL(UFGBuildGunStateDismantle::TickState_Implementation, bgsd, [](auto& scope, UFGBuildGunStateDismantle* self, float deltaTime)
 		{
 			self->mCurrentMultiDismantleLimit = 100000;
 		});
+#endif
 }
 
 void FInfiniteDismantleModule::ShutdownModule()

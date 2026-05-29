@@ -202,7 +202,7 @@ void FDirectToSplitterModule::StartupModule() {
 
 void FDirectToSplitterModule::DismantleLeftoverBelt(UFGFactoryConnectionComponent* conn)
 {
-	if (conn && conn->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR)
+	if (conn /*&& conn->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR*/)
 	{
 		auto outer = conn->GetOuterBuildable();
 		if (outer)
@@ -807,7 +807,7 @@ void FDirectToSplitterModule::HGConstruct(AFGBuildableHologram* hg, AActor* buil
 						TArray<UFGFactoryConnectionComponent*> outputs;
 						for (auto conn : connections)
 						{
-							if (conn->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR)
+							if (conn /*&& conn->GetConnector() == EFactoryConnectionConnector::FCC_CONVEYOR*/)
 							{
 								if (conn->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
 								{
@@ -860,7 +860,7 @@ void FDirectToSplitterModule::HGConstruct(AFGBuildableHologram* hg, AActor* buil
 			AttachmentInfos.Remove(splitterhg);
 		}
 		return;
-		if (mSnappedConnections.Contains(splitterhg))
+		/*if (mSnappedConnections.Contains(splitterhg))
 		{
 			if (UFGFactoryConnectionComponent* connection = mSnappedConnections[splitterhg])
 			{
@@ -881,19 +881,20 @@ void FDirectToSplitterModule::HGConstruct(AFGBuildableHologram* hg, AActor* buil
 					}
 				}
 			}
-		}
+		}*/
 	}
 
 }
 
 bool DoOnce = false;
-int i = 0;
+int pipeid = 0;
 AFGPipeAttachmentHologram* pah;
+
 bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
 {
 	if (pah != self)
 	{
-		i = 0;
+		pipeid = 0;
 		pah = self;
 	}
 
@@ -975,13 +976,13 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 
 					if (scrollDelta == -1 && !DoOnce)
 					{
-						if (i + 1 < myPipeConns.Num())
+						if (pipeid + 1 < myPipeConns.Num())
 						{
-							i++;
+							pipeid++;
 						}
 						else
 						{
-							i = 0;
+							pipeid = 0;
 						}
 						DoOnce = true;
 					}
@@ -994,18 +995,18 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 					}
 					else if (scrollDelta == 1 && !DoOnce)
 					{
-						if (i > 0)
+						if (pipeid > 0)
 						{
-							i--;
+							pipeid--;
 						}
 						else
 						{
-							i = myPipeConns.Num() - 1;
+							pipeid = myPipeConns.Num() - 1;
 						}
 						DoOnce = true;
 					}
 
-					UFGPipeConnectionComponent* myCompToSnap = myPipeConns[i];
+					UFGPipeConnectionComponent* myCompToSnap = myPipeConns[pipeid];
 
 					self->mSnappedConnectionComponent = closestConnection;
 					auto newConnectionLocation = closestConnection->GetComponentLocation();
@@ -1028,7 +1029,7 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 					}
 					else
 					{
-						if (i != 3)
+						if (pipeid != 3)
 						{
 							self->SetActorLocationAndRotation((newLocation + addVector), (myConnectionRotation * -1.f) + (newConnectionRotation - UKismetMathLibrary::MakeRotator(0, 0, 180)));
 						}
@@ -1037,22 +1038,22 @@ bool FDirectToSplitterModule::PipeSnap(AFGPipeAttachmentHologram* self, const FH
 							self->SetActorLocationAndRotation((newLocation + addVector), (myConnectionRotation * -1.f) + (newConnectionRotation + UKismetMathLibrary::MakeRotator(0, 0, 90)));
 						}
 					}
-					self->mSnapConnectionIndex = i;
+					self->mSnapConnectionIndex = pipeid;
 					scrollDelta = 0;
 					return true;
 
 				}
 			}
 			self->mSnappedConnectionComponent = nullptr;
-			i = 0;
+			pipeid = 0;
 			return false;
 		}
 		self->mSnappedConnectionComponent = nullptr;
-		i = 0;
+		pipeid = 0;
 		return false;
 	}
 	self->mSnappedConnectionComponent = nullptr;
-	i = 0;
+	pipeid = 0;
 	return false;
 }
 

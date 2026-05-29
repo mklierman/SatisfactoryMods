@@ -2,8 +2,9 @@
 
 #include "ToUwu.h"
 #include "Internationalization/Regex.h"
-#include "FGBuildDescriptor.h"
+//#include "FGBuildDescriptor.h"
 #include "Buildables/FGBuildable.h"
+#include "Internationalization/StringTableCore.h"
 
 #define LOCTEXT_NAMESPACE "FToUwuModule"
 DEFINE_LOG_CATEGORY(ToUwu_Log);

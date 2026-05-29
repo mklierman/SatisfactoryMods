@@ -19,25 +19,25 @@ void UCTBP_BPFL::GetAllSubclassesOf(TSubclassOf<UObject> ParentClass, TArray<UCl
 
 void UCTBP_BPFL::SetShouldPasteInConfig(bool shouldPaste, UObject* WorldContextObject)
 {
-    UE_LOGFMT(CTBP_Log, Display, "shouldPaste = {0}", shouldPaste);
-    UE_LOGFMT(CTBP_Log, Display, "SetShouldPasteInConfig");
+    //UE_LOGFMT(CTBP_Log, Display, "shouldPaste = {0}", shouldPaste);
+    //UE_LOGFMT(CTBP_Log, Display, "SetShouldPasteInConfig");
     UConfigManager* ConfigManager = WorldContextObject->GetWorld()->GetGameInstance()->GetSubsystem<UConfigManager>();
     if (ConfigManager)
     {
-        UE_LOGFMT(CTBP_Log, Display, "ConfigManager");
+        //UE_LOGFMT(CTBP_Log, Display, "ConfigManager");
         auto root = ConfigManager->GetConfigurationRootSection({ "CopyToBP", "" });
         if (root)
         {
-            UE_LOGFMT(CTBP_Log, Display, "root");
+            //UE_LOGFMT(CTBP_Log, Display, "root");
             auto sp = CastChecked<UConfigPropertyBool>(root->SectionProperties.FindChecked("ShouldPaste"));
             if (sp)
             {
-                UE_LOGFMT(CTBP_Log, Display, "sp->Value = {0}", sp->Value);
+                //UE_LOGFMT(CTBP_Log, Display, "sp->Value = {0}", sp->Value);
                 sp->Value = shouldPaste;
-                UE_LOGFMT(CTBP_Log, Display, "Value set");
+                //UE_LOGFMT(CTBP_Log, Display, "Value set");
                 //sp->MarkDirty();
                 root->MarkDirty();
-                UE_LOGFMT(CTBP_Log, Display, "MarkDirty");
+                //UE_LOGFMT(CTBP_Log, Display, "MarkDirty");
                 //ConfigManager->FlushPendingSaves();
             }
         }

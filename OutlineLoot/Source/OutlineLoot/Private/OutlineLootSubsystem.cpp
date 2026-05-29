@@ -6,7 +6,7 @@
 #include <Logging/StructuredLog.h>
 #include "Resources/FGItemDescriptor.h"
 #include <Kismet/GameplayStatics.h>
-#include <SessionSettingsManager.h>
+//#include <SessionSettingsManager.h>
 #include <OutlineLoot_ConfigurationStruct.h>
 
 DEFINE_LOG_CATEGORY(LogOutlineLoot);
@@ -120,7 +120,7 @@ void AOutlineLootSubsystem::ApplySingle(AFGItemPickup_Spawnable* pickup)
 	{
 		auto staticMeshComponent = Cast<UStaticMeshComponent>(component);
 		staticMeshComponent->SetStaticMesh(pickup->mMeshComponent->GetStaticMesh());
-		staticMeshComponent->SetCullDistance(pickup->GetSignificanceRange() * 5);
+		staticMeshComponent->SetCullDistance(pickup->GetSignificanceRange_Implementation() * 5);
 		auto dmi = staticMeshComponent->CreateDynamicMaterialInstance(0, material);
 		dmi->SetVectorParameterValue("Color", GetColor(pickup));
 		dmi->SetScalarParameterValue("Scale", GetScale(pickup));

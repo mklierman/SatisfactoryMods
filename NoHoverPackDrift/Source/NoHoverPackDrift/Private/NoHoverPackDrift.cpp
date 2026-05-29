@@ -12,9 +12,9 @@ void FNoHoverPackDriftModule::StartupModule()
 {
 	//virtual void OnCharacterMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode, EMovementMode NewMovementMode, uint8 NewCustomMode)
 
-	AFGHoverPack* hp = GetMutableDefault<AFGHoverPack>();
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHoverPack::OnCharacterMovementModeChanged, hp, [this](auto& scope, AFGHoverPack* self, EMovementMode PreviousMovementMode, uint8 PreviousCustomMode, EMovementMode NewMovementMode, uint8 NewCustomMode)
+	AFGHoverPack* hp = GetMutableDefault<AFGHoverPack>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHoverPack::OnCharacterMovementModeChanged, hp, [this](auto& scope, AFGHoverPack* self, class ACharacter* character, EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 		{
 			OnCharacterMovementModeChanged(self);
 		});

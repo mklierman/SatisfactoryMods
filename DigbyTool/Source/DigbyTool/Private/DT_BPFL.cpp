@@ -29,21 +29,3 @@ void UDT_BPFL::OpenURL(FString URL)
 	uint32* procID = nullptr;
 	FPlatformProcess::CreateProc(*cmd, parms, true, false, false, nullptr, 1, nullptr, (void*)nullptr);
 }
-
-void UDT_BPFL::UpdateTargetList(AFGVehicleSubsystem* vehicleSubsystem, AFGDrivingTargetList* targetList)
-{
-	if (targetList)
-	{
-		vehicleSubsystem->UpdateTargetList(targetList);
-	}
-}
-
-void UDT_BPFL::UpdateTargetLists(AFGVehicleSubsystem* vehicleSubsystem)
-{
-	vehicleSubsystem->UpdateTargetLists();
-}
-
-void UDT_BPFL::UpdateTargetPoints(AFGVehicleSubsystem* vehicleSubsystem)
-{
-	vehicleSubsystem->UpdateTargetPoints();
-}

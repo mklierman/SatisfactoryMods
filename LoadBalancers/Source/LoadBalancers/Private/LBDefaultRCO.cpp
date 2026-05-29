@@ -1,5 +1,6 @@
 #include "LBDefaultRCO.h"
 #include <LB_BPFL.h>
+#include "Net/UnrealNetwork.h"
 
 void ULBDefaultRCO::Server_SetFilteredItem_Implementation(ALBBuild_ModularLoadBalancer* Balancer,
 	TSubclassOf<UFGItemDescriptor> ItemClass)

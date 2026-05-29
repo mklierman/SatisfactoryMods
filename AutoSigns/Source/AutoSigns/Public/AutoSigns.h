@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 #include "Hologram/FGBuildableHologram.h"
+#include "Buildables/FGBuildableWidgetSign.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(AutoSigns_Log, Display, All);
 class FAutoSignsModule : public IModuleInterface

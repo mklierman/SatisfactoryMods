@@ -15,7 +15,7 @@ class CONSTRUCTIONPREFERENCES_API UCP_GameInstanceModule : public UGameInstanceM
 	GENERATED_BODY()
 public:
 #if WITH_EDITOR
-	virtual EDataValidationResult IsDataValid(TArray<FText>& ValidationErrors) override;
+	//virtual EDataValidationResult IsDataValid(TArray<FText>& ValidationErrors) override;
 #endif
 
 	static UCP_GameInstanceModule* Get(UObject* WorldContext);

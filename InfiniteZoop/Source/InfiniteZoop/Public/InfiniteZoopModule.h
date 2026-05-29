@@ -29,13 +29,13 @@ public:
 
 	void ScrollHologram(AFGHologram* self, int32 delta);
 
-	bool SetZoopAmount(AFGFactoryBuildingHologram* self, const FIntVector& Zoop);
+	bool SetZoopAmount(AFGBuildableHologram* self, const FIntVector& Zoop);
 
 	void OnZoopUpdated(UFGBuildGunStateBuild* self, float currentZoop, float maxZoop, const FVector& zoopLocation);
 
-	bool OnRep_DesiredZoop(AFGFactoryBuildingHologram* self);
+	bool OnRep_DesiredZoop(AFGBuildableHologram* self);
 
-	int32 GetBaseCostMultiplier(const AFGFactoryBuildingHologram* self);
+	int32 GetBaseCostMultiplier(const AFGBuildableHologram* self);
 
 	void CreateDefaultFoundationZoop(AFGFoundationHologram* self, const FHitResult& hitResult);
 
@@ -51,11 +51,11 @@ public:
 
 	bool SetMaterialState(AFGHologram* self, EHologramMaterialState state);
 
-	TMap< AFGFactoryBuildingHologram*, int32> LastMultiplier;
+	TMap< AFGBuildableHologram*, int32> LastMultiplier;
 	TMap<AFGHologram*, FIntVector> HologramsToZoop;
 	TMap<AFGFoundationHologram*, FZoopStruct*> FoundationsBeingZooped;
-	//TMap<const AFGFactoryBuildingHologram*, AFGBlueprintProxy*> HoloProxies;
-	TMap<TWeakObjectPtr<const AFGFactoryBuildingHologram>, AFGBlueprintProxy*> HoloProxies;
+	//TMap<const AFGBuildableHologram*, AFGBlueprintProxy*> HoloProxies;
+	TMap<TWeakObjectPtr<const AFGBuildableHologram>, AFGBlueprintProxy*> HoloProxies;
 
 	FVector CalcPivotAxis(const EAxis::Type DesiredAxis, const FVector& ViewVector, const FQuat& ActorQuat);
 
@@ -63,9 +63,9 @@ public:
 
 	FCriticalSection* lockObj;
 
-	void CheckBuildEffects(const AFGFactoryBuildingHologram* fbHolo, class AFGBuildable* inBuildable);
+	void CheckBuildEffects(const AFGBuildableHologram* fbHolo, class AFGBuildable* inBuildable);
 
-	void SetBlueprintProxy(const AFGFactoryBuildingHologram* fbHolo, AFGBuildable* inBuildable);
+	void SetBlueprintProxy(const AFGBuildableHologram* fbHolo, AFGBuildable* inBuildable);
 
 	void HGBeginPlay(AFGHologram* self);
 

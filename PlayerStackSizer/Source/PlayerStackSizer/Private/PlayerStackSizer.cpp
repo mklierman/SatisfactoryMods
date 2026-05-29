@@ -2,7 +2,8 @@
 
 #include "PlayerStackSizer.h"
 #include <FGCharacterPlayer.h>
-#include <NativeHookManager.h>
+//#include <NativeHookManager.h>
+#include "Patching/NativeHookManager.h"
 #include <SessionSettings/SessionSettingsManager.h>
 #include "FGInventoryLibrary.h"
 #include <FGInventoryComponentTrash.h>
@@ -156,7 +157,7 @@ int32 FPlayerStackSizerModule::MoveInventoryItems(UFGInventoryComponent* sourceC
             return 2;
         }
 
-        auto destNumItems = destinationStack.NumItems;
+        destNumItems = destinationStack.NumItems;
         if (sourceNumItems + destNumItems > destSlotSize)
         {
             // This works to prevent the move, but we want to split the stack if we can

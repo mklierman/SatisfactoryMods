@@ -266,9 +266,9 @@ void FPersistentPaintablesModule::ColorSupports(AFGBuildablePipeline* pipe, FFac
 				{
 					ApplyColor(pipeSupport, swatchClass, newData);
 				}
-				else if (auto pipeSupport = Cast<AFGBuildablePolePipe>(owner))
+				else if (auto pipeSupport2 = Cast<AFGBuildablePolePipe>(owner))
 				{
-					ApplyColor(pipeSupport, swatchClass, newData);
+					ApplyColor(pipeSupport2, swatchClass, newData);
 				}
 				else if (auto newPipe = Cast<AFGBuildablePipeline>(owner))
 				{

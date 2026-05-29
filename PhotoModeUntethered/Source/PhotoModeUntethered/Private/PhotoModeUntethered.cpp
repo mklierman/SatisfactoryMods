@@ -9,7 +9,7 @@
 void FPhotoModeUntetheredModule::StartupModule()
 {
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD(UFGPhotoModeComponent::ToggleDecoupledCamera, [this](auto& scope, UFGPhotoModeComponent* self)
+	SUBSCRIBE_METHOD(UFGPhotoModeComponent::SetPhotoCameraMode, [this](auto& scope, UFGPhotoModeComponent* self, EPhotoCameraMode mode)
 		{
 			self->mDCMoveDistanceLimit = UE_BIG_NUMBER;
 			self->mDCCutoffDistanceLimit = UE_BIG_NUMBER;

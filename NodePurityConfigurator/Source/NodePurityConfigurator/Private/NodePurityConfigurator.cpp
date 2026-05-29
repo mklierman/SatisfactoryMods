@@ -3,7 +3,7 @@
 #include "NodePurityConfigurator.h"
 
 #include "NPC_Subsystem.h"
-#include "SubsystemActorManager.h"
+#include "Subsystem/SubsystemActorManager.h"
 #include "Patching/NativeHookManager.h"
 #include "Resources/FGResourceNode.h"
 #include "SessionSettings/SessionSettingsManager.h"

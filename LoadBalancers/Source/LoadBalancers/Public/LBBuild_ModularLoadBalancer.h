@@ -12,7 +12,7 @@
 #include "LBBuild_ModularLoadBalancer.generated.h"
 
 UENUM(BlueprintType)
-enum class ELoaderType : uint8
+enum class EBalancerType : uint8
 {
 	Normal = 0 UMETA(DisplayName = "Normal"),
 	Overflow = 1 UMETA(DisplayName = "Overflow"),
@@ -211,9 +211,9 @@ public:
 	}
 
 	/* Some native helper */
-	FORCEINLINE bool IsOverflowModule() const { return mLoaderType == ELoaderType::Overflow; }
-	FORCEINLINE bool IsFilterModule() const { return mLoaderType == ELoaderType::Filter || mLoaderType == ELoaderType::Programmable; }
-	FORCEINLINE bool IsNormalModule() const { return mLoaderType == ELoaderType::Normal; }
+	FORCEINLINE bool IsOverflowModule() const { return mLoaderType == EBalancerType::Overflow; }
+	FORCEINLINE bool IsFilterModule() const { return mLoaderType == EBalancerType::Filter || mLoaderType == EBalancerType::Programmable; }
+	FORCEINLINE bool IsNormalModule() const { return mLoaderType == EBalancerType::Normal; }
 
 	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
 	ALBBuild_ModularLoadBalancer* GroupLeader;
@@ -238,7 +238,7 @@ public:
 
 	/** What type is this loader? */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="ModularLoader")
-	ELoaderType mLoaderType = ELoaderType::Normal;
+	EBalancerType mLoaderType = EBalancerType::Normal;
 	
 	UPROPERTY(EditDefaultsOnly, Category="ModularLoader")
 	uint8 mSlotsInBuffer = 25;

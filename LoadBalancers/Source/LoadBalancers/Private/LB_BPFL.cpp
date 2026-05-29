@@ -57,7 +57,7 @@ void ULB_BPFL::SplitBalancers(TArray<ALBBuild_ModularLoadBalancer*> modulesToBeS
 		ALBBuild_ModularLoadBalancer* newLeader = nullptr;
 		for (auto balancer : modulesToBeSplit)
 		{
-			if (!balancer->IsPendingKillOrUnreachable())
+			if (IsValid(balancer))
 			{
 				if (balancer->GroupLeader == nullptr && newLeader == nullptr)
 				{

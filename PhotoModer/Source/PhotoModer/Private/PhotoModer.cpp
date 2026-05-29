@@ -2,7 +2,8 @@
 
 #include "PhotoModer.h"
 #include <FGPhotoModeComponent.h>
-#include <NativeHookManager.h>
+//#include <NativeHookManager.h>
+#include "Patching/NativeHookManager.h"
 #include "GameFramework/PlayerState.h"
 #include "FGPlayerState.h"
 #include "FGInputLibrary.h"
@@ -21,7 +22,8 @@ void FPhotoModerModule::StartupModule()
 			{
 				if (self->GetIsDecoupledCameraOn())
 				{
-					self->ToggleDecoupledCamera();
+					self->SetPhotoCameraMode(EPhotoCameraMode::PCM_FirstPerson);
+					//self->ToggleDecoupledCamera();
 				}
 				self->SetPlayerVisibilityInPhotoMode(true);
 				self->GetOwnerPlayerCharacter()->HandlePhotoModeOnCharacter(false);

@@ -2,6 +2,8 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0.1",
+	"SemVersion": "1.0.1",
+	"GameVersion": ">=491125",
 	"FriendlyName": "Modding Icon Pack",
 	"Description": "A collection of sign icons from the Satisfactory Modding Discord server",
 	"Category": "Modding",
@@ -18,9 +20,15 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.11.0"
+			"SemVersion": "^3.11.3"
 		}
 	],
-	"SemVersion": "1.0.1",
-	"GameVersion": ">=404994"
+	"Modules": [
+		{
+			"Name": "SatisfactoryModdingIcons",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"BuiltInInitialFeatureState": "Active"
 }

@@ -5,7 +5,8 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Internationalization/Regex.h"
-#include "FGBuildDescriptor.h"
+//#include "FGBuildDescriptor.h"
+#include "Resources/FGBuildDescriptor.h"
 #include "Buildables/FGBuildable.h"
 #include "Uwu_BPFL.generated.h"
 

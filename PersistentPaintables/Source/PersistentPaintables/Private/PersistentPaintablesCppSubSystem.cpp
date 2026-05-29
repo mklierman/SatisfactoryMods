@@ -183,113 +183,113 @@ void APersistentPaintablesCppSubSystem::UpdateColorSingle(AFGBuildable* buildabl
 
 		ApplyColor(buildable, swatchClass, newData);
 		return;
-		if (auto pipe = Cast<AFGBuildablePipeline>(buildable))
-		{
-			if (pipe->mPipeConnections.Num() > 0)
-			{
-				for (auto conn : pipe->mPipeConnections)
-				{
-					if (conn->mConnectedComponent)
-					{
-						if (auto owner = conn->mConnectedComponent->GetOwner())
-						{
-							if (auto junction = Cast<AFGBuildablePipelineJunction>(owner))
-							{
-								ApplyColor(junction, swatchClass, newData);
-							}
-							//else if (auto pipeSupport = Cast<AFGBuildablePipelineSupport>(owner))
-							//{
-							//	ApplyColor(pipeSupport, swatchClass, newData);
-							//}
-							else if (auto newPipe = Cast<AFGBuildablePipeline>(owner)) // Might be connected to a pipe through a support
-							{
-								auto supports = FindNearbySupports(pipe, conn);
-								if (supports.Num() > 0)
-								{
-									for (auto support : supports)
-									{
-										if (auto fgpipeSupport = Cast<AFGBuildable>(support))
-										{
-											if (/*auto pipeSupport2 = Cast<AFGBuildablePipelineSupport>(fgpipeSupport) || */fgpipeSupport->GetClass() == wallHoleClass || fgpipeSupport->GetClass() == floorHoleClass || fgpipeSupport->GetClass() == wallSupportClass)
-											{
-												ApplyColor(fgpipeSupport, swatchClass, newData);
-											}
-										}
-										else if (auto aim = Cast<AAbstractInstanceManager>(support))
-										{
-											if (aim->InstanceMap.Num() > 0)
-											{
-												for (auto instance : aim->InstanceMap)
-												{
-													if (instance.Key.ToString().StartsWith("SM_PipelineSupport"))
-													{
-														if (instance.Value.InstanceHandles.Num() > 0)
-														{
-															for (auto ihandle : instance.Value.InstanceHandles)
-															{
-																for (auto handle : ihandle.Value)
-																{
-																	if (auto wallSupport = Cast<AFGBuildable>(handle->GetOwner()))
-																	{
-																		ApplyColor(wallSupport, swatchClass, newData);
-																	}
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-					else //Connection isn't connected to anything. May be connected to a support
-					{
-						auto supports = FindNearbySupports(pipe, conn);
-						if (supports.Num() > 0)
-						{
-							for (auto support : supports)
-							{
-								if (auto fgpipeSupport = Cast<AFGBuildable>(support))
-								{
-									if (/*auto pipeSupport = Cast<AFGBuildablePipelineSupport>(fgpipeSupport) || */fgpipeSupport->GetClass() == wallHoleClass || fgpipeSupport->GetClass() == floorHoleClass || fgpipeSupport->GetClass() == wallSupportClass)
-									{
-										ApplyColor(fgpipeSupport, swatchClass, newData);
-									}
-									else if (auto aim = Cast<AAbstractInstanceManager>(support))
-									{
-										if (aim->InstanceMap.Num() > 0)
-										{
-											for (auto instance : aim->InstanceMap)
-											{
-												if (instance.Key.ToString().StartsWith("SM_PipelineSupport"))
-												{
-													if (instance.Value.InstanceHandles.Num() > 0)
-													{
-														for (auto ihandle : instance.Value.InstanceHandles)
-														{
-															for (auto handle : ihandle.Value)
-															{
-																if (auto wallSupport = Cast<AFGBuildable>(handle->GetOwner()))
-																{
-																	ApplyColor(wallSupport, swatchClass, newData);
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+		//if (auto pipe = Cast<AFGBuildablePipeline>(buildable))
+		//{
+		//	if (pipe->mPipeConnections.Num() > 0)
+		//	{
+		//		for (auto conn : pipe->mPipeConnections)
+		//		{
+		//			if (conn->mConnectedComponent)
+		//			{
+		//				if (auto owner = conn->mConnectedComponent->GetOwner())
+		//				{
+		//					if (auto junction = Cast<AFGBuildablePipelineJunction>(owner))
+		//					{
+		//						ApplyColor(junction, swatchClass, newData);
+		//					}
+		//					//else if (auto pipeSupport = Cast<AFGBuildablePipelineSupport>(owner))
+		//					//{
+		//					//	ApplyColor(pipeSupport, swatchClass, newData);
+		//					//}
+		//					else if (auto newPipe = Cast<AFGBuildablePipeline>(owner)) // Might be connected to a pipe through a support
+		//					{
+		//						auto supports = FindNearbySupports(pipe, conn);
+		//						if (supports.Num() > 0)
+		//						{
+		//							for (auto support : supports)
+		//							{
+		//								if (auto fgpipeSupport = Cast<AFGBuildable>(support))
+		//								{
+		//									if (/*auto pipeSupport2 = Cast<AFGBuildablePipelineSupport>(fgpipeSupport) || */fgpipeSupport->GetClass() == wallHoleClass || fgpipeSupport->GetClass() == floorHoleClass || fgpipeSupport->GetClass() == wallSupportClass)
+		//									{
+		//										ApplyColor(fgpipeSupport, swatchClass, newData);
+		//									}
+		//								}
+		//								else if (auto aim = Cast<AAbstractInstanceManager>(support))
+		//								{
+		//									if (aim->InstanceMap.Num() > 0)
+		//									{
+		//										for (auto instance : aim->InstanceMap)
+		//										{
+		//											if (instance.Key.ToString().StartsWith("SM_PipelineSupport"))
+		//											{
+		//												if (instance.Value.InstanceHandles.Num() > 0)
+		//												{
+		//													for (auto ihandle : instance.Value.InstanceHandles)
+		//													{
+		//														for (auto handle : ihandle.Value)
+		//														{
+		//															if (auto wallSupport = Cast<AFGBuildable>(handle->GetOwner()))
+		//															{
+		//																ApplyColor(wallSupport, swatchClass, newData);
+		//															}
+		//														}
+		//													}
+		//												}
+		//											}
+		//										}
+		//									}
+		//								}
+		//							}
+		//						}
+		//					}
+		//				}
+		//			}
+		//			else //Connection isn't connected to anything. May be connected to a support
+		//			{
+		//				auto supports = FindNearbySupports(pipe, conn);
+		//				if (supports.Num() > 0)
+		//				{
+		//					for (auto support : supports)
+		//					{
+		//						if (auto fgpipeSupport = Cast<AFGBuildable>(support))
+		//						{
+		//							if (/*auto pipeSupport = Cast<AFGBuildablePipelineSupport>(fgpipeSupport) || */fgpipeSupport->GetClass() == wallHoleClass || fgpipeSupport->GetClass() == floorHoleClass || fgpipeSupport->GetClass() == wallSupportClass)
+		//							{
+		//								ApplyColor(fgpipeSupport, swatchClass, newData);
+		//							}
+		//							else if (auto aim = Cast<AAbstractInstanceManager>(support))
+		//							{
+		//								if (aim->InstanceMap.Num() > 0)
+		//								{
+		//									for (auto instance : aim->InstanceMap)
+		//									{
+		//										if (instance.Key.ToString().StartsWith("SM_PipelineSupport"))
+		//										{
+		//											if (instance.Value.InstanceHandles.Num() > 0)
+		//											{
+		//												for (auto ihandle : instance.Value.InstanceHandles)
+		//												{
+		//													for (auto handle : ihandle.Value)
+		//													{
+		//														if (auto wallSupport = Cast<AFGBuildable>(handle->GetOwner()))
+		//														{
+		//															ApplyColor(wallSupport, swatchClass, newData);
+		//														}
+		//													}
+		//												}
+		//											}
+		//										}
+		//									}
+		//								}
+		//							}
+		//						}
+		//					}
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
 	}
 }
 

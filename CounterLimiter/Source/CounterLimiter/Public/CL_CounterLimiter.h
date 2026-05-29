@@ -52,9 +52,6 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	UFGFactoryConnectionComponent* outputConnection;
 
-	UPROPERTY(BlueprintReadWrite, SaveGame)
-	TArray<AFGBuildableWidgetSign*> mAttachedSigns;
-
 	TMap<TSubclassOf<class UFGItemDescriptor>, int32> mItemCounts;
 
 	int32 ItemCount = 0;

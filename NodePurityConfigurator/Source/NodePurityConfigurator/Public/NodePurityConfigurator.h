@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FGResourceNode.h"
+//#include "FGResourceNode.h"
 #include "Resources/FGResourceNodeFrackingSatellite.h"
 #include "Modules/ModuleManager.h"
 

@@ -200,7 +200,7 @@ int32 FAutoSignsModule::GetIconIdForDescriptor(UObject* worldContext, TSubclassO
 
 void FAutoSignsModule::UpdateSignElements(AFGBuildableWidgetSign* sign, FPrefabSignData& prefabSignData)
 {
-	UE_LOGFMT(AutoSigns_Log, Display, "UpdateSignElements");
+	//UE_LOGFMT(AutoSigns_Log, Display, "UpdateSignElements");
 
 	if (DefaultTextElementToDataMap.Num() > 1 || DefaultIconElementToDataMap.Num() > 0)
 	{

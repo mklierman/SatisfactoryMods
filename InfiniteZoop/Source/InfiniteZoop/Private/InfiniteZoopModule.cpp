@@ -95,7 +95,7 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 		return;
 	}
 
-	AFGFactoryBuildingHologram* Fhg = Cast<AFGFactoryBuildingHologram>(self);
+	AFGBuildableHologram* Fhg = Cast<AFGBuildableHologram>(self);
 	if (Fhg)
 	{
 		AFGFoundationHologram* foundation = Cast<AFGFoundationHologram>(self);
@@ -286,7 +286,7 @@ void FInfiniteZoopModule::ScrollHologram(AFGHologram* self, int32 delta)
 	}
 }
 
-bool FInfiniteZoopModule::SetZoopAmount(AFGFactoryBuildingHologram* self, const FIntVector& Zoop)
+bool FInfiniteZoopModule::SetZoopAmount(AFGBuildableHologram* self, const FIntVector& Zoop)
 {
 	auto baseHG = Cast<AFGHologram>(self);
 	AFGFoundationHologram* foundation = Cast<AFGFoundationHologram>(self);
@@ -327,7 +327,7 @@ bool FInfiniteZoopModule::SetZoopAmount(AFGFactoryBuildingHologram* self, const 
 void FInfiniteZoopModule::OnZoopUpdated(UFGBuildGunStateBuild* self, float currentZoop, float maxZoop, const FVector& zoopLocation)
 {
 	auto hg = self->GetHologram();
-	auto fbhg = Cast< AFGFactoryBuildingHologram>(hg);
+	auto fbhg = Cast< AFGBuildableHologram>(hg);
 	if (fbhg)
 	{
 		auto mult = fbhg->GetBaseCostMultiplier();
@@ -348,7 +348,7 @@ void FInfiniteZoopModule::OnZoopUpdated(UFGBuildGunStateBuild* self, float curre
 	}
 }
 
-bool FInfiniteZoopModule::OnRep_DesiredZoop(AFGFactoryBuildingHologram* self)
+bool FInfiniteZoopModule::OnRep_DesiredZoop(AFGBuildableHologram* self)
 {
 	auto fhg = Cast< AFGFoundationHologram>(self);
 	if (fhg)
@@ -500,9 +500,9 @@ void FInfiniteZoopModule::CreateDefaultFoundationZoop(AFGFoundationHologram* sel
 	}
 }
 
-int32 FInfiniteZoopModule::GetBaseCostMultiplier(const AFGFactoryBuildingHologram* self)
+int32 FInfiniteZoopModule::GetBaseCostMultiplier(const AFGBuildableHologram* self)
 {
-	auto nonConst = const_cast<AFGFactoryBuildingHologram*>(self);
+	auto nonConst = const_cast<AFGBuildableHologram*>(self);
 	auto fhg = Cast< AFGFoundationHologram>(nonConst);
 	if (fhg)
 	{
@@ -600,7 +600,7 @@ bool FInfiniteZoopModule::BGSecondaryFire(UFGBuildGunStateBuild* self)
 {
 	if (self)
 	{
-		if (auto hologram = Cast<AFGFactoryBuildingHologram>(self->GetHologram()))
+		if (auto hologram = Cast<AFGBuildableHologram>(self->GetHologram()))
 		{
 			if (auto foundation = Cast<AFGFoundationHologram>(hologram))
 			{
@@ -649,7 +649,7 @@ bool FInfiniteZoopModule::ValidatePlacementAndCost(AFGHologram* self, class UFGI
 	return true;
 }
 
-void FInfiniteZoopModule::CheckBuildEffects(const AFGFactoryBuildingHologram* fbHolo, class AFGBuildable* inBuildable)
+void FInfiniteZoopModule::CheckBuildEffects(const AFGBuildableHologram* fbHolo, class AFGBuildable* inBuildable)
 {
 	auto x = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.X), 1, 99999);
 	auto y = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Y), 1, 99999);
@@ -661,13 +661,13 @@ void FInfiniteZoopModule::CheckBuildEffects(const AFGFactoryBuildingHologram* fb
 		if (config.BuildEffects.SkipEffects && total > config.BuildEffects.SkipAfterAmount)
 		{
 			inBuildable->mSkipBuildEffect = true;
-			AFGFactoryBuildingHologram* holo = const_cast<AFGFactoryBuildingHologram*>(fbHolo);
+			AFGBuildableHologram* holo = const_cast<AFGBuildableHologram*>(fbHolo);
 			holo->mSuppressBuildEffect = true;
 		}
 	}
 }
 
-void FInfiniteZoopModule::SetBlueprintProxy(const AFGFactoryBuildingHologram* fbHolo, AFGBuildable* inBuildable)
+void FInfiniteZoopModule::SetBlueprintProxy(const AFGBuildableHologram* fbHolo, AFGBuildable* inBuildable)
 {
 	if (fbHolo)
 	{
@@ -684,12 +684,12 @@ void FInfiniteZoopModule::SetBlueprintProxy(const AFGFactoryBuildingHologram* fb
 		auto total = x + y + z;
 		if (total > 0)
 		{
-			//TArray<const AFGFactoryBuildingHologram*> keysToRemove;
+			//TArray<const AFGBuildableHologram*> keysToRemove;
 			//if (HoloProxies.Num() > 1)
 			//{
 			//	for (auto It = HoloProxies.CreateIterator(); It; ++It)
 			//	{
-			//		const AFGFactoryBuildingHologram* Key = It->Key;
+			//		const AFGBuildableHologram* Key = It->Key;
 
 			//		// Check if key is null or has been garbage collected
 			//		if (Key == nullptr || !IsValid(Key))
@@ -698,7 +698,7 @@ void FInfiniteZoopModule::SetBlueprintProxy(const AFGFactoryBuildingHologram* fb
 			//		}
 			//	}
 
-			//	//for (TPair<const AFGFactoryBuildingHologram*, AFGBlueprintProxy*>& holo : HoloProxies)
+			//	//for (TPair<const AFGBuildableHologram*, AFGBlueprintProxy*>& holo : HoloProxies)
 			//	//{
 			//	//	if (&holo == nullptr)
 			//	//	{
@@ -714,7 +714,7 @@ void FInfiniteZoopModule::SetBlueprintProxy(const AFGFactoryBuildingHologram* fb
 			//		HoloProxies.Remove(key);
 			//	}
 			//}
-			TArray<TWeakObjectPtr<const AFGFactoryBuildingHologram>> keysToRemove;
+			TArray<TWeakObjectPtr<const AFGBuildableHologram>> keysToRemove;
 
 			if (HoloProxies.Num() > 0)
 			{
@@ -736,12 +736,12 @@ void FInfiniteZoopModule::SetBlueprintProxy(const AFGFactoryBuildingHologram* fb
 			if (HoloProxies.Num() <= 0 || !HoloProxies.Contains(fbHolo))
 			{
 				AFGBlueprintProxy* proxy = fbHolo->GetWorld()->SpawnActor<AFGBlueprintProxy>();
-				TWeakObjectPtr<const AFGFactoryBuildingHologram> WeakHolo = fbHolo;
+				TWeakObjectPtr<const AFGBuildableHologram> WeakHolo = fbHolo;
 				HoloProxies.Add(WeakHolo, proxy);
 				//HoloProxies.Add(fbHolo, proxy);
 			}
 
-			TWeakObjectPtr<const AFGFactoryBuildingHologram> WeakHolo = fbHolo;
+			TWeakObjectPtr<const AFGBuildableHologram> WeakHolo = fbHolo;
 			if (auto* FoundProxy = HoloProxies.Find(WeakHolo))
 			{
 				// Use FoundProxy
@@ -782,7 +782,7 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 			Whg->mOnlyAllowLineZoop = false;
 		}
 
-		AFGFactoryBuildingHologram* bhg = Cast<AFGFactoryBuildingHologram>(self);
+		AFGBuildableHologram* bhg = Cast<AFGBuildableHologram>(self);
 
 		if (bhg)
 		{
@@ -838,7 +838,7 @@ void FInfiniteZoopModule::StartupModule()
 		{
 			if (self->CanBeZooped())
 			{
-				auto fbHolo = Cast<AFGFactoryBuildingHologram>(self);
+				auto fbHolo = Cast<AFGBuildableHologram>(self);
 				if (fbHolo)
 				{
 					CheckBuildEffects(fbHolo, inBuildable);
@@ -853,7 +853,8 @@ void FInfiniteZoopModule::StartupModule()
 			}
 		});
 
-	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::OnRep_DesiredZoop, [this](auto& scope, AFGFactoryBuildingHologram* self)
+	// TODO: Fix for 1.2
+	SUBSCRIBE_METHOD(AFGBuildableHologram::OnRep_DesiredZoop, [this](auto& scope, AFGBuildableHologram* self)
 		{
 			if (auto ramphg = Cast<AFGRampHologram>(self))
 			{
@@ -877,9 +878,10 @@ void FInfiniteZoopModule::StartupModule()
 			}
 		});
 
-	SUBSCRIBE_METHOD(AFGFactoryBuildingHologram::SetZoopAmount, [this](auto& scope, AFGFactoryBuildingHologram* self, const FIntVector& Zoop)
+	// TODO: Fix for 1.2
+	SUBSCRIBE_METHOD(AFGBuildableHologram::SetZoopAmount, [this](auto& scope, AFGBuildableHologram* self, const FIntVector& Zoop)
 		{
-			//UE_LOGFMT(InfiniteZoop_Log, Display, "AFGFactoryBuildingHologram::SetZoopAmount. Zoop: {0},{1}", Zoop.X, Zoop.Y);
+			//UE_LOGFMT(InfiniteZoop_Log, Display, "AFGBuildableHologram::SetZoopAmount. Zoop: {0},{1}", Zoop.X, Zoop.Y);
 			if (auto ramphg = Cast<AFGRampHologram>(self))
 			{
 				return;
@@ -897,7 +899,7 @@ void FInfiniteZoopModule::StartupModule()
 			//UE_LOGFMT(InfiniteZoop_Log, Display, "UFGBuildGunStateBuild::OnZoopUpdated. currentZoop: {0}", currentZoop);
 			// Fix for incorrect # showing when 2D zooping
 			auto hg = self->GetHologram();
-			auto fbhg = Cast< AFGFactoryBuildingHologram>(hg);
+			auto fbhg = Cast< AFGBuildableHologram>(hg);
 			if (fbhg)
 			{
 				if (auto ramphg = Cast<AFGRampHologram>(fbhg))
@@ -942,11 +944,12 @@ void FInfiniteZoopModule::StartupModule()
 		});
 	UFGBuildGunStateBuild* bgbCDO = GetMutableDefault<UFGBuildGunStateBuild>();
 
-	AFGFactoryBuildingHologram* fbhgCDO = GetMutableDefault<AFGFactoryBuildingHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGFactoryBuildingHologram::GetBaseCostMultiplier, fbhgCDO, [this](auto& scope, const AFGFactoryBuildingHologram* self)
+	AFGBuildableHologram* fbhgCDO = GetMutableDefault<AFGBuildableHologram>();
+	// TODO: Fix for 1.2
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::GetBaseCostMultiplier, fbhgCDO, [this](auto& scope, const AFGBuildableHologram* self)
 		{
 			
-			//UE_LOGFMT(InfiniteZoop_Log, Display, "AFGFactoryBuildingHologram::GetBaseCostMultiplier");
+			//UE_LOGFMT(InfiniteZoop_Log, Display, "AFGBuildableHologram::GetBaseCostMultiplier");
 			if (auto ramphg = Cast<AFGRampHologram>(self))
 			{
 				return;
@@ -1015,7 +1018,7 @@ void FInfiniteZoopModule::StartupModule()
 					FoundationsBeingZooped.Remove(fhg);
 				}
 
-				if (auto fbhg = Cast<AFGFactoryBuildingHologram>(self))
+				if (auto fbhg = Cast<AFGBuildableHologram>(self))
 				{
 					if (LastMultiplier.Num() > 0)
 					{
@@ -1036,7 +1039,7 @@ void FInfiniteZoopModule::StartupModule()
 		});
 
 	AFGPillarHologram* pCDO = GetMutableDefault<AFGPillarHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGPillarHologram::BeginPlay, pCDO, [](auto scope, AFGPillarHologram* self)
+	/*SUBSCRIBE_METHOD_VIRTUAL(AFGPillarHologram::BeginPlay, pCDO, [](auto scope, AFGPillarHologram* self)
 		{
 			if (self && self->HasAuthority())
 			{
@@ -1065,7 +1068,7 @@ void FInfiniteZoopModule::StartupModule()
 					}
 				}
 			}
-		});
+		});*/
 #endif
 }
 

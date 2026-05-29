@@ -45,11 +45,11 @@ public:
     //void GetZoopCorners(UWorld* world, bool const& OutZoopCorners);
 
     UFUNCTION(Reliable, Server)
-    void SetHologramMaxZoop(AFGFactoryBuildingHologram* hologram, int newMaxZoop);
+    void SetHologramMaxZoop(AFGBuildableHologram* hologram, int newMaxZoop);
 
 
     UFUNCTION(Reliable, Server)
-    void SetDesiredZoop(AFGFactoryBuildingHologram* hologram, FIntVector newZoop);
+    void SetDesiredZoop(AFGBuildableHologram* hologram, FIntVector newZoop);
 private:
 
     /** Needed for RCO to work */

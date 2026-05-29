@@ -6,8 +6,8 @@
 #include "Modules/ModuleManager.h"
 #include "Internationalization/StringTable.h"
 #include "Internationalization/StringTableRegistry.h"
-#include "StringTableRegistry.h"
-#include "StringTableCore.h"
+//#include "StringTableRegistry.h"
+//#include "StringTableCore.h"
 #include "Uwu_BPFL.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(ToUwu_Log, Display, All);

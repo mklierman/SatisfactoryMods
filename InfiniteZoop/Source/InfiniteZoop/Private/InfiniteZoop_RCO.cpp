@@ -3,22 +3,13 @@
 
 #include "InfiniteZoop_RCO.h"
 #include "Registry/RemoteCallObjectRegistry.h"
+#include "Net/UnrealNetwork.h"
 #include <Logging/StructuredLog.h>
 
 UInfiniteZoop_RCO::UInfiniteZoop_RCO()
 {
 
 }
-
-
-//void UInfiniteZoop_RCO::GetZoopAmount_Implementation(UWorld* world, const int& OutCurrentZoopAmount)
-//{
-//	//USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
-//	//AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
-//
-//	//OutCurrentZoopAmount = zoopSubsystem->currentZoopAmount;
-//	//OutZoopCorners = zoopSubsystem->zoopCorners;
-//}
 
 void UInfiniteZoop_RCO::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -27,7 +18,7 @@ void UInfiniteZoop_RCO::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(UInfiniteZoop_RCO, DummyReplicatedField);
 }
 
-void UInfiniteZoop_RCO::SetHologramMaxZoop_Implementation(AFGFactoryBuildingHologram* hologram, int newMaxZoop)
+void UInfiniteZoop_RCO::SetHologramMaxZoop_Implementation(AFGBuildableHologram* hologram, int newMaxZoop)
 {
 	USubsystemActorManager* SubsystemActorManager = GetWorld()->GetSubsystem<USubsystemActorManager>();
 	AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
@@ -39,15 +30,10 @@ void UInfiniteZoop_RCO::SetHologramMaxZoop_Implementation(AFGFactoryBuildingHolo
 	}
 }
 
-void UInfiniteZoop_RCO::SetDesiredZoop_Implementation(AFGFactoryBuildingHologram* hologram, FIntVector newZoop)
+void UInfiniteZoop_RCO::SetDesiredZoop_Implementation(AFGBuildableHologram* hologram, FIntVector newZoop)
 {
 	if (hologram)
 	{
 		hologram->mDesiredZoop = newZoop;
 	}
 }
-
-//void UInfiniteZoop_RCO::GetZoopCorners_Implementation(UWorld* world, bool const& OutZoopCorners)
-//{
-//
-//}

@@ -8,29 +8,29 @@
 #include "Resources/FGBuildingDescriptor.h"
 
 #if WITH_EDITOR
-EDataValidationResult UCP_GameInstanceModule::IsDataValid(TArray<FText>& ValidationErrors)
-{
-	EDataValidationResult ValidationResult = EDataValidationResult::Valid;
-
-	if (!IsValid(Recipe_ConveyorPoleStackable)) {
-		ValidationErrors.Add(INVTEXT("'Recipe_ConveyorPoleStackable' is not set to a valid class"));
-		ValidationResult = EDataValidationResult::Invalid;
-	}
-	if (!IsValid(Build_ConveyorPoleStackable)) {
-		ValidationErrors.Add(INVTEXT("'Build_ConveyorPoleStackable' is not set to a valid class"));
-		ValidationResult = EDataValidationResult::Invalid;
-	}
-	if (!IsValid(Holo_ConveyorStackable)) {
-		ValidationErrors.Add(INVTEXT("'Holo_ConveyorStackable' is not set to a valid class"));
-		ValidationResult = EDataValidationResult::Invalid;
-	}
-	if (!IsValid(Holo_CP_Stackable_Belt)) {
-		ValidationErrors.Add(INVTEXT("'Holo_CP_Stackable_Belt' is not set to a valid class"));
-		ValidationResult = EDataValidationResult::Invalid;
-	}
-
-	return FMath::Min(ValidationResult, Super::IsDataValid(ValidationErrors));
-}
+//EDataValidationResult UCP_GameInstanceModule::IsDataValid(TArray<FText>& ValidationErrors)
+//{
+//	EDataValidationResult ValidationResult = EDataValidationResult::Valid;
+//
+//	if (!IsValid(Recipe_ConveyorPoleStackable)) {
+//		ValidationErrors.Add(INVTEXT("'Recipe_ConveyorPoleStackable' is not set to a valid class"));
+//		ValidationResult = EDataValidationResult::Invalid;
+//	}
+//	if (!IsValid(Build_ConveyorPoleStackable)) {
+//		ValidationErrors.Add(INVTEXT("'Build_ConveyorPoleStackable' is not set to a valid class"));
+//		ValidationResult = EDataValidationResult::Invalid;
+//	}
+//	if (!IsValid(Holo_ConveyorStackable)) {
+//		ValidationErrors.Add(INVTEXT("'Holo_ConveyorStackable' is not set to a valid class"));
+//		ValidationResult = EDataValidationResult::Invalid;
+//	}
+//	if (!IsValid(Holo_CP_Stackable_Belt)) {
+//		ValidationErrors.Add(INVTEXT("'Holo_CP_Stackable_Belt' is not set to a valid class"));
+//		ValidationResult = EDataValidationResult::Invalid;
+//	}
+//
+//	return FMath::Min(ValidationResult, Super::IsDataValid(ValidationErrors));
+//}
 #endif
 
 UCP_GameInstanceModule* UCP_GameInstanceModule::Get(UObject* WorldContext)

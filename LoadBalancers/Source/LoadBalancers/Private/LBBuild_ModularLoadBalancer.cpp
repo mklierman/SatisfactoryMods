@@ -245,15 +245,15 @@ UFGInventoryComponent* ALBBuild_ModularLoadBalancer::GetBufferInventory()
 {
     return mBufferInventory;
 
-    TSet<UActorComponent*> components = GetComponents();
-    for (UActorComponent* ComponentsByClass : components)
-    {
-        if (UFGInventoryComponent* InventoryComponent = Cast<UFGInventoryComponent>(ComponentsByClass))
-        {
-            return InventoryComponent;
-        }
-    }
-    return nullptr;
+    //TSet<UActorComponent*> components = GetComponents();
+    //for (UActorComponent* ComponentsByClass : components)
+    //{
+    //    if (UFGInventoryComponent* InventoryComponent = Cast<UFGInventoryComponent>(ComponentsByClass))
+    //    {
+    //        return InventoryComponent;
+    //    }
+    //}
+    //return nullptr;
 }
 
 void ALBBuild_ModularLoadBalancer::SetFilteredItem(TSubclassOf<UFGItemDescriptor> ItemClass)
@@ -263,7 +263,7 @@ void ALBBuild_ModularLoadBalancer::SetFilteredItem(TSubclassOf<UFGItemDescriptor
         return;
     }
 
-    if(mLoaderType == ELoaderType::Programmable)
+    if(mLoaderType == EBalancerType::Programmable)
     {
         if(mFilteredItems.Num() >= mMaxFilterableItems)
         {
@@ -278,7 +278,7 @@ void ALBBuild_ModularLoadBalancer::SetFilteredItem(TSubclassOf<UFGItemDescriptor
             GetBufferInventory()->SetLocked(false);
             if (GroupLeader)
             {
-                if (mLoaderType == ELoaderType::Filter)
+                if (mLoaderType == EBalancerType::Filter)
                 {
                     TSubclassOf<UFGItemDescriptor> OldItem = mFilteredItems[0];
                     mFilteredItems[0] = ItemClass;
@@ -911,7 +911,7 @@ void ALBBuild_ModularLoadBalancer::RemoveGroupModule()
     {
         for (ALBBuild_ModularLoadBalancer* LoadBalancer : GetGroupModules())
         {
-            if (LoadBalancer != this && !LoadBalancer->IsPendingKillOrUnreachable())
+            if (LoadBalancer != this && IsValid(LoadBalancer))
             {
                 LoadBalancer->mGroupModules = mGroupModules;
                 LoadBalancer->mNormalLoaderData = mNormalLoaderData;
@@ -982,7 +982,7 @@ void ALBBuild_ModularLoadBalancer::Factory_CollectInput_Implementation()
         TWeakObjectPtr<ALBBuild_ModularLoadBalancer> InputBalancer = 
             ConnectedInputs.IsValidIndex(Indexing) ? ConnectedInputs[Indexing] : nullptr;
 
-        if (InputBalancer.IsValid() && !InputBalancer->IsPendingKill())
+        if (InputBalancer.IsValid())
         {
             // Try to collect input from the current balancer
             if (CollectInput(InputBalancer.Get()))
@@ -1029,7 +1029,7 @@ void ALBBuild_ModularLoadBalancer::TryCollectFromFilterInputs(const TArray<TWeak
         TWeakObjectPtr<ALBBuild_ModularLoadBalancer> FilterBalancer = 
             ConnectedInputs.IsValidIndex(FilterIndexing) ? ConnectedInputs[FilterIndexing] : nullptr;
 
-        if (FilterBalancer.IsValid() && !FilterBalancer->IsPendingKill())
+        if (FilterBalancer.IsValid())
         {
             if (CollectInput(FilterBalancer.Get()))
             {
@@ -1071,13 +1071,13 @@ bool ALBBuild_ModularLoadBalancer::Balancer_CollectInput()
 
 bool ALBBuild_ModularLoadBalancer::CollectInput(ALBBuild_ModularLoadBalancer* Module)
 {
-    if (!Module || Module->IsPendingKill())
+    if (!Module)
     {
         return false;
     }
 
     UFGFactoryConnectionComponent* connection = Module->MyInputConnection;
-    if (!connection || !GroupLeader || connection->IsPendingKill())
+    if (!connection || !GroupLeader)
     {
         return false;
     }

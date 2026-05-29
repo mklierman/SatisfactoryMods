@@ -1,7 +1,5 @@
 #include "AtmosphereEditorModule.h"
 #include "Patching/NativeHookManager.h"
-#include "FGAtmosphereVolume.h"
-#include "Atmosphere/UFGBiome.h"
 
 #pragma optimize("", off)
 void FAtmosphereEditorModule::StartupModule() {
