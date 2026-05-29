@@ -3,6 +3,9 @@
 #include <Module/GameInstanceModule.h>
 #include <Components/TextBlock.h>
 #include "Input/FGInputMappingContext.h"
+#include "FGCharacterPlayer.h"
+#include "Hologram/FGHologram.h"
+#include "CoreMinimal.h"
 #include "InfiniteNudgeGameInstanceModule.generated.h"
 
 

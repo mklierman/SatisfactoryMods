@@ -54,7 +54,8 @@ void UInfiniteGizmo::TickComponent(float delta, ELevelTick tickType, FActorCompo
 	//Animate the transition when EScrollMode changes
 	for (auto& gizmo : mGizmos) {
 //		UE_LOG(InfiniteNudge, Verbose, TEXT("Gizmo : %s (%.2f)"), *gizmo.name.ToString(), gizmo.progress);
-		gizmo.progress = FMath::FInterpTo(gizmo.progress, ScrollMode::Get() == gizmo.scrollMode, delta, speed);
+		float idk = (float)ScrollMode::Get() == (float)gizmo.scrollMode;
+		gizmo.progress = FMath::FInterpTo(gizmo.progress, idk, delta, speed);
 		gizmo.material->SetScalarParameterValue(TEXT("progress"), gizmo.progress);
 	}
 }
