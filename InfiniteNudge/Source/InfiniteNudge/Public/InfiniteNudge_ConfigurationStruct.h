@@ -10,10 +10,10 @@ struct FInfiniteNudge_ConfigurationStruct {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite)
-    float LeftCtrlNudgeAmount{};
+    int32 TinyNudgeAmount{};
 
     UPROPERTY(BlueprintReadWrite)
-    int32 LeftAltNudgeAmount{};
+    int32 SmallNudgeAmount{};
 
     UPROPERTY(BlueprintReadWrite)
     int32 LargeNudgeAmount{};
@@ -25,6 +25,9 @@ public:
     float SmallRotateAmount{};
 
     UPROPERTY(BlueprintReadWrite)
+    float LargeRotateAmount{};
+
+    UPROPERTY(BlueprintReadWrite)
     float TinyScaleAmount{};
 
     UPROPERTY(BlueprintReadWrite)
@@ -34,7 +37,10 @@ public:
     float LargeScaleAmount{};
 
     UPROPERTY(BlueprintReadWrite)
-    float LargeRotateAmount{};
+    float NudgeRepeatDelay{};
+
+    UPROPERTY(BlueprintReadWrite)
+    bool ShowScrollModeGizmo{};
 
     /* Retrieves active configuration value and returns object of this struct containing it */
     static FInfiniteNudge_ConfigurationStruct GetActiveConfig(UObject* WorldContext) {
