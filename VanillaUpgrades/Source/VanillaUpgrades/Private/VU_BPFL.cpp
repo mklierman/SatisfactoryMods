@@ -39,3 +39,8 @@ void UVU_BPFL::StartPowerProduction(AFGBuildableGenerator* generator)
 {
 	generator->Factory_StartPowerProduction_Implementation();
 }
+
+UObject* UVU_BPFL::GetCDOQuiet(UClass* Class)
+{
+	return Class->GetDefaultObject();
+}

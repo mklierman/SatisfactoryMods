@@ -35,7 +35,7 @@ void ACL_CounterLimiter::BeginPlay()
 		outputConnection->SetInventory(OutputStageBuffer);
 		inputConnection->SetInventoryAccessIndex(0);
 		outputConnection->SetInventoryAccessIndex(0);
-		GetWorld()->GetTimerManager().SetTimer(ipmTimerHandle, this, &ACL_CounterLimiter::CalculateIPM, 60.f, true, 60.f);
+		SetIPMSampleTimeSeconds(mIPMSampleTimeSeconds);
 		SetThroughputLimit(mPerMinuteLimitRate, true);
 	}
 	Super::BeginPlay();
@@ -100,7 +100,7 @@ void ACL_CounterLimiter::PostInitializeComponents()
 		outputConnection->SetInventory(OutputStageBuffer);
 		inputConnection->SetInventoryAccessIndex(0);
 		outputConnection->SetInventoryAccessIndex(0);
-		GetWorld()->GetTimerManager().SetTimer(ipmTimerHandle, this, &ACL_CounterLimiter::CalculateIPM, 60.f, true, 60.f);
+		SetIPMSampleTimeSeconds(mIPMSampleTimeSeconds);
 		SetThroughputLimit(mPerMinuteLimitRate);
 		for (UActorComponent* ComponentsByClass : GetComponents())
 		{
@@ -229,11 +229,19 @@ void ACL_CounterLimiter::CalculateIPM()
 {
 	if (HasAuthority())
 	{
+		const float CurrentTimeSeconds = GetWorld()->GetTimeSeconds();
+		float SampleTime = FMath::Max(mIPMSampleTimeSeconds, KINDA_SMALL_NUMBER);
+		if (mLastIPMCalculationTimeSeconds >= 0.f)
+		{
+			SampleTime = FMath::Max(CurrentTimeSeconds - mLastIPMCalculationTimeSeconds, KINDA_SMALL_NUMBER);
+		}
+		mLastIPMCalculationTimeSeconds = CurrentTimeSeconds;
+
 		ForceNetUpdate();
 		//UE_LOG(CounterLimiter_Log, Display, TEXT("CalculateIPM - ItemCount: %f"), (float)ItemCount);
 		if (ItemCount > 0)
 		{
-			DisplayIPM = ((float)ItemCount / 60.f) * 60.f;
+			DisplayIPM = (static_cast<float>(ItemCount) / SampleTime) * 60.f;
 			ItemCount = 0;
 		}
 		else
@@ -252,6 +260,27 @@ void ACL_CounterLimiter::CalculateIPM()
 			//UE_LOG(CounterLimiter_Log, Display, TEXT("Got RCO"));
 			RCO->Server_CalculateIPM(this);
 		}
+	}
+}
+
+void ACL_CounterLimiter::SetIPMSampleTimeSeconds(float sampleTimeSeconds)
+{
+	mIPMSampleTimeSeconds = FMath::Max(sampleTimeSeconds, KINDA_SMALL_NUMBER);
+
+	if (HasAuthority())
+	{
+		// Reset tracking so the next window starts cleanly and uses a full sample interval.
+		ItemCount = 0;
+		mLastIPMCalculationTimeSeconds = -1.f;
+
+		GetWorld()->GetTimerManager().SetTimer(
+			ipmTimerHandle,
+			this,
+			&ACL_CounterLimiter::CalculateIPM,
+			mIPMSampleTimeSeconds,
+			true,
+			mIPMSampleTimeSeconds
+		);
 	}
 }
 

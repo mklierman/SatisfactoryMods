@@ -64,64 +64,6 @@ void FConstructionPreferencesModule::StartupModule() {
 						Stackable->mHologramClass = CP_Instance->Holo_CP_Stackable_Belt;
 					}
 				}
-				//else if (recipeName == "Recipe_PipeSupportStackable_C")
-				//{
-				//	//Set Hologram Class to vanilla
-				//	UClass* stackablePoleClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupport/Build_PipeSupportStackable.Build_PipeSupportStackable_C"));
-				//	UClass* hologramClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/-Shared/Holo_PipelineStackable.Holo_PipelineStackable_C"));
-				//	if (stackablePoleClass && hologramClass)
-				//	{
-				//		AFGBuildablePoleStackable* stackable = Cast<AFGBuildablePoleStackable>(stackablePoleClass->GetDefaultObject());
-				//		stackable->mHologramClass = hologramClass;
-				//	}
-				//}
-				//else if (recipeName == "Recipe_Pipeline_C" || recipeName == "Recipe_Pipeline_NoIndicator_C" || 
-				//	recipeName == "Recipe_PipelineMK2_C" || recipeName == "Recipe_PipelineMK2_NoIndicator_C")
-				//{
-
-				//	USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
-				//	auto pipeOption = SessionSettings->GetIntOptionValue("ConstructionPreferences.PipePoleType");
-				//	if (pipeOption == 1)
-				//	{
-				//		UClass* stackablePoleClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupport/Build_PipeSupportStackable.Build_PipeSupportStackable_C"));
-				//		UClass* hologramClass = LoadObject<UClass>(NULL, TEXT("/ConstructionPreferences/Holograms/Holo_Stackable_Pipeline.Holo_Stackable_Pipeline_C"));
-				//		//Set Hologram Class to mods
-				//		if (stackablePoleClass && hologramClass)
-				//		{
-				//			AFGBuildablePoleStackable* stackable = Cast<AFGBuildablePoleStackable>(stackablePoleClass->GetDefaultObject());
-				//			stackable->mHologramClass = hologramClass;
-				//		}
-				//	}
-				//}
-				//else if (recipeName == "Recipe_HyperPoleStackable_C")
-				//{
-				//	//Set Hologram Class to vanilla
-				//	UClass* stackablePoleClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupport/Build_HyperPoleStackable.Build_HyperPoleStackable_C"));
-				//	UClass* hologramClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/-Shared/Holo_PipelineStackable.Holo_PipelineStackable_C"));
-				//	if (stackablePoleClass && hologramClass)
-				//	{
-				//		AFGBuildablePoleStackable* stackable = Cast<AFGBuildablePoleStackable>(stackablePoleClass->GetDefaultObject());
-				//		stackable->mHologramClass = hologramClass;
-				//	}
-				//}
-				//else if (recipeName == "Recipe_PipeHyper_C")
-				//{
-
-				//	USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
-				//	auto pipeOption = SessionSettings->GetIntOptionValue("ConstructionPreferences.HyperTubePoleType");
-				//	UE_LOGFMT(LogConstructionPreferences, Display, "pipeOption: {0}", pipeOption);
-				//	if (pipeOption == 1)
-				//	{
-				//		UClass* stackablePoleClass = LoadObject<UClass>(NULL, TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupport/Build_HyperPoleStackable.Build_HyperPoleStackable_C"));
-				//		UClass* hologramClass = LoadObject<UClass>(NULL, TEXT("/ConstructionPreferences/Holograms/Holo_Stackable_Pipeline.Holo_Stackable_Pipeline_C"));
-				//		//Set Hologram Class to mods
-				//		if (stackablePoleClass && hologramClass)
-				//		{
-				//			AFGBuildablePoleStackable* stackable = Cast<AFGBuildablePoleStackable>(stackablePoleClass->GetDefaultObject());
-				//			stackable->mHologramClass = hologramClass;
-				//		}
-				//	}
-				//}
 			}
 		});
 	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [this](auto& scope, const AFGCharacterPlayer* self)

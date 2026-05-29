@@ -57,7 +57,7 @@ public:
 
 	TMap<TSubclassOf<class UFGItemDescriptor>, int32> mItemCounts;
 
-	int32 ItemCount;
+	int32 ItemCount = 0;
 
 	UPROPERTY(BlueprintReadWrite)
 	UFGInventoryComponent* OutputStageBuffer;
@@ -67,6 +67,11 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, SaveGame, ReplicatedUsing = OnRep_SetDisplayIPM)
 	float DisplayIPM = -1.f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, SaveGame, Category = "Counter Limiter|Display")
+	float mIPMSampleTimeSeconds = 60.f;
+
+	float mLastIPMCalculationTimeSeconds = -1.f;
 
 	UFUNCTION(BlueprintCallable)
 	virtual void OnRep_SetDisplayIPM();
@@ -87,6 +92,9 @@ public:
 
 	UFUNCTION()
 	void CalculateIPM();
+
+	UFUNCTION(BlueprintCallable)
+	void SetIPMSampleTimeSeconds(float sampleTimeSeconds);
 
 	UFUNCTION()
 	void StageItemForOutput();

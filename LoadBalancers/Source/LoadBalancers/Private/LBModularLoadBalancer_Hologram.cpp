@@ -35,6 +35,8 @@ void ALBModularLoadBalancer_Hologram::SetHologramLocationAndRotation(const FHitR
 	ALBBuild_ModularLoadBalancer* cl = Cast <ALBBuild_ModularLoadBalancer>(hitActor);
 	if (hitActor && cl)
 	{
+		bool oneNarrow = this->GetBuildClass()->GetName().Contains("Narrow") || cl->GetBuiltWithRecipe()->GetName().Contains("Narrow");
+		bool bothNarrow = this->GetBuildClass()->GetName().Contains("Narrow") && cl->GetBuiltWithRecipe()->GetName().Contains("Narrow");
 		FRotator addedRotation = FRotator(0, 0, 0);
 		auto yVector = cl->GetActorRightVector();
 		auto zVector = cl->GetActorUpVector();
@@ -47,13 +49,35 @@ void ALBModularLoadBalancer_Hologram::SetHologramLocationAndRotation(const FHitR
 		switch (hitSide)
 		{
 		case EFoundationSide::FoundationRight:
-			SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * 200), cl->GetActorRotation() + addedRotation);
+			if (oneNarrow && !bothNarrow)
+			{
+				SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * 150), cl->GetActorRotation() + addedRotation);
+			}
+			else if (bothNarrow)
+			{
+				SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * 100), cl->GetActorRotation() + addedRotation);
+			}
+			else
+			{
+				SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * 200), cl->GetActorRotation() + addedRotation);
+			}
 			this->mSnappedBuilding = cl;
 			LastSnapped = cl;
 			this->CheckValidPlacement();
 			break;
 		case EFoundationSide::FoundationLeft:
-			SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * -200), cl->GetActorRotation() + addedRotation);
+			if (oneNarrow && !bothNarrow)
+			{
+				SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * -150), cl->GetActorRotation() + addedRotation);
+			}
+			else if (bothNarrow)
+			{
+				SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * -100), cl->GetActorRotation() + addedRotation);
+			}
+			else
+			{
+				SetActorLocationAndRotation(cl->GetActorLocation() + (yVector * -200), cl->GetActorRotation() + addedRotation);
+			}
 			this->mSnappedBuilding = cl;
 			LastSnapped = cl;
 			this->CheckValidPlacement();
