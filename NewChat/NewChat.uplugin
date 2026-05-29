@@ -15,6 +15,13 @@
 	"IsExperimentalVersion": false,
 	"Installed": false,
 	"SemVersion": "1.2.0",
-	"GameVersion": ">=416835",
-	"RequiredOnRemote": false
+	"GameVersion": ">=491125",
+	"RequiredOnRemote": false,
+	"Plugins": [
+		{
+			"Name": "SML",
+			"Enabled": true,
+			"SemVersion": "^3.11.3"
+		}
+	]
 }
