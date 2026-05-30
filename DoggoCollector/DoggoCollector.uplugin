@@ -22,5 +22,6 @@
 		}
 	],
 	"SemVersion": "1.2.1",
-	"GameVersion": ">=416835"
+	"GameVersion": ">=416835",
+	"BuiltInInitialFeatureState": "Active"
 }

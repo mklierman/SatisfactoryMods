@@ -35,5 +35,6 @@
 			"Optional": true
 		}
 	],
-	"GameVersion": ">=416835"
+	"GameVersion": ">=416835",
+	"BuiltInInitialFeatureState": "Active"
 }
