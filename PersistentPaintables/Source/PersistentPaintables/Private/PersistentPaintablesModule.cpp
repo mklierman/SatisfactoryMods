@@ -26,6 +26,7 @@ static constexpr float SUPPORT_DIST = 5.0f;                 // distance threshol
 static constexpr float SUPPORT_DIST_SQ = SUPPORT_DIST * SUPPORT_DIST; // squared threshold so we don't call sqrt
 static constexpr float NEARBY_SUPPORT_SEARCH_RADIUS = 5.0f;
 
+#pragma optimize("", off)
 // Helper: apply color to a buildable
 // Sets the swatch on the actor and calls the buildable's apply/set methods.
 void FPersistentPaintablesModule::ApplyColor(AFGBuildable* buildable, UClass* inSwatchClass, FFactoryCustomizationData customizationData)
@@ -287,7 +288,7 @@ void FPersistentPaintablesModule::ColorSupports(AFGBuildablePipeline* pipe, FFac
 							for (auto& instance : aim->InstanceMap)
 							{
 								FString keyStr = instance.Key.ToString();
-								if (keyStr.StartsWith("SM_PipelineSupport"))
+								if (keyStr.StartsWith("SM_PipelineSupport") || keyStr.StartsWith("SM_PipePole") || keyStr.StartsWith("PipelineSupport"))
 								{
 									for (auto& ihandle : instance.Value.InstanceHandles)
 									{
@@ -295,7 +296,16 @@ void FPersistentPaintablesModule::ColorSupports(AFGBuildablePipeline* pipe, FFac
 										{
 											if (auto wallSupport = Cast<AFGBuildable>(handle->GetOwner()))
 											{
-												ApplyColor(wallSupport, swatchClass, newData);
+												
+												// Need to check if it is still near the connection
+												auto supportLoc = wallSupport->GetActorLocation();
+												auto connLoc = conn->GetComponentLocation();
+												float Distance = FVector::Dist(supportLoc, connLoc);
+												if (Distance <= 10.0f) // 5 * 5 = 25
+												{
+													// Actors are within 5 units
+													ApplyColor(wallSupport, swatchClass, newData);
+												}
 											}
 										}
 									}
@@ -542,4 +552,5 @@ void FPersistentPaintablesModule::HookPipes()
 #endif
 }
 
+#pragma optimize("", on)
 IMPLEMENT_GAME_MODULE(FPersistentPaintablesModule, PersistentPaintables);
