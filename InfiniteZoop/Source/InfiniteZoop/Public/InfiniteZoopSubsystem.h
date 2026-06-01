@@ -33,7 +33,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY(BlueprintReadWrite)
-	TMap<APawn*, FZoopAmountStruct> ZoopAmountStructs;
+	TMap<TObjectPtr<APawn>, FZoopAmountStruct> ZoopAmountStructs;
 
 	mutable FCriticalSection* csection;
 

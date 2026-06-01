@@ -17,7 +17,7 @@ struct FClipboardData
 	TSubclassOf<UObject> ObjectClass;
 
 	UPROPERTY(BlueprintReadWrite)
-	class UFGFactoryClipboardSettings* ClipboardSettings;
+	TObjectPtr<class UFGFactoryClipboardSettings> ClipboardSettings;
 };
 
 UCLASS(Blueprintable)

@@ -33,15 +33,15 @@ public:
 	EToolError currentToolError;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Holo")
-	UMaterialInterface* firstGroupHoloMaterial;
+	TObjectPtr<UMaterialInterface> firstGroupHoloMaterial;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Holo")
-	UMaterialInterface* secondGroupHoloMaterial;
+	TObjectPtr<UMaterialInterface> secondGroupHoloMaterial;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Holo")
-	UMaterialInterface* mainMaterial;
+	TObjectPtr<UMaterialInterface> mainMaterial;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Holo")
-	UMaterial* secondaryMaterial;
+	TObjectPtr<UMaterial> secondaryMaterial;
 };
 

@@ -7,5 +7,5 @@ class INFINITENUDGE_API UInfiniteNudgeGameInstanceModule : public UGameInstanceM
     GENERATED_BODY()
 public:
     UPROPERTY(EditDefaultsOnly, Category = "Advanced | Input")
-    TMap<UInputAction*, FGameplayTag> InputActionTagBindings;
+    TMap<TObjectPtr<UInputAction>, FGameplayTag> InputActionTagBindings;
 };

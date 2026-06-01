@@ -50,7 +50,7 @@ public:
 	void ClearPodMarkers();
 
 	UPROPERTY(SaveGame, BlueprintReadWrite)
-		TArray<AFGDropPod*> PodMarkers;
+		TArray<TObjectPtr<AFGDropPod>> PodMarkers;
 
 	UPROPERTY(BlueprintReadWrite)
 		int EnumIndex;

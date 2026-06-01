@@ -216,7 +216,7 @@ public:
 	FORCEINLINE bool IsNormalModule() const { return mLoaderType == EBalancerType::Normal; }
 
 	UPROPERTY(BlueprintReadWrite, SaveGame, Replicated)
-	ALBBuild_ModularLoadBalancer* GroupLeader;
+	TObjectPtr<ALBBuild_ModularLoadBalancer> GroupLeader;
 
 	/** Current Filtered Item (if Filter) */
 	UPROPERTY(BlueprintReadOnly, BlueprintReadOnly, Replicated, SaveGame)
@@ -227,14 +227,14 @@ public:
 
 	// Dont need to be Saved > CAN SET BY CPP
 	UPROPERTY(Transient)
-	UFGFactoryConnectionComponent* MyOutputConnection;
+	TObjectPtr<UFGFactoryConnectionComponent> MyOutputConnection;
 
 	// Dont need to be Saved > CAN SET BY CPP
 	UPROPERTY(Transient)
-	UFGFactoryConnectionComponent* MyInputConnection;
+	TObjectPtr<UFGFactoryConnectionComponent> MyInputConnection;
 
 	UPROPERTY(SaveGame)
-	UFGInventoryComponent* mBufferInventory;
+	TObjectPtr<UFGInventoryComponent> mBufferInventory;
 
 	/** What type is this loader? */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="ModularLoader")

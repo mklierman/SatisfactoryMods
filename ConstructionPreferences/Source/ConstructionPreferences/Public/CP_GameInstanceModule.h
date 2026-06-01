@@ -28,7 +28,7 @@ public:
 	TSet<TSubclassOf<UFGRecipe>> ConveyorBeltRecipes;
 
 	UPROPERTY()
-	UObject* StackablePoleCDO;
+	TObjectPtr<UObject> StackablePoleCDO;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Construction Preferences")
 	TSubclassOf<UFGRecipe> Recipe_ConveyorPoleStackable;

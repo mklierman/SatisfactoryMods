@@ -59,14 +59,14 @@ class LOADBALANCERS_API ALBOutlineSubsystem : public AModSubsystem
 	};
 
 	UPROPERTY(Transient)
-	TMap<AActor*, ALBOutlineActor*> mOutlineMap;
+	TMap<TObjectPtr<AActor>, TObjectPtr<ALBOutlineActor>> mOutlineMap;
 
 	UPROPERTY()
 	FVector mCachedDismantleColor;
 
 	UPROPERTY(Transient)
-	UFGGameUserSettings* mGameUserSettings;
+	TObjectPtr<UFGGameUserSettings> mGameUserSettings;
 	
 	UPROPERTY(EditDefaultsOnly)
-	UMaterialInterface* mHoloMaterial;
+	TObjectPtr<UMaterialInterface> mHoloMaterial;
 };

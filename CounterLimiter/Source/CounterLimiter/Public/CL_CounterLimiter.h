@@ -47,20 +47,20 @@ public:
 	bool mIsFirstLoad = true;
 
 	UPROPERTY(BlueprintReadWrite)
-	UFGFactoryConnectionComponent* inputConnection;
+	TObjectPtr<UFGFactoryConnectionComponent> inputConnection;
 
 	UPROPERTY(BlueprintReadWrite)
-	UFGFactoryConnectionComponent* outputConnection;
+	TObjectPtr<UFGFactoryConnectionComponent> outputConnection;
 
 	TMap<TSubclassOf<class UFGItemDescriptor>, int32> mItemCounts;
 
 	int32 ItemCount = 0;
 
 	UPROPERTY(BlueprintReadWrite)
-	UFGInventoryComponent* OutputStageBuffer;
+	TObjectPtr<UFGInventoryComponent> OutputStageBuffer;
 
 	UPROPERTY(BlueprintReadWrite)
-	UFGInventoryComponent* InputBuffer;
+	TObjectPtr<UFGInventoryComponent> InputBuffer;
 
 	UPROPERTY(BlueprintReadWrite, SaveGame, ReplicatedUsing = OnRep_SetDisplayIPM)
 	float DisplayIPM = -1.f;

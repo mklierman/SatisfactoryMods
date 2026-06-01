@@ -50,21 +50,21 @@ public:
 	virtual void ConfigureActor(AFGBuildable* inBuildable) const override;
 	
 	UPROPERTY(BlueprintReadWrite, Replicated)
-	ALBBuild_ModularLoadBalancer* LastSnapped;
+	TObjectPtr<ALBBuild_ModularLoadBalancer> LastSnapped;
 	
 	UPROPERTY(BlueprintReadWrite, Replicated)
-	ALBBuild_ModularLoadBalancer* ActiveGroupLeader;
+	TObjectPtr<ALBBuild_ModularLoadBalancer> ActiveGroupLeader;
 
 	UPROPERTY(EditDefaultsOnly, Category="Holo")
-	UMaterialInterface* mHoloMaterial;
+	TObjectPtr<UMaterialInterface> mHoloMaterial;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Holo")
-		UMaterialInterface* mMainMaterial;
+		TObjectPtr<UMaterialInterface> mMainMaterial;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Holo")
-		UMaterial* mSecondaryMaterial;
+		TObjectPtr<UMaterial> mSecondaryMaterial;
 	UPROPERTY(EditDefaultsOnly, Category = "Holo")
-		UMaterial* mSymbolMaterial;
+		TObjectPtr<UMaterial> mSymbolMaterial;
 
 	TArray< AActor*> mHighlightedActors;
 
@@ -75,7 +75,7 @@ public:
 	FLinearColor mHoloFailedColor = FLinearColor(1.f, .0f, .0f, 1.f);
 
 	UPROPERTY(Transient)
-	ALBOutlineSubsystem* mOutlineSubsystem;
+	TObjectPtr<ALBOutlineSubsystem> mOutlineSubsystem;
 
 
 };

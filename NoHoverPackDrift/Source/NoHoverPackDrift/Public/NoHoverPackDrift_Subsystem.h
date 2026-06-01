@@ -36,5 +36,5 @@ public:
 	ANoHoverPackDrift_Subsystem();
 	
 	UPROPERTY()
-	TMap<UClass*, FHoverPackDefaultsStruct> HoverpackMap;
+	TMap<TObjectPtr<UClass>, FHoverPackDefaultsStruct> HoverpackMap;
 };

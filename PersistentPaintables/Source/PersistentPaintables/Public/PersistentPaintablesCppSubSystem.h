@@ -24,9 +24,9 @@ struct PERSISTENTPAINTABLES_API FPlayerCustomizationStruct
 	GENERATED_BODY()
 public:
 	UPROPERTY(BlueprintReadWrite)
-	AFGCharacterPlayer* CharacterPlayer;
+	TObjectPtr<AFGCharacterPlayer> CharacterPlayer;
 	UPROPERTY(BlueprintReadWrite)
-	AFGPlayerController* PlayerController;
+	TObjectPtr<AFGPlayerController> PlayerController;
 	UPROPERTY(BlueprintReadWrite)
 	FFactoryCustomizationData CustomizationData;
 };
@@ -50,13 +50,13 @@ public:
 		void HookPipeNetwork();
 
 	UPROPERTY(EditDefaultsOnly)
-	UClass* wallSupportClass;
+	TObjectPtr<UClass> wallSupportClass;
 	UPROPERTY(EditDefaultsOnly)
-	UClass* wallHoleClass;
+	TObjectPtr<UClass> wallHoleClass;
 	UPROPERTY(EditDefaultsOnly)
-	UClass* floorHoleClass;
+	TObjectPtr<UClass> floorHoleClass;
 	UPROPERTY(EditDefaultsOnly)
-	UClass* swatchClass;
+	TObjectPtr<UClass> swatchClass;
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateColor(AFGPipeNetwork* pipeNetwork);

@@ -13,9 +13,9 @@ public:
 	virtual void Dismantle_Implementation() override;
 
 	UPROPERTY(BlueprintReadWrite)
-	UFGFactoryConnectionComponent* inputConnection;
+	TObjectPtr<UFGFactoryConnectionComponent> inputConnection;
 
 	UPROPERTY(BlueprintReadWrite)
-	UFGFactoryConnectionComponent* outputConnection;
+	TObjectPtr<UFGFactoryConnectionComponent> outputConnection;
 };
 
