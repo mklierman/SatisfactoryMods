@@ -1,10 +1,10 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.8",
-	"SemVersion": "1.0.8",
-	"FriendlyName": "Any Route For Any Vehicle",
-	"Description": "Load vehicle paths from any type of vehicle",
+	"VersionName": "1.1.0",
+	"SemVersion": "1.1.0",
+	"FriendlyName": "Actual Universal Vehicle Path",
+	"Description": "Lets Factory Carts use Universal Vehicle Paths",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
 	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
@@ -15,19 +15,12 @@
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
-	"Modules": [
-		{
-			"Name": "UniversalVehiclePaths",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		}
-	],
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.11.1",
+			"SemVersion": "^3.11.3",
 			"Enabled": true
 		}
 	],
-	"GameVersion": ">=416835"
+	"GameVersion": ">=491125"
 }
