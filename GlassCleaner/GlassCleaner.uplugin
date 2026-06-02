@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "2.0.0",
+	"VersionName": "2.0.1",
 	"FriendlyName": "Glass Cleaner",
 	"Description": "",
 	"Category": "Modding",
@@ -21,8 +21,8 @@
 			"SemVersion": "^3.11.3"
 		}
 	],
-	"SemVersion": "2.0.0",
-	"GameVersion": ">=416835",
+	"SemVersion": "2.0.1",
+	"GameVersion": ">=491125",
 	"RequiredOnRemote": false,
 	"Modules": [
 		{

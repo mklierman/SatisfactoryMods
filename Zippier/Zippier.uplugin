@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.5",
-	"SemVersion": "1.0.5",
+	"VersionName": "1.0.6",
+	"SemVersion": "1.0.6",
 	"FriendlyName": "Zippier",
 	"Description": "Configure Zipline speeds",
 	"Category": "Modding",
@@ -19,7 +19,7 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.11.1",
+			"SemVersion": "^3.11.3",
 			"Enabled": true,
 			"IsActive": false
 		}
@@ -31,5 +31,5 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"GameVersion": ">=416835"
+	"GameVersion": ">=491125"
 }

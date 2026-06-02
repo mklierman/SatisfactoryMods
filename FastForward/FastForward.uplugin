@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.0",
-	"SemVersion": "1.1.0",
+	"VersionName": "1.1.1",
+	"SemVersion": "1.1.1",
 	"FriendlyName": "Fast Forward",
 	"Description": "",
 	"Category": "Modding",
@@ -22,5 +22,5 @@
 			"Enabled": true
 		}
 	],
-	"GameVersion": ">=416835"
+	"GameVersion": ">=491125"
 }

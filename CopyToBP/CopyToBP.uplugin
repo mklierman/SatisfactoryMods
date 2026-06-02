@@ -22,7 +22,7 @@
 		}
 	],
 	"SemVersion": "1.0.0",
-	"GameVersion": ">=416835",
+	"GameVersion": ">=491125",
 	"Modules": [
 		{
 			"Name": "CopyToBP",

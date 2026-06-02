@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.7",
-	"SemVersion": "1.1.7",
+	"VersionName": "1.1.8",
+	"SemVersion": "1.1.8",
 	"FriendlyName": "Alternate Recipe Research",
 	"Description": "Adds research trees to the MAM where you can research Alternate Recipes",
 	"Category": "Modding",
@@ -29,5 +29,5 @@
 			"Enabled": true
 		}
 	],
-	"GameVersion": ">=416835"
+	"GameVersion": ">=491125"
 }

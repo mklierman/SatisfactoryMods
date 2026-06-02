@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "2.3.3",
-	"SemVersion": "2.3.3",
+	"VersionName": "2.3.4",
+	"SemVersion": "2.3.4",
 	"FriendlyName": "DigbyTool",
 	"Description": "Tool used to interact with some of Sir Digby's mods",
 	"Category": "Modding",
@@ -35,6 +35,6 @@
 			"Optional": true
 		}
 	],
-	"GameVersion": ">=416835",
+	"GameVersion": ">=491125",
 	"BuiltInInitialFeatureState": "Active"
 }

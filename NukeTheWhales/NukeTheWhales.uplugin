@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.6",
-	"SemVersion": "1.0.6",
+	"VersionName": "1.0.7",
+	"SemVersion": "1.0.7",
 	"FriendlyName": "Lower Space Giraffe-Tick-Penguin-Whale Thing Health",
 	"Description": "Lowers max health of Space Giraffe-Tick-Penguin-Whale Things",
 	"Category": "Modding",
@@ -18,9 +18,9 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.11.0",
+			"SemVersion": "^3.11.3",
 			"Enabled": true
 		}
 	],
-	"GameVersion": ">=404994"
+	"GameVersion": ">=491125"
 }

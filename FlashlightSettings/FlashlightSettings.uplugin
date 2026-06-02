@@ -25,10 +25,10 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.11.0",
+			"SemVersion": "^3.11.3",
 			"Enabled": true
 		}
 	],
-	"GameVersion": ">=404994",
+	"GameVersion": ">=491125",
 	"RequiredOnRemote": false
 }
