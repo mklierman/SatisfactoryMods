@@ -19,9 +19,8 @@
 	"Plugins": [
 		{
 			"Name": "SML",
-			"SemVersion": "^3.11.3",
 			"Enabled": true,
-			"IsActive": false
+			"SemVersion": "^3.12.0"
 		}
 	],
 	"GameVersion": ">=491125"

@@ -21,12 +21,11 @@
 			"LoadingPhase": "Default"
 		}
 	],
-		"Plugins": 
-		[
-			{
-				"Name": "SML",
-				"SemVersion": "^3.0.1",
-				"Enabled": true
-			}
-		]
+	"Plugins": [
+		{
+			"Name": "SML",
+			"Enabled": true,
+			"SemVersion": "^3.12.0"
+		}
+	]
 }
