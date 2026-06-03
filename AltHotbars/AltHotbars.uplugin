@@ -1,7 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.1",
+	"SemVersion": "1.1.0",
+	"VersionName": "1.1.0",
 	"FriendlyName": "Quickbars",
 	"Description": "",
 	"Category": "Modding",
@@ -21,7 +22,6 @@
 			"SemVersion": "^3.12.0"
 		}
 	],
-	"SemVersion": "1.0.1",
 	"GameVersion": ">=416835",
 	"RequiredOnRemote": false
 }

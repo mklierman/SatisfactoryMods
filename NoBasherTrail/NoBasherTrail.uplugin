@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.3",
-	"SemVersion": "1.0.3",
+	"VersionName": "1.1.0",
+	"SemVersion": "1.1.0",
 	"FriendlyName": "No Basher Trail Effects",
 	"Description": "Removes the particle effects when swinging Xeno or Candy Cane Bashers",
 	"Category": "Modding",

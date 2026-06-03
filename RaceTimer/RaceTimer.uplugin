@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "2.1.1",
+	"VersionName": "2.2.0",
 	"FriendlyName": "Race Timer",
 	"Description": "A Start and Finish line with timer for racing!",
 	"Category": "Modding",
@@ -21,6 +21,6 @@
 			"SemVersion": "^3.12.0"
 		}
 	],
-	"SemVersion": "2.1.1",
+	"SemVersion": "2.2.0",
 	"GameVersion": ">=491125"
 }
