@@ -12,10 +12,6 @@ class SHOWSPLINEPATH_API USSP_RemoteCallObject : public UFGRemoteCallObject
 public:
     USSP_RemoteCallObject();
 
-    UFUNCTION(Client, Reliable)
-    void Client_SetPathVisible(class AFGDrivingTargetList* targetList, bool show);
-
-    virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
     UPROPERTY(Replicated)
