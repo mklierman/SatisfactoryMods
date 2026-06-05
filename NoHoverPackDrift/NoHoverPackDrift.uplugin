@@ -3,7 +3,7 @@
 	"Version": 2,
 	"VersionName": "2.2.0",
 	"SemVersion": "2.2.0",
-	"FriendlyName": "HoverPack Configurator",
+	"FriendlyName": "Hover Pack Configurator",
 	"Description": "Allows configuration of some HoverPack attributes",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",

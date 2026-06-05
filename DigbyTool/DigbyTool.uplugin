@@ -3,7 +3,7 @@
 	"Version": 2,
 	"VersionName": "2.4.0",
 	"SemVersion": "2.4.0",
-	"FriendlyName": "DigbyTool",
+	"FriendlyName": "Digby Tool",
 	"Description": "Tool used to interact with some of Sir Digby's mods",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
