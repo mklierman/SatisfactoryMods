@@ -1,500 +1,206 @@
 #include "InfiniteNudgeModule.h"
-#include "Hologram/FGBuildableHologram.h"
-#include "Hologram/FGResourceExtractorHologram.h"
+#include <Patching/NativeHookManager.h>
+#include <Buildables/FGBuildable.h>
 #include "InfiniteNudge_ConfigurationStruct.h"
-#include "FGPlayerController.h"
-#include "Hologram/FGPipeAttachmentHologram.h"
-#include "Hologram/FGWaterPumpHologram.h"
-#include "Hologram/FGWireHologram.h"
-#include "Hologram/FGWallAttachmentHologram.h"
 #include "FGInputLibrary.h"
-#include "FGGameMode.h"
 #include "Hologram/FGRailroadSignalHologram.h"
 #include "Buildables/FGBuildableRailroadSignal.h"
-#include <Hologram/FGSplineHologram.h>
+#include "Resources/FGBuildDescriptor.h"
+#include "Hologram/FGConveyorLiftHologram.h"
+#include "InfiniteGizmo.h"
+#include "ScrollMode.h"
+#include <InfiniteNudge_RCO.h>
 
-#pragma optimize("", off)
-void DoNudge(UFGBuildGunStateBuild* self, const FInputActionValue& actionValue)
+
+
+DEFINE_LOG_CATEGORY(InfiniteNudge);
+
+//EScrollMode::Value EScrollMode::value = EScrollMode::RotateZ;
+
+struct FAmount
 {
-	auto holo = self->GetHologram();
-	auto canNudge = holo->CanNudgeHologram();
-	auto locked = holo->IsHologramLocked();
-	auto disabled = holo->IsDisabled();
-	auto target = holo->GetNudgeHologramTarget();
-	auto bg = self->GetBuildGun();
-	auto hr = bg->GetHitResult();
-	auto res = target->NudgeHologram(actionValue.Get<FVector>(), hr);
-	self->OnHologramNudgeFailedDelegate.Broadcast(holo, res);
-}
-
-void FInfiniteNudgeModule::StartupModule() {
+	float Tiny;
+	float Small;
+	float Large;
+	float Default; 
+};
 
 
-#if !WITH_EDITOR
-	AFGHologram* bh = GetMutableDefault<AFGHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::NudgeHologram, bh, [this](auto scope, const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
-		{
-			//NudgeHologram(self, NudgeInput, HitResult);
-			scope.Override(ENudgeFailReason::NFR_Success);
-		});
-
-	AFGHologram* gbh = GetMutableDefault<AFGHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::NudgeHologram, gbh, [this](auto scope, const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
-		{
-			scope.Override(ENudgeFailReason::NFR_Success);
-		});
-
-	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGHologram::BeginPlay, bh, [this](AFGHologram* self)
-		{
-			self->mCanNudgeHologram = true;
-			self->mCanLockHologram = true;
-		});
-
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGGenericBuildableHologram::BeginPlay, bh, [this](AFGGenericBuildableHologram* self)
-		{
-			self->mCanNudgeHologram = true;
-			self->mCanLockHologram = true;
-		});
-
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::CanNudgeHologram, bh, [this](auto& scope, const AFGHologram* self)
-		{
-			scope.Override(true);
-		});
-
-	AFGWaterPumpHologram* wph = GetMutableDefault<AFGWaterPumpHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGWaterPumpHologram::PostHologramPlacement, wph, [this](auto& scope, AFGWaterPumpHologram* self, const FHitResult& hitResult, bool callForChildren)
-		{
-			if (self->IsHologramLocked())
-			{
-				scope.Cancel();
-			}
-		});
-
-	//const FVector& GetNudgeOffset() const { return mHologramNudgeOffset; }
-	SUBSCRIBE_METHOD(AFGHologram::LockHologramPosition, [this](auto scope, AFGHologram* self, bool lock)
-		{
-			self->mCanNudgeHologram = true;
-			self->mCanLockHologram = true;
-		});
-
-	//ENudgeFailReason AFGHologram::AddNudgeOffset(const FVector & Offset, const FVector & MaxNudgeDistance) { return ENudgeFailReason(); }
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::AddNudgeOffset, bh, [this](auto& scope, AFGHologram* self, const FVector& Offset, const FVector& MaxNudgeDistance)
-		{
-			scope.Override(ENudgeFailReason::NFR_Success);
-		});
-
-	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, bh, [this](auto& scope, AFGHologram* self, int32 delta)
-		{
-			if (self->IsHologramLocked())
-			{
-				RotateLockedHologram(self, delta);
-			}
-		});
-
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGRailroadSignalHologram::ConfigureActor, GetMutableDefault<AFGRailroadSignalHologram>(), [](const AFGRailroadSignalHologram* self, AFGBuildable* inBuildable)
-		{
-			float Scale = 1.0f;
-			bool isLeftHanded = false;
-			class AFGBuildableRailroadSignal* UpgradeTarget = nullptr;
-			bool UpgradeChangedSides = false;
-
-			if (self && self->GetRootComponent())
-			{
-				FVector ScaleVec = self->GetRootComponent()->GetComponentScale();
-				Scale = (ScaleVec.X + ScaleVec.Y + ScaleVec.Z) / 3.0f;
-				isLeftHanded = self->mIsLeftHanded;
-				UpgradeTarget = self->mUpgradeTarget;
-				
-				if (UpgradeTarget)
-				{
-					bool isUpgradeTargetLeftHanded = UpgradeTarget->mIsLeftHanded;
-					UpgradeChangedSides = isLeftHanded != isUpgradeTargetLeftHanded;
-				}
-			}
-
-			if (inBuildable)
-			{
-				float yLocation = -280.0f * Scale + 280.0f;
-
-				if (isLeftHanded)
-				{
-					yLocation = yLocation * -1.0f;
-				}
-
-				FVector location = FVector(0.0f, yLocation, 0.0f);
-				
-				if (!UpgradeTarget)
-				{
-					inBuildable->GetRootComponent()->AddLocalOffset(location);
-				}
-				
-				if (UpgradeChangedSides)
-				{
-					inBuildable->GetRootComponent()->AddLocalOffset(2*location);
-				}
-			}
-		});
-#endif
-
-}
-
-FVector FInfiniteNudgeModule::NudgeTowardsWorldDirection(AFGHologram* self, const FVector& Direction)
+//Checks if the key for a mapping (and its modifiers if any) is pressed.
+static bool isModifier(APlayerController* playerController, FName mapping)
 {
-	return Direction;
-}
+	FKey key;
+	TArray<FKey> modifiers;
+	UFGInputLibrary::GetCurrentMappingForAction(playerController, mapping, key, modifiers);
 
-bool AreModifiersDown(APlayerController* contr, const TArray<FKey>& Modifiers)
-{
-	for (const FKey& Key : Modifiers)
+	if (!key.IsValid() || !playerController->IsInputKeyDown(key))
+		return false;
+
+	for (const FKey& k : modifiers)
 	{
-		if (!contr->IsInputKeyDown(Key))
-		{
+		if (!playerController->IsInputKeyDown(k))
 			return false;
-		}
+
 	}
 	return true;
 }
 
-void FInfiniteNudgeModule::NudgeHologram(const AFGHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
+//Gets the nudge/rotate/scale amount based on which modifier keys are being pressed.
+static float GetModifierAmount(APlayerController* controller, FAmount amount)
 {
-	auto hg = const_cast<AFGHologram*>(self);
-	auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
-	if (contr)
-	{
-		auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
-		auto TinyNudgeAmount = (float)config.LeftCtrlNudgeAmount;
-		auto SmallNudgeAmount = (float)config.LeftAltNudgeAmount;
-		auto LargeNudgeAmount = (float)config.LargeNudgeAmount;
+	if (isModifier(controller, "InfiniteNudge.TinyNudge"))
+		return amount.Tiny;
+	if (isModifier(controller, "InfiniteNudge.SmallNudge"))
+		return amount.Small;
+	if (isModifier(controller, "InfiniteNudge.LargeNudge"))
+		return amount.Large;
 
-		FKey TinyNudgeKey;
-		FKey SmallNudgeKey;
-		FKey LargeNudgeKey;
-		TArray<FKey> TinyModifierKeys;
-		TArray<FKey> SmallModifierKeys;
-		TArray<FKey> LargeModifierKeys;
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, TinyModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, SmallModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.LargeNudge", LargeNudgeKey, LargeModifierKeys);
-
-		if (TinyNudgeKey.IsValid() && contr->IsInputKeyDown(TinyNudgeKey) && AreModifiersDown(contr, TinyModifierKeys))
-		{
-			TinyNudgeAmount *= 2;
-			hg->mDefaultNudgeDistance = TinyNudgeAmount;
-		}
-		else if (SmallNudgeKey.IsValid() && contr->IsInputKeyDown(SmallNudgeKey) && AreModifiersDown(contr, SmallModifierKeys))
-		{
-			SmallNudgeAmount *= 2;
-			hg->mDefaultNudgeDistance = SmallNudgeAmount;
-		}
-		else if (LargeNudgeKey.IsValid() && contr->IsInputKeyDown(LargeNudgeKey) && AreModifiersDown(contr, LargeModifierKeys))
-		{
-			LargeNudgeAmount *= 2;
-			hg->mDefaultNudgeDistance = LargeNudgeAmount;
-		}
-		else
-		{
-			hg->mDefaultNudgeDistance = 100.0;
-		}
-	}
+	return amount.Default;
 }
 
-void FInfiniteNudgeModule::NudgeGenericHologram(const AFGGenericBuildableHologram* self, const FVector& NudgeInput, const FHitResult& HitResult)
-{
 
-	auto hg = const_cast<AFGGenericBuildableHologram*>(self);
-	auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
-	if (contr)
-	{
-		auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
-		auto TinyNudgeAmount = (float)config.LeftCtrlNudgeAmount;
-		auto SmallNudgeAmount = (float)config.LeftAltNudgeAmount;
-		auto LargeNudgeAmount = (float)config.LargeNudgeAmount;
+void FInfiniteNudgeModule::StartupModule() {
 
-		FKey TinyNudgeKey;
-		FKey SmallNudgeKey;
-		FKey LargeNudgeKey;
-		FKey VerticalNudgeKey;
-		TArray<FKey> ModifierKeys;
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.LargeNudge", LargeNudgeKey, ModifierKeys);
+#if !WITH_EDITOR		
 
-
-		if (TinyNudgeKey.IsValid() && contr->IsInputKeyDown(TinyNudgeKey))
+	SUBSCRIBE_METHOD(UFGBuildDescriptor::GetHologramClass, [this](auto& scope, TSubclassOf<UFGBuildDescriptor> inClass)
 		{
-			hg->mDefaultNudgeDistance = TinyNudgeAmount;
-		}
-		else if (SmallNudgeKey.IsValid() && contr->IsInputKeyDown(SmallNudgeKey))
+			auto original = scope(inClass);
+			if (!original)
+				return;
+
+			if (auto replaced = mHologramOverrides.Find(original))
+				scope.Override(*replaced);
+		});
+
+	auto holo = GetMutableDefault<AFGHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::LockHologramPosition, holo, [this](auto& scope, const AFGHologram* self, bool lock)
 		{
-			hg->mDefaultNudgeDistance = SmallNudgeAmount;
-		}
-		else if (LargeNudgeKey.IsValid() && contr->IsInputKeyDown(LargeNudgeKey))
-		{
-			hg->mDefaultNudgeDistance = LargeNudgeAmount;
-		}
-		else
-		{
-			hg->mDefaultNudgeDistance = 100.0;
-		}
-	}
-}
-
-FVector FInfiniteNudgeModule::AddNudgeOffset(AFGHologram* self, const FVector& Direction)
-{
-	auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
-	auto TinyNudgeAmount = (float)config.LeftCtrlNudgeAmount;
-	auto SmallNudgeAmount = (float)config.LeftAltNudgeAmount;
-	auto LargeNudgeAmount = (float)config.LargeNudgeAmount;
-
-	FVector newVector = FVector(0, 0, 0);
-
-	auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
-	if (contr)
-	{
-		// Get Key mappings
-		FKey NudgeForwardKey;
-		FKey NudgeBackwardKey;
-		FKey TinyNudgeKey;
-		FKey SmallNudgeKey;
-		FKey LargeNudgeKey;
-		FKey VerticalNudgeKey;
-		
-		TArray<FKey> ModifierKeys;
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "BuildGunBuild_NudgeForward", NudgeForwardKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "BuildGunBuild_NudgeBackward", NudgeBackwardKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.LargeNudge", LargeNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.VerticalNudge", VerticalNudgeKey, ModifierKeys);
-
-		auto genericHolo = Cast < AFGGenericBuildableHologram>(self);
-		if (genericHolo)
-		{
-			if (contr->IsInputKeyDown(VerticalNudgeKey) && (contr->IsInputKeyDown(NudgeForwardKey) || contr->IsInputKeyDown(NudgeBackwardKey)))
-			{
-
-				// Determine "Front" of holo
-				auto snapAxis = genericHolo->mSnapAxis;
-				FVector offset = FVector(0, 0, 0);
-				switch (snapAxis)
-				{
-				case EAxis::X:
-					offset = self->GetActorForwardVector();
-					break;
-
-				case EAxis::Y:
-					offset = self->GetActorRightVector();
-					break;
-
-				case EAxis::Z:
-					offset = self->GetActorUpVector();
-					break;
-
-				default:
-					break;
-				}
-
-				if (contr->IsInputKeyDown(TinyNudgeKey))
-				{
-					newVector = offset * FVector(TinyNudgeAmount);
-				}
-				else if (contr->IsInputKeyDown(SmallNudgeKey))
-				{
-					newVector = offset * FVector(SmallNudgeAmount);
-				}
-				else if (contr->IsInputKeyDown(LargeNudgeKey))
-				{
-					newVector = offset * FVector(LargeNudgeAmount);
-				}
-				else
-				{
-					newVector = offset * 100;
-				}
-
-				if (contr->IsInputKeyDown(NudgeForwardKey))
-				{
-					return newVector;
-				}
-				else if (contr->IsInputKeyDown(NudgeBackwardKey))
-				{
-					return newVector * -1;
-				}
-			}
-		}
-
-		if (contr->IsInputKeyDown(VerticalNudgeKey) && (contr->IsInputKeyDown(NudgeForwardKey) || contr->IsInputKeyDown(NudgeBackwardKey)))
-		{
-			newVector.Z = 100;
-
-			if (contr->IsInputKeyDown(TinyNudgeKey))
-			{
-				newVector.Z = TinyNudgeAmount;
-			}
-			else if (contr->IsInputKeyDown(SmallNudgeKey))
-			{
-				newVector.Z = SmallNudgeAmount;
-			}
-			else if (contr->IsInputKeyDown(LargeNudgeKey))
-			{
-				newVector.Z = LargeNudgeAmount;
-			}
-
-			if (contr->IsInputKeyDown(NudgeForwardKey))
-			{
-				return newVector;
-			}
-			else if (contr->IsInputKeyDown(NudgeBackwardKey))
-			{
-				newVector.Z = newVector.Z * -1;
-				return newVector;
-			}
-		}
-	}
-	return newVector;
-}
-
-void FInfiniteNudgeModule::RotateLockedHologram(AFGHologram* self, int32 delta)
-{
-	auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
-	if (contr)
-	{
-		auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
-		auto TinyRotateAmount = (float)config.TinyRotateAmount;
-		auto SmallRotateAmount = (float)config.SmallRotateAmount;
-		auto LargeRotateAmount = (float)config.LargeRotateAmount;
-
-		FKey TinyNudgeKey;
-		FKey SmallNudgeKey;
-		FKey LargeNudgeKey;
-		FKey PitchRotateKey;
-		FKey RollRotateKey;
-		TArray<FKey> ModifierKeys;
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.LargeNudge", LargeNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.PitchRotate", PitchRotateKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.RollRotate", RollRotateKey, ModifierKeys);
-
-		//auto newRotation = self->GetActorRotation();
-		auto newRotation = FRotator(0, 0, 0);
-		double rotationAmount = 15.0 * delta;
-
-		// Set Fine Rotation
-		if (contr->IsInputKeyDown(TinyNudgeKey))
-		{
-			rotationAmount = TinyRotateAmount * delta;
-		}
-		if (contr->IsInputKeyDown(SmallNudgeKey))
-		{
-			rotationAmount = SmallRotateAmount * delta;
-		}
-		if (contr->IsInputKeyDown(LargeNudgeKey))
-		{
-			rotationAmount = LargeRotateAmount * delta;
-		}
-
-		// Set rotation types
-
-		auto pipeAttachHolo = Cast<AFGPipeAttachmentHologram>(self);
-		auto wallAttachmentHolo = Cast<AFGWallAttachmentHologram>(self);
-		if (pipeAttachHolo || wallAttachmentHolo)
-		{
-			// Pipe attachments rotate roll by default
-			if (contr->IsInputKeyDown(PitchRotateKey))
-			{
-				//Rotate Pitch
-				newRotation.Pitch = newRotation.Pitch + rotationAmount;
-			}
-			else if (contr->IsInputKeyDown(RollRotateKey))
-			{
-				//Rotate Yaw
-				newRotation.Yaw = newRotation.Yaw + rotationAmount;
+			mPivot = FVector::ZeroVector;
+			if (self->mParent || self->mChildren.Num() > 0)
+				return;
+			
+			if (lock) {
+				ScrollMode::Reset();
+				UInfiniteGizmo::Create(const_cast<AFGHologram*>(self));
 			}
 			else
-			{
-				//Rotate Roll
-				newRotation.Roll = newRotation.Roll + rotationAmount;
-			}
-		}
-		else
-		{
-			if (contr->IsInputKeyDown(PitchRotateKey))
-			{
-				//Rotate Pitch
-				newRotation.Pitch = newRotation.Pitch + rotationAmount;
-			}
-			else if (contr->IsInputKeyDown(RollRotateKey))
-			{
-				//Rotate Roll
-				newRotation.Roll = newRotation.Roll + rotationAmount;
-			}
-			else
-			{
-				//Rotate Yaw
-				newRotation.Yaw = newRotation.Yaw + rotationAmount;
-			}
-		}
-		auto wireHG = Cast< AFGWireHologram>(self);
-		if (wireHG)
-		{
-			auto currentPole = wireHG->GetActiveAutomaticPoleHologram();
-			if (currentPole)
-			{
-				currentPole->AddActorLocalRotation(newRotation);
-			}
-		}
-		else
-		{
-			self->AddActorLocalRotation(newRotation);
-		}
-	}
-}
-void FInfiniteNudgeModule::ScaleHologram(AFGHologram* self)
-{
-	auto contr = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
-	if (contr)
-	{
-		auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
-		auto TinyScaleAmount = (float)config.TinyScaleAmount;
-		auto SmallScaleAmount = (float)config.SmallScaleAmount;
-		auto LargeScaleAmount = (float)config.LargeScaleAmount;
+				UInfiniteGizmo::Destroy();
+		});
 
-		FKey IncreaseScaleKey;
-		FKey DecreaseScaleKey;
-		FKey TinyNudgeKey;
-		FKey SmallNudgeKey;
-		FKey LargeNudgeKey;
-		TArray<FKey> ModifierKeys;
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.IncreaseScale", IncreaseScaleKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.DecreaseScale", DecreaseScaleKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.TinyNudge", TinyNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.SmallNudge", SmallNudgeKey, ModifierKeys);
-		UFGInputLibrary::GetCurrentMappingForAction(contr, "InfiniteNudge.LargeNudge", LargeNudgeKey, ModifierKeys);
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::GetNudgeDistance, holo, ([this](auto& scope, const AFGHologram* self)
+		{
+			auto controller = Cast<APlayerController>(self->GetConstructionInstigator()->GetController());
+			if (!controller)
+				return;
 
-		float scaleAmount = 1.0;
-		if (contr->IsInputKeyDown(TinyNudgeKey))
-		{
-			scaleAmount = TinyScaleAmount;
-		}
-		else if (contr->IsInputKeyDown(SmallNudgeKey))
-		{
-			scaleAmount = SmallScaleAmount;
-		}
-		else if (contr->IsInputKeyDown(LargeNudgeKey))
-		{
-			scaleAmount = LargeScaleAmount;
-		}
-		if (contr->IsInputKeyDown(DecreaseScaleKey))
-		{
-			scaleAmount = scaleAmount * -1.0;
-		}
+			auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(self->GetWorld());
+			FAmount nudgeAmount = { config.TinyNudgeAmount, config.SmallNudgeAmount, config.LargeNudgeAmount, 100.0f };
+			float distance = GetModifierAmount(controller, nudgeAmount);
 
-		auto currentScale = self->GetActorRelativeScale3D();
-		self->SetActorRelativeScale3D(currentScale + scaleAmount);
-	}
+			scope.Override(distance);
+		}));
+
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorLiftHologram::CanNudgeHologram, GetMutableDefault<AFGConveyorLiftHologram>(), [this](auto& scope, const AFGHologram* self)
+		{
+			//UE_LOG(InfiniteNudge, Verbose, TEXT("AFGConveyorLiftHologram::CanNudgeHologram overriden"));
+			scope.Override(true);
+		});
+
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::Scroll, holo, [this](auto& scope, AFGHologram* self, int32 delta)
+		{
+			if (!self->IsHologramLocked())
+				return;
+			
+			if (ScrollMode::IsRotate()) 
+				FInfiniteNudgeModule::RotateHologram(self, delta);
+			else if (ScrollMode::IsScale())
+				FInfiniteNudgeModule::ScaleHologram(self, delta);
+			//scope.Cancel();
+		});
+
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGRailroadSignalHologram::ConfigureActor, GetMutableDefault<AFGRailroadSignalHologram>(), [](const AFGRailroadSignalHologram* self, AFGBuildable* inBuildable)
+		{
+			if (!inBuildable || !self || !self->GetRootComponent())
+				return;
+
+			UE_LOG(InfiniteNudge, Verbose, TEXT("AFGRailroadSignalHologram::ConfigureActor overriden"));
+
+			FVector ScaleVec = self->GetRootComponent()->GetComponentScale();
+			float Scale = (ScaleVec.X + ScaleVec.Y + ScaleVec.Z) / 3.0f;
+			
+			float yLocation = -280.0f * Scale + 280.0f * (self->mIsLeftHanded ? -1.0f : 1.0f);		
+			FVector location = FVector(0.0f, yLocation, 0.0f);
+				
+			if (!self->mUpgradeTarget)
+				inBuildable->GetRootComponent()->AddLocalOffset(location);
+			else if (self->mIsLeftHanded != self->mUpgradeTarget->mIsLeftHanded)
+				inBuildable->GetRootComponent()->AddLocalOffset(2 * location);
+		});
+
+#endif
 }
 
+void FInfiniteNudgeModule::RotateHologram(AFGHologram* hologram, int32 step) {
 
-#pragma optimize("", on)
+	if (!ScrollMode::IsRotate())
+		return;
+
+	auto controller = Cast<APlayerController>(hologram->GetConstructionInstigator()->GetController());
+	if (!controller)
+		return;
+
+	//Rotation from modifier
+	auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(hologram->GetWorld());
+	FAmount rotationAmount = { config.TinyRotateAmount, config.SmallRotateAmount, config.LargeRotateAmount, 15.0 };
+	auto rotation = GetModifierAmount(controller, rotationAmount) * step;
+
+	auto rotator = FRotator::ZeroRotator;
+	rotator.SetComponentForAxis(ScrollMode::GetRotationAxis(), rotation);
+
+	//pivot calculations
+	if (!mPivot.IsNearlyZero()) { //if pivot is at 0,0,0, offset should be 0, so might as well skip the calculations
+		FVector rotatedPivot = rotator.RotateVector(mPivot);
+		FVector offset = hologram->GetActorTransform().TransformVector(mPivot - rotatedPivot);
+		hologram->SetNudgeOffset(hologram->GetNudgeOffset() + offset); //Set because Add does additional checks and limits the distance
+	} 
+	
+	//Apply rotation
+	hologram->AddActorLocalRotation(rotator);
+	for (auto c : hologram->mChildren)
+		c->AddActorLocalRotation(rotator);
+}
+
+void FInfiniteNudgeModule::ScaleHologram(AFGHologram* hologram, int32 step) {
+
+	if (!ScrollMode::IsScale())
+		return;
+
+	auto controller = Cast<AFGPlayerController>(hologram->GetConstructionInstigator()->GetController());
+	if (!controller)
+		return;
+
+	//Scale from modifier
+	auto config = FInfiniteNudge_ConfigurationStruct::GetActiveConfig(hologram->GetWorld());
+	FAmount scaleAmount = { config.TinyScaleAmount, config.SmallScaleAmount, config.LargeScaleAmount, 1 };
+	auto scale = GetModifierAmount(controller, scaleAmount) / 10 + 1; //change the config value to / 10 ?
+	if (step < 0)
+		scale = 1.0f / scale;
+	
+	//pivot calculations
+	if (!mPivot.IsNearlyZero()) { 
+		FVector offset = hologram->GetActorTransform().TransformVector(mPivot - mPivot * scale);
+		hologram->SetNudgeOffset(hologram->GetNudgeOffset() + offset);
+	}
+
+	//Apply scale
+	auto newScale = hologram->GetActorRelativeScale3D() * scale;
+	hologram->SetActorRelativeScale3D(newScale);
+	for (auto c : hologram->mChildren)
+		c->SetActorRelativeScale3D(newScale);
+
+	if (UInfiniteNudge_RCO* RCO = UInfiniteNudge_RCO::Get(hologram->GetWorld()))
+		RCO->Server_SetHologramScale(controller, newScale);
+}
+
 IMPLEMENT_GAME_MODULE(FInfiniteNudgeModule, InfiniteNudge);
