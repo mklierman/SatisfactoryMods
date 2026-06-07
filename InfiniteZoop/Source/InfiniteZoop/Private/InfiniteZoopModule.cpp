@@ -26,6 +26,7 @@
 #include "Hologram/FGBeamHologram.h"
 #include <Logging/StructuredLog.h>
 #include "Hologram/FGSplineHologram.h"
+#include "Hologram/FGBlueprintHologram.h"
 #include <SessionSettings/SessionSettingsManager.h>
 
 
@@ -746,7 +747,14 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 		AFGBuildableHologram* bhg = Cast<AFGBuildableHologram>(self);
 		AFGSplineHologram* shg = Cast< AFGSplineHologram>(bhg);
 		AFGBeamHologram* beamhg = Cast< AFGBeamHologram>(bhg);
-		if (bhg && shg == nullptr && beamhg == nullptr)
+		AFGFactoryHologram* fhg = Cast< AFGFactoryHologram>(bhg);
+
+		if (shg || beamhg || fhg)
+		{
+			return;
+		}
+
+		if (bhg)
 		{
 			if (!self->GetInstigatorController())
 			{
@@ -761,7 +769,7 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 		}
 		if (clientSubsystem)
 		{
-			if (bhg && bhg->mMaxZoopAmount > 0 && shg == nullptr && beamhg == nullptr)
+			if (bhg && bhg->mMaxZoopAmount > 0)
 			{
 				bhg->SetMaterialState(self->GetHologramMaterialState());
 				if (clientSubsystem->tempZoopAmount > 0)
