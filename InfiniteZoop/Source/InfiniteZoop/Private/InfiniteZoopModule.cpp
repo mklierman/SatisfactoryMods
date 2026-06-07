@@ -23,7 +23,9 @@
 #include "InfiniteZoop_RCO.h"
 #include "Hologram/FGRampHologram.h"
 #include "FGBlueprintProxy.h"
+#include "Hologram/FGBeamHologram.h"
 #include <Logging/StructuredLog.h>
+#include "Hologram/FGSplineHologram.h"
 #include <SessionSettings/SessionSettingsManager.h>
 
 
@@ -534,7 +536,6 @@ int32 FInfiniteZoopModule::GetBaseCostMultiplier(const AFGBuildableHologram* sel
 
 void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AActor*>& out_children)
 {
-	//UWorld* world = self->GetWorld();
 	//UE_LOGFMT(InfiniteZoop_Log, Display, "FInfiniteZoopModule::ConstructZoop. zoopSubsystem->currentZoopAmount: {0}", zoopSubsystem->currentZoopAmount);
 	if (self && IsZoopMode(self))
 	{
@@ -553,14 +554,7 @@ void FInfiniteZoopModule::ConstructZoop(AFGFoundationHologram* self, TArray<AAct
 
 			zStruct->firstPassComplete = false;
 			zStruct->secondPassComplete = false;
-			//zStruct->hgMaterialState1 = EHologramMaterialState::HMS_OK;
-			//zStruct->hgMaterialState2 = EHologramMaterialState::HMS_OK;
-			//zStruct->X = 0;
-			//zStruct->Y = 0;
-			//zStruct->Z = 0;
 			FoundationsBeingZooped[self] = zStruct;
-
-
 		}
 	}
 }
@@ -684,36 +678,6 @@ void FInfiniteZoopModule::SetBlueprintProxy(const AFGBuildableHologram* fbHolo, 
 		auto total = x + y + z;
 		if (total > 0)
 		{
-			//TArray<const AFGBuildableHologram*> keysToRemove;
-			//if (HoloProxies.Num() > 1)
-			//{
-			//	for (auto It = HoloProxies.CreateIterator(); It; ++It)
-			//	{
-			//		const AFGBuildableHologram* Key = It->Key;
-
-			//		// Check if key is null or has been garbage collected
-			//		if (Key == nullptr || !IsValid(Key))
-			//		{
-			//			keysToRemove.Add(Key);
-			//		}
-			//	}
-
-			//	//for (TPair<const AFGBuildableHologram*, AFGBlueprintProxy*>& holo : HoloProxies)
-			//	//{
-			//	//	if (&holo == nullptr)
-			//	//	{
-			//	//		break;
-			//	//	}
-			//	//	if (holo.Key == nullptr || !IsValid(holo.Key))
-			//	//	{
-			//	//		keysToRemove.Add(holo.Key);
-			//	//	}
-			//	//}
-			//	for (auto& key : keysToRemove)
-			//	{
-			//		HoloProxies.Remove(key);
-			//	}
-			//}
 			TArray<TWeakObjectPtr<const AFGBuildableHologram>> keysToRemove;
 
 			if (HoloProxies.Num() > 0)
@@ -755,9 +719,6 @@ void FInfiniteZoopModule::SetBlueprintProxy(const AFGBuildableHologram* fbHolo, 
 
 void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 {
-	//TArray< TSubclassOf< UFGBuildGunModeDescriptor > > out_buildmodes;
-	//self->GetSupportedBuildModes(out_buildmodes);
-	//out_buildmodes.Num();
 	if (self)
 	{
 		TArray< TSubclassOf< UFGBuildGunModeDescriptor > > out_buildmodes;
@@ -783,8 +744,9 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 		}
 
 		AFGBuildableHologram* bhg = Cast<AFGBuildableHologram>(self);
-
-		if (bhg)
+		AFGSplineHologram* shg = Cast< AFGSplineHologram>(bhg);
+		AFGBeamHologram* beamhg = Cast< AFGBeamHologram>(bhg);
+		if (bhg && shg == nullptr && beamhg == nullptr)
 		{
 			if (!self->GetInstigatorController())
 			{
@@ -799,9 +761,8 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 		}
 		if (clientSubsystem)
 		{
-			if (bhg && bhg->mMaxZoopAmount > 0)
+			if (bhg && bhg->mMaxZoopAmount > 0 && shg == nullptr && beamhg == nullptr)
 			{
-
 				bhg->SetMaterialState(self->GetHologramMaterialState());
 				if (clientSubsystem->tempZoopAmount > 0)
 				{
@@ -906,6 +867,10 @@ void FInfiniteZoopModule::StartupModule()
 				{
 					return;
 				}
+				if (auto beamhg = Cast<AFGBeamHologram>(fbhg))
+				{
+					return;
+				}
 				auto mult = fbhg->GetBaseCostMultiplier();
 				if (LastMultiplier.Num() > 0)
 				{
@@ -948,8 +913,11 @@ void FInfiniteZoopModule::StartupModule()
 	// TODO: Fix for 1.2
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::GetBaseCostMultiplier, fbhgCDO, [this](auto& scope, const AFGBuildableHologram* self)
 		{
-			
 			//UE_LOGFMT(InfiniteZoop_Log, Display, "AFGBuildableHologram::GetBaseCostMultiplier");
+			if (auto beamhg = Cast< AFGBeamHologram>(self))
+			{
+				return;
+			}
 			if (auto ramphg = Cast<AFGRampHologram>(self))
 			{
 				return;
@@ -966,12 +934,6 @@ void FInfiniteZoopModule::StartupModule()
 		});
 
 	AFGFoundationHologram* fhCDO = GetMutableDefault<AFGFoundationHologram>();
-
-	// Broke by 1.1
-	//SUBSCRIBE_METHOD_VIRTUAL(AFGFoundationHologram::ConstructZoop, fhCDO, [this](auto& scope, AFGFoundationHologram* self, TArray<AActor*>& out_children)
-	//	{
-	//		ConstructZoop(self, out_children);
-	//	});
 
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGFoundationHologram::CreateDefaultFoundationZoop, fhCDO, [this](AFGFoundationHologram* self, const FHitResult& hitResult)
 		{
@@ -1039,36 +1001,6 @@ void FInfiniteZoopModule::StartupModule()
 		});
 
 	AFGPillarHologram* pCDO = GetMutableDefault<AFGPillarHologram>();
-	/*SUBSCRIBE_METHOD_VIRTUAL(AFGPillarHologram::BeginPlay, pCDO, [](auto scope, AFGPillarHologram* self)
-		{
-			if (self && self->HasAuthority())
-			{
-				UWorld* world = self->GetWorld();
-				if (world)
-				{
-					USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
-					if (SubsystemActorManager)
-					{
-						AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
-						if (zoopSubsystem)
-						{
-							AInfiniteZoop_ClientSubsystem* clientSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoop_ClientSubsystem>();
-							if (clientSubsystem)
-							{
-								if (clientSubsystem->tempZoopAmount > 0)
-								{
-									self->mMaxZoop = clientSubsystem->tempZoopAmount - 1;
-								}
-								else
-								{
-									self->mMaxZoop = zoopSubsystem->currentZoopAmount - 1;
-								}
-							}
-						}
-					}
-				}
-			}
-		});*/
 #endif
 }
 
