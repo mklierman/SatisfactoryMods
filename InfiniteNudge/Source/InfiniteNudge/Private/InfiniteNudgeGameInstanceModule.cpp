@@ -11,6 +11,7 @@
 #include "InfiniteNudgeModule.h"
 #include "InfiniteGizmo.h"
 
+#pragma optimize("", off)
 
 static const FName HOLOGRAM_MESH_TAG = FName("HologramMesh"); //Ideally AFGHologram::HOLOGRAM_MESH_TAG but it's protected.
 
@@ -42,12 +43,29 @@ void UInfiniteNudgeGameInstanceModule::DispatchLifecycleEvent(ELifecyclePhase Ph
 AFGHologram* UInfiniteNudgeGameInstanceModule::GetHologram() {
     auto* world = GetWorld();
     if (!world)
+    {
         return nullptr;
+    }
     auto* character = Cast<AFGCharacterPlayer>(UGameplayStatics::GetPlayerCharacter(world, 0));
     if (!character)
+    {
         return nullptr;
-    auto* hologram = Cast<UFGBuildGunStateBuild>(character->GetBuildGun()->GetCurrentState())->GetHologram();
-    return hologram;
+    }
+    auto* buildgun = character->GetBuildGun();
+    if (!buildgun)
+    {
+        return nullptr;
+    }
+    auto* currentState = buildgun->GetCurrentState();
+    if (!currentState)
+    {
+        return nullptr;
+    }
+    if (auto* buildState = Cast<UFGBuildGunStateBuild>(currentState))
+    {
+        return buildState->GetHologram();
+    }
+    return nullptr;
 }
 
 bool UInfiniteNudgeGameInstanceModule::IsHologramLocked() {
@@ -123,17 +141,23 @@ void UInfiniteNudgeGameInstanceModule::ToggleLockPivot() {
 
 void UInfiniteNudgeGameInstanceModule::ResetTransform() {
     if (!IsHologramLocked())
+    {
         return;
+    }
 
     auto* player = Cast<AFGCharacterPlayer>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
     if (!player)
+    {
         return;
+    }
 
     auto* buildGun = player->GetBuildGun();
     auto* state = Cast<UFGBuildGunStateBuild>(buildGun->GetCurrentState());
 	auto* hologram = state->GetHologram();
     if (!state)
+    {
         return;
+    }
 
 	hologram->SetNudgeOffset(FVector::ZeroVector);
     hologram->SetActorScale3D(FVector(1, 1, 1));
@@ -300,3 +324,4 @@ void UInfiniteNudgeGameInstanceModule::LogWidgetHierarchy(UUserWidget* widget, i
                 LogWidgetHierarchy(uw, depth + 1);            
         });
 }
+#pragma optimize("", on)
