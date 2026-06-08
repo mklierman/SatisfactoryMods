@@ -28,6 +28,7 @@
 #include "Hologram/FGSplineHologram.h"
 #include "Hologram/FGBlueprintHologram.h"
 #include "Hologram/FGConveyorLiftHologram.h"
+#include "Hologram/FGVehiclePathSegmentHologram.h"
 #include <SessionSettings/SessionSettingsManager.h>
 
 
@@ -750,8 +751,9 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 		AFGBeamHologram* beamhg = Cast< AFGBeamHologram>(bhg);
 		AFGFactoryHologram* fhg = Cast< AFGFactoryHologram>(bhg);
 		AFGConveyorLiftHologram* clhg = Cast< AFGConveyorLiftHologram>(bhg);
+		AFGVehiclePathSegmentHologram* vphg = Cast < AFGVehiclePathSegmentHologram>(bhg);
 
-		if (shg || beamhg || fhg || clhg)
+		if (shg || beamhg || fhg || clhg || vphg)
 		{
 			return;
 		}
