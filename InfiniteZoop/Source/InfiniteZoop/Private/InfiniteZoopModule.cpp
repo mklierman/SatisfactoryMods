@@ -27,6 +27,7 @@
 #include <Logging/StructuredLog.h>
 #include "Hologram/FGSplineHologram.h"
 #include "Hologram/FGBlueprintHologram.h"
+#include "Hologram/FGConveyorLiftHologram.h"
 #include <SessionSettings/SessionSettingsManager.h>
 
 
@@ -748,8 +749,9 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 		AFGSplineHologram* shg = Cast< AFGSplineHologram>(bhg);
 		AFGBeamHologram* beamhg = Cast< AFGBeamHologram>(bhg);
 		AFGFactoryHologram* fhg = Cast< AFGFactoryHologram>(bhg);
+		AFGConveyorLiftHologram* clhg = Cast< AFGConveyorLiftHologram>(bhg);
 
-		if (shg || beamhg || fhg)
+		if (shg || beamhg || fhg || clhg)
 		{
 			return;
 		}
@@ -936,9 +938,14 @@ void FInfiniteZoopModule::StartupModule()
 				{
 					return;
 				}
+				auto result = this->GetBaseCostMultiplier(self);
+				scope.Override(result);
 			}
-			auto result = this->GetBaseCostMultiplier(self);
-			scope.Override(result);
+			if (auto whg = Cast<AFGWallHologram>(self))
+			{
+				auto result = this->GetBaseCostMultiplier(self);
+				scope.Override(result);
+			}
 		});
 
 	AFGFoundationHologram* fhCDO = GetMutableDefault<AFGFoundationHologram>();
