@@ -10,13 +10,13 @@ struct FInfiniteNudge_ConfigurationStruct {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadWrite)
-    int32 TinyNudgeAmount{};
+    float TinyNudgeAmount{};
 
     UPROPERTY(BlueprintReadWrite)
-    int32 SmallNudgeAmount{};
+    float SmallNudgeAmount{};
 
     UPROPERTY(BlueprintReadWrite)
-    int32 LargeNudgeAmount{};
+    float LargeNudgeAmount{};
 
     UPROPERTY(BlueprintReadWrite)
     float TinyRotateAmount{};
