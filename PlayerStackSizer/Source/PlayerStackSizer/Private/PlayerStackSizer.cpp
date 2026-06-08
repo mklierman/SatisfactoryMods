@@ -105,7 +105,7 @@ int32 FPlayerStackSizerModule::MoveInventoryItems(UFGInventoryComponent* sourceC
         || sourceIdx < 0 || destinationIdx < 0
         || sourceIdx >= sourceComponent->mInventoryStacks.Num()
         || destinationIdx >= destinationComponent->mInventoryStacks.Num()
-        || sourceComponent == destinationComponent
+        //|| sourceComponent == destinationComponent
         || !sourceComponent->HasAuthority()
         || !destinationComponent->HasAuthority()
         || !sourceComponent->mCanBeRearrange)
