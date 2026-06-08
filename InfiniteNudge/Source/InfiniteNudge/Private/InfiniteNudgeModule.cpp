@@ -7,6 +7,8 @@
 #include "Buildables/FGBuildableRailroadSignal.h"
 #include "Resources/FGBuildDescriptor.h"
 #include "Hologram/FGConveyorLiftHologram.h"
+#include "Hologram/FGConveyorAttachmentHologram.h"
+#include "Hologram/FGPipeAttachmentHologram.h"
 #include "InfiniteGizmo.h"
 #include "ScrollMode.h"
 #include <InfiniteNudge_RCO.h>
@@ -103,7 +105,14 @@ void FInfiniteNudgeModule::StartupModule() {
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorLiftHologram::CanNudgeHologram, GetMutableDefault<AFGConveyorLiftHologram>(), [this](auto& scope, const AFGHologram* self)
 		{
-			//UE_LOG(InfiniteNudge, Verbose, TEXT("AFGConveyorLiftHologram::CanNudgeHologram overriden"));
+			scope.Override(true);
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CanNudgeHologram, GetMutableDefault<AFGConveyorAttachmentHologram>(), [this](auto& scope, const AFGHologram* self)
+		{
+			scope.Override(true);
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::CanNudgeHologram, GetMutableDefault<AFGPipeAttachmentHologram>(), [this](auto& scope, const AFGHologram* self)
+		{
 			scope.Override(true);
 		});
 
