@@ -666,60 +666,57 @@ void FInfiniteZoopModule::CheckBuildEffects(const AFGBuildableHologram* fbHolo, 
 
 void FInfiniteZoopModule::SetBlueprintProxy(const AFGBuildableHologram* fbHolo, AFGBuildable* inBuildable)
 {
-	if (fbHolo)
+	if (!fbHolo || !inBuildable)
 	{
-		USessionSettingsManager* SessionSettings = fbHolo->GetWorld()->GetSubsystem<USessionSettingsManager>();
-		auto bpZoop = SessionSettings->GetBoolOptionValue("InfiniteZoop.BlueprintZoop");
-		if (!bpZoop)
+		return;
+	}
+
+	USessionSettingsManager* SessionSettings = fbHolo->GetWorld()->GetSubsystem<USessionSettingsManager>();
+	if (!SessionSettings->GetBoolOptionValue("InfiniteZoop.BlueprintZoop"))
+	{
+		return;
+	}
+
+	const auto x = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.X), 0, 99999);
+	const auto y = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Y), 0, 99999);
+	const auto z = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Z), 0, 99999);
+	if (x + y + z <= 0)
+	{
+		return;
+	}
+
+	TArray<TWeakObjectPtr<const AFGBuildableHologram>> keysToRemove;
+	for (const auto& holo : HoloProxies)
+	{
+		if (!holo.Key.IsValid())
 		{
-			return;
+			keysToRemove.Add(holo.Key);
 		}
+	}
+	for (const auto& key : keysToRemove)
+	{
+		HoloProxies.Remove(key);
+	}
 
-		auto x = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.X), 0, 99999);
-		auto y = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Y), 0, 99999);
-		auto z = FMath::Clamp(FMath::Abs(fbHolo->mDesiredZoop.Z), 0, 99999);
-		auto total = x + y + z;
-		if (total > 0)
+	TWeakObjectPtr<const AFGBuildableHologram> WeakHolo = fbHolo;
+	if (!HoloProxies.Contains(WeakHolo))
+	{
+		FActorSpawnParameters ProxyParams;
+		ProxyParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		AFGBlueprintProxy* proxy = fbHolo->GetWorld()->SpawnActor<AFGBlueprintProxy>(AFGBlueprintProxy::StaticClass(), fbHolo->GetActorTransform(), ProxyParams);
+		HoloProxies.Add(WeakHolo, proxy);
+	}
+
+	if (AFGBlueprintProxy* blueprintProxy = HoloProxies[WeakHolo])
+	{
+		if (!inBuildable->GetBlueprintProxy())
 		{
-			TArray<TWeakObjectPtr<const AFGBuildableHologram>> keysToRemove;
+			inBuildable->SetBlueprintProxy(blueprintProxy);
 
-			if (HoloProxies.Num() > 0)
-			{
-				for (const auto& holo : HoloProxies)
-				{
-					// TWeakObjectPtr automatically handles destroyed objects
-					if (!holo.Key.IsValid()) // Safe - won't crash on destroyed objects
-					{
-						keysToRemove.Add(holo.Key);
-					}
-				}
-
-				for (const auto& key : keysToRemove)
-				{
-					HoloProxies.Remove(key);
-				}
-			}
-
-			if (HoloProxies.Num() <= 0 || !HoloProxies.Contains(fbHolo))
-			{
-				AFGBlueprintProxy* proxy = fbHolo->GetWorld()->SpawnActor<AFGBlueprintProxy>();
-				TWeakObjectPtr<const AFGBuildableHologram> WeakHolo = fbHolo;
-				HoloProxies.Add(WeakHolo, proxy);
-				//HoloProxies.Add(fbHolo, proxy);
-			}
-
-			TWeakObjectPtr<const AFGBuildableHologram> WeakHolo = fbHolo;
-			if (auto* FoundProxy = HoloProxies.Find(WeakHolo))
-			{
-				// Use FoundProxy
-				inBuildable->SetBlueprintProxy(*FoundProxy);
-			}
-			AFGBlueprintProxy* blueprintProxy = HoloProxies[fbHolo];
-			//blueprintProxy->RegisterBuildable(inBuildable);
+			blueprintProxy->RegisterBuildable(inBuildable);
 		}
 	}
 }
-
 void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 {
 	if (self)
