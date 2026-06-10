@@ -66,7 +66,13 @@ void FNodePurityConfiguratorModule::NodeBeginPlay(AFGResourceNode* self, bool is
 	if (SubsystemActorManager)
 	{
 		ANPC_Subsystem* npcSubsystem = SubsystemActorManager->GetSubsystemActor<ANPC_Subsystem>();
+		if (!npcSubsystem)
+			return;
+
 		auto nodeType = self->GetResourceClass();
+		if (!nodeType)
+			return;
+
 		auto nodeTypeName = nodeType->GetName();
 
 		if (nodeTypeName.ToLower() == "desc_oreiron_c")
