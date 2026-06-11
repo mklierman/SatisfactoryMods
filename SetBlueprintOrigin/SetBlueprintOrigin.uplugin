@@ -1,0 +1,34 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.0",
+	"FriendlyName": "Set Blueprint Axis",
+	"Description": "Set whether to use the top or bottom axis on blueprints",
+	"Category": "Modding",
+	"CreatedBy": "",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "SetBlueprintOrigin",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"BuiltInInitialFeatureState": "Active",
+	"Plugins": [
+		{
+			"Name": "SML",
+			"Enabled": true,
+			"SemVersion": "^3.12.0"
+		}
+	],
+	"SemVersion": "1.0.0",
+	"GameVersion": ">=491125"
+}
