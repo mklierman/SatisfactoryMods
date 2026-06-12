@@ -15,48 +15,50 @@ void AInfiniteZoopSubsystem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(AInfiniteZoopSubsystem, currentZoopAmount);
 }
 
-void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop, APawn* owner, FCriticalSection* lockObj)
+FCriticalSection ZoopAmountsMutex;
+
+void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop, APawn* owner)
 {
-	//UE_LOGFMT(InfiniteZoop_Log, Display, "AInfiniteZoopSubsystem::SetPublicZoopAmount: {0},{1},{2}", x, y, z);
-	if (lockObj && lockObj->TryLock())
-	{
-		if (!owner)
-		{
-			return;
-		}
-		FZoopAmountStruct zStruct;
-		if (ZoopAmountStructs.Num() > 0 && ZoopAmountStructs.Contains(owner))
-		{
-			zStruct = ZoopAmountStructs[owner];
-		}
-		zStruct.isFoundation = foundation;
-		if (foundation && verticalZoop)
-		{
-			zStruct.xAmount = -1;
-			zStruct.zAmount = -1;
-			zStruct.yAmount = -1;
-			zStruct.needsUpdate = true;
-			ZoopAmountStructs.Add(owner, zStruct);
-			return;
-		}
-		if (x == xAmount && y == yAmount && z == zAmount && foundation == isFoundation)
-		{
-			zStruct.xAmount = -1;
-			zStruct.zAmount = -1;
-			zStruct.yAmount = -1;
-			zStruct.isFoundation = foundation;
-			needsUpdate = false;
-		}
-		else
-		{
-			zStruct.xAmount = x;
-			zStruct.yAmount = y;
-			zStruct.zAmount = z;
-			zStruct.isFoundation = foundation;
-			zStruct.needsUpdate = true;
-		}
-		ZoopAmountStructs.Add(owner, zStruct);
-		ForceNetUpdate();
-		lockObj->Unlock();
-	}
+    if (!IsValid(owner))
+    {
+        return;
+    }
+
+    checkf(IsInGameThread(), TEXT("SetPublicZoopAmount called off game thread"));
+
+    {
+        FScopeLock Guard(&ZoopAmountsMutex);
+
+        FZoopAmountStruct& zStruct = ZoopAmountStructs.FindOrAdd(owner);
+        
+        zStruct.isFoundation = foundation;
+
+        if (foundation && verticalZoop)
+        {
+            zStruct.xAmount = -1;
+            zStruct.yAmount = -1;
+            zStruct.zAmount = -1;
+            zStruct.needsUpdate = true;
+        }
+        else if (
+            x == zStruct.xAmount &&
+            y == zStruct.yAmount &&
+            z == zStruct.zAmount &&
+            foundation == zStruct.isFoundation)
+        {
+            zStruct.xAmount = -1;
+            zStruct.yAmount = -1;
+            zStruct.zAmount = -1;
+            zStruct.needsUpdate = false;
+        }
+        else
+        {
+            zStruct.xAmount = x;
+            zStruct.yAmount = y;
+            zStruct.zAmount = z;
+            zStruct.needsUpdate = true;
+        }
+    }
+
+    ForceNetUpdate();
 }

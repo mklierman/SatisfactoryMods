@@ -133,9 +133,13 @@ void FInfiniteNudgeModule::StartupModule() {
 			if (!inBuildable || !self || !self->GetRootComponent())
 				return;
 
-			UE_LOG(InfiniteNudge, Verbose, TEXT("AFGRailroadSignalHologram::ConfigureActor overriden"));
+
+			//UE_LOG(InfiniteNudge, Verbose, TEXT("AFGRailroadSignalHologram::ConfigureActor overriden"));
 
 			FVector ScaleVec = self->GetRootComponent()->GetComponentScale();
+			if (ScaleVec == FVector(1, 1, 1))
+				return;
+
 			float Scale = (ScaleVec.X + ScaleVec.Y + ScaleVec.Z) / 3.0f;
 			
 			float yLocation = -280.0f * Scale + 280.0f * (self->mIsLeftHanded ? -1.0f : 1.0f);		

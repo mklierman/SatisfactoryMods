@@ -51,7 +51,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
 		bool needsUpdate = true;
 
-	void SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop, APawn* owner, FCriticalSection* lockObj);
+	void SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop, APawn* owner);
 	//UPROPERTY(BlueprintReadWrite, Category = "Zoop Subsystem")
 	//bool zoopCorners = false;
 

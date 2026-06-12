@@ -41,8 +41,3 @@ void AInfiniteZoop_ClientSubsystem::SetPublicZoopAmount(int x, int y, int z, boo
 		needsUpdate = true;
 	}
 }
-//
-//bool AInfiniteZoop_ClientSubsystem::ShouldSave_Implementation() const
-//{
-//    return true;
-//}
