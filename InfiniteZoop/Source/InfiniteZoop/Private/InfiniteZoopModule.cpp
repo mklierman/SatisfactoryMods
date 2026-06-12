@@ -1057,8 +1057,25 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 		return;
 	}*/
 
+	if (!world || !hologram)
+	{
+		return;
+	}
 	USubsystemActorManager* SubsystemActorManager = world->GetSubsystem<USubsystemActorManager>();
+	if (!SubsystemActorManager)
+	{
+		return;
+	}
 	AInfiniteZoopSubsystem* zoopSubsystem = SubsystemActorManager->GetSubsystemActor<AInfiniteZoopSubsystem>();
+	if (!zoopSubsystem)
+	{
+		return;
+	}
+	APawn* constructionInstigator = hologram->GetConstructionInstigator();
+	if (!constructionInstigator)
+	{
+		return;
+	}
 	bool isZoopMode = false;
 	bool isVerticalMode = false;
 	if (isFoundation)
@@ -1087,7 +1104,7 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 	}
 	if (!isZoopMode)
 	{
-		zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
+		zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode, constructionInstigator, lockObj);
 		zoopSubsystem->ForceNetUpdate();
 		return;
 	}
@@ -1116,10 +1133,10 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 
 	if (newX == 2 && newY == 2 && newZ == 2)
 	{
-		zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
+		zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode, constructionInstigator, lockObj);
 		return;
 	}
-	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, hologram->GetConstructionInstigator(), lockObj);
+	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, constructionInstigator, lockObj);
 	zoopSubsystem->ForceNetUpdate();
 }
 #pragma optimize("", on)
