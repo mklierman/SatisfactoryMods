@@ -137,17 +137,17 @@ void FConstructionPreferencesModule::StartupModule() {
 			}
 		});
 
-	AFGRailroadTrackHologram* rrhg = GetMutableDefault<AFGRailroadTrackHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGRailroadTrackHologram::BeginPlay, rrhg, [](AFGRailroadTrackHologram* self)
-		{
-			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
-			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Railroad.Length");
-			if (!FMath::IsNearlyEqual(length, 100, 0.1)) // Check if default
-			{
-				self->mMaxLength = length * 100;
-				//UE_LOGFMT(LogConstructionPreferences, Display, "Railroad Max Length: {0}", self->mMaxLength);
-			}
-		});
+	//AFGRailroadTrackHologram* rrhg = GetMutableDefault<AFGRailroadTrackHologram>();
+	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGRailroadTrackHologram::BeginPlay, rrhg, [](AFGRailroadTrackHologram* self)
+	//	{
+	//		USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+	//		auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Railroad.Length");
+	//		if (!FMath::IsNearlyEqual(length, 100, 0.1)) // Check if default
+	//		{
+	//			self->mMaxLength = length * 100;
+	//			//UE_LOGFMT(LogConstructionPreferences, Display, "Railroad Max Length: {0}", self->mMaxLength);
+	//		}
+	//	});
 
 	AFGWireHologram* whg = GetMutableDefault<AFGWireHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGWireHologram::BeginPlay, whg, [](AFGWireHologram* self)
