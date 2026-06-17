@@ -1,0 +1,20 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.0",
+	"FriendlyName": "Pattern Sign Icons",
+	"Description": "Adds foundation patterns as sign icons",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
+	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"BuiltInInitialFeatureState": "Active",
+	"SemVersion": "1.0.0",
+	"GameVersion": ">=491125"
+}
