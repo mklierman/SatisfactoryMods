@@ -30,6 +30,7 @@
 #include "Hologram/FGConveyorLiftHologram.h"
 #include "Hologram/FGVehiclePathSegmentHologram.h"
 #include "Hologram/FGRailroadSignalHologram.h"
+#include "Hologram/FGStandaloneSignHologram.h"
 #include <SessionSettings/SessionSettingsManager.h>
 
 
@@ -722,9 +723,10 @@ void FInfiniteZoopModule::HGBeginPlay(AFGHologram* self)
 {
 	if (self)
 	{
+		AFGStandaloneSignHologram* signholo = Cast<AFGStandaloneSignHologram>(self);
 		TArray< TSubclassOf< UFGBuildGunModeDescriptor > > out_buildmodes;
 		self->GetSupportedBuildModes(out_buildmodes);
-		if (out_buildmodes.Num() == 0)
+		if (out_buildmodes.Num() == 0 && signholo == nullptr)
 		{
 			return;
 		}
