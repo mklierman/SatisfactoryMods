@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.1",
+	"VersionName": "1.0.2",
 	"FriendlyName": "Paradise Island Enhanced",
 	"Description": "Adds Paradise Island as a starting location",
 	"Category": "Modding",
@@ -29,6 +29,6 @@
 			"SemVersion": "^3.12.0"
 		}
 	],
-	"SemVersion": "1.0.1",
+	"SemVersion": "1.0.2",
 	"GameVersion": ">=491125"
 }

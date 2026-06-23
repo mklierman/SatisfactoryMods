@@ -10,6 +10,8 @@
 #include "Hologram/FGHologram.h"
 #include "FGGameMode.h"
 #include "GameFramework/PlayerStart.h"
+#include "ParadiseIsland_Subsystem.h"
+#include "Subsystem/SubsystemActorManager.h"
 #include "FGGameEngine.h"
 #include "FGGameMode.h"
 
@@ -17,7 +19,6 @@
 
 void FParadiseIslandModule::StartupModule()
 {
-#if !WITH_EDITOR	
 	AFGResourceNode* rn = GetMutableDefault<AFGResourceNode>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGResourceNode::BeginPlay, rn, [this](AFGResourceNode* self)
 		{
@@ -58,18 +59,29 @@ void FParadiseIslandModule::StartupModule()
 				}
 				case ENodePuritySettings::NPS_AllRandom:
 				{
-					int32 RandomValue = FMath::RandRange(1, 3);
-					if (RandomValue == 1)
+					USubsystemActorManager* SubsystemActorManager = self->GetWorld()->GetSubsystem<USubsystemActorManager>();
+					AParadiseIsland_Subsystem* piSubsystem = SubsystemActorManager->GetSubsystemActor<AParadiseIsland_Subsystem>();
+					
+					if (piSubsystem->NodePuritySettings.Contains(self))
 					{
-						self->mPurity = EResourcePurity::RP_Inpure;
-					}
-					else if (RandomValue == 2)
-					{
-						self->mPurity = EResourcePurity::RP_Normal;
+						auto savedPurity = piSubsystem->NodePuritySettings.Find(self);
+						self->mPurity = *savedPurity;
 					}
 					else
 					{
-						self->mPurity = EResourcePurity::RP_Pure;
+						int32 RandomValue = FMath::RandRange(1, 3);
+						if (RandomValue == 1)
+						{
+							self->mPurity = EResourcePurity::RP_Inpure;
+						}
+						else if (RandomValue == 2)
+						{
+							self->mPurity = EResourcePurity::RP_Normal;
+						}
+						else
+						{
+							self->mPurity = EResourcePurity::RP_Pure;
+						}
 					}
 					break;
 				}
@@ -100,6 +112,7 @@ void FParadiseIslandModule::StartupModule()
 				}
 			}
 		});
+#if !WITH_EDITOR	
 #endif
 	//SUBSCRIBE_METHOD(AFGResourceNodeManager::ApplyRandomizationSettings, [](auto& scope, AFGResourceNodeManager* self, ENodeRandomizationMode randomizationMode, ENodePuritySettings puritySettings, const int32 seed)
 	//	{
