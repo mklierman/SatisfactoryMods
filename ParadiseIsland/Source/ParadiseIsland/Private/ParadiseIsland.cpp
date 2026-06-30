@@ -73,14 +73,17 @@ void FParadiseIslandModule::StartupModule()
 						if (RandomValue == 1)
 						{
 							self->mPurity = EResourcePurity::RP_Inpure;
+							piSubsystem->NodePuritySettings.Add(self, EResourcePurity::RP_Inpure);
 						}
 						else if (RandomValue == 2)
 						{
 							self->mPurity = EResourcePurity::RP_Normal;
+							piSubsystem->NodePuritySettings.Add(self, EResourcePurity::RP_Normal);
 						}
 						else
 						{
 							self->mPurity = EResourcePurity::RP_Pure;
+							piSubsystem->NodePuritySettings.Add(self, EResourcePurity::RP_Pure);
 						}
 					}
 					break;
