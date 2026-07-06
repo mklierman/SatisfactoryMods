@@ -266,7 +266,7 @@ void ACrashSiteBeaconsSubSystem::ClearPodMarkers()
 	{
 		if (marker.MapMarkerType == ERepresentationType::RT_MapMarker
 			&& marker.CategoryName == "Crash Sites"
-			&& marker.Name == "Crash Site")
+			&& marker.Name.StartsWith("Crash Site -"))
 		{
 			markersToRemove.Add(marker);
 		}
