@@ -6,6 +6,103 @@
 #include "Buildables/FGBuildableConveyorAttachment.h"
 #include "GAFB_RCO.h"
 
+AFGConveyorChainActor* UGAFB_BPFL::GetBeltChain(AFGBuildableConveyorBelt* belt)
+{
+	if (!belt)
+	{
+		return nullptr;
+	}
+
+	return belt->GetConveyorChainActor();
+}
+
+void UGAFB_BPFL::GiveChainItemsToPlayer(AFGConveyorChainActor* chain, AFGPlayerController* controller)
+{
+	for (const FConveyorBeltItem& beltItem : chain->mConveyorChainItems)
+	{
+		controller->Server_GiveItemSingle_Implementation(beltItem.Item.GetItemClass(), 1);
+	}
+}
+
+FGAFBAttachmentLink UGAFB_BPFL::GetAttachmentLinkedToBeltConnection(UFGFactoryConnectionComponent* beltConnection, AFGBuildableConveyorBelt* sourceBelt)
+{
+	FGAFBAttachmentLink link;
+	if (!beltConnection)
+	{
+		return link;
+	}
+
+	UFGFactoryConnectionComponent* connectedConnection = beltConnection->GetConnection();
+	if (!connectedConnection)
+	{
+		return link;
+	}
+
+	AActor* owner = connectedConnection->GetOwner();
+	if (!owner || owner == sourceBelt)
+	{
+		return link;
+	}
+
+	link.Attachment = Cast<AFGBuildableConveyorAttachment>(owner);
+	link.ConnectionOnAttachment = connectedConnection;
+	return link;
+}
+
+TArray<AFGBuildableConveyorBelt*> UGAFB_BPFL::GetBeltsLinkedToAttachment(AFGBuildableConveyorAttachment* attachment, UFGFactoryConnectionComponent* connectionToSkip)
+{
+	TArray<AFGBuildableConveyorBelt*> linkedBelts;
+	if (!attachment)
+	{
+		return linkedBelts;
+	}
+
+	TInlineComponentArray<UFGFactoryConnectionComponent*> attachmentConnections;
+	attachment->GetComponents(attachmentConnections);
+
+	for (UFGFactoryConnectionComponent* attachmentConnection : attachmentConnections)
+	{
+		if (!attachmentConnection || attachmentConnection == connectionToSkip)
+		{
+			continue;
+		}
+
+		UFGFactoryConnectionComponent* connectedConnection = attachmentConnection->GetConnection();
+		if (!connectedConnection)
+		{
+			continue;
+		}
+
+		AFGBuildableConveyorBelt* linkedBelt =
+			Cast<AFGBuildableConveyorBelt>(connectedConnection->GetOwner());
+
+		if (linkedBelt)
+		{
+			linkedBelts.Add(linkedBelt);
+		}
+	}
+
+	return linkedBelts;
+}
+
+void UGAFB_BPFL::EmptyAttachmentBuffer(AFGBuildableConveyorAttachment* attachment)
+{
+	if (attachment && attachment->GetBufferInventory())
+	{
+		attachment->GetBufferInventory()->Empty();
+	}
+}
+
+UGAFB_RCO* UGAFB_BPFL::GetGrabAllRemoteCallObject(AFGPlayerController* controller)
+{
+	if (!controller)
+	{
+		return nullptr;
+	}
+
+	return controller->GetRemoteCallObjectOfClass<UGAFB_RCO>();
+}
+
 void UGAFB_BPFL::RemoveAllItemsFromChain(AFGConveyorChainActor* chain)
 {
 	if (!chain)
@@ -21,12 +118,7 @@ void UGAFB_BPFL::RemoveAllItemsFromChain(AFGConveyorChainActor* chain)
 
 void UGAFB_BPFL::ClearBeltChain(AFGBuildableConveyorBelt* belt, AFGPlayerController* controller, bool giveItems)
 {
-	if (!belt)
-	{
-		return;
-	}
-
-	AFGConveyorChainActor* chain = belt->GetConveyorChainActor();
+	AFGConveyorChainActor* chain = GetBeltChain(belt);
 	if (!chain)
 	{
 		return;
@@ -39,10 +131,7 @@ void UGAFB_BPFL::ClearBeltChain(AFGBuildableConveyorBelt* belt, AFGPlayerControl
 			return;
 		}
 
-		for (const FConveyorBeltItem& beltItem : chain->mConveyorChainItems)
-		{
-			controller->Server_GiveItemSingle_Implementation(beltItem.Item.GetItemClass(), 1);
-		}
+		GiveChainItemsToPlayer(chain, controller);
 	}
 
 	RemoveAllItemsFromChain(chain);
@@ -55,7 +144,7 @@ void UGAFB_BPFL::GatherLinkedBeltNetworkRecursive(AFGBuildableConveyorBelt* belt
 		return;
 	}
 
-	AFGConveyorChainActor* chain = belt->GetConveyorChainActor();
+	AFGConveyorChainActor* chain = GetBeltChain(belt);
 	if (!chain)
 	{
 		return;
@@ -66,24 +155,8 @@ void UGAFB_BPFL::GatherLinkedBeltNetworkRecursive(AFGBuildableConveyorBelt* belt
 
 	auto VisitChainConnection = [&](UFGFactoryConnectionComponent* beltConnection)
 		{
-			if (!beltConnection)
-			{
-				return;
-			}
-
-			UFGFactoryConnectionComponent* connectedConnection = beltConnection->GetConnection();
-			if (!connectedConnection)
-			{
-				return;
-			}
-
-			AActor* owner = connectedConnection->GetOwner();
-			if (!owner || owner == belt)
-			{
-				return;
-			}
-
-			AFGBuildableConveyorAttachment* attachment = Cast<AFGBuildableConveyorAttachment>(owner);
+			const FGAFBAttachmentLink link = GetAttachmentLinkedToBeltConnection(beltConnection, belt);
+			AFGBuildableConveyorAttachment* attachment = link.Attachment;
 			if (!attachment || visitedAttachments.Contains(attachment))
 			{
 				return;
@@ -92,29 +165,11 @@ void UGAFB_BPFL::GatherLinkedBeltNetworkRecursive(AFGBuildableConveyorBelt* belt
 			visitedAttachments.Add(attachment);
 			outNetwork.Attachments.Add(attachment);
 
-			TInlineComponentArray<UFGFactoryConnectionComponent*> attachmentConnections;
-			attachment->GetComponents(attachmentConnections);
-
-			for (UFGFactoryConnectionComponent* attachmentConnection : attachmentConnections)
+			const TArray<AFGBuildableConveyorBelt*> linkedBelts =
+				GetBeltsLinkedToAttachment(attachment, link.ConnectionOnAttachment);
+			for (AFGBuildableConveyorBelt* linkedBelt : linkedBelts)
 			{
-				if (!attachmentConnection || attachmentConnection == connectedConnection)
-				{
-					continue;
-				}
-
-				UFGFactoryConnectionComponent* otherConnection = attachmentConnection->GetConnection();
-				if (!otherConnection)
-				{
-					continue;
-				}
-
-				AFGBuildableConveyorBelt* connectedBelt =
-					Cast<AFGBuildableConveyorBelt>(otherConnection->GetOwner());
-
-				if (connectedBelt)
-				{
-					GatherLinkedBeltNetworkRecursive(connectedBelt, visitedBelts, visitedAttachments, outNetwork);
-				}
+				GatherLinkedBeltNetworkRecursive(linkedBelt, visitedBelts, visitedAttachments, outNetwork);
 			}
 		};
 
@@ -148,7 +203,7 @@ void UGAFB_BPFL::ClearLinkedBelts(AFGBuildableConveyorBelt* belt, AFGPlayerContr
 	ClearLinkedBeltsAndCollect(belt, controller, ignoredBelts);
 }
 
-void UGAFB_BPFL::ClearLinkedBeltsAndCollect(AFGBuildableConveyorBelt* belt,	AFGPlayerController* controller, TArray<AFGBuildableConveyorBelt*>& outBelts)
+void UGAFB_BPFL::ClearLinkedBeltsAndCollect(AFGBuildableConveyorBelt* belt, AFGPlayerController* controller, TArray<AFGBuildableConveyorBelt*>& outBelts)
 {
 	if (!controller)
 	{
@@ -160,10 +215,7 @@ void UGAFB_BPFL::ClearLinkedBeltsAndCollect(AFGBuildableConveyorBelt* belt,	AFGP
 
 	for (AFGBuildableConveyorAttachment* attachment : network.Attachments)
 	{
-		if (attachment && attachment->GetBufferInventory())
-		{
-			attachment->GetBufferInventory()->Empty();
-		}
+		EmptyAttachmentBuffer(attachment);
 	}
 
 	for (AFGBuildableConveyorBelt* linkedBelt : network.Belts)
@@ -179,7 +231,7 @@ void UGAFB_BPFL::ClearLinkedBeltsRemote(AFGBuildableConveyorBelt* belt, AFGPlaye
 		return;
 	}
 
-	UGAFB_RCO* rco = controller->GetRemoteCallObjectOfClass<UGAFB_RCO>();
+	UGAFB_RCO* rco = GetGrabAllRemoteCallObject(controller);
 	if (!rco)
 	{
 		return;
@@ -195,7 +247,7 @@ void UGAFB_BPFL::ClearSingleBeltRemote(AFGBuildableConveyorBelt* belt, AFGPlayer
 		return;
 	}
 
-	UGAFB_RCO* rco = controller->GetRemoteCallObjectOfClass<UGAFB_RCO>();
+	UGAFB_RCO* rco = GetGrabAllRemoteCallObject(controller);
 	if (!rco)
 	{
 		return;
