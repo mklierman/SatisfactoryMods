@@ -57,7 +57,7 @@ private:
 
 	static TArray<AFGBuildableConveyorBelt*> GetBeltsLinkedToAttachment(AFGBuildableConveyorAttachment* attachment, UFGFactoryConnectionComponent* connectionToSkip);
 
-	static void EmptyAttachmentBuffer(AFGBuildableConveyorAttachment* attachment);
+	static void EmptyAttachmentBuffer(AFGBuildableConveyorAttachment* attachment, AFGPlayerController* controller);
 
 	static UGAFB_RCO* GetGrabAllRemoteCallObject(AFGPlayerController* controller);
 

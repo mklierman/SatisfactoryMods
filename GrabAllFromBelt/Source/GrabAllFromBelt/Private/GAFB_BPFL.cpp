@@ -2,8 +2,10 @@
 #include "FGFactoryConnectionComponent.h"
 #include "FGConveyorChainActor.h"
 #include "FGConveyorItem.h"
+#include "FGInventoryComponent.h"
 #include "FGPlayerController.h"
 #include "Buildables/FGBuildableConveyorAttachment.h"
+#include "Buildables/FGBuildableSplitterSmart.h"
 #include "GAFB_RCO.h"
 
 AFGConveyorChainActor* UGAFB_BPFL::GetBeltChain(AFGBuildableConveyorBelt* belt)
@@ -85,12 +87,30 @@ TArray<AFGBuildableConveyorBelt*> UGAFB_BPFL::GetBeltsLinkedToAttachment(AFGBuil
 	return linkedBelts;
 }
 
-void UGAFB_BPFL::EmptyAttachmentBuffer(AFGBuildableConveyorAttachment* attachment)
+void UGAFB_BPFL::EmptyAttachmentBuffer(AFGBuildableConveyorAttachment* attachment, AFGPlayerController* controller)
 {
-	if (attachment && attachment->GetBufferInventory())
+	if (!attachment || !controller)
 	{
-		attachment->GetBufferInventory()->Empty();
+		return;
 	}
+
+	UFGInventoryComponent* bufferInventory = attachment->GetBufferInventory();
+	if (!bufferInventory)
+	{
+		return;
+	}
+
+	TArray<FInventoryStack> bufferStacks;
+	bufferInventory->GetInventoryStacks(bufferStacks);
+	for (const FInventoryStack& stack : bufferStacks)
+	{
+		if (stack.HasItems())
+		{
+			controller->Server_GiveItemSingle_Implementation(stack.Item.GetItemClass(), stack.NumItems);
+		}
+	}
+
+	bufferInventory->Empty();
 }
 
 UGAFB_RCO* UGAFB_BPFL::GetGrabAllRemoteCallObject(AFGPlayerController* controller)
@@ -113,6 +133,15 @@ void UGAFB_BPFL::RemoveAllItemsFromChain(AFGConveyorChainActor* chain)
 	while (chain->mLeadItemIndex != INDEX_NONE)
 	{
 		chain->RemoveItemAt_Internal(chain->mLeadItemIndex);
+	}
+
+	chain->mCachedAvailableBeltSpace = chain->GetAvailableSpace();
+	for (const FConveyorChainSplineSegment& segment : chain->GetChainSegments())
+	{
+		if (segment.ConveyorBase)
+		{
+			segment.ConveyorBase->mCachedAvailableBeltSpace = segment.ConveyorBase->GetAvailableSpace();
+		}
 	}
 }
 
@@ -215,7 +244,7 @@ void UGAFB_BPFL::ClearLinkedBeltsAndCollect(AFGBuildableConveyorBelt* belt, AFGP
 
 	for (AFGBuildableConveyorAttachment* attachment : network.Attachments)
 	{
-		EmptyAttachmentBuffer(attachment);
+		EmptyAttachmentBuffer(attachment, controller);
 	}
 
 	for (AFGBuildableConveyorBelt* linkedBelt : network.Belts)
