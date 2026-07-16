@@ -24,6 +24,8 @@ DEFINE_LOG_CATEGORY(PersistentPaintables_Log);
 // Local constants to avoid magic numbers
 static constexpr float SUPPORT_DIST = 5.0f;                 // distance threshold used for "nearby" checks
 static constexpr float SUPPORT_DIST_SQ = SUPPORT_DIST * SUPPORT_DIST; // squared threshold so we don't call sqrt
+static constexpr float SUPPORT_SPLINE_TOUCH_DIST = 50.0f;
+static constexpr float SUPPORT_SPLINE_TOUCH_DIST_SQ = SUPPORT_SPLINE_TOUCH_DIST * SUPPORT_SPLINE_TOUCH_DIST;
 static constexpr float NEARBY_SUPPORT_SEARCH_RADIUS = 5.0f;
 
 #pragma optimize("", off)
@@ -251,8 +253,61 @@ void FPersistentPaintablesModule::ColorConnectedSupports(AFGBuildablePipeline* p
 	}
 }
 
+bool FPersistentPaintablesModule::IsPipeSupport(const AFGBuildable* buildable) const
+{
+	if (!IsValid(buildable) || buildable->IsA<AFGBuildablePipeline>() || buildable->IsA<AFGBuildablePipelineAttachment>())
+	{
+		return false;
+	}
+
+	return (pipeSupportClass && buildable->IsA(pipeSupportClass)) ||
+		(wallSupportClass && buildable->IsA(wallSupportClass)) ||
+		(wallHoleClass && buildable->IsA(wallHoleClass)) ||
+		(floorHoleClass && buildable->IsA(floorHoleClass)) ||
+		buildable->IsA<AFGBuildablePoleStackable>();
+}
+
+bool FPersistentPaintablesModule::IsSupportTouchingPipe(AFGBuildablePipeline* pipe, AFGBuildable* support) const
+{
+	if (!IsValid(pipe) || !IsPipeSupport(support))
+	{
+		return false;
+	}
+
+	FVector supportLocation = support->GetActorLocation();
+	TArray<UActorComponent*> components;
+	support->GetComponents(components);
+	for (UActorComponent* component : components)
+	{
+		if (auto pipeConnection = Cast<UFGPipeConnectionComponentBase>(component))
+		{
+			supportLocation = pipeConnection->GetConnectorLocation(false);
+			break;
+		}
+	}
+
+	const float offset = pipe->FindOffsetClosestToLocation(supportLocation);
+	FVector pipeLocation = FVector::ZeroVector;
+	FVector pipeDirection = FVector::ZeroVector;
+	pipe->GetLocationAndDirectionAtOffset(offset, pipeLocation, pipeDirection);
+
+	return FVector::DistSquared(supportLocation, pipeLocation) <= SUPPORT_SPLINE_TOUCH_DIST_SQ;
+}
+
 void FPersistentPaintablesModule::ColorSupports(AFGBuildablePipeline* pipe, FFactoryCustomizationData& newData)
 {
+	// Pipeline supports commonly touch the middle of a pipe spline rather than an endpoint.
+	for (const TWeakObjectPtr<AActor>& weakActor : WeakPotentialSupports)
+	{
+		if (AFGBuildable* support = Cast<AFGBuildable>(weakActor.Get()))
+		{
+			if (IsSupportTouchingPipe(pipe, support))
+			{
+				ApplyColor(support, swatchClass, newData);
+			}
+		}
+	}
+
 	for (auto& conn : pipe->mPipeConnections)
 	{
 		if (conn->mConnectedComponent)
@@ -278,7 +333,7 @@ void FPersistentPaintablesModule::ColorSupports(AFGBuildablePipeline* pipe, FFac
 					{
 						if (auto fgpipeSupport = Cast<AFGBuildable>(support))
 						{
-							if (Cast<AFGBuildablePoleStackable>(fgpipeSupport) || fgpipeSupport->GetClass() == pipeSupportClass || fgpipeSupport->GetClass() == wallHoleClass || fgpipeSupport->GetClass() == floorHoleClass || fgpipeSupport->GetClass() == wallSupportClass)
+							if (IsPipeSupport(fgpipeSupport))
 							{
 								ApplyColor(fgpipeSupport, swatchClass, newData);
 							}
@@ -323,7 +378,7 @@ void FPersistentPaintablesModule::ColorSupports(AFGBuildablePipeline* pipe, FFac
 			{
 				if (auto fgpipeSupport = Cast<AFGBuildable>(support))
 				{
-					if (Cast<AFGBuildablePoleStackable>(fgpipeSupport) || fgpipeSupport->GetClass() == pipeSupportClass || fgpipeSupport->GetClass() == wallHoleClass || fgpipeSupport->GetClass() == floorHoleClass || fgpipeSupport->GetClass() == wallSupportClass)
+					if (IsPipeSupport(fgpipeSupport))
 					{
 						ApplyColor(fgpipeSupport, swatchClass, newData);
 					}

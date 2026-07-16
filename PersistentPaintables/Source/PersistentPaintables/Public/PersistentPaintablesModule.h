@@ -57,6 +57,10 @@ public:
 
 	void ColorSupports(AFGBuildablePipeline* pipe, FFactoryCustomizationData& newData);
 
+	bool IsPipeSupport(const AFGBuildable* buildable) const;
+
+	bool IsSupportTouchingPipe(AFGBuildablePipeline* pipe, AFGBuildable* support) const;
+
 	UFUNCTION()
 	void StartTimer(AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor);
 
