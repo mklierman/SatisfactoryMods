@@ -48,6 +48,13 @@ void UVU_BPFL::FactoryBeginPlay(AFGBuildableFactory* factory)
 
 void UVU_BPFL::StartPowerProduction(AFGBuildableGenerator* generator)
 {
+	if (auto fuelGen = Cast<AFGBuildableGeneratorFuel>(generator))
+	{
+		if (!fuelGen->HasFuel())
+		{
+			return;
+		}
+	}
 	generator->Factory_StartPowerProduction_Implementation();
 }
 
