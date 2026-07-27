@@ -31,6 +31,7 @@
 #include "Hologram/FGVehiclePathSegmentHologram.h"
 #include "Hologram/FGRailroadSignalHologram.h"
 #include "Hologram/FGStandaloneSignHologram.h"
+#include "Hologram/FGElevatorHologram.h"
 #include <SessionSettings/SessionSettingsManager.h>
 
 
@@ -880,6 +881,10 @@ void FInfiniteZoopModule::StartupModule()
 				{
 					return;
 				}
+				if (auto elevatorhg = Cast<AFGElevatorHologram>(self))
+				{
+					return;
+				}
 				if (auto beamhg = Cast<AFGBeamHologram>(fbhg))
 				{
 					return;
@@ -928,6 +933,10 @@ void FInfiniteZoopModule::StartupModule()
 		{
 			//UE_LOGFMT(InfiniteZoop_Log, Display, "AFGBuildableHologram::GetBaseCostMultiplier");
 			if (auto beamhg = Cast< AFGBeamHologram>(self))
+			{
+				return;
+			}
+			if (auto elevatorhg = Cast<AFGElevatorHologram>(self))
 			{
 				return;
 			}

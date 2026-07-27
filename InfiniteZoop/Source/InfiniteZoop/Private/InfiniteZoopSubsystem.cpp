@@ -19,7 +19,7 @@ FCriticalSection ZoopAmountsMutex;
 
 void AInfiniteZoopSubsystem::SetPublicZoopAmount(int x, int y, int z, bool foundation, bool verticalZoop, APawn* owner)
 {
-    if (!IsValid(owner))
+    if (!IsValid(owner) || !IsValid(this))
     {
         return;
     }
