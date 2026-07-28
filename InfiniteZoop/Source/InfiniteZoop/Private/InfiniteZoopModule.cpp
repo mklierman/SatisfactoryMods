@@ -1098,8 +1098,11 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 	}
 	if (!isZoopMode)
 	{
-		zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode, hologram->GetConstructionInstigator());
-		zoopSubsystem->ForceNetUpdate();
+		if (IsValid(zoopSubsystem) && IsValid(hologram) && IsValid(hologram->GetConstructionInstigator()))
+		{
+			zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode, hologram->GetConstructionInstigator());
+			zoopSubsystem->ForceNetUpdate();
+		}
 		return;
 	}
 	int newX = FMath::Abs(x);
@@ -1127,11 +1130,18 @@ void FInfiniteZoopModule::SetSubsystemZoopAmounts(int x, int y, int z, bool isFo
 
 	if (newX == 2 && newY == 2 && newZ == 2)
 	{
-		zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode, hologram->GetConstructionInstigator());
+		if (IsValid(zoopSubsystem) && IsValid(hologram) && IsValid(hologram->GetConstructionInstigator()))
+		{
+			zoopSubsystem->SetPublicZoopAmount(-1, -1, -1, isFoundation, isVerticalMode, hologram->GetConstructionInstigator());
+		}
 		return;
 	}
-	zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, hologram->GetConstructionInstigator());
-	zoopSubsystem->ForceNetUpdate();
+
+	if (IsValid(zoopSubsystem) && IsValid(hologram) && IsValid(hologram->GetConstructionInstigator()))
+	{
+		zoopSubsystem->SetPublicZoopAmount(newX, newY, newZ, isFoundation, isVerticalMode, hologram->GetConstructionInstigator());
+		zoopSubsystem->ForceNetUpdate();
+	}
 }
 #pragma optimize("", on)
 
