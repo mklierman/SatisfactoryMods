@@ -12,7 +12,6 @@ DEFINE_LOG_CATEGORY(HypertubeConfigurator_Log);
 void FHypertubeConfiguratorModule::StartupModule()
 {
 #if !WITH_EDITOR
-#endif
 	//bool EnterPipeHyper(class AFGPipeHyperStart* pipe);
 	
 	SUBSCRIBE_METHOD(UFGCharacterMovementComponent::EnterPipeHyper, [this](auto scope, UFGCharacterMovementComponent* self, class AFGPipeHyperStart* pipe)
@@ -27,6 +26,7 @@ void FHypertubeConfiguratorModule::StartupModule()
 		{
 			SetHypertubeStuff(self);
 		});
+#endif
 }
 
 void FHypertubeConfiguratorModule::ShutdownModule()
