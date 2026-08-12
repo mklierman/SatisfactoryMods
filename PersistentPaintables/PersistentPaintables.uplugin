@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.5.1",
-	"SemVersion": "1.5.1",
+	"VersionName": "1.6.0",
+	"SemVersion": "1.6.0",
 	"FriendlyName": "Persistent Paintables",
 	"Description": "Paint-Focused QoL Tweaks",
 	"Category": "Modding",
@@ -29,5 +29,5 @@
 			"SemVersion": "^3.12.0"
 		}
 	],
-	"GameVersion": ">=491125"
+	"GameVersion": ">=502094"
 }

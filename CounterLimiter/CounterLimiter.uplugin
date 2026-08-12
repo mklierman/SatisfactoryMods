@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.6.0",
-	"SemVersion": "1.6.0",
+	"VersionName": "1.7.0",
+	"SemVersion": "1.7.0",
 	"FriendlyName": "Throughput Counter Limiter",
 	"Description": "A conveyor belt attachment that counts and displays the actual item throughput per minute. Can optionally limit the number of items allowed per minute.",
 	"Category": "Modding",
@@ -29,5 +29,5 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"GameVersion": ">=491125"
+	"GameVersion": ">=502094"
 }
