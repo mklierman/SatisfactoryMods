@@ -20,6 +20,15 @@ void UCL_RCO::Server_SetLimiterRate_Implementation(ACL_CounterLimiter* Limiter, 
 	}
 }
 
+void UCL_RCO::Server_SetIPMSampleTimeSeconds_Implementation(ACL_CounterLimiter* Limiter, float sampleTimeSeconds)
+{
+	if (Limiter)
+	{
+		Limiter->SetIPMSampleTimeSeconds(sampleTimeSeconds);
+		Limiter->ForceNetUpdate();
+	}
+}
+
 void UCL_RCO::Server_CalculateIPM_Implementation(ACL_CounterLimiter* Limiter)
 {
 	if (Limiter)

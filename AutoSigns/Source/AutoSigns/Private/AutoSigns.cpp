@@ -17,6 +17,7 @@
 #include <SessionSettings/SessionSettingsManager.h>
 #include <Logging/StructuredLog.h>
 #include "LocalUserInfo.h"
+#include <Buildables/FGBuildableRailroadSignal.h>
 
 #define LOCTEXT_NAMESPACE "FAutoSignsModule"
 DEFINE_LOG_CATEGORY(AutoSigns_Log);
@@ -29,24 +30,36 @@ void FAutoSignsModule::StartupModule()
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableWidgetSign::InitializeSignPrefabData, bws, [this](AFGBuildableWidgetSign* sign)
 		{
-			InitializeSignPrefabData(sign);
+			if (IsValid(sign))
+			{
+				InitializeSignPrefabData(sign);
+			}
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::ConfigureActor, bh, [this](const AFGBuildableHologram* self, class AFGBuildable* inBuildable)
 		{
-			ConfigureActor(self, inBuildable);
+			if (IsValid(self) && IsValid(inBuildable))
+			{
+				ConfigureActor(self, inBuildable);
+			}
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableWidgetSign::UpdateSignElements, bws, [this](AFGBuildableWidgetSign* sign, FPrefabSignData& prefabSignData)
 		{
-			UpdateSignElements(sign, prefabSignData);
+			if (IsValid(sign))
+			{
+				UpdateSignElements(sign, prefabSignData);
+			}
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableWidgetSign::OnBuildEffectFinished, bws, [this](AFGBuildableWidgetSign* sign)
 		{
-			FPrefabSignData signData;
-			sign->GetSignPrefabData(signData);
-			SetDefaultSignData(sign);
+			if (IsValid(sign))
+			{
+				//FPrefabSignData signData;
+				//sign->GetSignPrefabData(signData);
+				SetDefaultSignData(sign);
+			}
 		});
 #endif
 }
@@ -57,7 +70,10 @@ void FAutoSignsModule::ConfigureActor(const AFGBuildableHologram* self, class AF
 	{
 		auto holo = const_cast<AFGBuildableHologram*>(self);
 		auto snappedTo = holo->GetSnappedBuilding();
-		SignSnaps.Add(sign, snappedTo);
+		if (IsValid(snappedTo))
+		{
+			SignSnaps.Add(sign, snappedTo);
+		}
 		return;
 	}
 }
@@ -216,7 +232,10 @@ void FAutoSignsModule::UpdateSignElements(AFGBuildableWidgetSign* sign, FPrefabS
 void FAutoSignsModule::SetDefaultSignData(AFGBuildableWidgetSign* sign)
 {
 	//UE_LOGFMT(AutoSigns_Log, Display, "SetDefaultSignData");
-	
+	if (Cast<AFGBuildableRailroadSignal>(sign))
+	{
+		return;
+	}
 	if (DefaultTextElementToDataMap.Num() < 1 && DefaultIconElementToDataMap.Num() < 1)
 	{
 		sign->GetDefaultSignMaps(DefaultTextElementToDataMap, DefaultIconElementToDataMap);

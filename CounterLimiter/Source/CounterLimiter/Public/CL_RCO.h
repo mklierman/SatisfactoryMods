@@ -47,6 +47,10 @@ public:
 	FORCEINLINE bool Server_SetLimiterRate_Validate(ACL_CounterLimiter* Limiter, float newRate) { return true; }
 
 	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
+	void Server_SetIPMSampleTimeSeconds(ACL_CounterLimiter* Limiter, float sampleTimeSeconds);
+	FORCEINLINE bool Server_SetIPMSampleTimeSeconds_Validate(ACL_CounterLimiter* Limiter, float sampleTimeSeconds) { return true; }
+
+	UFUNCTION(Server, BlueprintCallable, WithValidation, Unreliable)
 	void Server_CalculateIPM(ACL_CounterLimiter* Limiter);
 	FORCEINLINE bool Server_CalculateIPM_Validate(ACL_CounterLimiter* Limiter) { return true; }
 };

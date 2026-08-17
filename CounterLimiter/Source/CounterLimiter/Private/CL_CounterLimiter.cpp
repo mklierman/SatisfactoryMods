@@ -265,10 +265,13 @@ void ACL_CounterLimiter::CalculateIPM()
 
 void ACL_CounterLimiter::SetIPMSampleTimeSeconds(float sampleTimeSeconds)
 {
-	mIPMSampleTimeSeconds = FMath::Max(sampleTimeSeconds, KINDA_SMALL_NUMBER);
+	const float ClampedSampleTimeSeconds = FMath::Max(sampleTimeSeconds, KINDA_SMALL_NUMBER);
 
 	if (HasAuthority())
 	{
+		mIPMSampleTimeSeconds = ClampedSampleTimeSeconds;
+		ForceNetUpdate();
+
 		// Reset tracking so the next window starts cleanly and uses a full sample interval.
 		ItemCount = 0;
 		mLastIPMCalculationTimeSeconds = -1.f;
@@ -281,6 +284,14 @@ void ACL_CounterLimiter::SetIPMSampleTimeSeconds(float sampleTimeSeconds)
 			true,
 			mIPMSampleTimeSeconds
 		);
+	}
+	else
+	{
+		if (UCL_RCO* RCO = UCL_RCO::Get(GetWorld()))
+		{
+			RCO->Server_SetIPMSampleTimeSeconds(this, ClampedSampleTimeSeconds);
+			mIPMSampleTimeSeconds = ClampedSampleTimeSeconds;
+		}
 	}
 }
 
