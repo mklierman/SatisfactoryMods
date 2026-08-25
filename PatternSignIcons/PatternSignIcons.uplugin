@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.0",
+	"VersionName": "1.0.1",
 	"FriendlyName": "Pattern Sign Icons",
 	"Description": "Adds foundation patterns as sign icons",
 	"Category": "Modding",
@@ -15,6 +15,6 @@
 	"IsExperimentalVersion": false,
 	"Installed": false,
 	"BuiltInInitialFeatureState": "Active",
-	"SemVersion": "1.0.0",
-	"GameVersion": ">=491125"
+	"SemVersion": "1.0.1",
+	"GameVersion": ">=502094"
 }
