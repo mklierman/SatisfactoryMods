@@ -19,7 +19,7 @@ bool IsDestinationConnection(const UFGPipeConnectionComponentBase* Connection, c
 {
 	return IsValid(Connection) && IsValid(Destination) && (Connection == Destination->mConnection0 || Connection->GetOwner() == Destination);
 }
-} // namespace
+}
 
 bool UHypertubeRoutePlanner::FindRoute(AFGCharacterPlayer* Player, AFGPipeHyperStart* Source, AFGPipeHyperStart* Destination, FHypertubeRoutePlan& OutRoute)
 {

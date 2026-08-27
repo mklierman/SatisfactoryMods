@@ -57,7 +57,6 @@ struct HYPERTUBEDESTINATIONS_API FHypertubeRoutePlan
 	UPROPERTY(BlueprintReadOnly, Category = "Hypertube Destinations")
 	int32 TopologyRevision = 0;
 
-	/** Runtime cache used because vanilla can query the same junction exit more than once per movement step. */
 	TWeakObjectPtr<AFGBuildablePipeHyperJunction> LastRoutedJunction;
 	TWeakObjectPtr<UFGPipeConnectionComponentBase> LastRoutedExit;
 

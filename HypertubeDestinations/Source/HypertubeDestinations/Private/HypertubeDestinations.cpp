@@ -16,10 +16,6 @@
 
 namespace
 {
-using FJunctionEntryCallScope = TCallScope<EPipeHyperEnterResult (*)(AFGBuildablePipeHyperJunction*, AFGCharacterPlayer*, UFGPipeConnectionComponentBase*, FFGDynamicStruct&, const FFGDynamicStruct&)>;
-
-using FJunctionTransitCallScope = TCallScope<UFGPipeConnectionComponentBase* (*)(AFGBuildablePipeHyperJunction*, AFGCharacterPlayer*, const FFGDynamicStruct&, float, float&)>;
-
 struct FPendingJunctionTransit
 {
 	TWeakObjectPtr<AFGBuildablePipeHyperJunction> Junction;
@@ -71,114 +67,110 @@ bool ForceJunctionTravelRoute(AFGBuildablePipeHyperJunction* Junction, UFGPipeCo
 	return false;
 }
 
-void HandleJunctionEntry(FJunctionEntryCallScope& Scope, AFGBuildablePipeHyperJunction* HookSelf, AFGCharacterPlayer* Player, UFGPipeConnectionComponentBase* IncomingConnection, FFGDynamicStruct& OutPipeData,
-						 const FFGDynamicStruct& PredictionPipeData)
-{
-	AFGBuildablePipeHyperJunction* Junction = nullptr;
-	if (IsValid(IncomingConnection))
-	{
-		Junction = Cast<AFGBuildablePipeHyperJunction>(IncomingConnection->GetOwner());
-	}
-	UFGPipeConnectionComponentBase* PlannedOutgoingConnection = nullptr;
-	const TWeakObjectPtr<AFGCharacterPlayer> PlayerKey(Player);
-	PendingJunctionTransits.Remove(PlayerKey);
-
-	if (IsValid(Player) && IsValid(Junction))
-	{
-		if (AHypertubeDestinationSubsystem* Subsystem = AHypertubeDestinationSubsystem::Get(Player))
-		{
-			Subsystem->PrepareJunctionRoute(Player, Junction, IncomingConnection, PlannedOutgoingConnection);
-		}
-	}
-
-	Scope(HookSelf, Player, IncomingConnection, OutPipeData, PredictionPipeData);
-
-	if (IsValid(PlannedOutgoingConnection))
-	{
-		bool bReversePath = false;
-		if (ForceJunctionTravelRoute(Junction, IncomingConnection, PlannedOutgoingConnection, OutPipeData, bReversePath))
-		{
-			FPendingJunctionTransit& PendingTransit = PendingJunctionTransits.FindOrAdd(PlayerKey);
-			PendingTransit.Junction = Junction;
-			PendingTransit.IncomingConnection = IncomingConnection;
-			PendingTransit.OutgoingConnection = PlannedOutgoingConnection;
-			PendingTransit.bReversePath = bReversePath;
-		}
-	}
 }
-
-void HandleJunctionTransit(FJunctionTransitCallScope& Scope, AFGBuildablePipeHyperJunction* HookSelf, AFGCharacterPlayer* Player, const FFGDynamicStruct& PipeData, float Distance, float& OutExitOffset)
-{
-	UFGPipeConnectionComponentBase* VanillaExit = Scope(HookSelf, Player, PipeData, Distance, OutExitOffset);
-	UFGPipeConnectionComponentBase* RoutedExit = VanillaExit;
-	const TWeakObjectPtr<AFGCharacterPlayer> PlayerKey(Player);
-	FPendingJunctionTransit* PendingTransit = PendingJunctionTransits.Find(PlayerKey);
-
-	if (PendingTransit != nullptr && !PendingTransit->bRouteExitConsumed && VanillaExit == PendingTransit->IncomingConnection.Get())
-	{
-		AFGBuildablePipeHyperJunction* PendingJunction = PendingTransit->Junction.Get();
-		float JunctionLength = 0.0f;
-		if (IsValid(PendingJunction))
-		{
-			JunctionLength = PendingJunction->GetLengthAlongPipe(Player, PipeData);
-		}
-
-		float EntryDistance = 0.0f;
-		if (PendingTransit->bReversePath)
-		{
-			EntryDistance = JunctionLength;
-		}
-		if (FMath::IsNearlyEqual(Distance, EntryDistance, 0.01f))
-		{
-			if (UFGCharacterMovementComponent* MovementComponent = Cast<UFGCharacterMovementComponent>(Player->GetCharacterMovement()))
-			{
-				FPlayerPipeHyperData& PlayerPipeData = MovementComponent->GetPipeHyperDataRef();
-				float DesiredSign = 1.0f;
-				if (PendingTransit->bReversePath)
-				{
-					DesiredSign = -1.0f;
-				}
-				PlayerPipeData.mPipeVelocityReal = FMath::Abs(PlayerPipeData.mPipeVelocityReal) * DesiredSign;
-				PlayerPipeData.mPipeVelocity = FMath::Abs(PlayerPipeData.mPipeVelocity) * DesiredSign;
-				PlayerPipeData.mPipeVelocityLast = FMath::Abs(PlayerPipeData.mPipeVelocityLast) * DesiredSign;
-			}
-
-			Scope.Override(static_cast<UFGPipeConnectionComponentBase*>(nullptr));
-			return;
-		}
-	}
-
-	AFGBuildablePipeHyperJunction* Junction = nullptr;
-	if (IsValid(VanillaExit))
-	{
-		Junction = Cast<AFGBuildablePipeHyperJunction>(VanillaExit->GetOwner());
-	}
-
-	if (PendingTransit != nullptr && VanillaExit == PendingTransit->OutgoingConnection.Get())
-	{
-		PendingTransit->bRouteExitConsumed = true;
-	}
-
-	if (IsValid(Player) && IsValid(Junction))
-	{
-		if (AHypertubeDestinationSubsystem* Subsystem = AHypertubeDestinationSubsystem::Get(Player); Subsystem != nullptr && Subsystem->TryRouteJunctionExit(Player, Junction, VanillaExit, RoutedExit))
-		{
-			if (PendingTransit != nullptr)
-			{
-				PendingTransit->bRouteExitConsumed = true;
-			}
-			Scope.Override(RoutedExit);
-		}
-	}
-}
-} // namespace
 
 void FHypertubeDestinationsModule::StartupModule()
 {
 #if !WITH_EDITOR
 	auto junctionCDO = GetMutableDefault<AFGBuildablePipeHyperJunction>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildablePipeHyperJunction::OnPipeEnterReal, junctionCDO, HandleJunctionEntry);
-	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildablePipeHyperJunction::GetConnectionToTransitThrough, junctionCDO, HandleJunctionTransit);
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildablePipeHyperJunction::OnPipeEnterReal, junctionCDO, [](auto& scope, AFGBuildablePipeHyperJunction* hookSelf, AFGCharacterPlayer* player, UFGPipeConnectionComponentBase* incomingConnection, FFGDynamicStruct& outPipeData, const FFGDynamicStruct& predictionPipeData) {
+		AFGBuildablePipeHyperJunction* junction = nullptr;
+		if (IsValid(incomingConnection))
+		{
+			junction = Cast<AFGBuildablePipeHyperJunction>(incomingConnection->GetOwner());
+		}
+
+		UFGPipeConnectionComponentBase* plannedOutgoingConnection = nullptr;
+		const TWeakObjectPtr<AFGCharacterPlayer> playerKey(player);
+		PendingJunctionTransits.Remove(playerKey);
+
+		if (IsValid(player) && IsValid(junction))
+		{
+			if (AHypertubeDestinationSubsystem* subsystem = AHypertubeDestinationSubsystem::Get(player))
+			{
+				subsystem->PrepareJunctionRoute(player, junction, incomingConnection, plannedOutgoingConnection);
+			}
+		}
+
+		scope(hookSelf, player, incomingConnection, outPipeData, predictionPipeData);
+
+		if (IsValid(plannedOutgoingConnection))
+		{
+			bool reversePath = false;
+			if (ForceJunctionTravelRoute(junction, incomingConnection, plannedOutgoingConnection, outPipeData, reversePath))
+			{
+				FPendingJunctionTransit& pendingTransit = PendingJunctionTransits.FindOrAdd(playerKey);
+				pendingTransit.Junction = junction;
+				pendingTransit.IncomingConnection = incomingConnection;
+				pendingTransit.OutgoingConnection = plannedOutgoingConnection;
+				pendingTransit.bReversePath = reversePath;
+			}
+		}
+	});
+
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildablePipeHyperJunction::GetConnectionToTransitThrough, junctionCDO, [](auto& scope, AFGBuildablePipeHyperJunction* hookSelf, AFGCharacterPlayer* player, const FFGDynamicStruct& pipeData, float distance, float& outExitOffset) {
+		UFGPipeConnectionComponentBase* vanillaExit = scope(hookSelf, player, pipeData, distance, outExitOffset);
+		UFGPipeConnectionComponentBase* routedExit = vanillaExit;
+		const TWeakObjectPtr<AFGCharacterPlayer> playerKey(player);
+		FPendingJunctionTransit* pendingTransit = PendingJunctionTransits.Find(playerKey);
+
+		if (pendingTransit != nullptr && !pendingTransit->bRouteExitConsumed && vanillaExit == pendingTransit->IncomingConnection.Get())
+		{
+			AFGBuildablePipeHyperJunction* pendingJunction = pendingTransit->Junction.Get();
+			float junctionLength = 0.0f;
+			if (IsValid(pendingJunction))
+			{
+				junctionLength = pendingJunction->GetLengthAlongPipe(player, pipeData);
+			}
+
+			float entryDistance = 0.0f;
+			if (pendingTransit->bReversePath)
+			{
+				entryDistance = junctionLength;
+			}
+			if (FMath::IsNearlyEqual(distance, entryDistance, 0.01f))
+			{
+				if (UFGCharacterMovementComponent* movementComponent = Cast<UFGCharacterMovementComponent>(player->GetCharacterMovement()))
+				{
+					FPlayerPipeHyperData& playerPipeData = movementComponent->GetPipeHyperDataRef();
+					float desiredSign = 1.0f;
+					if (pendingTransit->bReversePath)
+					{
+						desiredSign = -1.0f;
+					}
+					playerPipeData.mPipeVelocityReal = FMath::Abs(playerPipeData.mPipeVelocityReal) * desiredSign;
+					playerPipeData.mPipeVelocity = FMath::Abs(playerPipeData.mPipeVelocity) * desiredSign;
+					playerPipeData.mPipeVelocityLast = FMath::Abs(playerPipeData.mPipeVelocityLast) * desiredSign;
+				}
+
+				scope.Override(static_cast<UFGPipeConnectionComponentBase*>(nullptr));
+				return;
+			}
+		}
+
+		AFGBuildablePipeHyperJunction* junction = nullptr;
+		if (IsValid(vanillaExit))
+		{
+			junction = Cast<AFGBuildablePipeHyperJunction>(vanillaExit->GetOwner());
+		}
+
+		if (pendingTransit != nullptr && vanillaExit == pendingTransit->OutgoingConnection.Get())
+		{
+			pendingTransit->bRouteExitConsumed = true;
+		}
+
+		if (IsValid(player) && IsValid(junction))
+		{
+			if (AHypertubeDestinationSubsystem* subsystem = AHypertubeDestinationSubsystem::Get(player); subsystem != nullptr && subsystem->TryRouteJunctionExit(player, junction, vanillaExit, routedExit))
+			{
+				if (pendingTransit != nullptr)
+				{
+					pendingTransit->bRouteExitConsumed = true;
+				}
+				scope.Override(routedExit);
+			}
+		}
+	});
 
 	auto entranceCDO = GetMutableDefault<AFGPipeHyperStart>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::Dismantle_Implementation, entranceCDO, [](auto& Scope, AFGBuildable* Buildable) {

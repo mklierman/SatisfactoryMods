@@ -84,7 +84,6 @@ void AHypertubeDestinationSubsystem::MarkEntranceUnavailable(AFGPipeHyperStart* 
 		return;
 	}
 
-	// Do not delete the saved record here: EndPlay is also called for world partition streaming.
 	++TopologyRevision;
 	ActiveRoutes.Empty();
 }
@@ -248,8 +247,6 @@ bool AHypertubeDestinationSubsystem::TryRouteJunctionExit(AFGCharacterPlayer* Pl
 		return false;
 	}
 
-	// PhysPipe may ask for the same junction exit multiple times during one movement
-	// update. Replay the previous result without advancing the route again.
 	if (Route->LastRoutedJunction.Get() == Junction)
 	{
 		if (IsValid(Route->LastRoutedExit.Get()))
@@ -271,7 +268,6 @@ bool AHypertubeDestinationSubsystem::TryRouteJunctionExit(AFGCharacterPlayer* Pl
 	const FHypertubeRouteDecision& Decision = Route->Decisions[Route->CurrentDecisionIndex];
 	if (Decision.Junction != Junction)
 	{
-		// The player reversed, entered the planned network elsewhere, or the topology changed.
 		ActiveRoutes.Remove(Player);
 		return false;
 	}

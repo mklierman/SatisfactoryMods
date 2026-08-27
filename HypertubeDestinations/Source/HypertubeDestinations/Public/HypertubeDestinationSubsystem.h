@@ -32,7 +32,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Hypertube Destinations")
 	void MarkEntranceUnavailable(AFGPipeHyperStart* Entrance);
 
-	/** Permanently removes an entrance record. Called by the native dismantle hook, not the mixin's EndPlay event. */
 	UFUNCTION(BlueprintCallable, Category = "Hypertube Destinations")
 	bool RemoveEntrance(AFGPipeHyperStart* Entrance);
 
