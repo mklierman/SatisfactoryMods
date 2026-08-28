@@ -46,3 +46,18 @@ bool UHypertubeDestinationRCO::Server_SelectDestination_Validate(AFGPipeHyperSta
 {
 	return IsValid(GetOwnerPlayerCharacter()) && IsValid(Source) && IsValid(Destination) && Source != Destination;
 }
+
+void UHypertubeDestinationRCO::Server_CancelRoute_Implementation()
+{
+	AFGCharacterPlayer* Player = GetOwnerPlayerCharacter();
+
+	if (AHypertubeDestinationSubsystem* Subsystem = AHypertubeDestinationSubsystem::Get(this))
+	{
+		Subsystem->ClearActiveRoute(Player);
+	}
+}
+
+bool UHypertubeDestinationRCO::Server_CancelRoute_Validate()
+{
+	return IsValid(GetOwnerPlayerCharacter());
+}

@@ -159,6 +159,36 @@ TArray<FHypertubeDestinationRecord> AHypertubeDestinationSubsystem::GetAvailable
 	return Result;
 }
 
+TArray<FHypertubeDestinationRecord> AHypertubeDestinationSubsystem::GetReachableDestinations(AFGCharacterPlayer* Player, AFGPipeHyperStart* Source) const
+{
+	TArray<FHypertubeDestinationRecord> Result;
+	if (!IsValid(Player) || !IsValid(Source))
+	{
+		return Result;
+	}
+
+	for (const FHypertubeDestinationRecord& Record : Destinations)
+	{
+		AFGPipeHyperStart* Destination = Record.Entrance.Get();
+		if (!Record.DestinationId.IsValid() || !IsValid(Destination) || Destination == Source)
+		{
+			continue;
+		}
+
+		FHypertubeRoutePlan Route;
+		if (UHypertubeRoutePlanner::FindRoute(Player, Source, Destination, Route))
+		{
+			Result.Add(Record);
+		}
+	}
+
+	Result.Sort([](const FHypertubeDestinationRecord& Left, const FHypertubeDestinationRecord& Right)
+	{
+		return Left.DisplayName < Right.DisplayName;
+	});
+	return Result;
+}
+
 bool AHypertubeDestinationSubsystem::GetDestinationForEntrance(AFGPipeHyperStart* Entrance, FHypertubeDestinationRecord& OutDestination) const
 {
 	if (const FHypertubeDestinationRecord* Record = FindDestination(Entrance))

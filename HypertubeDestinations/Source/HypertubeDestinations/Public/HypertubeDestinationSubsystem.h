@@ -42,6 +42,9 @@ public:
 	TArray<FHypertubeDestinationRecord> GetAvailableDestinations() const;
 
 	UFUNCTION(BlueprintPure, Category = "Hypertube Destinations")
+	TArray<FHypertubeDestinationRecord> GetReachableDestinations(AFGCharacterPlayer* Player, AFGPipeHyperStart* Source) const;
+
+	UFUNCTION(BlueprintPure, Category = "Hypertube Destinations")
 	bool GetDestinationForEntrance(AFGPipeHyperStart* Entrance, FHypertubeDestinationRecord& OutDestination) const;
 
 	bool SelectDestination(AFGCharacterPlayer* Player, AFGPipeHyperStart* Source, AFGPipeHyperStart* Destination);

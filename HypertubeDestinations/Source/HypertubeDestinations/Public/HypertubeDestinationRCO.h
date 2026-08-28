@@ -21,6 +21,9 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Hypertube Destinations")
 	void Server_SelectDestination(AFGPipeHyperStart* Source, AFGPipeHyperStart* Destination);
 
+	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Hypertube Destinations")
+	void Server_CancelRoute();
+
 private:
 	UPROPERTY(Replicated)
 	bool bForceNetField = false;
