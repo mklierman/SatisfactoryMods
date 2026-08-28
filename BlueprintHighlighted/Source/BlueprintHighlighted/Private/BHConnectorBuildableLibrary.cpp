@@ -98,14 +98,23 @@ AFGBuildable* UBHConnectorBuildableLibrary::SpawnConnectorBuildableCopy(
 		}
 	}
 
-	// Mergers/splitters (including vertical variants added by other mods, e.g. VerticalLogisticsQoL)
-	// derive their input/output roles per-connector via SetDirection(), normally called by the
+	// KNOWN LIMITATION: mergers/splitters (including vertical variants added by other mods, e.g.
+	// VerticalLogisticsQoL) are not currently supported by this copy path and are always skipped below.
+	//
+	// They derive their input/output roles per-connector via SetDirection(), normally called by the
 	// hologram's ConfigureComponents() between spawn and FinishSpawning - a step our raw copy path
-	// doesn't go through. Without it, a vertical attachment's two lift-facing connectors keep
-	// whatever direction they default to (neither Input nor Output), leaving it with zero outputs,
-	// which trips a hard check() in AFGBuildableConveyorAttachment::BeginPlay and crashes the game
-	// outright. Replicate the hologram's effect by copying each connector's already-correct direction
-	// from the original buildable (matched by component name) before BeginPlay can run.
+	// doesn't go through. Without it, a vertical attachment's two lift-facing connectors keep whatever
+	// direction they default to (neither Input nor Output), leaving it with zero outputs, which trips a
+	// hard check() in AFGBuildableConveyorAttachment::BeginPlay and crashes the game outright.
+	//
+	// The block below tries to replicate the hologram's effect by copying each connector's already-correct
+	// direction from the original buildable (matched by component name) before BeginPlay can run - but in
+	// practice this buildable's connector components don't exist yet at this point (they're only created
+	// once FinishSpawning runs the construction script, which is the same call that triggers BeginPlay),
+	// so the copy is always a no-op and this always falls through to the bail-out below. Left in rather
+	// than deleted because it's harmless, and it's the right place to pick this back up if a way is found
+	// to configure connectors before BeginPlay runs (e.g. writing AFGBuildableConveyorAttachment's
+	// SaveGame mSavedDirections directly would need a new Access Transformer Friend= grant).
 	if (AFGBuildableConveyorAttachment* OriginalAttachment = Cast<AFGBuildableConveyorAttachment>(BuildableToCopy))
 	{
 		AFGBuildableConveyorAttachment* NewAttachment = CastChecked<AFGBuildableConveyorAttachment>(NewBuildable);
@@ -123,10 +132,8 @@ AFGBuildable* UBHConnectorBuildableLibrary::SpawnConnectorBuildableCopy(
 			}
 		}
 
-		// If the connector components we tried to configure didn't exist yet at this point (e.g. they're
-		// only created once FinishSpawning runs the buildable's construction script), the copy above was
-		// a no-op and BeginPlay's check() would still crash. Bail out gracefully instead - the caller
-		// already treats a nullptr return the same as a SpawnBuildableFromClass failure.
+		// Always taken in practice (see comment above) - bail out gracefully rather than let BeginPlay
+		// crash. The caller already treats a nullptr return the same as a SpawnBuildableFromClass failure.
 		if (!bHasOutputConnection)
 		{
 			NewBuildable->Destroy();
