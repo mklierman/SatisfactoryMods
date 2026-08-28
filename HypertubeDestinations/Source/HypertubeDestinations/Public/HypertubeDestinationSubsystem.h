@@ -55,9 +55,6 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	virtual void PreSaveGame_Implementation(int32 SaveVersion, int32 GameVersion) override;
-	virtual void PostSaveGame_Implementation(int32 SaveVersion, int32 GameVersion) override;
-	virtual void PreLoadGame_Implementation(int32 SaveVersion, int32 GameVersion) override;
 	virtual void PostLoadGame_Implementation(int32 SaveVersion, int32 GameVersion) override;
 	virtual void GatherDependencies_Implementation(TArray<UObject*>& OutDependentObjects) override;
 	virtual bool ShouldSave_Implementation() const override;

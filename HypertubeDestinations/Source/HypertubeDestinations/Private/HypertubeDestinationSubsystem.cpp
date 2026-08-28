@@ -11,20 +11,20 @@
 
 namespace
 {
-constexpr int32 HypertubeDestinationMaxNameLength = 64;
-const TCHAR* HypertubeDestinationDefaultName = TEXT("Unnamed Hypertube Entrance");
+	constexpr int32 HypertubeDestinationMaxNameLength = 64;
+	const TCHAR* HypertubeDestinationDefaultName = TEXT("Unnamed Hypertube Entrance");
 
-bool PrimeVanillaJunctionSelection(AFGCharacterPlayer* Player, const FHypertubeRouteDecision& Decision)
-{
-	if (!IsValid(Player) || !IsValid(Decision.IncomingConnection.Get()) || !IsValid(Decision.OutgoingConnection.Get()))
+	bool PrimeVanillaJunctionSelection(AFGCharacterPlayer* Player, const FHypertubeRouteDecision& Decision)
 	{
-		return false;
-	}
+		if (!IsValid(Player) || !IsValid(Decision.IncomingConnection.Get()) || !IsValid(Decision.OutgoingConnection.Get()))
+		{
+			return false;
+		}
 
-	Player->Server_UpdateHyperJunctionOutputConnection(Decision.IncomingConnection.Get(), Decision.OutgoingConnection.Get());
-	return true;
+		Player->Server_UpdateHyperJunctionOutputConnection(Decision.IncomingConnection.Get(), Decision.OutgoingConnection.Get());
+		return true;
+	}
 }
-} // namespace
 
 AHypertubeDestinationSubsystem::AHypertubeDestinationSubsystem()
 {
@@ -226,6 +226,10 @@ bool AHypertubeDestinationSubsystem::PrepareJunctionRoute(AFGCharacterPlayer* Pl
 	const FHypertubeRouteDecision& Decision = Route->Decisions[Route->CurrentDecisionIndex];
 	if (Decision.Junction != Junction || Decision.IncomingConnection != IncomingConnection || !IsValid(Decision.OutgoingConnection.Get()))
 	{
+		if (Route->LastRoutedJunction.Get() == Junction)
+		{
+			ActiveRoutes.Remove(Player);
+		}
 		return false;
 	}
 
@@ -303,18 +307,6 @@ void AHypertubeDestinationSubsystem::GetLifetimeReplicatedProps(TArray<FLifetime
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AHypertubeDestinationSubsystem, Destinations);
-}
-
-void AHypertubeDestinationSubsystem::PreSaveGame_Implementation(int32, int32)
-{
-}
-
-void AHypertubeDestinationSubsystem::PostSaveGame_Implementation(int32, int32)
-{
-}
-
-void AHypertubeDestinationSubsystem::PreLoadGame_Implementation(int32, int32)
-{
 }
 
 void AHypertubeDestinationSubsystem::PostLoadGame_Implementation(int32, int32)

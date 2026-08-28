@@ -138,6 +138,7 @@ void FHypertubeDestinationsModule::StartupModule()
 					{
 						desiredSign = -1.0f;
 					}
+
 					playerPipeData.mPipeVelocityReal = FMath::Abs(playerPipeData.mPipeVelocityReal) * desiredSign;
 					playerPipeData.mPipeVelocity = FMath::Abs(playerPipeData.mPipeVelocity) * desiredSign;
 					playerPipeData.mPipeVelocityLast = FMath::Abs(playerPipeData.mPipeVelocityLast) * desiredSign;
@@ -170,6 +171,19 @@ void FHypertubeDestinationsModule::StartupModule()
 				scope.Override(routedExit);
 			}
 		}
+	});
+
+	SUBSCRIBE_METHOD(UFGCharacterMovementComponent::PipeHyperForceExit, [](auto& scope, UFGCharacterMovementComponent* movementComponent, const bool ragdollCharacter) {
+		if (AFGCharacterPlayer* player = Cast<AFGCharacterPlayer>(movementComponent->GetOwner()); IsValid(player) && player->HasAuthority())
+		{
+			if (AHypertubeDestinationSubsystem* subsystem = AHypertubeDestinationSubsystem::Get(player))
+			{
+				subsystem->ClearActiveRoute(player);
+			}
+			PendingJunctionTransits.Remove(player);
+		}
+
+		scope(movementComponent, ragdollCharacter);
 	});
 
 	auto entranceCDO = GetMutableDefault<AFGPipeHyperStart>();
