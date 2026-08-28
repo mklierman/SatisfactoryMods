@@ -173,6 +173,17 @@ void FHypertubeDestinationsModule::StartupModule()
 		}
 	});
 
+	auto playerCDO = GetMutableDefault<AFGCharacterPlayer>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGCharacterPlayer::Server_CycleHyperJunctionOutputConnection_Implementation, playerCDO, [](auto& scope, AFGCharacterPlayer* player, UFGPipeConnectionComponentBase* connectionEnteredThrough) {
+		if (AHypertubeDestinationSubsystem* subsystem = AHypertubeDestinationSubsystem::Get(player))
+		{
+			subsystem->ClearActiveRoute(player);
+		}
+		PendingJunctionTransits.Remove(player);
+
+		scope(player, connectionEnteredThrough);
+	});
+
 	SUBSCRIBE_METHOD(UFGCharacterMovementComponent::PipeHyperForceExit, [](auto& scope, UFGCharacterMovementComponent* movementComponent, const bool ragdollCharacter) {
 		if (AFGCharacterPlayer* player = Cast<AFGCharacterPlayer>(movementComponent->GetOwner()); IsValid(player) && player->HasAuthority())
 		{
