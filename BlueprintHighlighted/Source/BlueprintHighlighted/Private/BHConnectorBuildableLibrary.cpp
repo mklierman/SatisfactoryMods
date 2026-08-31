@@ -134,11 +134,11 @@ AFGBuildable* UBHConnectorBuildableLibrary::SpawnConnectorBuildableCopy(
 
 		// Always taken in practice (see comment above) - bail out gracefully rather than let BeginPlay
 		// crash. The caller already treats a nullptr return the same as a SpawnBuildableFromClass failure.
-		if (!bHasOutputConnection)
-		{
-			NewBuildable->Destroy();
-			return nullptr;
-		}
+		//if (!bHasOutputConnection)
+		//{
+		//	NewBuildable->Destroy();
+		//	return nullptr;
+		//}
 
 		// SetDirection() only updates the live per-component direction. Visual/mesh state is driven from
 		// mSavedDirections instead (see AFGBuildableConveyorAttachment::SaveCurrentDirections), which we
