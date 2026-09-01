@@ -10,6 +10,7 @@
 #include "Buildables/FGBuildableConveyorAttachment.h"
 #include "Buildables/FGBuildableConveyorLift.h"
 #include "Buildables/FGBuildableWire.h"
+#include "UObject/UnrealType.h"
 
 namespace
 {
@@ -45,6 +46,24 @@ namespace
 	{
 		return FindMatchingComponentByName(NewBuildable, OriginalConnection);
 	}
+
+	void CopySavedConnectionDirections(AFGBuildableConveyorAttachment* Original, AFGBuildableConveyorAttachment* Copy)
+	{
+		static const FArrayProperty* SavedDirectionsProperty = CastField<FArrayProperty>(
+			AFGBuildableConveyorAttachment::StaticClass()->FindPropertyByName(TEXT("mSavedDirections")));
+		if (!SavedDirectionsProperty)
+		{
+			return;
+		}
+
+		FScriptArrayHelper OriginalDirections(SavedDirectionsProperty, SavedDirectionsProperty->ContainerPtrToValuePtr<void>(Original));
+		if (OriginalDirections.Num() == 0)
+		{
+			Original->SaveCurrentDirections();
+		}
+
+		SavedDirectionsProperty->CopyCompleteValue_InContainer(Copy, Original);
+	}
 }
 
 AFGBuildable* UBHConnectorBuildableLibrary::SpawnConnectorBuildableCopy(
@@ -56,12 +75,6 @@ AFGBuildable* UBHConnectorBuildableLibrary::SpawnConnectorBuildableCopy(
 	if (!BuildableToCopy || !BuildableClass)
 	{
 		return nullptr;
-	}
-
-	// Lifts already ship a native "duplicate this exact instance, including its connections" function.
-	if (AFGBuildableConveyorLift* LiftToCopy = Cast<AFGBuildableConveyorLift>(BuildableToCopy))
-	{
-		return AFGBuildableConveyorLift::DuplicateLift(LiftToCopy, /*dismantleOriginalLift=*/false);
 	}
 
 	// Wires are AFGBuildable themselves, so they show up in the dismantle-mode selection alongside
@@ -98,52 +111,35 @@ AFGBuildable* UBHConnectorBuildableLibrary::SpawnConnectorBuildableCopy(
 		}
 	}
 
-	// KNOWN LIMITATION: mergers/splitters (including vertical variants added by other mods, e.g.
-	// VerticalLogisticsQoL) are not currently supported by this copy path and are always skipped below.
-	//
-	// They derive their input/output roles per-connector via SetDirection(), normally called by the
-	// hologram's ConfigureComponents() between spawn and FinishSpawning - a step our raw copy path
-	// doesn't go through. Without it, a vertical attachment's two lift-facing connectors keep whatever
-	// direction they default to (neither Input nor Output), leaving it with zero outputs, which trips a
-	// hard check() in AFGBuildableConveyorAttachment::BeginPlay and crashes the game outright.
-	//
-	// The block below tries to replicate the hologram's effect by copying each connector's already-correct
-	// direction from the original buildable (matched by component name) before BeginPlay can run - but in
-	// practice this buildable's connector components don't exist yet at this point (they're only created
-	// once FinishSpawning runs the construction script, which is the same call that triggers BeginPlay),
-	// so the copy is always a no-op and this always falls through to the bail-out below. Left in rather
-	// than deleted because it's harmless, and it's the right place to pick this back up if a way is found
-	// to configure connectors before BeginPlay runs (e.g. writing AFGBuildableConveyorAttachment's
-	// SaveGame mSavedDirections directly would need a new Access Transformer Friend= grant).
 	if (AFGBuildableConveyorAttachment* OriginalAttachment = Cast<AFGBuildableConveyorAttachment>(BuildableToCopy))
 	{
-		AFGBuildableConveyorAttachment* NewAttachment = CastChecked<AFGBuildableConveyorAttachment>(NewBuildable);
-
-		TArray<UFGFactoryConnectionComponent*> OriginalConnections;
-		OriginalAttachment->GetComponents(OriginalConnections);
-
-		bool bHasOutputConnection = false;
-		for (UFGFactoryConnectionComponent* OriginalConnection : OriginalConnections)
+		if (AFGBuildableConveyorAttachment* NewAttachment = Cast<AFGBuildableConveyorAttachment>(NewBuildable))
 		{
-			if (UFGFactoryConnectionComponent* NewConnection = FindMatchingComponentByName(NewAttachment, OriginalConnection))
+			CopySavedConnectionDirections(OriginalAttachment, NewAttachment);
+		}
+	}
+
+	if (AFGBuildableConveyorLift* LiftToCopy = Cast<AFGBuildableConveyorLift>(BuildableToCopy))
+	{
+		if (AFGBuildableConveyorLift* NewLift = Cast<AFGBuildableConveyorLift>(NewBuildable))
+		{
+			static const TCHAR* LiftPropertyNames[] =
 			{
-				NewConnection->SetDirection(OriginalConnection->GetDirection());
-				bHasOutputConnection |= NewConnection->GetDirection() == EFactoryConnectionDirection::FCD_OUTPUT;
+				TEXT("mTopTransform"),
+				TEXT("mIsReversed"),
+				TEXT("mIsBeltUsingInputRotation"),
+				TEXT("mInputMeshDisplayMode"),
+				TEXT("mOutputMeshDisplayMode"),
+			};
+
+			for (const TCHAR* PropertyName : LiftPropertyNames)
+			{
+				if (const FProperty* Property = AFGBuildableConveyorLift::StaticClass()->FindPropertyByName(PropertyName))
+				{
+					Property->CopyCompleteValue_InContainer(NewLift, LiftToCopy);
+				}
 			}
 		}
-
-		// Always taken in practice (see comment above) - bail out gracefully rather than let BeginPlay
-		// crash. The caller already treats a nullptr return the same as a SpawnBuildableFromClass failure.
-		//if (!bHasOutputConnection)
-		//{
-		//	NewBuildable->Destroy();
-		//	return nullptr;
-		//}
-
-		// SetDirection() only updates the live per-component direction. Visual/mesh state is driven from
-		// mSavedDirections instead (see AFGBuildableConveyorAttachment::SaveCurrentDirections), which we
-		// haven't touched yet - without this the buildable is functionally fine but renders as invisible.
-		NewAttachment->SaveCurrentDirections();
 	}
 
 	NewBuildable->FinishSpawning(Transform);
@@ -195,8 +191,13 @@ AFGBuildableWire* UBHConnectorBuildableLibrary::DuplicateWireBetweenNewBuildable
 		return nullptr;
 	}
 
+	if (!NewWire->Connect(NewConnection0, NewConnection1))
+	{
+		NewWire->Destroy();
+		return nullptr;
+	}
+
 	NewWire->FinishSpawning(WireToCopy->GetActorTransform());
-	NewWire->Connect(NewConnection0, NewConnection1);
 
 	return NewWire;
 }
