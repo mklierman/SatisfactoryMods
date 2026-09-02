@@ -23,6 +23,18 @@ struct HYPERTUBEDESTINATIONS_API FHypertubeDestinationRecord
 };
 
 USTRUCT(BlueprintType)
+struct HYPERTUBEDESTINATIONS_API FHypertubeDestinationOption
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, Category = "Hypertube Destinations")
+	FGuid DestinationId;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Hypertube Destinations")
+	FString DisplayName;
+};
+
+USTRUCT(BlueprintType)
 struct HYPERTUBEDESTINATIONS_API FHypertubeRouteDecision
 {
 	GENERATED_BODY()

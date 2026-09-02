@@ -110,15 +110,25 @@ bool AHypertubeDestinationSubsystem::RemoveEntrance(AFGPipeHyperStart* Entrance)
 	return RemovedCount > 0;
 }
 
-bool AHypertubeDestinationSubsystem::SetDestinationName(AFGPipeHyperStart* Entrance, const FString& NewName)
+bool AHypertubeDestinationSubsystem::SetDestinationName(AFGCharacterPlayer* Player, AFGPipeHyperStart* Entrance, const FString& NewName)
 {
-	if (!HasAuthority() || !IsValid(Entrance))
+	if (!HasAuthority() || !IsValid(Player) || !IsValid(Entrance))
 	{
 		return false;
 	}
 
 	FString SanitizedName = NewName.TrimStartAndEnd().Left(HypertubeDestinationMaxNameLength);
 	if (SanitizedName.IsEmpty())
+	{
+		return false;
+	}
+
+	const TArray<FHypertubeDestinationRecord> ReachableDestinations = GetReachableDestinations(Player, Entrance);
+	const bool bNameTaken = ReachableDestinations.ContainsByPredicate([&SanitizedName](const FHypertubeDestinationRecord& ExistingRecord)
+	{
+		return ExistingRecord.DisplayName.Equals(SanitizedName, ESearchCase::IgnoreCase);
+	});
+	if (bNameTaken)
 	{
 		return false;
 	}
@@ -189,6 +199,18 @@ TArray<FHypertubeDestinationRecord> AHypertubeDestinationSubsystem::GetReachable
 	return Result;
 }
 
+TArray<FHypertubeDestinationOption> AHypertubeDestinationSubsystem::GetReachableDestinationOptions(AFGCharacterPlayer* Player, AFGPipeHyperStart* Source) const
+{
+	TArray<FHypertubeDestinationOption> Result;
+	for (const FHypertubeDestinationRecord& Record : GetReachableDestinations(Player, Source))
+	{
+		FHypertubeDestinationOption& Option = Result.AddDefaulted_GetRef();
+		Option.DestinationId = Record.DestinationId;
+		Option.DisplayName = Record.DisplayName;
+	}
+	return Result;
+}
+
 bool AHypertubeDestinationSubsystem::GetDestinationForEntrance(AFGPipeHyperStart* Entrance, FHypertubeDestinationRecord& OutDestination) const
 {
 	if (const FHypertubeDestinationRecord* Record = FindDestination(Entrance))
@@ -230,6 +252,16 @@ bool AHypertubeDestinationSubsystem::SelectDestination(AFGCharacterPlayer* Playe
 		PrimeVanillaJunctionSelection(Player, StoredRoute.Decisions[StoredRoute.CurrentDecisionIndex]);
 	}
 	return true;
+}
+
+bool AHypertubeDestinationSubsystem::SelectDestinationById(AFGCharacterPlayer* Player, AFGPipeHyperStart* Source, const FGuid& DestinationId)
+{
+	const FHypertubeDestinationRecord* DestinationRecord = FindDestination(DestinationId);
+	if (DestinationRecord == nullptr)
+	{
+		return false;
+	}
+	return SelectDestination(Player, Source, DestinationRecord->Entrance.Get());
 }
 
 bool AHypertubeDestinationSubsystem::PrepareJunctionRoute(AFGCharacterPlayer* Player, AFGBuildablePipeHyperJunction* Junction, UFGPipeConnectionComponentBase* IncomingConnection,
@@ -386,5 +418,13 @@ const FHypertubeDestinationRecord* AHypertubeDestinationSubsystem::FindDestinati
 	return Destinations.FindByPredicate([Entrance](const FHypertubeDestinationRecord& Record)
 	{
 		return Record.Entrance == Entrance;
+	});
+}
+
+const FHypertubeDestinationRecord* AHypertubeDestinationSubsystem::FindDestination(const FGuid& DestinationId) const
+{
+	return Destinations.FindByPredicate([&DestinationId](const FHypertubeDestinationRecord& Record)
+	{
+		return Record.DestinationId == DestinationId;
 	});
 }

@@ -36,7 +36,7 @@ public:
 	bool RemoveEntrance(AFGPipeHyperStart* Entrance);
 
 	UFUNCTION(BlueprintCallable, Category = "Hypertube Destinations")
-	bool SetDestinationName(AFGPipeHyperStart* Entrance, const FString& NewName);
+	bool SetDestinationName(AFGCharacterPlayer* Player, AFGPipeHyperStart* Entrance, const FString& NewName);
 
 	UFUNCTION(BlueprintPure, Category = "Hypertube Destinations")
 	TArray<FHypertubeDestinationRecord> GetAvailableDestinations() const;
@@ -45,9 +45,13 @@ public:
 	TArray<FHypertubeDestinationRecord> GetReachableDestinations(AFGCharacterPlayer* Player, AFGPipeHyperStart* Source) const;
 
 	UFUNCTION(BlueprintPure, Category = "Hypertube Destinations")
+	TArray<FHypertubeDestinationOption> GetReachableDestinationOptions(AFGCharacterPlayer* Player, AFGPipeHyperStart* Source) const;
+
+	UFUNCTION(BlueprintPure, Category = "Hypertube Destinations")
 	bool GetDestinationForEntrance(AFGPipeHyperStart* Entrance, FHypertubeDestinationRecord& OutDestination) const;
 
 	bool SelectDestination(AFGCharacterPlayer* Player, AFGPipeHyperStart* Source, AFGPipeHyperStart* Destination);
+	bool SelectDestinationById(AFGCharacterPlayer* Player, AFGPipeHyperStart* Source, const FGuid& DestinationId);
 	bool PrepareJunctionRoute(AFGCharacterPlayer* Player, AFGBuildablePipeHyperJunction* Junction, UFGPipeConnectionComponentBase* IncomingConnection, UFGPipeConnectionComponentBase*& OutgoingConnection);
 	bool TryRouteJunctionExit(AFGCharacterPlayer* Player, AFGBuildablePipeHyperJunction* Junction, UFGPipeConnectionComponentBase* VanillaExit, UFGPipeConnectionComponentBase*& OutExit);
 	const FHypertubeRoutePlan* GetActiveRoute(AFGCharacterPlayer* Player) const;
@@ -72,6 +76,7 @@ private:
 
 	FHypertubeDestinationRecord* FindMutableDestination(AFGPipeHyperStart* Entrance);
 	const FHypertubeDestinationRecord* FindDestination(AFGPipeHyperStart* Entrance) const;
+	const FHypertubeDestinationRecord* FindDestination(const FGuid& DestinationId) const;
 
 	UPROPERTY(SaveGame, ReplicatedUsing = OnRep_Destinations)
 	TArray<FHypertubeDestinationRecord> Destinations;
