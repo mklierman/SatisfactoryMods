@@ -199,15 +199,21 @@ void FInfiniteNudgeModule::ScaleHologram(AFGHologram* hologram, int32 step) {
 	auto scale = GetModifierAmount(controller, scaleAmount) / 10 + 1; //change the config value to / 10 ?
 	if (step < 0)
 		scale = 1.0f / scale;
+
+	FVector scaleVector = FVector::OneVector;
+	if (ScrollMode::GetScaleAxis() == EAxis::None)
+		scaleVector = FVector(scale);
+	else
+		scaleVector.SetComponentForAxis(ScrollMode::GetScaleAxis(), scale);
 	
 	//pivot calculations
 	if (!mPivot.IsNearlyZero()) { 
-		FVector offset = hologram->GetActorTransform().TransformVector(mPivot - mPivot * scale);
+		FVector offset = hologram->GetActorTransform().TransformVector(mPivot - mPivot * scaleVector);
 		hologram->SetNudgeOffset(hologram->GetNudgeOffset() + offset);
 	}
 
 	//Apply scale
-	auto newScale = hologram->GetActorRelativeScale3D() * scale;
+	auto newScale = hologram->GetActorRelativeScale3D() * scaleVector;
 	hologram->SetActorRelativeScale3D(newScale);
 	for (auto c : hologram->mChildren)
 		c->SetActorRelativeScale3D(newScale);
