@@ -202,6 +202,11 @@ AFGBuildableWire* UBHConnectorBuildableLibrary::DuplicateWireBetweenNewBuildable
 	return NewWire;
 }
 
+void UBHConnectorBuildableLibrary::SetPotential(AFGBuildableFactory* building, float newPotential)
+{
+	building->SetPendingPotential(newPotential);
+}
+
 void UBHConnectorBuildableLibrary::ReconnectSpawnedBuildable(
 	AFGBuildable* OriginalBuildable,
 	AFGBuildable* NewBuildable,

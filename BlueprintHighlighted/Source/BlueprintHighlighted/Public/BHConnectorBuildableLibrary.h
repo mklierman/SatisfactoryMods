@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Buildables/FGBuildableFactory.h"
 #include "BHConnectorBuildableLibrary.generated.h"
 
 class AFGBuildable;
@@ -65,4 +66,8 @@ public:
 		AFGBuildable* OriginalBuildable,
 		AFGBuildable* NewBuildable,
 		UPARAM(ref) TMap<AFGBuildable*, AFGBuildable*>& OldToNewBuildables);
+
+
+	UFUNCTION(BlueprintCallable, Category = "BlueprintHighlighted")
+	static void SetPotential(AFGBuildableFactory* building, float newPotential);
 };
