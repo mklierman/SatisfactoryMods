@@ -9,6 +9,7 @@
 #include "Buildables/FGBuildable.h"
 #include "Buildables/FGBuildableConveyorAttachment.h"
 #include "Buildables/FGBuildableConveyorLift.h"
+#include "Buildables/FGBuildableRailroadTrack.h"
 #include "Buildables/FGBuildableWire.h"
 #include "UObject/UnrealType.h"
 
@@ -148,7 +149,10 @@ AFGBuildable* UBHConnectorBuildableLibrary::SpawnConnectorBuildableCopy(
 	// cleans up any stale connection references left over from spawning/serialization. It does
 	// NOT create new connections; that happens separately in ReconnectSpawnedBuildable once all
 	// buildables in the selection have been duplicated.
-	NewBuildable->PostSerializedFromBlueprint(/*isBlueprintWorld=*/true);
+	if (!NewBuildable->IsA<AFGBuildableRailroadTrack>())
+	{
+		NewBuildable->PostSerializedFromBlueprint(/*isBlueprintWorld=*/true);
+	}
 
 	return NewBuildable;
 }
