@@ -70,4 +70,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "BlueprintHighlighted")
 	static void SetPotential(AFGBuildableFactory* building, float newPotential);
+
+	UFUNCTION(BlueprintCallable, Category = "BlueprintHighlighted", meta = (WorldContext = "WorldContextObject"))
+	static void AllowLiftAttachmentsInBlueprints(UObject* WorldContextObject);
 };

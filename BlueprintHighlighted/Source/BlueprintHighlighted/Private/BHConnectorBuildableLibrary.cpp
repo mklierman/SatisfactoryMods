@@ -1,6 +1,9 @@
 #include "BHConnectorBuildableLibrary.h"
 
 #include "FGBuildableSubsystem.h"
+#include "FGBlueprintSubsystem.h"
+#include "FGRecipeManager.h"
+#include "FGRecipe.h"
 #include "FGSplineBuildableInterface.h"
 #include "FGCircuitConnectionComponent.h"
 #include "FGFactoryConnectionComponent.h"
@@ -99,6 +102,31 @@ AFGBuildable* UBHConnectorBuildableLibrary::SpawnConnectorBuildableCopy(
 	{
 		return nullptr;
 	}
+
+	TSubclassOf<UFGRecipe> BuiltWithRecipe = BuildableToCopy->GetBuiltWithRecipe();
+	AFGRecipeManager* RecipeManager = AFGRecipeManager::Get(WorldContextObject);
+	if (BuiltWithRecipe != nullptr && RecipeManager != nullptr)
+	{
+		if (!RecipeManager->IsRecipeAvailable(BuiltWithRecipe))
+		{
+			FString RecipeName = BuiltWithRecipe->GetName();
+			RecipeName.RemoveFromEnd(TEXT("_C"));
+			if (RecipeName.EndsWith(TEXT("Lift")))
+			{
+				RecipeName.RemoveFromEnd(TEXT("Lift"));
+				FString BaseRecipePath = TEXT("/Game/FactoryGame/Recipes/Buildings/") + RecipeName + TEXT(".") + RecipeName + TEXT("_C");
+				TSubclassOf<UFGRecipe> BaseRecipe = LoadClass<UFGRecipe>(nullptr, *BaseRecipePath);
+				if (BaseRecipe != nullptr)
+				{
+					if (RecipeManager->IsRecipeAvailable(BaseRecipe))
+					{
+						BuiltWithRecipe = BaseRecipe;
+					}
+				}
+			}
+		}
+	}
+	NewBuildable->SetBuiltWithRecipe(BuiltWithRecipe);
 
 	// Belts/pipes/hypertube/rail: copy the spline data before FinishSpawning (BeginPlay flushes it into
 	// the spline component and it must not be touched afterwards - see FGSplineBuildableInterface.h).
@@ -209,6 +237,31 @@ AFGBuildableWire* UBHConnectorBuildableLibrary::DuplicateWireBetweenNewBuildable
 void UBHConnectorBuildableLibrary::SetPotential(AFGBuildableFactory* building, float newPotential)
 {
 	building->SetPendingPotential(newPotential);
+}
+
+void UBHConnectorBuildableLibrary::AllowLiftAttachmentsInBlueprints(UObject* WorldContextObject)
+{
+	AFGBlueprintSubsystem* BlueprintSubsystem = AFGBlueprintSubsystem::GetBlueprintSubsystem(WorldContextObject);
+	if (BlueprintSubsystem == nullptr)
+	{
+		return;
+	}
+
+	TArray<FString> LiftAttachmentPaths;
+	LiftAttachmentPaths.Add(TEXT("/Game/FactoryGame/Buildable/Factory/CA_MergerLift/Build_ConveyorAttachmentMergerLift.Build_ConveyorAttachmentMergerLift_C"));
+	LiftAttachmentPaths.Add(TEXT("/Game/FactoryGame/Buildable/Factory/CA_MergerLiftPriority/Build_ConveyorAttachmentMergerPriorityLift.Build_ConveyorAttachmentMergerPriorityLift_C"));
+	LiftAttachmentPaths.Add(TEXT("/Game/FactoryGame/Buildable/Factory/CA_SplitterLift/Build_ConveyorAttachmentSplitterLift.Build_ConveyorAttachmentSplitterLift_C"));
+	LiftAttachmentPaths.Add(TEXT("/Game/FactoryGame/Buildable/Factory/CA_SplitterLiftProgrammable/Build_ConveyorAttachmentSplitterProgrammableLift.Build_ConveyorAttachmentSplitterProgrammableLift_C"));
+	LiftAttachmentPaths.Add(TEXT("/Game/FactoryGame/Buildable/Factory/CA_SplitterLiftSmart/Build_ConveyorAttachmentSplitterSmartLift.Build_ConveyorAttachmentSplitterSmartLift_C"));
+
+	for (int32 i = 0; i < LiftAttachmentPaths.Num(); i++)
+	{
+		TSubclassOf<AFGBuildable> LiftAttachmentClass = LoadClass<AFGBuildable>(nullptr, *LiftAttachmentPaths[i]);
+		if (LiftAttachmentClass != nullptr)
+		{
+			BlueprintSubsystem->mIgnoreRecipeRequirements.AddUnique(LiftAttachmentClass);
+		}
+	}
 }
 
 void UBHConnectorBuildableLibrary::ReconnectSpawnedBuildable(
