@@ -20,8 +20,47 @@ AFGConveyorChainActor* UGAFB_BPFL::GetBeltChain(AFGBuildableConveyorBelt* belt)
 
 void UGAFB_BPFL::GiveChainItemsToPlayer(AFGConveyorChainActor* chain, AFGPlayerController* controller)
 {
-	for (const FConveyorBeltItem& beltItem : chain->mConveyorChainItems)
+	if (!chain || !controller)
 	{
+		return;
+	}
+
+	const int32 leadIndex = chain->mLeadItemIndex;
+	const int32 tailIndex = chain->mTailItemIndex;
+	if (leadIndex == INDEX_NONE || tailIndex == INDEX_NONE)
+	{
+		return;
+	}
+
+	const int32 numSlots = chain->mConveyorChainItems.Num();
+	if (numSlots <= 0)
+	{
+		return;
+	}
+
+	auto IsOccupiedSlot = [leadIndex, tailIndex](int32 index) -> bool
+		{
+			if (leadIndex <= tailIndex)
+			{
+				return index >= leadIndex && index <= tailIndex;
+			}
+
+			return index >= leadIndex || index <= tailIndex;
+		};
+
+	for (int32 index = 0; index < numSlots; ++index)
+	{
+		if (!IsOccupiedSlot(index))
+		{
+			continue;
+		}
+
+		const FConveyorBeltItem& beltItem = chain->mConveyorChainItems[index];
+		if (!beltItem.Item.IsValid())
+		{
+			continue;
+		}
+
 		controller->Server_GiveItemSingle_Implementation(beltItem.Item.GetItemClass(), 1);
 	}
 }
