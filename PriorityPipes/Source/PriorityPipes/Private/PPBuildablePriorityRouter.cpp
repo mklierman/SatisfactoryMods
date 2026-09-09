@@ -3,6 +3,7 @@
 #include "FGPipeNetwork.h"
 #include "FGPipeSubsystem.h"
 #include "Hologram/FGFactoryHologram.h"
+#include "Net/UnrealNetwork.h"
 
 static TSubclassOf<UFGItemDescriptor> GetPortFluid(UFGPipeConnectionFactory* port)
 {
@@ -165,31 +166,61 @@ void APPBuildablePriorityRouter::Tick(float dt)
 
 void APPBuildablePriorityRouter::Factory_Tick(float dt)
 {
-	Super::Factory_Tick(dt);
-	if (!HasAuthority() || dt <= 0.f)
+	if (HasAuthority() && dt > 0.f && HasPower())
 	{
-		return;
-	}
+		ClearLeftoverIfNeeded();
+		mMovedThisTick = 0;
+		RouteFluids(dt);
+		mIsTransferring = mMovedThisTick || mBuffer.HasItems();
 
-	ClearLeftoverIfNeeded();
-	RouteFluids(dt);
-
-	for (auto* port : mOutputs)
-	{
-		if (port && port->GetFluidBox())
+		for (auto* port : mOutputs)
 		{
-			port->GetFluidBox()->AddedPressure = 10.f;
+			if (port && port->GetFluidBox())
+			{
+				port->GetFluidBox()->AddedPressure = 10.f;
+			}
 		}
 	}
+	else if (HasAuthority())
+	{
+		mMovedThisTick = 0;
+		mIsTransferring = 0;
+		for (auto* port : mOutputs)
+		{
+			if (port && port->GetFluidBox())
+			{
+				port->GetFluidBox()->AddedPressure = 0.f;
+			}
+		}
+	}
+
+	Super::Factory_Tick(dt);
+}
+
+bool APPBuildablePriorityRouter::CanProduce_Implementation() const
+{
+	return HasPower() && mIsTransferring != 0;
 }
 
 EProductionStatus APPBuildablePriorityRouter::GetProductionIndicatorStatus() const
 {
-	if (mBuffer.HasItems())
+	if (!HasPower())
+	{
+		return EProductionStatus::IS_ERROR;
+	}
+
+	if (mIsTransferring || IsProducing())
 	{
 		return EProductionStatus::IS_PRODUCING;
 	}
+
 	return EProductionStatus::IS_STANDBY;
+}
+
+void APPBuildablePriorityRouter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(APPBuildablePriorityRouter, mIsTransferring);
 }
 
 void APPBuildablePriorityRouter::RouteFluids(float)
@@ -208,8 +239,11 @@ UFGPipeConnectionFactory* APPBuildablePriorityRouter::CreatePipePort(FName name,
 		port->SetupAttachment(Mesh);
 	}
 
-	port->SetRelativeLocation(loc);
-	port->SetRelativeRotation(rot);
+	FTransform meshRel(FRotator(0.f, 540.000122f, 0.f));
+	FTransform portRel(rot, loc);
+	auto onRoot = portRel * meshRel;
+	port->SetRelativeLocation(onRoot.GetLocation());
+	port->SetRelativeRotation(onRoot.Rotator());
 	if (bOutput)
 	{
 		port->SetPipeConnectionType(EPipeConnectionType::PCT_PRODUCER);
@@ -457,6 +491,7 @@ int32 APPBuildablePriorityRouter::PullPipe(UFGPipeConnectionFactory* port, int32
 		mBuffer.NumItems += take;
 	}
 
+	mMovedThisTick = 1;
 	return take;
 }
 
@@ -488,6 +523,11 @@ int32 APPBuildablePriorityRouter::PushPipe(UFGPipeConnectionFactory* port, float
 	if (mBuffer.NumItems <= 0)
 	{
 		mBuffer = FInventoryStack();
+	}
+
+	if (liters > 0)
+	{
+		mMovedThisTick = 1;
 	}
 
 	return liters;

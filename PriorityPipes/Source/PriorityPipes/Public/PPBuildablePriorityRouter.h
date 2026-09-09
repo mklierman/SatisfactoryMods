@@ -18,7 +18,9 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float dt) override;
 	virtual void Factory_Tick(float dt) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual EProductionStatus GetProductionIndicatorStatus() const override;
+	virtual bool CanProduce_Implementation() const override;
 
 	UFUNCTION(BlueprintPure, Category = "Priority Pipes")
 	TArray<UFGPipeConnectionFactory*> GetPorts();
@@ -48,4 +50,9 @@ protected:
 
 	TArray<UFGPipeConnectionFactory*> mOutputs;
 	TArray<uint8> mPortWasConnected;
+
+	UPROPERTY(Replicated)
+	uint8 mIsTransferring = 0;
+
+	uint8 mMovedThisTick = 0;
 };
