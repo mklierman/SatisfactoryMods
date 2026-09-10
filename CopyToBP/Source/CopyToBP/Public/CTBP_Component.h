@@ -1,11 +1,9 @@
 
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "FGSaveInterface.h"
-#include "FGFactoryClipboard.h"
 #include "CTBP_Component.generated.h"
 
 USTRUCT(BlueprintType, Category = "CopyToBP")
@@ -17,7 +15,25 @@ struct FClipboardData
 	TSubclassOf<UObject> ObjectClass;
 
 	UPROPERTY(BlueprintReadWrite)
-	TObjectPtr<class UFGFactoryClipboardSettings> ClipboardSettings;
+	TSubclassOf<class UFGRecipe> Recipe;
+
+	UPROPERTY(BlueprintReadWrite)
+	float TargetPotential = 1.0f;
+
+	UPROPERTY(BlueprintReadWrite)
+	float TargetProductionBoost = 1.0f;
+
+	UPROPERTY(BlueprintReadWrite)
+	float ReachablePotential = 1.0f;
+
+	UPROPERTY(BlueprintReadWrite)
+	float ReachableProductionBoost = 1.0f;
+
+	UPROPERTY(BlueprintReadWrite)
+	TSubclassOf<class UFGPowerShardDescriptor> OverclockingShardDescriptor;
+
+	UPROPERTY(BlueprintReadWrite)
+	TSubclassOf<class UFGPowerShardDescriptor> ProductionBoostShardDescriptor;
 };
 
 UCLASS(Blueprintable)
@@ -28,15 +44,14 @@ class COPYTOBP_API UCTBP_Component : public UActorComponent, public IFGSaveInter
 	virtual bool ShouldSave_Implementation() const override { return true; }
 
 public:	
-	// Sets default values for this component's properties
 	UCTBP_Component();
 
+	static UCTBP_Component* FindOrAdd(class AFGPlayerState* PlayerState);
+
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
