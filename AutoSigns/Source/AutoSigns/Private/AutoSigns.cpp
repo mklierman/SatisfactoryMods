@@ -1,7 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "AutoSigns.h"
-#include "Patching/NativeHookManager.h"
 #include "Hologram/FGBuildableHologram.h"
 #include "Buildables/FGBuildableWidgetSign.h"
 #include "FGSignTypes.h"
@@ -14,10 +11,12 @@
 #include "Buildables/FGBuildableStorage.h"
 #include "Buildables/FGBuildableTrainPlatformCargo.h"
 #include "Buildables/FGBuildableDockingStation.h"
+#include "Buildables/FGBuildableDroneStation.h"
 #include <SessionSettings/SessionSettingsManager.h>
 #include <Logging/StructuredLog.h>
 #include "LocalUserInfo.h"
 #include <Buildables/FGBuildableRailroadSignal.h>
+#include <Patching/NativeHookManager.h>
 
 #define LOCTEXT_NAMESPACE "FAutoSignsModule"
 DEFINE_LOG_CATEGORY(AutoSigns_Log);
@@ -163,6 +162,136 @@ void FAutoSignsModule::InitializeSignPrefabData(AFGBuildableWidgetSign* sign)
 						auto itemDesc = stack.Item.GetItemClass();
 						nameText = UFGItemDescriptor::GetItemName(itemDesc).ToString();
 						iconId = GetIconIdForDescriptor(sign->GetWorld(), itemDesc, iconId);
+					}
+				}
+			}
+			AFGBuildableDroneStation* droneStation = Cast<AFGBuildableDroneStation>(snapped);
+			if (droneStation)
+			{
+				auto inventory = droneStation->GetInputInventory();
+				if (!inventory || inventory->GetFirstIndexWithItem() == INDEX_NONE)
+				{
+					inventory = droneStation->GetOutputInventory();
+				}
+
+				if (inventory)
+				{
+					auto firstIdx = inventory->GetFirstIndexWithItem();
+					FInventoryStack stack;
+					if (inventory->GetStackFromIndex(firstIdx, stack))
+					{
+						auto itemDesc = stack.Item.GetItemClass();
+						nameText = UFGItemDescriptor::GetItemName(itemDesc).ToString();
+						iconId = GetIconIdForDescriptor(sign->GetWorld(), itemDesc, iconId);
+					}
+				}
+			}
+			if (snapped->GetClass()->GetName().Contains(TEXT("LoadBalancer")))
+			{
+				TSubclassOf<UFGItemDescriptor> filterItemDesc = nullptr;
+				if (FProperty* filterProp = snapped->GetClass()->FindPropertyByName(TEXT("mFilteredItems")))
+				{
+					if (FArrayProperty* arrayProp = CastField<FArrayProperty>(filterProp))
+					{
+						FScriptArrayHelper arrayHelper(arrayProp, arrayProp->ContainerPtrToValuePtr<void>(snapped));
+						for (int32 i = 0; i < arrayHelper.Num(); ++i)
+						{
+							if (FClassProperty* classProp = CastField<FClassProperty>(arrayProp->Inner))
+							{
+								if (UClass* itemClass = Cast<UClass>(classProp->GetPropertyValue(arrayHelper.GetRawPtr(i))))
+								{
+									if (itemClass->GetName() != TEXT("FGNoneDescriptor"))
+									{
+										filterItemDesc = itemClass;
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+
+				if (!filterItemDesc)
+				{
+					if (FProperty* singleProp = snapped->GetClass()->FindPropertyByName(TEXT("mFilteredItem")))
+					{
+						if (FClassProperty* classProp = CastField<FClassProperty>(singleProp))
+						{
+							if (UClass* itemClass = Cast<UClass>(classProp->GetPropertyValue_InContainer(snapped)))
+							{
+								if (itemClass->GetName() != TEXT("FGNoneDescriptor"))
+								{
+									filterItemDesc = itemClass;
+								}
+							}
+						}
+					}
+				}
+
+				if (filterItemDesc)
+				{
+					nameText = UFGItemDescriptor::GetItemName(filterItemDesc).ToString();
+					iconId = GetIconIdForDescriptor(sign->GetWorld(), filterItemDesc, iconId);
+				}
+				else
+				{
+					TArray<AFGBuildable*> modulesToCheck;
+					if (UFunction* func = snapped->FindFunction(TEXT("GetGroupModules")))
+					{
+						struct { TArray<AFGBuildable*> ReturnValue; } params;
+						snapped->ProcessEvent(func, &params);
+						for (auto mod : params.ReturnValue)
+						{
+							if (IsValid(mod))
+							{
+								modulesToCheck.AddUnique(mod);
+							}
+						}
+					}
+
+					if (FProperty* leaderProp = snapped->GetClass()->FindPropertyByName(TEXT("GroupLeader")))
+					{
+						if (FObjectProperty* objProp = CastField<FObjectProperty>(leaderProp))
+						{
+							if (auto leaderBuildable = Cast<AFGBuildable>(objProp->GetObjectPropertyValue_InContainer(snapped)))
+							{
+								modulesToCheck.AddUnique(leaderBuildable);
+							}
+						}
+					}
+					modulesToCheck.AddUnique(snapped);
+
+					for (auto mod : modulesToCheck)
+					{
+						UFGInventoryComponent* inventory = nullptr;
+						if (FProperty* invProp = mod->GetClass()->FindPropertyByName(TEXT("mBufferInventory")))
+						{
+							if (FObjectProperty* objProp = CastField<FObjectProperty>(invProp))
+							{
+								inventory = Cast<UFGInventoryComponent>(objProp->GetObjectPropertyValue_InContainer(mod));
+							}
+						}
+
+						if (!inventory)
+						{
+							inventory = mod->FindComponentByClass<UFGInventoryComponent>();
+						}
+
+						if (inventory)
+						{
+							auto firstIdx = inventory->GetFirstIndexWithItem();
+							FInventoryStack stack;
+							if (inventory->GetStackFromIndex(firstIdx, stack))
+							{
+								auto itemDesc = stack.Item.GetItemClass();
+								if (itemDesc)
+								{
+									nameText = UFGItemDescriptor::GetItemName(itemDesc).ToString();
+									iconId = GetIconIdForDescriptor(sign->GetWorld(), itemDesc, iconId);
+									break;
+								}
+							}
+						}
 					}
 				}
 			}
