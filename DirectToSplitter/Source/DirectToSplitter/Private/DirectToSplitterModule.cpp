@@ -36,7 +36,7 @@ void FDirectToSplitterModule::StartupModule() {
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD(UFGFactoryConnectionComponent::ClearConnection, [this](auto& scope, UFGFactoryConnectionComponent* self)
 		{
-			if (self)
+			if (IsValid(self))
 			{
 				auto conn = self->GetConnection();
 				DismantleLeftoverBelt(conn);
@@ -45,7 +45,10 @@ void FDirectToSplitterModule::StartupModule() {
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::CheckValidFloor, cah, [this](auto& scope, AFGConveyorAttachmentHologram* self)
 		{
-			CheckValidFloor(self);
+			if (IsValid(self))
+			{
+				CheckValidFloor(self);
+			}
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::ScrollRotate, bh, [this](auto& scope, AFGBuildableHologram* self, int32 delta, int32 step)
@@ -59,13 +62,20 @@ void FDirectToSplitterModule::StartupModule() {
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildable::BeginPlay, fgb, [this](auto& scope, AFGBuildable* self)
 		{
-			if (auto attachment = Cast<AFGBuildableConveyorAttachment>(self))
+			if (IsValid(self))
 			{
-				HandleExistingSnappedOn(attachment);
+				if (auto attachment = Cast<AFGBuildableConveyorAttachment>(self))
+				{
+					HandleExistingSnappedOn(attachment);
+				}
 			}
 		});
 	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::TrySnapToActor, cah, [this](auto& scope, AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
 		{
+			if (!IsValid(self))
+			{
+				return;
+			}
 			bool scopeResult = scope(self, hitResult);
 			if (scopeResult)
 			{
@@ -94,34 +104,47 @@ void FDirectToSplitterModule::StartupModule() {
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::ConfigureComponents, cah, [this](auto& scope, const AFGConveyorAttachmentHologram* self, AFGBuildable* inBuildable)
 		{
-			bool shouldCancel;
-			ConfigureComponents(self, shouldCancel);
-			if (shouldCancel) scope.Cancel();
+			if (IsValid(self))
+			{
+				bool shouldCancel;
+				ConfigureComponents(self, shouldCancel);
+				if (shouldCancel) scope.Cancel();
+			}
 		});
 
 
 	AFGBuildableHologram* bhg = GetMutableDefault<AFGBuildableHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGBuildableHologram::Construct, bhg, [this](auto& outActor, AFGBuildableHologram* self, TArray< AActor* >& out_children, FNetConstructionID netConstructionID)
 		{
-			HGConstruct(self, outActor);
-
-			if (auto attachment = Cast<AFGBuildable>(outActor))
+			if (IsValid(self) && IsValid(outActor))
 			{
-				HandleExistingSnappedOn(attachment);
+				HGConstruct(self, outActor);
+
+				if (auto attachment = Cast<AFGBuildable>(outActor))
+				{
+					HandleExistingSnappedOn(attachment);
+				}
 			}
 		});
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorAttachmentHologram::IsValidHitResult, bhg, [this](auto& scope, const AFGConveyorAttachmentHologram* self, const FHitResult& hitResult)
 		{
-			if (IsValidHitResult(self, hitResult))
+			if (IsValid(self))
 			{
-				scope.Override(true);
+				if (IsValidHitResult(self, hitResult))
+				{
+					scope.Override(true);
+				}
 			}
 		});
 
 	AFGPipeAttachmentHologram* pahg = GetMutableDefault<AFGPipeAttachmentHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::IsValidHitResult, pahg, [this](auto& scope, const AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
 		{
+			if (!IsValid(self))
+			{
+				return;
+			}
 			if (auto junction = Cast<AFGPipelineJunctionHologram>(self))
 			{
 				AFGBuildable* hitBuildable = nullptr;
@@ -175,15 +198,18 @@ void FDirectToSplitterModule::StartupModule() {
 
 	SUBSCRIBE_METHOD_VIRTUAL(AFGPipeAttachmentHologram::TrySnapToActor, pahg, [this](auto& scope, AFGPipeAttachmentHologram* self, const FHitResult& hitResult)
 		{
-			bool result = (bool)scope(self, hitResult);
-			auto pipeAttachHolo = Cast<AFGPipeAttachmentHologram>(self);
-			auto hg = Cast<AFGHologram>(self);
-			auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
-			if ((!result || contr->IsInputKeyDown(EKeys::LeftShift)) && pipeAttachHolo && hitResult.GetActor())
+			if (IsValid(self))
 			{
-				scope.Override(PipeSnap(pipeAttachHolo, hitResult));
+				bool result = (bool)scope(self, hitResult);
+				auto pipeAttachHolo = Cast<AFGPipeAttachmentHologram>(self);
+				auto hg = Cast<AFGHologram>(self);
+				auto contr = Cast<APlayerController>(hg->GetConstructionInstigator()->GetController());
+				if ((!result || contr->IsInputKeyDown(EKeys::LeftShift)) && pipeAttachHolo && hitResult.GetActor())
+				{
+					scope.Override(PipeSnap(pipeAttachHolo, hitResult));
 
-				return;
+					return;
+				}
 			}
 		});
 
