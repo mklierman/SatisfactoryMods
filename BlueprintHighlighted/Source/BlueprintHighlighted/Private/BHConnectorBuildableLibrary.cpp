@@ -13,7 +13,9 @@
 #include "Buildables/FGBuildableConveyorAttachment.h"
 #include "Buildables/FGBuildableConveyorLift.h"
 #include "Buildables/FGBuildableRailroadTrack.h"
+#include "Buildables/FGBuildableSplitterSmart.h"
 #include "Buildables/FGBuildableWire.h"
+#include "Resources/FGNoneDescriptor.h"
 #include "UObject/UnrealType.h"
 
 namespace
@@ -67,6 +69,194 @@ namespace
 		}
 
 		SavedDirectionsProperty->CopyCompleteValue_InContainer(Copy, Original);
+	}
+
+	void CopySplitterSortRules(AFGBuildable* Original, AFGBuildable* Copy)
+	{
+		AFGBuildableSplitterSmart* OriginalSplitter = Cast<AFGBuildableSplitterSmart>(Original);
+		AFGBuildableSplitterSmart* NewSplitter = Cast<AFGBuildableSplitterSmart>(Copy);
+		if (OriginalSplitter && NewSplitter)
+		{
+			NewSplitter->SetSortRules(OriginalSplitter->GetSortRules());
+		}
+	}
+
+	struct FBalancerProps
+	{
+		FObjectPropertyBase* Leader = nullptr;
+		FArrayProperty* Modules = nullptr;
+		FObjectPropertyBase* Module = nullptr;
+		FArrayProperty* Filters = nullptr;
+		FClassProperty* FilterClass = nullptr;
+		UFunction* SetFilters = nullptr;
+
+		bool IsValid() const
+		{
+			return Leader && Modules && Module && Filters && FilterClass && SetFilters;
+		}
+	};
+
+	FBalancerProps FindBalancerProps(UClass* Class)
+	{
+		FBalancerProps Props;
+		if (!Class)
+		{
+			return Props;
+		}
+
+		Props.Leader = CastField<FObjectPropertyBase>(Class->FindPropertyByName(TEXT("GroupLeader")));
+		Props.Modules = CastField<FArrayProperty>(Class->FindPropertyByName(TEXT("mGroupModules")));
+		Props.Module = Props.Modules ? CastField<FObjectPropertyBase>(Props.Modules->Inner) : nullptr;
+		Props.Filters = CastField<FArrayProperty>(Class->FindPropertyByName(TEXT("mFilteredItems")));
+		Props.FilterClass = Props.Filters ? CastField<FClassProperty>(Props.Filters->Inner) : nullptr;
+		Props.SetFilters = Class->FindFunctionByName(TEXT("SetFilteredItems"));
+		return Props;
+	}
+
+	void AddModule(const FBalancerProps& Props, AFGBuildable* Leader, AFGBuildable* Module)
+	{
+		FScriptArrayHelper Modules(Props.Modules, Props.Modules->ContainerPtrToValuePtr<void>(Leader));
+		for (int32 Index = 0; Index < Modules.Num(); ++Index)
+		{
+			if (Props.Module->GetObjectPropertyValue(Modules.GetRawPtr(Index)) == Module)
+			{
+				return;
+			}
+		}
+
+		Props.Module->SetObjectPropertyValue(Modules.GetRawPtr(Modules.AddValue()), Module);
+	}
+
+	void ApplyFilters(const FBalancerProps& Props, AFGBuildable* Original, AFGBuildable* Copy)
+	{
+		TArray<UClass*> ItemClasses;
+		FScriptArrayHelper Items(Props.Filters, Props.Filters->ContainerPtrToValuePtr<void>(Original));
+		for (int32 Index = 0; Index < Items.Num(); ++Index)
+		{
+			UClass* ItemClass = Cast<UClass>(Props.FilterClass->GetObjectPropertyValue(Items.GetRawPtr(Index)));
+			if (ItemClass && !ItemClass->IsChildOf(UFGNoneDescriptor::StaticClass()))
+			{
+				ItemClasses.Add(ItemClass);
+			}
+		}
+
+		if (ItemClasses.Num() == 0)
+		{
+			return;
+		}
+
+		struct FParams
+		{
+			TArray<TSubclassOf<UFGItemDescriptor>> Items;
+		};
+
+		FParams Params;
+		for (UClass* ItemClass : ItemClasses)
+		{
+			Params.Items.Add(ItemClass);
+		}
+		Copy->ProcessEvent(Props.SetFilters, &Params);
+	}
+
+	bool IsLowerLocation(const FVector& Location, const FVector& Best)
+	{
+		if (Location.X != Best.X)
+		{
+			return Location.X < Best.X;
+		}
+		if (Location.Y != Best.Y)
+		{
+			return Location.Y < Best.Y;
+		}
+		return Location.Z < Best.Z;
+	}
+
+	void CopyLoadBalancerSettings(AFGBuildable* Original, AFGBuildable* Copy)
+	{
+		const FBalancerProps Props = FindBalancerProps(Original->GetClass());
+		if (!Props.IsValid() || Original->GetClass() != Copy->GetClass())
+		{
+			return;
+		}
+
+		AFGBuildable* OriginalLeader = Cast<AFGBuildable>(Props.Leader->GetObjectPropertyValue_InContainer(Original));
+		if (!OriginalLeader)
+		{
+			OriginalLeader = Original;
+		}
+
+		TArray<AFGBuildable*> OriginalMembers;
+		OriginalMembers.Add(OriginalLeader);
+		FScriptArrayHelper LeaderModules(Props.Modules, Props.Modules->ContainerPtrToValuePtr<void>(OriginalLeader));
+		for (int32 Index = 0; Index < LeaderModules.Num(); ++Index)
+		{
+			if (AFGBuildable* Module = Cast<AFGBuildable>(Props.Module->GetObjectPropertyValue(LeaderModules.GetRawPtr(Index))))
+			{
+				OriginalMembers.AddUnique(Module);
+			}
+		}
+
+		const FTransform Delta = Copy->GetActorTransform() * Original->GetActorTransform().Inverse();
+		TArray<TPair<AFGBuildable*, AFGBuildable*>> Copies;
+		Copies.Emplace(Original, Copy);
+
+		if (AFGBuildableSubsystem* Subsystem = AFGBuildableSubsystem::Get(Copy))
+		{
+			for (AFGBuildable* Member : OriginalMembers)
+			{
+				if (!Member || Member == Original)
+				{
+					continue;
+				}
+
+				const FVector ExpectedLocation = (Delta * Member->GetActorTransform()).GetLocation();
+				AFGBuildable* Found = nullptr;
+				float BestDistSq = FMath::Square(5.f);
+				for (AFGBuildable* Buildable : Subsystem->GetAllBuildablesRef())
+				{
+					if (!Buildable || Buildable->GetClass() != Member->GetClass() || OriginalMembers.Contains(Buildable))
+					{
+						continue;
+					}
+
+					const float DistSq = FVector::DistSquared(Buildable->GetActorLocation(), ExpectedLocation);
+					if (DistSq <= BestDistSq)
+					{
+						Found = Buildable;
+						BestDistSq = DistSq;
+					}
+				}
+
+				if (Found)
+				{
+					Copies.Emplace(Member, Found);
+				}
+			}
+		}
+
+		AFGBuildable* NewLeader = Copy;
+		FVector BestLocation = Copy->GetActorLocation();
+		for (const TPair<AFGBuildable*, AFGBuildable*>& Pair : Copies)
+		{
+			const FVector Location = Pair.Value->GetActorLocation();
+			if (IsLowerLocation(Location, BestLocation))
+			{
+				NewLeader = Pair.Value;
+				BestLocation = Location;
+			}
+		}
+
+		const FBalancerProps LeaderProps = FindBalancerProps(NewLeader->GetClass());
+		for (const TPair<AFGBuildable*, AFGBuildable*>& Pair : Copies)
+		{
+			const FBalancerProps MemberProps = FindBalancerProps(Pair.Key->GetClass());
+			FScriptArrayHelper Modules(MemberProps.Modules, MemberProps.Modules->ContainerPtrToValuePtr<void>(Pair.Value));
+			Modules.EmptyValues();
+			MemberProps.Leader->SetObjectPropertyValue_InContainer(Pair.Value, NewLeader);
+			AddModule(LeaderProps, NewLeader, Pair.Value);
+			ApplyFilters(MemberProps, Pair.Key, Pair.Value);
+			Pair.Value->ForceNetUpdate();
+		}
 	}
 }
 
@@ -232,6 +422,17 @@ AFGBuildableWire* UBHConnectorBuildableLibrary::DuplicateWireBetweenNewBuildable
 	NewWire->FinishSpawning(WireToCopy->GetActorTransform());
 
 	return NewWire;
+}
+
+void UBHConnectorBuildableLibrary::CopyBuildableSettings(AFGBuildable* OriginalBuildable, AFGBuildable* NewBuildable)
+{
+	if (!OriginalBuildable || !NewBuildable)
+	{
+		return;
+	}
+
+	CopySplitterSortRules(OriginalBuildable, NewBuildable);
+	CopyLoadBalancerSettings(OriginalBuildable, NewBuildable);
 }
 
 void UBHConnectorBuildableLibrary::SetPotential(AFGBuildableFactory* building, float newPotential)

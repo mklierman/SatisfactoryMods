@@ -67,6 +67,8 @@ public:
 		AFGBuildable* NewBuildable,
 		UPARAM(ref) TMap<AFGBuildable*, AFGBuildable*>& OldToNewBuildables);
 
+	UFUNCTION(BlueprintCallable, Category = "BlueprintHighlighted")
+	static void CopyBuildableSettings(AFGBuildable* OriginalBuildable, AFGBuildable* NewBuildable);
 
 	UFUNCTION(BlueprintCallable, Category = "BlueprintHighlighted")
 	static void SetPotential(AFGBuildableFactory* building, float newPotential);
