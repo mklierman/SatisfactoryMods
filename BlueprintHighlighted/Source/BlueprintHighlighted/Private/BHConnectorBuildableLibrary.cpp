@@ -17,6 +17,7 @@
 #include "Buildables/FGBuildableWire.h"
 #include "Resources/FGNoneDescriptor.h"
 #include "UObject/UnrealType.h"
+#include <Buildables/FGBuildableFactoryBuilding.h>
 
 namespace
 {
@@ -269,6 +270,12 @@ AFGBuildable* UBHConnectorBuildableLibrary::SpawnConnectorBuildableCopy(
 	if (!BuildableToCopy || !BuildableClass)
 	{
 		return nullptr;
+	}
+
+	auto lightweight = Cast< AFGBuildableFactoryBuildingLightweight>(BuildableToCopy);
+	if (lightweight)
+	{
+		return BuildableToCopy;
 	}
 
 	// Wires are AFGBuildable themselves, so they show up in the dismantle-mode selection alongside
