@@ -15,6 +15,15 @@ public:
     UPROPERTY(BlueprintReadWrite)
     float OutlineSize{};
 
+    UPROPERTY(BlueprintReadWrite)
+    bool Bacon{};
+
+    UPROPERTY(BlueprintReadWrite)
+    bool Berry{};
+
+    UPROPERTY(BlueprintReadWrite)
+    bool Nut{};
+
     /* Retrieves active configuration value and returns object of this struct containing it */
     static FOutlineLoot_ConfigurationStruct GetActiveConfig(UObject* WorldContext) {
         FOutlineLoot_ConfigurationStruct ConfigStruct{};

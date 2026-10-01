@@ -4,14 +4,12 @@
 #include "Patching/NativeHookManager.h"
 #include "FGItemPickup.h"
 #include "FGInventoryComponent.h"
-#include <Logging/StructuredLog.h>
 #include "Resources/FGItemDescriptor.h"
 #include "FGItemPickup_Spawnable.h"
 #include <SessionSettings/SessionSettingsManager.h>
 #include <Kismet/GameplayStatics.h>
 
 #define LOCTEXT_NAMESPACE "FOutlineLootModule"
-//DEFINE_LOG_CATEGORY(LogOutlineLoot);
 
 void FOutlineLootModule::StartupModule()
 {
@@ -39,8 +37,6 @@ void FOutlineLootModule::StartupModule()
 	//AFGItemPickup_Spawnable* ips = GetMutableDefault<AFGItemPickup_Spawnable>();
 	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGItemPickup_Spawnable::BeginPlay, ips, [this](AFGItemPickup_Spawnable* self)
 	//	{
-	//		//UE_LOGFMT(LogOutlineLoot, Display, "Pickup Item: {0}", name);
-
 	//		auto component = self->AddComponentByClass(UStaticMeshComponent::StaticClass(), false, FTransform(FRotator(0), FVector(0), FVector(1)), false);
 	//		auto staticMeshComponent = Cast<UStaticMeshComponent>(component);
 	//		staticMeshComponent->SetStaticMesh(self->mMeshComponent->GetStaticMesh());

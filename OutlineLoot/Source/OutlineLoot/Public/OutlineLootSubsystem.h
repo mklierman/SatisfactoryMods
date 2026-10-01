@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,10 +5,6 @@
 #include "FGItemPickup_Spawnable.h"
 #include "OutlineLootSubsystem.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogOutlineLoot, Display, All);
-/**
- * 
- */
 UCLASS()
 class OUTLINELOOT_API AOutlineLootSubsystem : public AModSubsystem
 {
@@ -23,7 +17,7 @@ public:
 	FLinearColor GetColor(AActor* actor);
 	float GetScale(AActor* actor);
 	void ApplyToAll();
-	void ApplySingle(AFGItemPickup_Spawnable* pickup);
+	void ApplySingle(AFGItemPickup* pickup);
 
 	UFUNCTION()
 	void OnColorChanged();
@@ -34,6 +28,10 @@ public:
 	UMaterialInstance* material;
 
 	FDelegateHandle Hook;
+	FDelegateHandle ItemPickupHook;
+	FDelegateHandle VisualsHook;
 	FScriptDelegate colorChanged;
 	FScriptDelegate sizeChanged;
+
+	TSet<TWeakObjectPtr<AFGItemPickup>> InstancedFruitPickups;
 };

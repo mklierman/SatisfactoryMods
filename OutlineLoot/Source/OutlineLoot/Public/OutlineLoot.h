@@ -5,8 +5,6 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 #include "Materials/MaterialInstance.h"
-
-//DECLARE_LOG_CATEGORY_EXTERN(LogOutlineLoot, Display, All);
 class FOutlineLootModule : public IModuleInterface
 {
 public:
