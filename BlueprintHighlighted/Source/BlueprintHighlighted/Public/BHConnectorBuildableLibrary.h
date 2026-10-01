@@ -75,4 +75,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "BlueprintHighlighted", meta = (WorldContext = "WorldContextObject"))
 	static void AllowLiftAttachmentsInBlueprints(UObject* WorldContextObject);
+
+	static void RefreshBuildableInstances(AFGBuildable* Buildable);
 };

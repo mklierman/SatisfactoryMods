@@ -12,6 +12,8 @@
 #include "Buildables/FGBuildable.h"
 #include "Buildables/FGBuildableConveyorAttachment.h"
 #include "Buildables/FGBuildableConveyorLift.h"
+#include "Buildables/FGBuildablePassthrough.h"
+#include "FGConnectionComponent.h"
 #include "Buildables/FGBuildableRailroadTrack.h"
 #include "Buildables/FGBuildableSplitterSmart.h"
 #include "Buildables/FGBuildableWire.h"
@@ -259,6 +261,177 @@ namespace
 			Pair.Value->ForceNetUpdate();
 		}
 	}
+
+	void AssignSnappedConnection(AFGBuildablePassthrough* Hole, bool bBottom, UFGConnectionComponent* Connection)
+	{
+		if (!Hole || !Connection)
+		{
+			return;
+		}
+
+		UFGConnectionComponent* Current = bBottom
+			? Hole->GetBottomSnappedConnection<UFGConnectionComponent>()
+			: Hole->GetTopSnappedConnection<UFGConnectionComponent>();
+		if (Current == Connection)
+		{
+			return;
+		}
+
+		if (bBottom)
+		{
+			Hole->SetBottomSnappedConnection(Connection);
+		}
+		else
+		{
+			Hole->SetTopSnappedConnection(Connection);
+		}
+
+		const FName PropertyName = bBottom ? TEXT("mBottomSnappedConnection") : TEXT("mTopSnappedConnection");
+		if (FObjectPropertyBase* Property = CastField<FObjectPropertyBase>(AFGBuildablePassthrough::StaticClass()->FindPropertyByName(PropertyName)))
+		{
+			Property->SetObjectPropertyValue_InContainer(Hole, Connection);
+		}
+
+		Hole->ForceNetUpdate();
+	}
+
+	void RelinkPassthroughConnections(
+		AFGBuildablePassthrough* OriginalHole,
+		AFGBuildablePassthrough* NewHole,
+		const TMap<AFGBuildable*, AFGBuildable*>& OldToNewBuildables)
+	{
+		UFGConnectionComponent* OriginalConnections[2] = {
+			OriginalHole->GetBottomSnappedConnection<UFGConnectionComponent>(),
+			OriginalHole->GetTopSnappedConnection<UFGConnectionComponent>(),
+		};
+
+		for (int32 Index = 0; Index < 2; ++Index)
+		{
+			UFGConnectionComponent* OriginalConnection = OriginalConnections[Index];
+			if (!OriginalConnection)
+			{
+				continue;
+			}
+
+			AFGBuildable* OldOwner = Cast<AFGBuildable>(OriginalConnection->GetOwner());
+			AFGBuildable* const* NewOwner = OldToNewBuildables.Find(OldOwner);
+			if (!NewOwner || !*NewOwner)
+			{
+				continue;
+			}
+
+			UFGConnectionComponent* NewConnection = FindMatchingComponentByName(*NewOwner, OriginalConnection);
+			AssignSnappedConnection(NewHole, Index == 0, NewConnection);
+		}
+	}
+
+	void SetLiftSnappedPassthroughs(AFGBuildableConveyorLift* Lift, const TArray<AFGBuildablePassthrough*>& Passthroughs)
+	{
+		FArrayProperty* Property = CastField<FArrayProperty>(AFGBuildableConveyorLift::StaticClass()->FindPropertyByName(TEXT("mSnappedPassthroughs")));
+		FObjectPropertyBase* Inner = Property ? CastField<FObjectPropertyBase>(Property->Inner) : nullptr;
+		if (!Property || !Inner)
+		{
+			return;
+		}
+
+		FScriptArrayHelper Array(Property, Property->ContainerPtrToValuePtr<void>(Lift));
+		Array.EmptyValues();
+		for (AFGBuildablePassthrough* Passthrough : Passthroughs)
+		{
+			Inner->SetObjectPropertyValue(Array.GetRawPtr(Array.AddValue()), Passthrough);
+		}
+
+		UBHConnectorBuildableLibrary::RefreshBuildableInstances(Lift);
+		if (UFunction* OnRep = AFGBuildableConveyorLift::StaticClass()->FindFunctionByName(TEXT("OnRep_SnappedPassthroughs")))
+		{
+			Lift->ProcessEvent(OnRep, nullptr);
+		}
+		Lift->ForceNetUpdate();
+	}
+
+	void ReconnectConveyorLiftPassthroughs(
+		AFGBuildableConveyorLift* OriginalLift,
+		AFGBuildableConveyorLift* NewLift,
+		const TMap<AFGBuildable*, AFGBuildable*>& OldToNewBuildables)
+	{
+		const TArray<AFGBuildablePassthrough*> OriginalHoles = OriginalLift->GetSnappedPassthroughs();
+		if (OriginalHoles.Num() == 0)
+		{
+			return;
+		}
+
+		TArray<AFGBuildablePassthrough*> NewHoles;
+		NewHoles.SetNumZeroed(FMath::Max(OriginalHoles.Num(), 2));
+
+		bool bMappedAny = false;
+		for (int32 Index = 0; Index < OriginalHoles.Num(); ++Index)
+		{
+			AFGBuildablePassthrough* OriginalHole = OriginalHoles[Index];
+			if (!OriginalHole)
+			{
+				continue;
+			}
+
+			AFGBuildable* const* MappedHole = OldToNewBuildables.Find(OriginalHole);
+			if (!MappedHole)
+			{
+				continue;
+			}
+
+			AFGBuildablePassthrough* NewHole = Cast<AFGBuildablePassthrough>(*MappedHole);
+			if (!NewHole)
+			{
+				continue;
+			}
+
+			NewHoles[Index] = NewHole;
+			bMappedAny = true;
+			RelinkPassthroughConnections(OriginalHole, NewHole, OldToNewBuildables);
+		}
+
+		if (!bMappedAny || NewLift->GetSnappedPassthroughs() == NewHoles)
+		{
+			return;
+		}
+
+		SetLiftSnappedPassthroughs(NewLift, NewHoles);
+	}
+
+	void ReconnectPassthroughSnaps(
+		AFGBuildable* OriginalBuildable,
+		const TMap<AFGBuildable*, AFGBuildable*>& OldToNewBuildables)
+	{
+		if (AFGBuildableConveyorLift* OriginalLift = Cast<AFGBuildableConveyorLift>(OriginalBuildable))
+		{
+			AFGBuildable* const* MappedLift = OldToNewBuildables.Find(OriginalLift);
+			if (AFGBuildableConveyorLift* NewLift = MappedLift ? Cast<AFGBuildableConveyorLift>(*MappedLift) : nullptr)
+			{
+				ReconnectConveyorLiftPassthroughs(OriginalLift, NewLift, OldToNewBuildables);
+			}
+			return;
+		}
+
+		AFGBuildablePassthrough* OriginalHole = Cast<AFGBuildablePassthrough>(OriginalBuildable);
+		if (!OriginalHole)
+		{
+			return;
+		}
+
+		for (const TPair<AFGBuildable*, AFGBuildable*>& Pair : OldToNewBuildables)
+		{
+			AFGBuildableConveyorLift* OriginalLift = Cast<AFGBuildableConveyorLift>(Pair.Key);
+			AFGBuildableConveyorLift* NewLift = Cast<AFGBuildableConveyorLift>(Pair.Value);
+			if (!OriginalLift || !NewLift)
+			{
+				continue;
+			}
+
+			if (OriginalLift->GetSnappedPassthroughs().Contains(OriginalHole))
+			{
+				ReconnectConveyorLiftPassthroughs(OriginalLift, NewLift, OldToNewBuildables);
+			}
+		}
+	}
 }
 
 AFGBuildable* UBHConnectorBuildableLibrary::SpawnConnectorBuildableCopy(
@@ -368,6 +541,14 @@ AFGBuildable* UBHConnectorBuildableLibrary::SpawnConnectorBuildableCopy(
 		}
 	}
 
+	if (AFGBuildablePassthroughBase* OriginalPassthrough = Cast<AFGBuildablePassthroughBase>(BuildableToCopy))
+	{
+		if (AFGBuildablePassthroughBase* NewPassthrough = Cast<AFGBuildablePassthroughBase>(NewBuildable))
+		{
+			NewPassthrough->SetSnappedBuildingThickness_BeforeBeginPlay(OriginalPassthrough->GetSnappedBuildingThickness());
+		}
+	}
+
 	NewBuildable->FinishSpawning(Transform);
 
 	// This is the same hook the blueprint subsystem calls after loading a saved blueprint - it
@@ -429,6 +610,17 @@ AFGBuildableWire* UBHConnectorBuildableLibrary::DuplicateWireBetweenNewBuildable
 	NewWire->FinishSpawning(WireToCopy->GetActorTransform());
 
 	return NewWire;
+}
+
+void UBHConnectorBuildableLibrary::RefreshBuildableInstances(AFGBuildable* Buildable)
+{
+	if (!Buildable)
+	{
+		return;
+	}
+
+	Buildable->RemoveInstances();
+	Buildable->CallSetupInstances(false);
 }
 
 void UBHConnectorBuildableLibrary::CopyBuildableSettings(AFGBuildable* OriginalBuildable, AFGBuildable* NewBuildable)
@@ -565,4 +757,6 @@ void UBHConnectorBuildableLibrary::ReconnectSpawnedBuildable(
 			}
 		}
 	}
+
+	ReconnectPassthroughSnaps(OriginalBuildable, OldToNewBuildables);
 }
