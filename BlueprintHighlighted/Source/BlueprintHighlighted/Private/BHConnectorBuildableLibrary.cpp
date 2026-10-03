@@ -1,6 +1,8 @@
 #include "BHConnectorBuildableLibrary.h"
 
+#include "Equipment/FGBuildGunDismantle.h"
 #include "FGBuildableSubsystem.h"
+#include "Patching/NativeHookManager.h"
 #include "FGBlueprintSubsystem.h"
 #include "FGRecipeManager.h"
 #include "FGRecipe.h"
@@ -20,6 +22,8 @@
 #include "Resources/FGNoneDescriptor.h"
 #include "UObject/UnrealType.h"
 #include <Buildables/FGBuildableFactoryBuilding.h>
+#include "Buildables/FGBuildablePole.h"
+#include "FGBuildablePolePipe.h"
 
 namespace
 {
@@ -432,6 +436,54 @@ namespace
 			}
 		}
 	}
+
+	void CopySnapTransform(UFGConnectionComponent* OriginalSnap, UFGConnectionComponent* NewSnap)
+	{
+		if (!OriginalSnap || !NewSnap)
+		{
+			return;
+		}
+
+		NewSnap->SetRelativeTransform(OriginalSnap->GetRelativeTransform());
+	}
+
+	void CopyPoleHeight(AFGBuildable* OriginalBuildable, AFGBuildable* NewBuildable)
+	{
+		AFGBuildablePole* OriginalPole = Cast<AFGBuildablePole>(OriginalBuildable);
+		AFGBuildablePole* NewPole = Cast<AFGBuildablePole>(NewBuildable);
+		if (!OriginalPole || !NewPole)
+		{
+			return;
+		}
+
+		AFGBuildablePolePipe* OriginalPipePole = Cast<AFGBuildablePolePipe>(OriginalPole);
+		AFGBuildablePolePipe* NewPipePole = Cast<AFGBuildablePolePipe>(NewPole);
+		const float VerticalAngle = OriginalPipePole ? OriginalPipePole->mVerticalAngle : 0.f;
+		const bool bAngleMatches = !OriginalPipePole || !NewPipePole || NewPipePole->mVerticalAngle == VerticalAngle;
+		if (NewPole->mHeight == OriginalPole->mHeight && NewPole->mSelectedPoleVersion == OriginalPole->mSelectedPoleVersion && bAngleMatches)
+		{
+			return;
+		}
+
+		NewPole->SetPoleHeight(OriginalPole->mHeight);
+		NewPole->mSelectedPoleVersion = OriginalPole->mSelectedPoleVersion;
+
+		if (OriginalPipePole && NewPipePole)
+		{
+			NewPipePole->SetVerticalAngle(VerticalAngle);
+			NewPipePole->mVerticalAngle = VerticalAngle;
+		}
+
+		CopySnapTransform(OriginalPole->mSnapOnly0, NewPole->mSnapOnly0);
+
+		if (NewPole->HasActorBegunPlay())
+		{
+			UBHConnectorBuildableLibrary::RefreshBuildableInstances(NewPole);
+			CopySnapTransform(OriginalPole->mSnapOnly0, NewPole->mSnapOnly0);
+		}
+
+		NewPole->ForceNetUpdate();
+	}
 }
 
 AFGBuildable* UBHConnectorBuildableLibrary::SpawnConnectorBuildableCopy(
@@ -619,7 +671,7 @@ void UBHConnectorBuildableLibrary::RefreshBuildableInstances(AFGBuildable* Build
 		return;
 	}
 
-	Buildable->RemoveInstances();
+	Buildable->Internal_CallRemoveInstances();
 	Buildable->CallSetupInstances(false);
 }
 
@@ -632,6 +684,7 @@ void UBHConnectorBuildableLibrary::CopyBuildableSettings(AFGBuildable* OriginalB
 
 	CopySplitterSortRules(OriginalBuildable, NewBuildable);
 	CopyLoadBalancerSettings(OriginalBuildable, NewBuildable);
+	CopyPoleHeight(OriginalBuildable, NewBuildable);
 }
 
 void UBHConnectorBuildableLibrary::SetPotential(AFGBuildableFactory* building, float newPotential)
@@ -673,6 +726,8 @@ void UBHConnectorBuildableLibrary::ReconnectSpawnedBuildable(
 	{
 		return;
 	}
+
+	CopyPoleHeight(OriginalBuildable, NewBuildable);
 
 	OldToNewBuildables.Add(OriginalBuildable, NewBuildable);
 
@@ -759,4 +814,148 @@ void UBHConnectorBuildableLibrary::ReconnectSpawnedBuildable(
 	}
 
 	ReconnectPassthroughSnaps(OriginalBuildable, OldToNewBuildables);
+}
+
+namespace
+{
+	struct FFirstDismantleHighlight
+	{
+		TWeakObjectPtr<AActor> Actor;
+		bool bSeenInSelection = false;
+	};
+
+	TMap<TWeakObjectPtr<UFGBuildGunStateDismantle>, FFirstDismantleHighlight> GFirstDismantleHighlight;
+
+	bool IsInDismantleSelection(const UFGBuildGunStateDismantle* State, AActor* Actor)
+	{
+		return State && Actor && (State->mPendingDismantleActors.Contains(Actor) || State->mCurrentlySelectedActor == Actor);
+	}
+
+	void ForgetFirstDismantleHighlight(UFGBuildGunStateDismantle* State)
+	{
+		if (State)
+		{
+			GFirstDismantleHighlight.Remove(State);
+		}
+	}
+
+	void RememberFirstDismantleHighlight(UFGBuildGunStateDismantle* State, AActor* Actor)
+	{
+		if (!State || !Actor)
+		{
+			return;
+		}
+
+		FFirstDismantleHighlight& First = GFirstDismantleHighlight.FindOrAdd(State);
+		if (First.Actor.IsValid())
+		{
+			return;
+		}
+
+		First.Actor = Actor;
+		First.bSeenInSelection = IsInDismantleSelection(State, Actor);
+	}
+
+	void UpdateFirstDismantleHighlight(UFGBuildGunStateDismantle* State)
+	{
+		if (!State)
+		{
+			return;
+		}
+
+		if (State->mPendingDismantleActors.Num() == 0 && State->mCurrentlySelectedActor == nullptr)
+		{
+			ForgetFirstDismantleHighlight(State);
+			return;
+		}
+
+		FFirstDismantleHighlight* First = GFirstDismantleHighlight.Find(State);
+		AActor* Actor = First ? First->Actor.Get() : nullptr;
+		if (!Actor)
+		{
+			return;
+		}
+
+		if (IsInDismantleSelection(State, Actor))
+		{
+			First->bSeenInSelection = true;
+		}
+		else if (First->bSeenInSelection)
+		{
+			ForgetFirstDismantleHighlight(State);
+		}
+	}
+}
+
+AActor* UBHConnectorBuildableLibrary::GetFirstHighlightedDismantleActor(UFGBuildGunStateDismantle* DismantleState)
+{
+	if (!DismantleState)
+	{
+		return nullptr;
+	}
+
+	if (const FFirstDismantleHighlight* First = GFirstDismantleHighlight.Find(DismantleState))
+	{
+		if (AActor* Actor = First->Actor.Get())
+		{
+			if (!First->bSeenInSelection || IsInDismantleSelection(DismantleState, Actor))
+			{
+				return Actor;
+			}
+		}
+	}
+
+	if (DismantleState->mPendingDismantleActors.Num() > 0)
+	{
+		return DismantleState->mPendingDismantleActors[0];
+	}
+
+	return DismantleState->mCurrentlySelectedActor;
+}
+
+void UBHConnectorBuildableLibrary::InstallDismantleHighlightTracking()
+{
+#if !WITH_EDITOR
+	static bool bInstalled = false;
+	if (bInstalled)
+	{
+		return;
+	}
+	bInstalled = true;
+
+	SUBSCRIBE_METHOD(UFGBuildGunStateDismantle::SetAimedAtActor, [](auto& Scope, UFGBuildGunStateDismantle* Self, AActor* Selected)
+	{
+		(void)Scope;
+		if (!Self || !Selected || !Self->mIsMultiSelectActive)
+		{
+			return;
+		}
+
+		RememberFirstDismantleHighlight(Self, Selected);
+	});
+
+	SUBSCRIBE_METHOD_AFTER(UFGBuildGunStateDismantle::AddPendingDismantleActor, [](UFGBuildGunStateDismantle* Self, AActor* Selected)
+	{
+		if (Self && Selected && !GFirstDismantleHighlight.Contains(Self))
+		{
+			RememberFirstDismantleHighlight(Self, Selected);
+		}
+		UpdateFirstDismantleHighlight(Self);
+	});
+
+	SUBSCRIBE_METHOD_AFTER(UFGBuildGunStateDismantle::ClearPendingSelectedActors, [](UFGBuildGunStateDismantle* Self)
+	{
+		ForgetFirstDismantleHighlight(Self);
+	});
+
+	UFGBuildGunStateDismantle* DismantleCDO = GetMutableDefault<UFGBuildGunStateDismantle>();
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(UFGBuildGunStateDismantle::BeginState_Implementation, DismantleCDO, [](UFGBuildGunStateDismantle* Self)
+	{
+		ForgetFirstDismantleHighlight(Self);
+	});
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(UFGBuildGunStateDismantle::EndState_Implementation, DismantleCDO, [](UFGBuildGunStateDismantle* Self)
+	{
+		ForgetFirstDismantleHighlight(Self);
+	});
+#endif
 }

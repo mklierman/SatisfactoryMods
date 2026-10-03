@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Buildables/FGBuildableFactory.h"
+#include "Equipment/FGBuildGunDismantle.h"
 #include "BHConnectorBuildableLibrary.generated.h"
 
 class AFGBuildable;
@@ -75,6 +76,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "BlueprintHighlighted", meta = (WorldContext = "WorldContextObject"))
 	static void AllowLiftAttachmentsInBlueprints(UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintCallable, Category = "BlueprintHighlighted")
+	static AActor* GetFirstHighlightedDismantleActor(UFGBuildGunStateDismantle* DismantleState);
+
+	static void InstallDismantleHighlightTracking();
 
 	static void RefreshBuildableInstances(AFGBuildable* Buildable);
 };
