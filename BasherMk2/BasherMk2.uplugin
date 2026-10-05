@@ -2,14 +2,14 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0.0",
-	"FriendlyName": "BasherMk2",
-	"Description": "",
+	"FriendlyName": "Xeno Basher Mk 2",
+	"Description": "A more powerful Xeno Basher",
 	"Category": "Modding",
 	"CreatedBy": "SirDigby",
-	"CreatedByURL": "",
+	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
 	"DocsURL": "",
 	"MarketplaceURL": "",
-	"SupportURL": "",
+	"SupportURL": "https://discord.gg/WM5KT7pVu8",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
@@ -23,5 +23,12 @@
 		}
 	],
 	"SemVersion": "1.0.0",
-	"GameVersion": ">=491125"
+	"GameVersion": ">=502094",
+	"Modules": [
+		{
+			"Name": "BasherMk2",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
 }
