@@ -13,7 +13,7 @@ namespace
 
 	bool IsOutlineComponent(const UActorComponent* component)
 	{
-		return component && (component->ComponentHasTag(OutlineLootTag) || component->GetName().StartsWith(TEXT("OutlineLoot")));
+		return component && (component->ComponentHasTag(OutlineLootTag) || component->GetName().StartsWith(TEXT("OutlineLoot")) || component->GetName().StartsWith(TEXT("OutlineStaticMesh")));
 	}
 
 	bool IsInstancedFruit(const UStaticMeshComponent* component)
@@ -106,6 +106,10 @@ namespace
 		{
 			return FOutlineLoot_ConfigurationStruct::GetActiveConfig(pickup).Nut;
 		}
+		if (itemName == TEXT("Desc_Shroom_C"))
+		{
+			return FOutlineLoot_ConfigurationStruct::GetActiveConfig(pickup).Bacon;
+		}
 		return true;
 	}
 
@@ -141,6 +145,10 @@ void AOutlineLootSubsystem::BeginPlay()
 	auto section = ConfigManager->GetConfigurationRootSection(configId);
 	auto colorSection = section->SectionProperties["OutlineColor"];
 	auto scaleSection = section->SectionProperties["OutlineSize"];
+	lootOptionsChanged.BindUFunction(this, FName("OnLootOptionsChanged"));
+	section->SectionProperties["Bacon"]->OnPropertyValueChanged.AddUnique(lootOptionsChanged);
+	section->SectionProperties["Berry"]->OnPropertyValueChanged.AddUnique(lootOptionsChanged);
+	section->SectionProperties["Nut"]->OnPropertyValueChanged.AddUnique(lootOptionsChanged);
 	colorChanged.BindUFunction(this, FName("OnColorChanged"));
 	sizeChanged.BindUFunction(this, FName("OnSizeChanged"));
 	colorSection->OnPropertyValueChanged.AddUnique(colorChanged);
@@ -373,6 +381,11 @@ void AOutlineLootSubsystem::OnColorChanged()
 }
 
 void AOutlineLootSubsystem::OnSizeChanged()
+{
+	ApplyToAll();
+}
+
+void AOutlineLootSubsystem::OnLootOptionsChanged()
 {
 	ApplyToAll();
 }

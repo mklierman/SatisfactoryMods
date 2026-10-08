@@ -25,6 +25,9 @@ public:
 	UFUNCTION()
 	void OnSizeChanged();
 
+	UFUNCTION()
+	void OnLootOptionsChanged();
+
 	UMaterialInstance* material;
 
 	FDelegateHandle Hook;
@@ -32,6 +35,7 @@ public:
 	FDelegateHandle VisualsHook;
 	FScriptDelegate colorChanged;
 	FScriptDelegate sizeChanged;
+	FScriptDelegate lootOptionsChanged;
 
 	TSet<TWeakObjectPtr<AFGItemPickup>> InstancedFruitPickups;
 };
