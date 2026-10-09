@@ -1,32 +1,33 @@
 {
-  "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "1.1.0",
-  "SemVersion": "1.1.0",
-  "FriendlyName": "Expanded Hover Range",
-  "Description": "Higher tier Power Poles give the Hover Pack a larger range",
-  "Category": "Modding",
-  "CreatedBy": "SirDigby",
+	"FileVersion": 3,
+	"Version": 2,
+	"VersionName": "2.0.0",
+	"SemVersion": "2.0.0",
+	"FriendlyName": "Expanded Hover Range",
+	"Description": "Higher tier Power Poles give the Hover Pack a larger range",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
 	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
-  	"DocsURL": "",
-  	"MarketplaceURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
 	"SupportURL": "https://discord.gg/WM5KT7pVu8",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "IsExperimentalVersion": false,
-  "Installed": false,
-  "Plugins": [
-    {
-      "Name": "SML",
-      "Enabled": true,
-      "SemVersion": "^3.12.0"
-    }
-  ],
-  "Modules": [
-    {
-      "Name": "HoverPackPoleRange",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ]
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Plugins": [
+		{
+			"Name": "SML",
+			"Enabled": true,
+			"SemVersion": "^3.12.0"
+		}
+	],
+	"Modules": [
+		{
+			"Name": "HoverPackPoleRange",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"GameVersion": ">=502094"
 }

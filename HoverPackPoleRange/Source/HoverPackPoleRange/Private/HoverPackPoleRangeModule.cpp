@@ -1,277 +1,279 @@
 #include "HoverPackPoleRangeModule.h"
+#include "Buildables/FGBuildablePowerPole.h"
+#include "Buildables/FGBuildableRailroadTrack.h"
+#include "Equipment/FGHoverPack.h"
+#include "FGBuildableSubsystem.h"
+#include "FGPowerConnectionComponent.h"
+#include "Patching/NativeHookManager.h"
+#include "SessionSettings/SessionSettingsManager.h"
 
-DEFINE_LOG_CATEGORY(HoverPackPoleRange_Log);
+static constexpr int32 Mk2ConnectionCount = 7;
+static constexpr int32 Mk3ConnectionCount = 10;
 
-#pragma optimize("", off)
+static const FString Mk1SettingId = TEXT("HoverPackPoleRange.Mk1");
+static const FString Mk2SettingId = TEXT("HoverPackPoleRange.Mk2");
+static const FString Mk3SettingId = TEXT("HoverPackPoleRange.Mk3");
+static const FString RailSettingId = TEXT("HoverPackPoleRange.Rail");
+static const FString ElseSettingId = TEXT("HoverPackPoleRange.Else");
 
-void FHoverPackPoleRangeModule::Loggit(FString myString)
+float FHoverPackPoleRangeModule::GetScaledRange(AFGHoverPack* hoverPack, UFGPowerConnectionComponent* powerConnection, AFGBuildableRailroadTrack* railroadTrack, const float nativeSearchRadius) const
 {
-	if (debugLogging)
+	const FString* settingId = &Mk1SettingId;
+
+	if (IsValid(railroadTrack))
 	{
-		UE_LOG(HoverPackPoleRange_Log, Display, TEXT("%s"), *myString);
+		settingId = &RailSettingId;
 	}
-}
-
-void FHoverPackPoleRangeModule::FindNearestConnection(AFGHoverPack* self)
-{
-	UClass* pcc = UFGPowerConnectionComponent::StaticClass();
-	TArray< UFGPowerConnectionComponent*> PossibleConnectionComponents;
-
-	// Trace multi for static in a sphere based on range
-	//FCollisionShape MySphere = FCollisionShape::MakeSphere(500.0f); // 5M Radius
-	//ECollisionChannel TraceChannel = ECollisionChannel::ECC_WorldStatic;
-	//self->GetWorld()->SweepMultiByChannel(OutResults, self->GetActorLocation() , self->GetActorLocation(), FQuat::Identity, TraceChannel, MySphere);
-
-
-	TArray<FHitResult> OutResults;
-	TArray<AActor*> OutActors;
-	TArray<UPrimitiveComponent*> OutComponents;
-	TArray<AActor*> ActorsToIgnore;
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
-	ObjectTypesArray.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
-	bool traceHit = UKismetSystemLibrary::SphereTraceMultiForObjects(self->GetWorld(), self->GetActorLocation(), self->GetActorLocation(), 500.0f, ObjectTypesArray, false, ActorsToIgnore, EDrawDebugTrace::None, OutResults, true);
-	
-	// Pick out power connection components, making sure to go through abstract instance managers
-	if (traceHit)
+	else if (IsValid(powerConnection))
 	{
-		for (auto hit : OutResults)
+		if (const AFGBuildablePowerPole* powerPole = Cast<AFGBuildablePowerPole>(powerConnection->GetOwner()))
 		{
-			if (hit.GetActor())
+			if (powerPole->GetPowerPoleType() == EPowerPoleType::PPT_TOWER)
 			{
-				auto hitBuildable = Cast<AFGBuildable>(hit.GetActor());
-				if (hitBuildable)
-				{
-					UFGPowerConnectionComponent* comp = GetBuildablePowerConnectionComponent(hitBuildable);
-					if (comp)
-					{
-						PossibleConnectionComponents.Add(comp);
-						continue;
-					}
-				}
-
-				auto hitInstanceMgr = Cast<AAbstractInstanceManager>(hit.GetActor());
-				if (hitInstanceMgr)
-				{
-					FInstanceHandle outHandle;
-					auto hitResolved = hitInstanceMgr->ResolveHit(hit, outHandle);
-					if (hitResolved)
-					{
-						if (outHandle.GetOwner())
-						{
-							auto handleBuildable = Cast<AFGBuildable>(outHandle.GetOwner());
-							if (handleBuildable)
-							{
-								UFGPowerConnectionComponent* comp2 = GetBuildablePowerConnectionComponent(handleBuildable);
-								if (comp2)
-								{
-									PossibleConnectionComponents.Add(comp2);
-								}
-							}
-						}
-					}
-				}
-
-				auto hitRail = Cast<AFGBuildableRailroadTrack>(hit.GetActor());
-				if (hitRail)
-				{
-					auto railPower = hitRail->GetThirdRail();
-					if (railPower)
-					{
-						PossibleConnectionComponents.Add(railPower);
-					}
-				}
+				settingId = &ElseSettingId;
+			}
+			else if (powerConnection->GetMaxNumConnections() >= Mk3ConnectionCount)
+			{
+				settingId = &Mk3SettingId;
+			}
+			else if (powerConnection->GetMaxNumConnections() >= Mk2ConnectionCount)
+			{
+				settingId = &Mk2SettingId;
 			}
 		}
-
-		for (auto possibility : PossibleConnectionComponents)
+		else
 		{
-			auto owner = possibility->GetOwner();
+			settingId = &ElseSettingId;
 		}
 	}
 
+	const UWorld* world = hoverPack->GetWorld();
+	const USessionSettingsManager* sessionSettings = nullptr;
+	if (IsValid(world))
+	{
+		sessionSettings = world->GetSubsystem<USessionSettingsManager>();
+	}
 
-	// Trace multi for static in a sphere based on range
+	const bool bSettingRegistered = IsValid(sessionSettings) && sessionSettings->FindSessionSetting(*settingId) != nullptr;
+	float percentageIncrease = 0.0f;
+	if (bSettingRegistered)
+	{
+		percentageIncrease = FMath::Max(0.0f, sessionSettings->GetFloatOptionValue(*settingId));
+	}
 
-	// Pick out power connection components, making sure to go through abstract instance managers
-	
-	// Filter out connections that aren't powered
-
-	// Sort connections by type (mk1, mk2, etc)
-
-	// Starting with highest range type, get distances to connections
-
-	// If any of the found connections have a larger radius than our current remaining radius, store it and break out
-
-	// If not, continue searching through remaining types
-
-	// Do the same for rails
-
-	// If there is a found connection that is better than our current one, add hidden connection to it
+	const float rangeMultiplier = 1.0f + percentageIncrease / 100.0f;
+	return nativeSearchRadius * rangeMultiplier;
 }
 
-UFGPowerConnectionComponent* FHoverPackPoleRangeModule::GetBuildablePowerConnectionComponent(AFGBuildable* hitBuildable)
+void FHoverPackPoleRangeModule::UpdateSearchRadius(AFGHoverPack* hoverPack)
 {
-	if (hitBuildable)
+	if (!IsValid(hoverPack))
 	{
-		auto components = hitBuildable->GetComponents();
-		if (components.Num() > 0)
+		return;
+	}
+
+	const float previousRadius = hoverPack->mPowerConnectionSearchRadius;
+	const TWeakObjectPtr<AFGHoverPack> hoverPackKey(hoverPack);
+	FHoverPackRangeState* state = mRangeStates.Find(hoverPackKey);
+	if (!state)
+	{
+		FHoverPackRangeState initialState;
+		initialState.nativeSearchRadius = previousRadius;
+		initialState.lastAppliedSearchRadius = previousRadius;
+		state = &mRangeStates.Add(hoverPackKey, initialState);
+	}
+	else if (!FMath::IsNearlyEqual(previousRadius, state->lastAppliedSearchRadius))
+	{
+		state->nativeSearchRadius = previousRadius;
+	}
+
+	const float newRadius = GetScaledRange(
+		hoverPack,
+		hoverPack->GetCurrentPowerConnection(),
+		hoverPack->GetCurrentRailroadTrack(),
+		state->nativeSearchRadius);
+	hoverPack->mPowerConnectionSearchRadius = newRadius;
+	state->lastAppliedSearchRadius = newRadius;
+}
+
+bool FHoverPackPoleRangeModule::TryConnectToBestPowerConnection(AFGHoverPack* hoverPack)
+{
+	if (!IsValid(hoverPack))
+	{
+		return false;
+	}
+
+	const TWeakObjectPtr<AFGHoverPack> hoverPackKey(hoverPack);
+	const FHoverPackRangeState* state = mRangeStates.Find(hoverPackKey);
+	if (!state || state->nativeSearchRadius <= 0.0f)
+	{
+		return false;
+	}
+
+	const FVector hoverPackLocation = hoverPack->GetActorLocation();
+	auto getTrackDistance = [&hoverPackLocation](AFGBuildableRailroadTrack* track)
 		{
-			for (auto component : components)
+			const FRailroadTrackPosition trackPosition = track->FindTrackPositionClosestToWorldLocation(hoverPackLocation);
+			FVector trackLocation;
+			FVector trackDirection;
+			track->GetWorldLocationAndDirectionAtPosition(trackPosition, trackLocation, trackDirection);
+			return FVector::Distance(hoverPackLocation, trackLocation);
+		};
+
+	UFGPowerConnectionComponent* currentConnection = hoverPack->GetCurrentPowerConnection();
+	AFGBuildableRailroadTrack* currentTrack = hoverPack->GetCurrentRailroadTrack();
+	if (IsValid(currentTrack))
+	{
+		UFGPowerConnectionComponent* thirdRail = currentTrack->GetThirdRail();
+		const float currentRange = GetScaledRange(hoverPack, thirdRail, currentTrack, state->nativeSearchRadius);
+		if (IsValid(thirdRail) && thirdRail->HasPower() && getTrackDistance(currentTrack) <= currentRange)
+		{
+			return true;
+		}
+	}
+	else if (IsValid(currentConnection))
+	{
+		const float currentRange = GetScaledRange(hoverPack, currentConnection, nullptr, state->nativeSearchRadius);
+		const float currentDistance = FVector::Distance(hoverPackLocation, currentConnection->GetComponentLocation());
+		if (currentConnection->HasPower() && currentDistance <= currentRange)
+		{
+			return true;
+		}
+	}
+
+	const UWorld* world = hoverPack->GetWorld();
+	const USessionSettingsManager* sessionSettings = nullptr;
+	if (IsValid(world))
+	{
+		sessionSettings = world->GetSubsystem<USessionSettingsManager>();
+	}
+
+	if (!IsValid(sessionSettings))
+	{
+		return false;
+	}
+
+	float maximumPercentageIncrease = 0.0f;
+	for (const FString* settingId : {&Mk1SettingId, &Mk2SettingId, &Mk3SettingId, &RailSettingId, &ElseSettingId})
+	{
+		if (sessionSettings->FindSessionSetting(*settingId))
+		{
+			maximumPercentageIncrease = FMath::Max(
+				maximumPercentageIncrease,
+				FMath::Max(0.0f, sessionSettings->GetFloatOptionValue(*settingId)));
+		}
+	}
+	const float maximumSearchRadius = state->nativeSearchRadius * (1.0f + maximumPercentageIncrease / 100.0f);
+
+	AFGBuildableSubsystem* buildableSubsystem = AFGBuildableSubsystem::Get(hoverPack);
+	if (!IsValid(buildableSubsystem))
+	{
+		return false;
+	}
+
+	TArray<AFGBuildable*> nearbyBuildables;
+	buildableSubsystem->GetNearestBuildables(nearbyBuildables, hoverPackLocation, maximumSearchRadius);
+
+	UFGPowerConnectionComponent* bestConnection = nullptr;
+	AFGBuildableRailroadTrack* bestTrack = nullptr;
+	float bestRemainingReach = -1.0f;
+
+	for (AFGBuildable* buildable : nearbyBuildables)
+	{
+		if (!IsValid(buildable))
+		{
+			continue;
+		}
+
+		if (AFGBuildableRailroadTrack* track = Cast<AFGBuildableRailroadTrack>(buildable))
+		{
+			UFGPowerConnectionComponent* thirdRail = track->GetThirdRail();
+			if (!IsValid(thirdRail) || !thirdRail->HasPower())
 			{
-				UFGPowerConnectionComponent* pccomp = Cast< UFGPowerConnectionComponent>(component);
-				if (pccomp && pccomp->HasPower())
-				{
-					return pccomp; //We don't care if there are other powered components since they will be at the same location
-				}
+				continue;
+			}
+
+			const float candidateRange = GetScaledRange(hoverPack, thirdRail, track, state->nativeSearchRadius);
+			const float candidateDistance = getTrackDistance(track);
+			const float remainingReach = candidateRange - candidateDistance;
+			if (remainingReach >= 0.0f && remainingReach > bestRemainingReach)
+			{
+				bestConnection = thirdRail;
+				bestTrack = track;
+				bestRemainingReach = remainingReach;
+			}
+			continue;
+		}
+
+		TInlineComponentArray<UFGPowerConnectionComponent*> powerConnections;
+		buildable->GetComponents(powerConnections);
+		for (UFGPowerConnectionComponent* candidateConnection : powerConnections)
+		{
+			if (!IsValid(candidateConnection) || !candidateConnection->HasPower())
+			{
+				continue;
+			}
+
+			const float candidateRange = GetScaledRange(hoverPack, candidateConnection, nullptr, state->nativeSearchRadius);
+			const float candidateDistance = FVector::Distance(hoverPackLocation, candidateConnection->GetComponentLocation());
+			const float remainingReach = candidateRange - candidateDistance;
+			if (remainingReach >= 0.0f && remainingReach > bestRemainingReach)
+			{
+				bestConnection = candidateConnection;
+				bestTrack = nullptr;
+				bestRemainingReach = remainingReach;
 			}
 		}
 	}
-	return nullptr;
+
+	if (!IsValid(bestConnection))
+	{
+		return false;
+	}
+
+	hoverPack->ConnectToPowerConnection(bestConnection, bestTrack);
+	return true;
 }
 
-void FHoverPackPoleRangeModule::StartupModule() {
-	//debugLogging = true;
-
+void FHoverPackPoleRangeModule::StartupModule()
+{
 #if !WITH_EDITOR
-	AFGGameMode* LocalGameMode = GetMutableDefault<AFGGameMode>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGGameMode::PostLogin, LocalGameMode, [=](auto& scope, AFGGameMode* gm,
-		APlayerController* pc)
+	SUBSCRIBE_METHOD(AFGHoverPack::ConnectToNearestPowerConnection, [this](auto& scope, AFGHoverPack* self)
 		{
-			if (gm->HasAuthority() && !gm->IsMainMenuGameMode())
+			UpdateSearchRadius(self);
+			if (TryConnectToBestPowerConnection(self))
 			{
-				UWorld* WorldObject = gm->GetWorld();
-				USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
-				mHPSubsystem = SubsystemActorManager->GetSubsystemActor<AHPPR_Subsystem>();
-				mHPSubsystem->SetConfigValues();
-			}
-		});
-	//AFGHoverPack::ConnectToNearestPowerConnection()
-	SUBSCRIBE_METHOD(AFGHoverPack::ConnectToNearestPowerConnection, [=](auto& scope, AFGHoverPack* self)
-		{
-			FindNearestConnection(self);
-		});
-
-	SUBSCRIBE_METHOD(AFGHoverPack::OnPowerConnectionLocationUpdated, [=](auto& scope, AFGHoverPack* self, const FVector& NewLocation)
-		{
-			if (mAddedConnections.Contains(self) && mAddedConnections[self] == true)
-			{
-				//Loggit("OnPowerConnectionLocationUpdated");
-				//FString CurrentRailroadTrack = self->mCurrentRailroadTrack->GetName();
-				//Loggit("mCurrentRailroadTrack: " + CurrentRailroadTrack);
-				return;
-			}
-			scope.Cancel();
-		});
-
-	SUBSCRIBE_METHOD(AFGHoverPack::OnConnectionStatusUpdated, [=](auto& scope, AFGHoverPack* self, const bool HasConnection)
-		{
-			if (mAddedConnections.Contains(self) && mAddedConnections[self] == true)
-			{
-				//Loggit("OnConnectionStatusUpdated");
-				return;
-			}
-			scope.Cancel();
-		});
-
-
-	SUBSCRIBE_METHOD(AFGHoverPack::DisconnectFromCurrentPowerConnection, [=](auto& scope, AFGHoverPack* self)
-		{
-			if ((mAllowRemove.Contains(self) && mAllowRemove[self] == true) || self->mPowerConnectionSearchTimer <= 0)
-			{
-				return;
-			}
-			float distanceToCurrentConnection = self->GetDistanceFromCurrentConnection();
-			float currentRange = self->mPowerConnectionSearchRadius;
-			float remainingRange = currentRange - distanceToCurrentConnection;
-			if (remainingRange <= 0)
-			{
-				return;
-			}
-			//FString newConnectionClass = self->mCurrentPowerConnection->GetOwner()->GetClass()->GetName();
-			//Loggit("Canceling DisconnectFromCurrentPowerConnection. Current mCurrentPowerConnection: " + newConnectionClass);
-			scope.Cancel();
-		});
-
-	SUBSCRIBE_METHOD(UFGCircuitConnectionComponent::AddHiddenConnection, [=](auto& scope, UFGCircuitConnectionComponent* self, class UFGCircuitConnectionComponent* other)
-		{
-			auto HoverPack = Cast<AFGHoverPack>(other->GetOwner());
-			if (HoverPack)
-			{
-				bool isRailConnection = false;
-				FString newConnectionClass = self->GetOwner()->GetClass()->GetName();
-				FVector newConnectionLocation = self->GetOwner()->GetActorLocation();
-				if (newConnectionClass == "BP_RailroadSubsystem_C")
-				{
-					isRailConnection = true;
-
-				}
-				FVector currentConnectionLocation = HoverPack->GetCurrentConnectionLocation();
-				FVector currentLocation = HoverPack->GetActorLocation();
-
-				float distanceToCurrentConnection = HoverPack->GetDistanceFromCurrentConnection();
-				float distanceToNewConnection = FVector::Distance(newConnectionLocation, currentConnectionLocation);
-				float currentRange = HoverPack->mPowerConnectionSearchRadius;
-				float newRange = mHPSubsystem->mMk1Range * 100;
-				//FString newConnectionClass = self->GetOwner()->GetClass()->GetName();
-				//Loggit("newConnectionClass: " + newConnectionClass);
-
-				if (newConnectionClass == "Build_PowerPoleMk1_C" || newConnectionClass == "Build_PowerPoleWall_Mk1_C" || newConnectionClass == "Build_PowerPoleWallDouble_Mk1_C")
-				{
-					//Loggit("Mk1");
-					newRange = mHPSubsystem->mMk1Range * 100;
-				}
-				else if (newConnectionClass == "Build_PowerPoleMk2_C" || newConnectionClass == "Build_PowerPoleWall_Mk2_C" || newConnectionClass == "Build_PowerPoleWallDouble_Mk2_C")
-				{
-					//Loggit("Mk2");
-					newRange = mHPSubsystem->mMk2Range * 100;
-				}
-				else if (newConnectionClass == "Build_PowerPoleMk3_C" || newConnectionClass == "Build_PowerPoleWall_Mk3_C" || newConnectionClass == "Build_PowerPoleWallDouble_Mk3_C")
-				{
-					//Loggit("Mk3");
-					newRange = mHPSubsystem->mMk3Range * 100;
-				}
-				else if (newConnectionClass == "BP_RailroadSubsystem_C")
-				{
-					//Loggit("Rail");
-					newRange = mHPSubsystem->mRailRange * 100;
-					isRailConnection = true;
-				}
-				else
-				{
-					//Loggit("Else");
-					newRange = mHPSubsystem->mElseRange * 100;
-				}
-
-				//UE_LOG(HoverPackPoleRange_Log, Display, TEXT("distanceToCurrentConnection: %f"), distanceToCurrentConnection);
-				float remainingRange = currentRange - distanceToCurrentConnection;
-
-				//UE_LOG(HoverPackPoleRange_Log, Display, TEXT("Current Range: %f, New Range: %f, Remaining Range %f"), currentRange, newRange, remainingRange);
-				if (remainingRange > newRange)
-				{
-					//Loggit("remainingRange > newRange");
-					mAddedConnections.Add(HoverPack, false);
-					mAllowRemove.Add(HoverPack, false);
-					scope.Cancel();
-				}
-				else //if (remainingRange <= newRange)
-				{
-					mAllowRemove.Add(HoverPack, true);
-					//Loggit("currentRange <= newRange");
-					//self->RemoveHiddenConnection(other);
-					//other->RemoveHiddenConnection(self);
-					if (!isRailConnection)
-					{
-						HoverPack->DisconnectFromCurrentPowerConnection();
-					}
-					mAddedConnections.Add(HoverPack, true);
-					HoverPack->mPowerConnectionSearchRadius = newRange;
-					return;
-				}
+				scope.Cancel();
 			}
 		});
 
+	SUBSCRIBE_METHOD_AFTER(AFGHoverPack::ConnectToPowerConnection,
+		[this](AFGHoverPack* self, UFGPowerConnectionComponent*, AFGBuildableRailroadTrack*)
+		{
+			UpdateSearchRadius(self);
+		});
+
+	SUBSCRIBE_METHOD_AFTER(AFGHoverPack::DisconnectFromCurrentPowerConnection, [this](AFGHoverPack* self)
+		{
+			UpdateSearchRadius(self);
+		});
+
+	SUBSCRIBE_METHOD(AFGHoverPack::OnRep_CurrentPowerConnection, [this](auto& scope, AFGHoverPack* self)
+		{
+			UpdateSearchRadius(self);
+		});
+
+	SUBSCRIBE_METHOD(AFGHoverPack::OnRep_HasConnection, [this](auto& scope, AFGHoverPack* self)
+		{
+			UpdateSearchRadius(self);
+		});
+
+	AFGHoverPack* hoverPackCDO = GetMutableDefault<AFGHoverPack>();
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGHoverPack::Tick, hoverPackCDO, [this](AFGHoverPack* self, float deltaTime)
+		{
+			UpdateSearchRadius(self);
+		});
 #endif
 }
-#pragma optimize("", on)
 
 IMPLEMENT_GAME_MODULE(FHoverPackPoleRangeModule, HoverPackPoleRange);
