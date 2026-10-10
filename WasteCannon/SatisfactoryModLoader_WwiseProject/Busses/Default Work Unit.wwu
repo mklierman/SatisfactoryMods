@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{36754444-35E2-498C-B23D-DEB6E2F58E40}" SchemaVersion="133">
+	<Busses>
+		<WorkUnit Name="Default Work Unit" ID="{36754444-35E2-498C-B23D-DEB6E2F58E40}" PersistMode="Standalone">
+			<ChildrenList>
+				<Bus Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}">
+					<ReferenceList>
+						<Reference Name="AudioDevice" PluginName="System" CompanyID="0" PluginID="174" PluginType="7">
+							<ObjectRef Name="System" ID="{1402084F-F08C-4DDF-9136-61CB5719812B}" WorkUnitID="{4ACA88FA-26E9-4F09-9C4C-1133B6B51587}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<Folder Name="WasteCannon" ID="{B6FB725F-912F-4327-840D-502D515CB081}" ShortID="1047919145">
+							<ChildrenList>
+								<Bus Name="WasteCannon_Volume_Factory" ID="{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}">
+									<ReferenceList>
+										<Reference Name="AudioDevice" PluginName="System" CompanyID="0" PluginID="174" PluginType="7">
+											<ObjectRef Name="System" ID="{1402084F-F08C-4DDF-9136-61CB5719812B}" WorkUnitID="{4ACA88FA-26E9-4F09-9C4C-1133B6B51587}"/>
+										</Reference>
+									</ReferenceList>
+									<ObjectLists>
+										<ObjectList Name="RTPC">
+											<RTPC Name="" ID="{12A85480-92EA-42AB-824B-8A2F39903208}" ShortID="1047949798">
+												<PropertyList>
+													<Property Name="PropertyName" Type="string" Value="BusVolume"/>
+												</PropertyList>
+												<ReferenceList>
+													<Reference Name="ControlInput">
+														<ObjectRef Name="RTPC_WasteCannon_Volume_Factory" ID="{EE3E7F24-AF3F-4606-B731-F3C718180259}" WorkUnitID="{A325D62B-A8F5-4042-A64D-BFF38D46AE8F}"/>
+													</Reference>
+													<Reference Name="Curve">
+														<Custom>
+															<Curve Name="" ID="{5464F990-5B4B-4795-B06F-F2D207F35585}">
+																<PropertyList>
+																	<Property Name="Flags" Type="int32" Value="3"/>
+																</PropertyList>
+																<PointList>
+																	<Point>
+																		<XPos>0</XPos>
+																		<YPos>-200</YPos>
+																		<Flags>5</Flags>
+																	</Point>
+																	<Point>
+																		<XPos>1</XPos>
+																		<YPos>0</YPos>
+																		<Flags>37</Flags>
+																	</Point>
+																</PointList>
+															</Curve>
+														</Custom>
+													</Reference>
+												</ReferenceList>
+											</RTPC>
+										</ObjectList>
+									</ObjectLists>
+								</Bus>
+							</ChildrenList>
+						</Folder>
+					</ChildrenList>
+				</Bus>
+			</ChildrenList>
+		</WorkUnit>
+	</Busses>
+</WwiseDocument>

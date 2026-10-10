@@ -1,0 +1,11 @@
+Game Parameter	ID	Name			Wwise Object Path	Notes
+	3019447206	RTPC_WasteCannon_Volume_Factory			\Default Work Unit\WasteCannon\RTPC_WasteCannon_Volume_Factory	
+
+Audio Bus	ID	Name			Wwise Object Path	Notes
+	1649928128	WasteCannon_Volume_Factory			\Default Work Unit\Master Audio Bus\WasteCannon\WasteCannon_Volume_Factory	
+	3803692087	Master Audio Bus			\Default Work Unit\Master Audio Bus	
+
+Audio Devices	ID	Name	Type				Notes
+	2317455096	No_Output	No Output			
+	3859886410	System	System			
+

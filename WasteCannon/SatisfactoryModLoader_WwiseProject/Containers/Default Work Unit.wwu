@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{1D352AF5-39D5-4B6D-814D-7A38B1E00D8B}" SchemaVersion="133">
+	<Containers>
+		<WorkUnit Name="Default Work Unit" ID="{1D352AF5-39D5-4B6D-814D-7A38B1E00D8B}" PersistMode="Standalone">
+			<ChildrenList>
+				<Folder Name="WasteCannon" ID="{6A019FA9-171B-4D02-BC3A-8D1CB77C9E36}" ShortID="204763067">
+					<ChildrenList>
+						<Sound Name="WC_Charged" ID="{CFD02883-5F1E-4C05-9E22-E40A72565419}" ShortID="993216716">
+							<PropertyList>
+								<Property Name="3DSpatialization" Type="int16" Value="1"/>
+								<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+								<Property Name="MaxReachedBehavior" Type="int16" Value="1"/>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>2</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="WC_Default" ID="{B5885E41-4A22-40D2-8D59-1BFEBEDA980D}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="WasteCannon_Volume_Factory" ID="{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="WC_Charged" ID="{1B9C5B43-3F05-4889-B4E7-D94939B21568}">
+									<Language>SFX</Language>
+									<AudioFile>WC_Charged.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="768930073"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="WC_Charged" ID="{1B9C5B43-3F05-4889-B4E7-D94939B21568}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="WC_Moving" ID="{2554D6AA-2AC3-42B5-81E8-819F373A4B70}" ShortID="567498584">
+							<PropertyList>
+								<Property Name="3DSpatialization" Type="int16" Value="1"/>
+								<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+								<Property Name="MaxReachedBehavior" Type="int16" Value="1"/>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>-6</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="WC_Default" ID="{B5885E41-4A22-40D2-8D59-1BFEBEDA980D}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="WasteCannon_Volume_Factory" ID="{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="WC_Moving" ID="{9E3253A2-82C7-466C-AC3C-782900293D40}">
+									<Language>SFX</Language>
+									<AudioFile>WC_Moving.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="45291664"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="WC_Moving" ID="{9E3253A2-82C7-466C-AC3C-782900293D40}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="WC_Shooting_EchoImpact" ID="{B0B9B3A8-C6A4-4EF1-A4E9-0A3592170C04}" ShortID="936557492">
+							<PropertyList>
+								<Property Name="3DSpatialization" Type="int16" Value="1"/>
+								<Property Name="MaxReachedBehavior" Type="int16" Value="1"/>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="WC_Shooting_EchoImpact" ID="{5E892E58-EA2D-47C5-92F7-657F5809A2F5}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="WasteCannon_Volume_Factory" ID="{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="WC_Shooting_EchoImpact" ID="{C2423F79-D02C-4B06-8302-7C51717CC3F4}">
+									<Language>SFX</Language>
+									<AudioFile>WC_Shooting_EchoImpact.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="298123852"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="WC_Shooting_EchoImpact" ID="{C2423F79-D02C-4B06-8302-7C51717CC3F4}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="WC_Shooting_Flat" ID="{D436501F-4CC5-494E-8296-A56BD7EA516F}" ShortID="683270252">
+							<PropertyList>
+								<Property Name="3DSpatialization" Type="int16" Value="1"/>
+								<Property Name="MaxReachedBehavior" Type="int16" Value="1"/>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="WC_Shooting_Flat" ID="{2A610731-A31C-4A57-9393-A50C596D92EE}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="WasteCannon_Volume_Factory" ID="{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="WC_Shooting_Flat" ID="{49897901-5E51-42D5-BB7D-B4F47C75A5AB}">
+									<Language>SFX</Language>
+									<AudioFile>WC_Shooting_Flat.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="927162614"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="WC_Shooting_Flat" ID="{49897901-5E51-42D5-BB7D-B4F47C75A5AB}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="WC_Reload" ID="{14DA80F7-47B4-423D-A40A-CFE507C31A79}" ShortID="196746268">
+							<PropertyList>
+								<Property Name="3DSpatialization" Type="int16" Value="1"/>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>-4</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="WC_Default" ID="{B5885E41-4A22-40D2-8D59-1BFEBEDA980D}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="WasteCannon_Volume_Factory" ID="{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="WC_Reload" ID="{13567A2F-B1F3-4D21-8922-06C89DB59B48}">
+									<Language>SFX</Language>
+									<AudioFile>WC_Reload.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="328699641"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="WC_Reload" ID="{13567A2F-B1F3-4D21-8922-06C89DB59B48}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+					</ChildrenList>
+				</Folder>
+			</ChildrenList>
+		</WorkUnit>
+	</Containers>
+</WwiseDocument>

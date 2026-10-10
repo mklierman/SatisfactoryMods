@@ -3,7 +3,7 @@
 #include "Buildables/FGBuildableFactory.h"
 #include "FGInventoryComponent.h"
 #include "FGFactoryConnectionComponent.h"
-#include "FGItemDescriptor.h"
+#include "Resources/FGItemDescriptor.h"
 #include "WC_Railgun.generated.h"
 
 USTRUCT(BlueprintType)
@@ -12,13 +12,13 @@ struct FRailgunMovement
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly)
-	float start;
+	float start = 0.f;
 
 	UPROPERTY(BlueprintReadOnly)
-	float target;
+	float target = 0.f;
 
 	UPROPERTY(BlueprintReadOnly)
-	float current;
+	float current = 0.f;
 };
 
 UENUM(BlueprintType)
@@ -26,10 +26,8 @@ enum class ERailgunState : uint8
 {
 	IDLE UMETA(DisplayName = "Idle"),
 	AIMING UMETA(DisplayName = "Aiming"),
-	SHOOTING UMETA(DisplayName = "Shooting"),
 	RESETTING UMETA(DisplayName = "Resetting"),
-	LOADING UMETA(DisplayName = "Loading"),
-	GUARDING UMETA(DisplayName = "Guarding")
+	LOADING UMETA(DisplayName = "Loading")
 };
 
 UCLASS()
@@ -40,16 +38,28 @@ class AWC_Railgun : public AFGBuildableFactory
 
 public:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Factory_Tick(float dt) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void Railgun_TickState(float dt);
+	virtual void Railgun_TickAim(float dt);
 
 	virtual bool ShouldSave_Implementation() const override;
 
 	UFUNCTION()
-	void UpdateAimDirection(const FVector& position, const FVector2D& direction);
+	void ToIdle();
+	UFUNCTION()
+	void ToLoading();
+	UFUNCTION()
+	void ToAiming();
+
+	UFUNCTION()
+	void UpdateAimDirection(const FVector2D& direction);
 
 	UFUNCTION()
 	void SetAimDirectionDirect(const FVector2D& direction);
 
+	UFUNCTION()
 	void MovementComplete();
 
 	TArray<UFGFactoryConnectionComponent*> InputConnections;
@@ -61,20 +71,13 @@ public:
 	FRotator GetAimRotation();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-	void ResetTower();
-
-	UFUNCTION(BlueprintCallable)
-	void AnimationComplete();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-	void Shoot(const FTransform& position);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-	void AimToDirection(const FVector2D& direction, ERailgunState newState);
+	void AimToDirection(const FVector2D& direction);
 
 	// Sets AimDirection from AimTargetWorldLocation (tower = X deg, barrel = Y deg in actor-local space, +X forward).
 	UFUNCTION(BlueprintCallable, Category = "Waste Cannon|Aim")
-	void ApplyAimFromWorldTarget();
+	bool TryGetWorldTargetAimDirection(FVector2D& OutDirection);
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	bool CanSeeSun();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void OnStartMoving();
@@ -82,8 +85,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void OnStopMoving();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnAimChanged();
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void OnLoading();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void ReadyForShoot();
@@ -93,13 +96,13 @@ public:
 	void OnShoot(const FTransform& ShotTransform);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Waste Cannon")
-	void OnShotTriggered(const FTransform& ShotTransform);
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Waste Cannon")
 	void netSig_Shooted(const FVector& Location);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Waste Cannon")
 	void netSig_Finished();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPresentShot(uint32 Sequence, const FTransform& ShotTransform, const FVector& Location, const FVector& TargetLocation);
 
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	FORCEINLINE class UFGInventoryComponent* GetStorageInventory() const
@@ -107,29 +110,14 @@ public:
 		return StorageInventoryComponent;
 	}
 
-	UFUNCTION(BlueprintPure, Category = "Inventory")
-	FORCEINLINE class UFGInventoryComponent* GetFuelInventory() const
-	{
-		return FuelInventoryComponent;
-	}
-
 	UPROPERTY()
 	UFGInventoryComponent* StorageInventoryComponent;
 
 	UPROPERTY()
-	UFGInventoryComponent* FuelInventoryComponent;
+	UFGInventoryComponent* MissileInventoryComponent;
 
-
-
-	UPROPERTY(BlueprintReadOnly, SaveGame)
+	UPROPERTY(BlueprintReadOnly, SaveGame, ReplicatedUsing = OnRep_AnimationState)
 	ERailgunState animationState = ERailgunState::IDLE;
-
-	UPROPERTY(BlueprintReadOnly, SaveGame)
-	bool Loaded = false;
-
-	// When false: no shooting, no LOADING, no aim movement. TryAutoShoot still calls ReadyForShoot first so BP can set this true before barrel/LOADING. Post-shot RESETTING still runs.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Waste Cannon")
-	bool ShouldShoot = true;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float MinTilt = 45;
@@ -140,26 +128,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float RotationSpeed = 10;
 
-	UPROPERTY(BlueprintReadWrite, SaveGame)
-	FVector TargetPosition;
-
-	UPROPERTY(BlueprintReadWrite, SaveGame)
-	FVector2D AimDirection;
-
 	// World position to aim at; used when bUseAimTargetWorldLocation is true (see ApplyAimFromWorldTarget).
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Waste Cannon|Aim")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waste Cannon|Aim")
 	FVector AimTargetWorldLocation = FVector::ZeroVector;
 
-	// If true, LOADING -> AIMING uses ApplyAimFromWorldTarget() so AimDirection is derived from AimTargetWorldLocation.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Waste Cannon|Aim")
-	bool bUseAimTargetWorldLocation = false;
-
 	// When true, barrel elevation from world aim is clamped to [MinTilt, MaxTilt].
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Waste Cannon|Aim")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waste Cannon|Aim")
 	bool bClampWorldTargetBarrelToTiltLimits = true;
 
-	UPROPERTY(BlueprintReadOnly, SaveGame)
-	bool isMoving;
+	UPROPERTY(BlueprintReadOnly)
+	bool aimForShoot = false;
 
 	UPROPERTY(BlueprintReadOnly, SaveGame)
 	FRailgunMovement towerMovement;
@@ -167,51 +145,84 @@ public:
 	UPROPERTY(BlueprintReadOnly, SaveGame)
 	FRailgunMovement barrelMovement;
 
-	UFUNCTION(BlueprintCallable, Category = "Waste Cannon")
-	int32 GetWasteItemCount() const;
+	UPROPERTY(Replicated)
+	FVector2D ReplicatedAimTarget = FVector2D::ZeroVector;
 
-	UFUNCTION(BlueprintCallable, Category = "Waste Cannon")
-	bool IsWasteInventoryFull() const;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waste Cannon|Timing")
+	float IdleSeconds = 300.f;
 
-	UFUNCTION(BlueprintCallable, Category = "Waste Cannon")
-	bool TryAutoShoot();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waste Cannon|Timing")
+	float LoadingSeconds = 10.f;
 
-	UFUNCTION(BlueprintPure, Category = "Waste Cannon|Ammo")
-	bool CanShootWithCurrentAmmo() const;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waste Cannon|Timing")
+	float ResettingSeconds = 10.f;
 
-protected:
-	/** When fuel uses the ammo whitelist, only these descriptors may enter via the fuel input (see Factory_Tick). */
-	bool IsItemClassAllowedOnFuelInput(TSubclassOf<UFGItemDescriptor> ItemClass) const;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waste Cannon|Thresholds")
+	int32 ShootWasteThreshold = 200;
 
-	UFUNCTION()
-	void EvaluateAutoShoot();
-	UFGInventoryComponent* ResolveInventoryForConnection(UFGFactoryConnectionComponent* Connection) const;
-	UFUNCTION()
-	void FinishShotCycleFallback();
-
-	bool ConsumeFuel();
-	void RemoveAllWasteItems();
-
-	// If true, ammo/fuel must match one of AllowedAmmoDescriptors.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Waste Cannon|Ammo")
-	bool bUseAmmoWhitelist = true;
-
-	// Exact item descriptor classes accepted as ammo/fuel.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Waste Cannon|Ammo")
-	TArray<TSubclassOf<UFGItemDescriptor>> AllowedAmmoDescriptors;
-
-	// If waste count reaches this value, the railgun auto-fires.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Waste Cannon")
-	int32 AutoShootWasteThreshold = 200;
-
-	// Poll interval for auto-shoot checks on the server.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame, Category = "Waste Cannon")
-	float AutoShootCheckIntervalSeconds = 0.25f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waste Cannon|Aim")
+	FVector2D IdleAimDirection = FVector2D(0.f, 45.f);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waste Cannon|Aim")
+	float precisionThreshold = .001f;
 
 	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Waste Cannon")
-	int32 LastShotWasteCount = 0;
+	float StateTime = 0.f;
 
-	FTimerHandle AutoShootTimerHandle;
-	FTimerHandle ShotCycleFallbackTimerHandle;
+protected:
+	UFUNCTION()
+	void OnRep_AnimationState(ERailgunState PreviousState);
+
+	UFUNCTION()
+	void OnRep_IsMoving();
+
+	UFUNCTION()
+	void OnRep_AimCommandSequence();
+
+	UFUNCTION()
+	void OnRep_HasAimTarget();
+
+	UFUNCTION()
+	void OnRep_ShotSequence();
+
+	UFUNCTION()
+	void RemoveAllWasteItems();
+
+	void SetMoving(bool bNewMoving);
+	void ResetStateTimer();
+	void UpdateStateTimeFromServerClock();
+	void ClientTickAim();
+	float GetCurrentStateDuration() const;
+	void PresentShot(uint32 Sequence, const FTransform& ShotTransform, const FVector& Location, const FVector& TargetLocation);
+
+	UPROPERTY(Replicated)
+	float StateStartServerTime = 0.f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_HasAimTarget)
+	bool bReplicatedHasAimTarget = false;
+
+	UPROPERTY(Replicated)
+	FVector2D ReplicatedAimStart = FVector2D::ZeroVector;
+
+	UPROPERTY(ReplicatedUsing = OnRep_AimCommandSequence)
+	uint32 AimCommandSequence = 0;
+
+	UPROPERTY(Replicated)
+	FTransform ReplicatedShotTransform;
+
+	UPROPERTY(Replicated)
+	FVector ReplicatedShotTargetLocation = FVector::ZeroVector;
+
+	UPROPERTY(ReplicatedUsing = OnRep_ShotSequence)
+	uint32 ShotSequence = 0;
+
+	uint32 LastPresentedShotSequence = 0;
+
+	bool bStateTimerPausedForPower = false;
+	bool bAimCompletionArmed = false;
+	float PausedStateTime = 0.f;
+	float LastClientAimUpdateTime = 0.f;
+	FTimerHandle ClientAimTimerHandle;
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, ReplicatedUsing = OnRep_IsMoving)
+	bool isMoving = true;
 };
-

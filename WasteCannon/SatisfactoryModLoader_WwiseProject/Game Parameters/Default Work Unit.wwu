@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{A325D62B-A8F5-4042-A64D-BFF38D46AE8F}" SchemaVersion="133">
+	<GameParameters>
+		<WorkUnit Name="Default Work Unit" ID="{A325D62B-A8F5-4042-A64D-BFF38D46AE8F}" PersistMode="Standalone">
+			<ChildrenList>
+				<Folder Name="Lithium" ID="{58F8C2A5-03C1-46C7-99D3-371C1D67CF3B}" ShortID="199790349">
+					<ChildrenList>
+						<GameParameter Name="RTPC_Lithium_Volume_Dialogue" ID="{A79F769E-D7EB-4AE2-BEF2-511E3A9588DB}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
+						<GameParameter Name="RTPC_Lithium_Volume_Factory" ID="{8C7B501F-0FBD-4D95-B017-85E249FF28E1}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="TruckStationsPlus" ID="{F1011A72-D8B4-45BD-9B10-21AFA7F5CFDD}" ShortID="120503617">
+					<ChildrenList>
+						<GameParameter Name="RTPC_TruckStationsPlus_Volume_Dialogue" ID="{E8C0BFF8-6BD9-4665-898C-5287851CC0FD}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="MegaprojectsLib" ID="{A7BDD190-2BAE-4734-AA12-1DE93C7D1ABD}" ShortID="932053677">
+					<ChildrenList>
+						<GameParameter Name="RTPC_MegaprojectsLib_Volume_Dialogue" ID="{062586CC-5283-41DD-BE5E-63B797CA86AB}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="Megaprojects_PowerDomain" ID="{13515B8E-E74E-4051-B5A9-96BF8967354E}" ShortID="1025576945">
+					<ChildrenList>
+						<GameParameter Name="RTPC_Megaprojects_PowerDomain_Volume_Dialogue" ID="{85034048-8886-43A7-A55B-E22BDEEC3766}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="AlkaLib" ID="{FFE6D685-F45B-4088-94DB-EF7D68DF32BF}" ShortID="234529151">
+					<ChildrenList>
+						<GameParameter Name="RTPC_AlkaLib_Volume_Factory" ID="{77C814D0-C68C-4C90-98C8-83B350C9B8A3}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="QuantumTechUtils" ID="{CC1B1258-0CA3-4F87-9C49-00F1CEAF3BE5}" ShortID="342367883">
+					<ChildrenList>
+						<GameParameter Name="RTPC_QuantumTechUtils_Volume_Dialogue" ID="{87972AC4-E03D-40E8-BEFD-CAC35AD58856}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="Megaprojects_WaterDam" ID="{79C1BECC-42D6-400E-8918-E0EF261F3365}" ShortID="975453536">
+					<ChildrenList>
+						<GameParameter Name="RTPC_Megaprojects_WaterDam_Volume_Dialogue" ID="{66F88C04-CEA1-49B9-84B1-00D5074A4D17}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
+						<GameParameter Name="RTPC_Megaprojects_WaterDam_Volume_Factory" ID="{63DB5194-1799-4813-A015-937F781F5F73}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="WasteCannon" ID="{BF0BB0F2-8925-44F6-806E-F56E969B0EE8}" ShortID="452931783">
+					<ChildrenList>
+						<GameParameter Name="RTPC_WasteCannon_Volume_Factory" ID="{EE3E7F24-AF3F-4606-B731-F3C718180259}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
+					</ChildrenList>
+				</Folder>
+			</ChildrenList>
+		</WorkUnit>
+	</GameParameters>
+</WwiseDocument>

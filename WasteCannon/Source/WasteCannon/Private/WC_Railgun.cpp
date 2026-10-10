@@ -1,26 +1,21 @@
 #include "WC_Railgun.h"
 #include "TimerManager.h"
-#include <Logging/StructuredLog.h>
-#include <Async.h>
+#include "Logging/StructuredLog.h"
+#include "Async/Async.h"
+#include "GameFramework/GameStateBase.h"
+#include "Net/UnrealNetwork.h"
 
-DEFINE_LOG_CATEGORY(WasteCannon_Log);
+//DEFINE_LOG_CATEGORY(WasteCannon_Log);
 #pragma optimize("", off)
 
 AWC_Railgun::AWC_Railgun()
 {
-	this->FuelInventoryComponent = CreateDefaultSubobject<UFGInventoryComponent>(TEXT("FuelInventory"));
 	this->StorageInventoryComponent = CreateDefaultSubobject<UFGInventoryComponent>(TEXT("StorageInventory"));
-
-	this->Loaded = false;
-	this->MinTilt = 45;
-	this->MaxTilt = 78;
+	this->MissileInventoryComponent = CreateDefaultSubobject<UFGInventoryComponent>(TEXT("MissileInventory"));
+	this->MinTilt = 25;
+	this->MaxTilt = 81;
 	this->RotationSpeed = 10;
 	this->animationState = ERailgunState::IDLE;
-	this->AutoShootWasteThreshold = 200;
-	this->AutoShootCheckIntervalSeconds = 0.25f;
-	this->LastShotWasteCount = 0;
-	this->bUseAmmoWhitelist = true;
-	this->ShouldShoot = true;
 }
 
 void AWC_Railgun::BeginPlay()
@@ -29,18 +24,18 @@ void AWC_Railgun::BeginPlay()
 
 	if (HasAuthority() && GetWorld())
 	{
-		if (FuelInventoryComponent)
-		{
-			FuelInventoryComponent->SetReplicationRelevancyOwner(this);
-			FuelInventoryComponent->SetLocked(false);
-			FuelInventoryComponent->Resize(1);
-			FuelInventoryComponent->AddArbitrarySlotSize(0, 100);
-		}
 		if (StorageInventoryComponent)
 		{
 			StorageInventoryComponent->SetReplicationRelevancyOwner(this);
 			StorageInventoryComponent->SetLocked(false);
-			StorageInventoryComponent->Resize(9);
+			StorageInventoryComponent->Resize(24);
+			//StorageInventoryComponent->AddArbitrarySlotSize(0, 20);
+		}
+		if (MissileInventoryComponent)
+		{
+			MissileInventoryComponent->SetReplicationRelevancyOwner(this);
+			MissileInventoryComponent->SetLocked(false);
+			MissileInventoryComponent->Resize(24);
 			//StorageInventoryComponent->AddArbitrarySlotSize(0, 20);
 		}
 
@@ -50,35 +45,76 @@ void AWC_Railgun::BeginPlay()
 			if (Connection && Connection->GetDirection() == EFactoryConnectionDirection::FCD_INPUT)
 			{
 				InputConnections.Add(Connection);
+				Connection->SetInventory(StorageInventoryComponent);
+				Connection->SetInventoryAccessIndex(0);
 			}
 		}
 
-		if (InputConnections.Num() > 0 && InputConnections[0] && FuelInventoryComponent)
-		{
-			InputConnections[0]->SetInventory(FuelInventoryComponent);
-			InputConnections[0]->SetInventoryAccessIndex(0);
-		}
-		if (InputConnections.Num() > 1 && InputConnections[1] && StorageInventoryComponent)
-		{
-			InputConnections[1]->SetInventory(StorageInventoryComponent);
-			InputConnections[1]->SetInventoryAccessIndex(0);
-		}
-
-		GetWorld()->GetTimerManager().SetTimer(
-			AutoShootTimerHandle,
-			this,
-			&AWC_Railgun::EvaluateAutoShoot,
-			FMath::Max(0.05f, AutoShootCheckIntervalSeconds),
-			true
-		);
+		const float Duration = GetCurrentStateDuration();
+		const AGameStateBase* GameState = GetWorld()->GetGameState();
+		const float ServerTime = GameState ? GameState->GetServerWorldTimeSeconds() : GetWorld()->GetTimeSeconds();
+		StateStartServerTime = ServerTime - (FMath::Clamp(StateTime, 0.f, 1.f) * Duration);
+		ReplicatedAimTarget = FVector2D(towerMovement.target, barrelMovement.target);
 	}
+	else
+	{
+		LastPresentedShotSequence = ShotSequence;
+		LastClientAimUpdateTime = GetWorld()->GetTimeSeconds();
+		GetWorldTimerManager().SetTimer(ClientAimTimerHandle, this, &AWC_Railgun::ClientTickAim, 1.f / 60.f, true);
+	}
+}
+
+void AWC_Railgun::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (GetWorld())
+	{
+		GetWorldTimerManager().ClearTimer(ClientAimTimerHandle);
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
+void AWC_Railgun::ClientTickAim()
+{
+	if (HasAuthority() || !GetWorld()) return;
+
+	const float CurrentTime = GetWorld()->GetTimeSeconds();
+	const float DeltaSeconds = FMath::Max(0.f, CurrentTime - LastClientAimUpdateTime);
+	LastClientAimUpdateTime = CurrentTime;
+
+	if (animationState == ERailgunState::RESETTING || HasPower())
+	{
+		UpdateStateTimeFromServerClock();
+	}
+
+	towerMovement.current = FMath::FInterpConstantTo(towerMovement.current, towerMovement.target, DeltaSeconds, RotationSpeed);
+	barrelMovement.current = FMath::FInterpConstantTo(barrelMovement.current, barrelMovement.target, DeltaSeconds, RotationSpeed);
+}
+
+void AWC_Railgun::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AWC_Railgun, animationState);
+	DOREPLIFETIME(AWC_Railgun, isMoving);
+	DOREPLIFETIME(AWC_Railgun, StateStartServerTime);
+	DOREPLIFETIME(AWC_Railgun, bReplicatedHasAimTarget);
+	DOREPLIFETIME(AWC_Railgun, ReplicatedAimStart);
+	DOREPLIFETIME(AWC_Railgun, ReplicatedAimTarget);
+	DOREPLIFETIME(AWC_Railgun, AimCommandSequence);
+	DOREPLIFETIME(AWC_Railgun, ReplicatedShotTransform);
+	DOREPLIFETIME(AWC_Railgun, ReplicatedShotTargetLocation);
+	DOREPLIFETIME(AWC_Railgun, ShotSequence);
 }
 
 void AWC_Railgun::Factory_Tick(float dt)
 {
 	Super::Factory_Tick(dt);
+	if (!HasAuthority())
+	{
+		return;
+	}
 
-	if (HasAuthority())
+	if (HasPower())
 	{
 		for (UFGFactoryConnectionComponent* Connection : InputConnections)
 		{
@@ -87,78 +123,223 @@ void AWC_Railgun::Factory_Tick(float dt)
 				continue;
 			}
 
-			UFGInventoryComponent* TargetInventory = ResolveInventoryForConnection(Connection);
-			if (!TargetInventory || TargetInventory->IsLocked())
+			if (!GetStorageInventory() || GetStorageInventory()->IsLocked())
 			{
 				continue;
 			}
 
 			TArray<FInventoryItem> PeekItems;
-			if (!Connection->Factory_PeekOutput(PeekItems, nullptr))
+			while (Connection->Factory_PeekOutput(PeekItems))
 			{
-				continue;
-			}
-
-			for (const FInventoryItem& PeekItem : PeekItems)
-			{
-				if (!PeekItem.IsValid())
+				if (PeekItems.IsEmpty() || !PeekItems[0].IsValid() ||
+					!GetStorageInventory()->HasEnoughSpaceForItem(PeekItems[0]))
 				{
-					continue;
-				}
-				if (TargetInventory == FuelInventoryComponent && !IsItemClassAllowedOnFuelInput(PeekItem.GetItemClass()))
-				{
-					continue;
-				}
-				if (!TargetInventory->HasEnoughSpaceForItem(PeekItem))
-				{
-					continue;
+					break;
 				}
 
-				FInventoryItem GrabbedItem;
-				float OffsetBeyond = 100.0f;
-				const TSubclassOf<UFGItemDescriptor> GrabType =
-					(TargetInventory == FuelInventoryComponent) ? PeekItem.GetItemClass() : nullptr;
-				if (!Connection->Factory_GrabOutput(GrabbedItem, OffsetBeyond, GrabType))
+				float Offset;
+				FInventoryItem Item;
+				if (!Connection->Factory_GrabOutput(Item, Offset, PeekItems[0].GetItemClass()))
 				{
-					continue;
+					break;
 				}
 
-				TargetInventory->AddItem(GrabbedItem);
-				break;
+				if (!GetStorageInventory()->AddItem(Item))
+				{
+					break;
+				}
+
+				PeekItems.Reset();
 			}
 		}
 	}
 
-	if (this->isMoving)
-	{
-		// Stop aim movement if shooting is disabled
-		if (!ShouldShoot && this->animationState != ERailgunState::RESETTING)
-		{
-			this->isMoving = false;
-			OnStopMoving();
-			if (HasAuthority())
-			{
-				SetAimDirectionDirect(FVector2D(this->towerMovement.current, this->barrelMovement.current));
-				Loaded = false;
-				this->animationState = ERailgunState::IDLE;
-			}
-		}
-		else
-		{
-			this->towerMovement.current = FMath::FInterpConstantTo(this->towerMovement.current, this->towerMovement.target, dt, this->RotationSpeed);
-			this->barrelMovement.current = FMath::FInterpConstantTo(this->barrelMovement.current, this->barrelMovement.target, dt, this->RotationSpeed);
+	Railgun_TickState(dt);
+	if (HasPower()) Railgun_TickAim(dt);
+}
 
-			if (FMath::Abs(this->towerMovement.current - this->towerMovement.target) < 0.01f &&
-				FMath::Abs(this->barrelMovement.current - this->barrelMovement.target) < 0.01f)
-			{
-				this->isMoving = false;
-				AsyncTask(ENamedThreads::GameThread, [this]()
+void AWC_Railgun::Railgun_TickState(float dt)
+{
+	if (animationState == ERailgunState::RESETTING)
+	{
+		bStateTimerPausedForPower = false;
+		UpdateStateTimeFromServerClock();
+		if (StateTime >= 1.f)
+		{
+			ToIdle();
+		}
+		return;
+	}
+
+	if (!HasPower())
+	{
+		if (!bStateTimerPausedForPower)
+		{
+			UpdateStateTimeFromServerClock();
+			PausedStateTime = StateTime;
+			bStateTimerPausedForPower = true;
+		}
+		return;
+	}
+
+	if (bStateTimerPausedForPower)
+	{
+		StateTime = PausedStateTime;
+		ResetStateTimer();
+		const float Duration = GetCurrentStateDuration();
+		StateStartServerTime -= FMath::Clamp(PausedStateTime, 0.f, 1.f) * Duration;
+		StateTime = PausedStateTime;
+		bStateTimerPausedForPower = false;
+		ForceNetUpdate();
+	}
+	else
+	{
+		UpdateStateTimeFromServerClock();
+	}
+
+	switch (animationState)
+	{
+	case ERailgunState::IDLE:
+
+		if (StateTime >= 1.f && StorageInventoryComponent->GetNumItems(nullptr) >= ShootWasteThreshold)
+		{
+			ToLoading();
+		}
+		break;
+
+	case ERailgunState::LOADING:
+		if (StateTime >= 1.f)
+		{
+			ToAiming();
+		}
+		break;
+
+	default:
+		break;
+	}
+}
+
+void AWC_Railgun::Railgun_TickAim(float dt)
+{
+	if (animationState == ERailgunState::RESETTING) return;
+
+	if (HasAuthority())
+	{
+		FVector2D DesiredDirection = IdleAimDirection;
+		aimForShoot = false;
+
+		if (animationState == ERailgunState::AIMING)
+		{
+			aimForShoot = TryGetWorldTargetAimDirection(DesiredDirection);
+		}
+
+		bReplicatedHasAimTarget = aimForShoot;
+		AimToDirection(DesiredDirection);
+	}
+
+	this->towerMovement.current = FMath::FInterpConstantTo(this->towerMovement.current, this->towerMovement.target, dt, this->RotationSpeed);
+	this->barrelMovement.current = FMath::FInterpConstantTo(this->barrelMovement.current, this->barrelMovement.target, dt, this->RotationSpeed);
+
+	if (!HasAuthority()) return;
+	if (!bAimCompletionArmed)
+	{
+		bAimCompletionArmed = true;
+		return;
+	}
+
+	if (FMath::IsNearlyEqual(towerMovement.current, towerMovement.target, precisionThreshold) &&
+		FMath::IsNearlyEqual(barrelMovement.current, barrelMovement.target, precisionThreshold))
+	{
+		if (isMoving)
+		{
+			SetAimDirectionDirect(FVector2D(towerMovement.target, barrelMovement.target));
+			SetMoving(false);
+			AsyncTask(ENamedThreads::GameThread, [this]()
 				{
 					this->MovementComplete();
 				});
-			}
 		}
 	}
+	else if (animationState == ERailgunState::AIMING && aimForShoot && !isMoving)
+	{
+		SetMoving(true);
+	}
+}
+
+void AWC_Railgun::ToLoading()
+{
+	TArray<FInventoryStack> stacks;
+	StorageInventoryComponent->GetInventoryStacks(stacks);
+	MissileInventoryComponent->AddStacks(stacks);
+	StorageInventoryComponent->Empty();
+	aimForShoot = false;
+	bReplicatedHasAimTarget = false;
+	bAimCompletionArmed = false;
+	animationState = ERailgunState::LOADING;
+	ResetStateTimer();
+	SetMoving(false);
+	OnLoading();
+	FlushNetDormancy();
+	ForceNetUpdate();
+}
+
+void AWC_Railgun::ToAiming()
+{
+	animationState = ERailgunState::AIMING;
+	ResetStateTimer();
+	FVector2D DesiredDirection = IdleAimDirection;
+	aimForShoot = TryGetWorldTargetAimDirection(DesiredDirection);
+	bReplicatedHasAimTarget = aimForShoot;
+	ReplicatedAimStart = FVector2D(towerMovement.current, barrelMovement.current);
+	AimToDirection(DesiredDirection);
+	++AimCommandSequence;
+	bAimCompletionArmed = false;
+	SetMoving(true);
+	FlushNetDormancy();
+	ForceNetUpdate();
+}
+
+void AWC_Railgun::MovementComplete()
+{
+	if (!HasAuthority() || animationState != ERailgunState::AIMING || !aimForShoot || !CanSeeSun())
+	{
+		return;
+	}
+
+	animationState = ERailgunState::RESETTING;
+	ResetStateTimer();
+
+	const FTransform ShotTransform = GetActorTransform();
+	const FVector ShotLocation = GetActorLocation();
+	OnShoot(ShotTransform);
+	RemoveAllWasteItems();
+	ReplicatedShotTransform = ShotTransform;
+	ReplicatedShotTargetLocation = AimTargetWorldLocation;
+	++ShotSequence;
+	FlushNetDormancy();
+	ForceNetUpdate();
+	MulticastPresentShot(ShotSequence, ShotTransform, ShotLocation, ReplicatedShotTargetLocation);
+}
+
+void AWC_Railgun::ToIdle()
+{
+	aimForShoot = false;
+	bReplicatedHasAimTarget = false;
+	animationState = ERailgunState::IDLE;
+	ResetStateTimer();
+	ReplicatedAimStart = FVector2D(towerMovement.current, barrelMovement.current);
+	AimToDirection(IdleAimDirection);
+	++AimCommandSequence;
+	bAimCompletionArmed = false;
+	SetMoving(true);
+	netSig_Finished();
+	FlushNetDormancy();
+	ForceNetUpdate();
+}
+
+void AWC_Railgun::MulticastPresentShot_Implementation(uint32 Sequence, const FTransform& ShotTransform, const FVector& Location, const FVector& TargetLocation)
+{
+	PresentShot(Sequence, ShotTransform, Location, TargetLocation);
 }
 
 bool AWC_Railgun::ShouldSave_Implementation() const
@@ -166,27 +347,33 @@ bool AWC_Railgun::ShouldSave_Implementation() const
 	return true;
 }
 
-void AWC_Railgun::UpdateAimDirection(const FVector& position, const FVector2D& direction)
+void AWC_Railgun::UpdateAimDirection(const FVector2D& direction)
 {
-	//UE_LOGFMT(WasteCannon_Log, Display, "UpdateAimDirection");
-	this->TargetPosition = position;
-	this->AimDirection = direction;
-	this->towerMovement.start = this->towerMovement.current;
-	this->barrelMovement.start = this->barrelMovement.current;
-	this->towerMovement.target = direction.X;
-	this->barrelMovement.target = direction.Y;
+	FVector2D DesiredDirection = direction;
+	DesiredDirection.X = FMath::UnwindDegrees(DesiredDirection.X);
+	DesiredDirection.Y = FMath::Clamp(DesiredDirection.Y, MinTilt, MaxTilt);
+
+	towerMovement.target = DesiredDirection.X;
+	barrelMovement.target = DesiredDirection.Y;
+	if (HasAuthority())
+	{
+		ReplicatedAimTarget = DesiredDirection;
+	}
+
+	towerMovement.start = towerMovement.current;
+	barrelMovement.start = barrelMovement.current;
 
 	if (this->towerMovement.start + 180 < this->towerMovement.target) this->towerMovement.start += 360;
 	if (this->towerMovement.start - 180 > this->towerMovement.target) this->towerMovement.start -= 360;
 	this->towerMovement.current = this->towerMovement.start;
-
-	this->isMoving = true;
-	OnAimChanged();
-	OnStartMoving();
 }
 
 void AWC_Railgun::SetAimDirectionDirect(const FVector2D & direction)
 {
+	FVector2D DesiredDirection = direction;
+	DesiredDirection.X = FMath::UnwindDegrees(DesiredDirection.X);
+	DesiredDirection.Y = FMath::Clamp(DesiredDirection.Y, MinTilt, MaxTilt);
+
 	this->towerMovement.start = direction.X;
 	this->barrelMovement.start = direction.Y;
 	this->towerMovement.target = direction.X;
@@ -195,381 +382,189 @@ void AWC_Railgun::SetAimDirectionDirect(const FVector2D & direction)
 	this->barrelMovement.current = direction.Y;
 }
 
-void AWC_Railgun::MovementComplete()
-{
-	//UE_LOGFMT(WasteCannon_Log, Display, "MovementComplete");
-	OnStopMoving();
-	if (HasAuthority())
-	{
-		SetAimDirectionDirect(FVector2D(this->towerMovement.target, this->barrelMovement.target));
-		if (this->animationState == ERailgunState::AIMING && Loaded)
-		{
-			ReadyForShoot();
-			if (this->animationState == ERailgunState::AIMING)
-			{
-				if (ShouldShoot)
-				{
-					Shoot(GetActorTransform());
-				}
-				else
-				{
-					Loaded = false;
-					this->animationState = ERailgunState::IDLE;
-				}
-			}
-		}
-		else if (this->animationState == ERailgunState::RESETTING)
-		{
-			// Reset completes the shot cycle. Next cycle will begin from loading.
-			this->animationState = ERailgunState::IDLE;
-			netSig_Finished();
-			//UE_LOGFMT(WasteCannon_Log, Display, "transition to idle");
-		}
-	}
-}
-
 FVector2D AWC_Railgun::GetAimDirection()
 {
-	return FVector2D(this->towerMovement.target, this->barrelMovement.target);
+	return FVector2D(this->towerMovement.current, this->barrelMovement.current);
 }
 
 FRotator AWC_Railgun::GetAimRotation()
 {
-	return FRotator(this->towerMovement.target, this->barrelMovement.target, 0);
+	return FRotator(this->towerMovement.current, this->barrelMovement.current, 0);
 }
 
-void AWC_Railgun::ResetTower()
+void AWC_Railgun::AimToDirection(const FVector2D & direction)
 {
-	AimToDirection(FVector2D(this->towerMovement.target, 0), ERailgunState::RESETTING);
+	UpdateAimDirection(direction);
 }
 
-void AWC_Railgun::AnimationComplete()
-{
-	if (this->animationState == ERailgunState::SHOOTING)
-	{
-		ResetTower();
-	}
-	else if (this->animationState == ERailgunState::LOADING)
-	{
-		if (!ShouldShoot)
-		{
-			Loaded = false;
-			this->animationState = ERailgunState::IDLE;
-			return;
-		}
-		if (bUseAimTargetWorldLocation)
-		{
-			ApplyAimFromWorldTarget();
-		}
-		AimToDirection(AimDirection, ERailgunState::AIMING);
-	}
-}
-
-void AWC_Railgun::Shoot(const FTransform& position)
-{
-	if (!HasAuthority())
-	{
-		return;
-	}
-
-	if (!ShouldShoot)
-	{
-		return;
-	}
-
-	if (GetWasteItemCount() <= 0)
-	{
-		return;
-	}
-	if (!CanShootWithCurrentAmmo())
-	{
-		return;
-	}
-	if (!ConsumeFuel())
-	{
-		return;
-	}
-
-	LastShotWasteCount = GetWasteItemCount();
-	RemoveAllWasteItems();
-
-	this->animationState = ERailgunState::SHOOTING;
-
-	//UE_LOGFMT(WasteCannon_Log, Display, "SHOOTING. State: {0}", UEnum::GetValueAsString(animationState));
-	this->Loaded = false;
-	OnShoot(position);
-	OnShotTriggered(position);
-	netSig_Shooted(position.GetLocation());
-}
-
-void AWC_Railgun::AimToDirection(const FVector2D & direction, ERailgunState newState)
-{
-	//UE_LOGFMT(WasteCannon_Log, Display, "AimToDirection. State: {0}", UEnum::GetValueAsString(animationState));
-	if (!ShouldShoot && newState != ERailgunState::RESETTING)
-	{
-		Loaded = false;
-		this->animationState = ERailgunState::IDLE;
-		return;
-	}
-
-	this->animationState = newState;
-	const FVector AimReferenceWorld =
-		bUseAimTargetWorldLocation ? AimTargetWorldLocation : FVector::ZeroVector;
-	UpdateAimDirection(AimReferenceWorld, direction);
-}
-
-void AWC_Railgun::ApplyAimFromWorldTarget()
+bool AWC_Railgun::TryGetWorldTargetAimDirection(FVector2D& OutDirection)
 {
 	const FVector Origin = GetActorLocation();
 	FVector ToTarget = AimTargetWorldLocation - Origin;
 	const float DistSq = ToTarget.SizeSquared();
 	if (DistSq < KINDA_SMALL_NUMBER)
 	{
-		return;
+		return false;
 	}
 
 	// Unit direction to target in actor space (+X forward, +Y right, +Z up).
 	const FVector LocalDir = GetActorTransform().InverseTransformVectorNoScale(ToTarget.GetSafeNormal());
 
-	const float TowerDeg = FMath::RadiansToDegrees(FMath::Atan2(LocalDir.Y, LocalDir.X));
+	const float TowerDeg = FMath::UnwindDegrees(FMath::RadiansToDegrees(FMath::Atan2(LocalDir.Y, LocalDir.X)));
 	float BarrelDeg = FMath::RadiansToDegrees(FMath::Atan2(LocalDir.Z,
 		FMath::Sqrt(FMath::Square(LocalDir.X) + FMath::Square(LocalDir.Y))));
 
-	if (bClampWorldTargetBarrelToTiltLimits)
+	if (bClampWorldTargetBarrelToTiltLimits) 
 	{
-		BarrelDeg = FMath::Clamp(BarrelDeg, MinTilt, MaxTilt);
-	}
-
-	AimDirection = FVector2D(TowerDeg, BarrelDeg);
-}
-
-int32 AWC_Railgun::GetWasteItemCount() const
-{
-	if (!StorageInventoryComponent)
-	{
-		return 0;
-	}
-	return StorageInventoryComponent->GetNumItems(nullptr);
-}
-
-bool AWC_Railgun::IsWasteInventoryFull() const
-{
-	if (!StorageInventoryComponent)
-	{
-		return false;
-	}
-	return StorageInventoryComponent->FindEmptyIndex() < 0;
-}
-
-bool AWC_Railgun::ConsumeFuel()
-{
-	if (!FuelInventoryComponent)
-	{
-		return false;
-	}
-
-	bool bHasValidWhitelistEntry = false;
-	for (const TSubclassOf<UFGItemDescriptor>& AllowedDescriptor : AllowedAmmoDescriptors)
-	{
-		if (!AllowedDescriptor)
+		//UE_LOGFMT(WasteCannon_Log, Display, "Try aiming the sun. Tilt: {0}", BarrelDeg);
+		const bool bWithinTilt = (BarrelDeg >= MinTilt && BarrelDeg <= MaxTilt);
+		if (!bWithinTilt)
 		{
-			continue;
-		}
-		bHasValidWhitelistEntry = true;
-
-		if (FuelInventoryComponent->HasItems(AllowedDescriptor, 100))
-		{
-			FuelInventoryComponent->Empty();
-			return true;
+			return false;
 		}
 	}
 
-	const int32 FuelIndex = FuelInventoryComponent->GetFirstIndexWithItem();
-	if (FuelIndex < 0)
-	{
-		return false;
-	}
-
-	FInventoryStack FuelStack;
-	if (!FuelInventoryComponent->GetStackFromIndex(FuelIndex, FuelStack) || !FuelStack.HasItems())
-	{
-		return false;
-	}
-
-	FuelInventoryComponent->Remove(FuelStack.Item.GetItemClass(), 1);
+	OutDirection = FVector2D(TowerDeg, BarrelDeg);
 	return true;
-}
-
-bool AWC_Railgun::CanShootWithCurrentAmmo() const
-{
-	if (!FuelInventoryComponent)
-	{
-		return false;
-	}
-
-	bool bHasValidWhitelistEntry = false;
-	for (const TSubclassOf<UFGItemDescriptor>& AllowedDescriptor : AllowedAmmoDescriptors)
-	{
-		if (!AllowedDescriptor)
-		{
-			continue;
-		}
-		bHasValidWhitelistEntry = true;
-
-		if (FuelInventoryComponent->GetNumItems(AllowedDescriptor) >= 100)
-		{
-			return true;
-		}
-	}
-
-	return FuelInventoryComponent->GetFirstIndexWithItem() >= 0;
 }
 
 void AWC_Railgun::RemoveAllWasteItems()
 {
-	if (!StorageInventoryComponent)
+	if (!MissileInventoryComponent)
 	{
 		return;
 	}
-	StorageInventoryComponent->Empty();
+	MissileInventoryComponent->Empty();
 }
 
-void AWC_Railgun::EvaluateAutoShoot()
+void AWC_Railgun::OnRep_AnimationState(ERailgunState PreviousState)
 {
-	//UE_LOGFMT(WasteCannon_Log, Display, "EvaluateAutoShoot. State: {0}", UEnum::GetValueAsString(animationState));
-	TryAutoShoot();
+	UpdateStateTimeFromServerClock();
+
+	if (animationState == ERailgunState::LOADING)
+	{
+		OnLoading();
+	}
+	else if (animationState == ERailgunState::IDLE && PreviousState != ERailgunState::IDLE)
+	{
+		netSig_Finished();
+	}
 }
 
-void AWC_Railgun::FinishShotCycleFallback()
+void AWC_Railgun::OnRep_IsMoving()
 {
-	if (!HasAuthority())
+	if (isMoving)
+	{
+		OnStartMoving();
+	}
+	else
+	{
+		OnStopMoving();
+	}
+}
+
+void AWC_Railgun::OnRep_AimCommandSequence()
+{
+	towerMovement.current = ReplicatedAimStart.X;
+	barrelMovement.current = ReplicatedAimStart.Y;
+	UpdateAimDirection(ReplicatedAimTarget);
+}
+
+void AWC_Railgun::OnRep_HasAimTarget()
+{
+	aimForShoot = bReplicatedHasAimTarget;
+}
+
+void AWC_Railgun::OnRep_ShotSequence()
+{
+	PresentShot(ShotSequence, ReplicatedShotTransform, ReplicatedShotTransform.GetLocation(), ReplicatedShotTargetLocation);
+}
+
+void AWC_Railgun::PresentShot(uint32 Sequence, const FTransform& ShotTransform, const FVector& Location, const FVector& TargetLocation)
+{
+	if (Sequence == 0 || Sequence == LastPresentedShotSequence)
 	{
 		return;
 	}
 
-	if (this->animationState == ERailgunState::SHOOTING)
+	LastPresentedShotSequence = Sequence;
+	if (!HasActorBegunPlay())
 	{
-		ResetTower();
-	}
-}
-
-UFGInventoryComponent* AWC_Railgun::ResolveInventoryForConnection(UFGFactoryConnectionComponent* Connection) const
-{
-	if (!Connection)
-	{
-		return nullptr;
+		return;
 	}
 
-	const FString ConnectionName = Connection->GetName();
-	if (ConnectionName.Contains(TEXT("Fuel"), ESearchCase::IgnoreCase))
-	{
-		return FuelInventoryComponent;
-	}
-	if (ConnectionName.Contains(TEXT("Storage"), ESearchCase::IgnoreCase) ||
-		ConnectionName.Contains(TEXT("Waste"), ESearchCase::IgnoreCase))
-	{
-		return StorageInventoryComponent;
-	}
-
-	const int32 FoundIndex = InputConnections.Find(Connection);
-	if (FoundIndex == 0)
-	{
-		return FuelInventoryComponent;
-	}
-	if (FoundIndex == 1)
-	{
-		return StorageInventoryComponent;
-	}
-
-	return StorageInventoryComponent;
-}
-
-bool AWC_Railgun::IsItemClassAllowedOnFuelInput(TSubclassOf<UFGItemDescriptor> ItemClass) const
-{
-	if (!ItemClass)
-	{
-		return false;
-	}
-	if (!bUseAmmoWhitelist)
-	{
-		return true;
-	}
-
-	bool bHasValidWhitelistEntry = false;
-	for (const TSubclassOf<UFGItemDescriptor>& AllowedDescriptor : AllowedAmmoDescriptors)
-	{
-		if (!AllowedDescriptor)
-		{
-			continue;
-		}
-		bHasValidWhitelistEntry = true;
-		if (ItemClass == AllowedDescriptor)
-		{
-			return true;
-		}
-	}
-
-	// Same as CanShootWithCurrentAmmo / ConsumeOneFuelItem: no valid list entries means no descriptor restriction.
-	return !bHasValidWhitelistEntry;
-}
-
-bool AWC_Railgun::TryAutoShoot()
-{
-	//UE_LOGFMT(WasteCannon_Log, Display, "TryAutoShoot. State: {0}", UEnum::GetValueAsString(animationState));
 	if (!HasAuthority())
 	{
-		return false;
+		AimTargetWorldLocation = TargetLocation;
+		OnShoot(ShotTransform);
 	}
 
-	// If shooting was disabled mid-cycle, drop out of LOADING.
-	if (!ShouldShoot && animationState == ERailgunState::LOADING)
+	netSig_Shooted(Location);
+}
+
+void AWC_Railgun::SetMoving(bool bNewMoving)
+{
+	if (isMoving == bNewMoving)
 	{
-		Loaded = false;
-		this->animationState = ERailgunState::IDLE;
+		return;
 	}
 
-	if (animationState != ERailgunState::IDLE && animationState != ERailgunState::GUARDING)
+	isMoving = bNewMoving;
+	if (isMoving)
 	{
-		return false;
+		OnStartMoving();
 	}
-
-	const int32 WasteCount = GetWasteItemCount();
-	const bool bWasteThresholdReached = AutoShootWasteThreshold > 0 && WasteCount >= AutoShootWasteThreshold;
-	const bool bWasteInventoryFull = IsWasteInventoryFull();
-	if (!bWasteThresholdReached && !bWasteInventoryFull)
+	else
 	{
-		return false;
+		OnStopMoving();
 	}
+}
 
-	if (WasteCount <= 0)
+void AWC_Railgun::ResetStateTimer()
+{
+	StateTime = 0.f;
+	if (!GetWorld())
 	{
-		return false;
+		StateStartServerTime = 0.f;
+		return;
 	}
 
-	if (!CanShootWithCurrentAmmo())
+	const AGameStateBase* GameState = GetWorld()->GetGameState();
+	StateStartServerTime = GameState ? GameState->GetServerWorldTimeSeconds() : GetWorld()->GetTimeSeconds();
+}
+
+void AWC_Railgun::UpdateStateTimeFromServerClock()
+{
+	if (!GetWorld())
 	{
-		return false;
+		return;
 	}
 
-	// Let Blueprint run first (e.g. set ShouldShoot true) before any movement or LOADING.
-	Loaded = true;
-	ReadyForShoot();
-	if (!ShouldShoot)
+	const float Duration = GetCurrentStateDuration();
+	if (Duration <= KINDA_SMALL_NUMBER)
 	{
-		Loaded = false;
-		return false;
+		StateTime = 0.f;
+		return;
 	}
 
-	// Ensure barrel is back to load angle before entering LOADING.
-	if (FMath::Abs(this->barrelMovement.current) > 0.01f)
+	const AGameStateBase* GameState = GetWorld()->GetGameState();
+	const float ServerTime = GameState ? GameState->GetServerWorldTimeSeconds() : GetWorld()->GetTimeSeconds();
+	StateTime = FMath::Clamp((ServerTime - StateStartServerTime) / Duration, 0.f, 1.f);
+}
+
+float AWC_Railgun::GetCurrentStateDuration() const
+{
+	switch (animationState)
 	{
-		ResetTower();
-		return true;
+	case ERailgunState::IDLE:
+		return IdleSeconds;
+	case ERailgunState::LOADING:
+		return LoadingSeconds;
+	case ERailgunState::RESETTING:
+		return ResettingSeconds;
+	default:
+		return 0.f;
 	}
-
-	this->animationState = ERailgunState::LOADING;
-
-	return true;
 }
 
 #pragma optimize("", on)

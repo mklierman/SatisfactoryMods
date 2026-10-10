@@ -1,15 +1,15 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.0",
-	"FriendlyName": "WasteCannon",
+	"VersionName": "1.0.0",
+	"FriendlyName": "Waste Cannon",
 	"Description": "",
 	"Category": "Modding",
-	"CreatedBy": "SirDigby",
-	"CreatedByURL": "https://ficsit.app/user/4Mpda7UPxKixEB",
+	"CreatedBy": "SirDigby, AniViRus Productions",
+	"CreatedByURL": "",
 	"DocsURL": "",
 	"MarketplaceURL": "",
-	"SupportURL": "https://discord.gg/WM5KT7pVu8",
+	"SupportURL": "",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
@@ -21,8 +21,8 @@
 			"SemVersion": "^3.12.0"
 		}
 	],
-	"SemVersion": "1.1.0",
-	"GameVersion": ">=416835",
+	"SemVersion": "1.0.0",
+	"GameVersion": ">=502094",
 	"Modules": [
 		{
 			"Name": "WasteCannon",

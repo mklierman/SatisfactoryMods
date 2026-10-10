@@ -1,0 +1,25 @@
+Event	ID	Name			Wwise Object Path	Notes
+	694299461	Play_WC_Moving			\Default Work Unit\WasteCannon\Play_WC_Moving	
+	1777017995	Stop_WC_Charged			\Default Work Unit\WasteCannon\Stop_WC_Charged	
+	2365675019	Stop_WC_Moving			\Default Work Unit\WasteCannon\Stop_WC_Moving	
+	2387133734	Play_WC_Shooting_Flat			\Default Work Unit\WasteCannon\Play_WC_Shooting_Flat	
+	2550430828	Play_WC_Reload			\Default Work Unit\WasteCannon\Play_WC_Reload	
+	3376321514	Play_WC_Shooting_EchoImpact			\Default Work Unit\WasteCannon\Play_WC_Shooting_EchoImpact	
+	3705908211	Resume_WC_Reload			\Default Work Unit\WasteCannon\Resume_WC_Reload	
+	3753361994	Pause_WC_Reload			\Default Work Unit\WasteCannon\Pause_WC_Reload	
+	4281755005	Play_WC_Charged			\Default Work Unit\WasteCannon\Play_WC_Charged	
+
+Game Parameter	ID	Name			Wwise Object Path	Notes
+	3019447206	RTPC_WasteCannon_Volume_Factory			\Default Work Unit\WasteCannon\RTPC_WasteCannon_Volume_Factory	
+
+Audio Bus	ID	Name			Wwise Object Path	Notes
+	1649928128	WasteCannon_Volume_Factory			\Default Work Unit\Master Audio Bus\WasteCannon\WasteCannon_Volume_Factory	
+	3803692087	Master Audio Bus			\Default Work Unit\Master Audio Bus	
+
+In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
+	45291664	WC_Moving	.cache\8E\{8E631B37-DAC3-4600-95C1-E5E2D670366F}.wem		\Containers\Default Work Unit\WasteCannon\WC_Moving		990412
+	298123852	WC_Shooting_EchoImpact	.cache\24\{244D29CC-5831-2448-F442-2640E7BA094D}.wem		\Containers\Default Work Unit\WasteCannon\WC_Shooting_EchoImpact		729304
+	328699641	WC_Reload	.cache\54\{540A1677-C5F4-82ED-B86F-460F79F91250}.wem		\Containers\Default Work Unit\WasteCannon\WC_Reload		1587744
+	768930073	WC_Charged	.cache\41\{41C4EC87-DAD7-A4AF-09EA-2DA620107A87}.wem		\Containers\Default Work Unit\WasteCannon\WC_Charged		5380292
+	927162614	WC_Shooting_Flat	.cache\23\{23EBC475-5FB2-CCB5-7C1B-9BDC2E4DE3E5}.wem		\Containers\Default Work Unit\WasteCannon\WC_Shooting_Flat		851312
+

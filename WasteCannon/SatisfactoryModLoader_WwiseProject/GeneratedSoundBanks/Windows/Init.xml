@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SoundBanksInfo Platform="Windows" BasePlatform="Windows" SchemaVersion="16" SoundBankVersion="172">
+	<SoundBanks>
+		<SoundBank Id="1355168291" Type="User" GUID="{701ECBBD-9C7B-4030-8CDB-749EE5D1C7B9}" Language="SFX" Hash="{B3A3BC6F-119C-B3C2-3D4B-91705F7714B6}">
+			<ObjectPath>Init</ObjectPath>
+			<ShortName>Init</ShortName>
+			<Path>Init.bnk</Path>
+			<Plugins>
+				<AudioDevices>
+					<Plugin Id="2317455096" Name="No_Output" ObjectPath="\Devices\Default Work Unit\No_Output" GUID="{0B1DABC0-A689-4364-A202-40CCCD490611}" LibName="No Output" LibId="11862023"/>
+					<Plugin Id="3859886410" Name="System" ObjectPath="\Devices\Default Work Unit\System" GUID="{1402084F-F08C-4DDF-9136-61CB5719812B}" LibName="System" LibId="11403271"/>
+				</AudioDevices>
+			</Plugins>
+			<Busses>
+				<Bus Id="1649928128" Name="WasteCannon_Volume_Factory" ObjectPath="\Busses\Default Work Unit\Master Audio Bus\WasteCannon\WasteCannon_Volume_Factory" GUID="{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}"/>
+				<Bus Id="3803692087" Name="Master Audio Bus" ObjectPath="\Busses\Default Work Unit\Master Audio Bus" GUID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}"/>
+			</Busses>
+			<GameParameters>
+				<GameParameter Id="126616659" Name="RTPC_Megaprojects_WaterDam_Volume_Factory" ObjectPath="\Game Parameters\Default Work Unit\Megaprojects_WaterDam\RTPC_Megaprojects_WaterDam_Volume_Factory" GUID="{63DB5194-1799-4813-A015-937F781F5F73}"/>
+				<GameParameter Id="208774859" Name="RTPC_Lithium_Volume_Dialogue" ObjectPath="\Game Parameters\Default Work Unit\Lithium\RTPC_Lithium_Volume_Dialogue" GUID="{A79F769E-D7EB-4AE2-BEF2-511E3A9588DB}"/>
+				<GameParameter Id="1095561979" Name="RTPC_QuantumTechUtils_Volume_Dialogue" ObjectPath="\Game Parameters\Default Work Unit\QuantumTechUtils\RTPC_QuantumTechUtils_Volume_Dialogue" GUID="{87972AC4-E03D-40E8-BEFD-CAC35AD58856}"/>
+				<GameParameter Id="1336380489" Name="RTPC_TruckStationsPlus_Volume_Dialogue" ObjectPath="\Game Parameters\Default Work Unit\TruckStationsPlus\RTPC_TruckStationsPlus_Volume_Dialogue" GUID="{E8C0BFF8-6BD9-4665-898C-5287851CC0FD}"/>
+				<GameParameter Id="1549306175" Name="RTPC_Megaprojects_PowerDomain_Volume_Dialogue" ObjectPath="\Game Parameters\Default Work Unit\Megaprojects_PowerDomain\RTPC_Megaprojects_PowerDomain_Volume_Dialogue" GUID="{85034048-8886-43A7-A55B-E22BDEEC3766}"/>
+				<GameParameter Id="1611609285" Name="RTPC_Megaprojects_WaterDam_Volume_Dialogue" ObjectPath="\Game Parameters\Default Work Unit\Megaprojects_WaterDam\RTPC_Megaprojects_WaterDam_Volume_Dialogue" GUID="{66F88C04-CEA1-49B9-84B1-00D5074A4D17}"/>
+				<GameParameter Id="1770587797" Name="RTPC_Lithium_Volume_Factory" ObjectPath="\Game Parameters\Default Work Unit\Lithium\RTPC_Lithium_Volume_Factory" GUID="{8C7B501F-0FBD-4D95-B017-85E249FF28E1}"/>
+				<GameParameter Id="2082479922" Name="RTPC_MegaprojectsLib_Volume_Dialogue" ObjectPath="\Game Parameters\Default Work Unit\MegaprojectsLib\RTPC_MegaprojectsLib_Volume_Dialogue" GUID="{062586CC-5283-41DD-BE5E-63B797CA86AB}"/>
+				<GameParameter Id="3019447206" Name="RTPC_WasteCannon_Volume_Factory" ObjectPath="\Game Parameters\Default Work Unit\WasteCannon\RTPC_WasteCannon_Volume_Factory" GUID="{EE3E7F24-AF3F-4606-B731-F3C718180259}"/>
+				<GameParameter Id="3959344257" Name="RTPC_AlkaLib_Volume_Factory" ObjectPath="\Game Parameters\Default Work Unit\AlkaLib\RTPC_AlkaLib_Volume_Factory" GUID="{77C814D0-C68C-4C90-98C8-83B350C9B8A3}"/>
+			</GameParameters>
+		</SoundBank>
+	</SoundBanks>
+	<FileHash>{8BFFD50C-A1D5-67F9-5DC2-B997295762F6}</FileHash>
+</SoundBanksInfo>

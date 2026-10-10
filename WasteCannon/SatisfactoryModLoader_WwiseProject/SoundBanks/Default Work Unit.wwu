@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{93832428-3463-48D4-BD1F-46380B36629E}" SchemaVersion="133">
+	<SoundBanks>
+		<WorkUnit Name="Default Work Unit" ID="{93832428-3463-48D4-BD1F-46380B36629E}" PersistMode="Standalone">
+			<ChildrenList>
+				<SoundBank Name="WasteCannon_Soundbank" ID="{2244DAF7-88ED-4AD6-80E5-F6A0D315E339}">
+					<ObjectInclusionList>
+						<ObjectRef Name="WasteCannon" ID="{B6FB725F-912F-4327-840D-502D515CB081}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="WasteCannon" ID="{ED421720-A327-4836-8655-4F5CF3CA139F}" WorkUnitID="{BE4CFC6F-1D57-454D-8C64-E85A33D7867C}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="WasteCannon" ID="{6A019FA9-171B-4D02-BC3A-8D1CB77C9E36}" WorkUnitID="{1D352AF5-39D5-4B6D-814D-7A38B1E00D8B}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+			</ChildrenList>
+		</WorkUnit>
+	</SoundBanks>
+</WwiseDocument>

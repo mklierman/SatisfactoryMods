@@ -1,0 +1,36 @@
+{
+ "ProjectInfo": {
+  "Project": {
+   "Name": "SatisfactoryModLoader_WwiseProject",
+   "GUID": "{893A3299-0101-4D2B-97D2-F23D667C2D1C}",
+   "Generator": "2025.1.6.9117"
+  },
+  "CacheRoot": "../.cache",
+  "Platforms": [
+   {
+    "Name": "Mac",
+    "GUID": "{2B6E0442-CE2F-437E-9A88-2ECAEA4866C6}",
+    "BasePlatform": "Mac",
+    "BasePlatformGUID": "{9C6217D5-DD11-4795-87C1-6CE02853C540}",
+    "Path": "Mac"
+   },
+   {
+    "Name": "Windows",
+    "GUID": "{E8C118CD-990C-4F85-877B-7D9055F154C7}",
+    "BasePlatform": "Windows",
+    "BasePlatformGUID": "{6E0CB257-C6C8-4C5C-8366-2740DFC441EB}",
+    "Path": "Windows"
+   }
+  ],
+  "Languages": [
+   {
+    "Name": "English(US)",
+    "Id": "684519430",
+    "GUID": "{76FEDF72-D50D-43BA-A4F3-F832C900D6D6}",
+    "Default": "true",
+    "UseAsStandIn": "true"
+   }
+  ],
+  "FileHash": "{426C6B3A-481F-F23E-2316-1BA84D633428}"
+ }
+}

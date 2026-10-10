@@ -1,0 +1,332 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "RootPaths": {
+   "ProjectRoot": "../..",
+   "SourceFilesRoot": "../../.cache",
+   "SoundBanksRoot": ".",
+   "ExternalSourcesInputFile": "",
+   "ExternalSourcesOutputRoot": "."
+  },
+  "DialogueEvents": [],
+  "SoundBanks": [
+   {
+    "Id": "234168948",
+    "Type": "User",
+    "GUID": "{2244DAF7-88ED-4AD6-80E5-F6A0D315E339}",
+    "Language": "SFX",
+    "Hash": "{1070CAC8-5891-E24F-AA98-ABC6E71314CE}",
+    "ObjectPath": "\\SoundBanks\\Default Work Unit\\WasteCannon_Soundbank",
+    "ShortName": "WasteCannon_Soundbank",
+    "Path": "WasteCannon_Soundbank.bnk",
+    "Media": [
+     {
+      "Id": "45291664",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "WC_Moving.wav",
+      "CachePath": "8E/{8E631B37-DAC3-4600-95C1-E5E2D670366F}.wem"
+     },
+     {
+      "Id": "298123852",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "WC_Shooting_EchoImpact.wav",
+      "CachePath": "24/{244D29CC-5831-2448-F442-2640E7BA094D}.wem"
+     },
+     {
+      "Id": "328699641",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "WC_Reload.wav",
+      "CachePath": "54/{540A1677-C5F4-82ED-B86F-460F79F91250}.wem"
+     },
+     {
+      "Id": "768930073",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "WC_Charged.wav",
+      "CachePath": "41/{41C4EC87-DAD7-A4AF-09EA-2DA620107A87}.wem"
+     },
+     {
+      "Id": "927162614",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "WC_Shooting_Flat.wav",
+      "CachePath": "23/{23EBC475-5FB2-CCB5-7C1B-9BDC2E4DE3E5}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "3753361994",
+      "Name": "Pause_WC_Reload",
+      "ObjectPath": "\\Events\\Default Work Unit\\WasteCannon\\Pause_WC_Reload",
+      "GUID": "{64F5502F-06C2-49C7-A795-D3E07DE40E87}",
+      "MaxAttenuation": "0",
+      "DurationType": "OneShot",
+      "DurationMin": "0",
+      "DurationMax": "0",
+      "MediaRefs": [
+       {
+        "Id": "328699641"
+       }
+      ]
+     },
+     {
+      "Id": "4281755005",
+      "Name": "Play_WC_Charged",
+      "ObjectPath": "\\Events\\Default Work Unit\\WasteCannon\\Play_WC_Charged",
+      "GUID": "{71E9C0BE-AD60-4DBC-B41C-01566FCAF0B4}",
+      "MaxAttenuation": "10000",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "768930073"
+       }
+      ]
+     },
+     {
+      "Id": "694299461",
+      "Name": "Play_WC_Moving",
+      "ObjectPath": "\\Events\\Default Work Unit\\WasteCannon\\Play_WC_Moving",
+      "GUID": "{E2643817-406D-42C1-A850-1EE9AD4AF6BC}",
+      "MaxAttenuation": "10000",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "45291664"
+       }
+      ]
+     },
+     {
+      "Id": "2550430828",
+      "Name": "Play_WC_Reload",
+      "ObjectPath": "\\Events\\Default Work Unit\\WasteCannon\\Play_WC_Reload",
+      "GUID": "{B5301D06-1512-4E6B-9100-F69CC4D112BA}",
+      "MaxAttenuation": "10000",
+      "DurationType": "OneShot",
+      "DurationMin": "9.000272",
+      "DurationMax": "9.000272",
+      "MediaRefs": [
+       {
+        "Id": "328699641"
+       }
+      ]
+     },
+     {
+      "Id": "3376321514",
+      "Name": "Play_WC_Shooting_EchoImpact",
+      "ObjectPath": "\\Events\\Default Work Unit\\WasteCannon\\Play_WC_Shooting_EchoImpact",
+      "GUID": "{775D71B3-5ABB-42BF-89DB-D4E390F7D4D7}",
+      "MaxAttenuation": "50000",
+      "DurationType": "OneShot",
+      "DurationMin": "4.133832",
+      "DurationMax": "4.133832",
+      "MediaRefs": [
+       {
+        "Id": "298123852"
+       }
+      ]
+     },
+     {
+      "Id": "2387133734",
+      "Name": "Play_WC_Shooting_Flat",
+      "ObjectPath": "\\Events\\Default Work Unit\\WasteCannon\\Play_WC_Shooting_Flat",
+      "GUID": "{9A59144B-8F25-4CA8-B2D9-4C38D8205FDC}",
+      "MaxAttenuation": "10000",
+      "DurationType": "OneShot",
+      "DurationMin": "4.8254876",
+      "DurationMax": "4.8254876",
+      "MediaRefs": [
+       {
+        "Id": "927162614"
+       }
+      ]
+     },
+     {
+      "Id": "3705908211",
+      "Name": "Resume_WC_Reload",
+      "ObjectPath": "\\Events\\Default Work Unit\\WasteCannon\\Resume_WC_Reload",
+      "GUID": "{FE0F2583-486A-4ED0-B290-D448783CF1C1}",
+      "MaxAttenuation": "0",
+      "DurationType": "OneShot",
+      "DurationMin": "0",
+      "DurationMax": "0",
+      "MediaRefs": [
+       {
+        "Id": "328699641"
+       }
+      ]
+     },
+     {
+      "Id": "1777017995",
+      "Name": "Stop_WC_Charged",
+      "ObjectPath": "\\Events\\Default Work Unit\\WasteCannon\\Stop_WC_Charged",
+      "GUID": "{A4D914AF-2257-4C9E-BF81-28DF14BFEE9F}",
+      "MaxAttenuation": "0",
+      "DurationType": "OneShot",
+      "DurationMin": "0",
+      "DurationMax": "0",
+      "MediaRefs": [
+       {
+        "Id": "768930073"
+       }
+      ]
+     },
+     {
+      "Id": "2365675019",
+      "Name": "Stop_WC_Moving",
+      "ObjectPath": "\\Events\\Default Work Unit\\WasteCannon\\Stop_WC_Moving",
+      "GUID": "{E9A64CCA-DADC-4CAE-A64C-D63B12B2F9CE}",
+      "MaxAttenuation": "0",
+      "DurationType": "OneShot",
+      "DurationMin": "0",
+      "DurationMax": "0",
+      "MediaRefs": [
+       {
+        "Id": "45291664"
+       }
+      ]
+     }
+    ],
+    "Busses": [
+     {
+      "Id": "1649928128",
+      "Name": "WasteCannon_Volume_Factory",
+      "ObjectPath": "\\Busses\\Default Work Unit\\Master Audio Bus\\WasteCannon\\WasteCannon_Volume_Factory",
+      "GUID": "{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}"
+     },
+     {
+      "Id": "3803692087",
+      "Name": "Master Audio Bus",
+      "ObjectPath": "\\Busses\\Default Work Unit\\Master Audio Bus",
+      "GUID": "{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}"
+     }
+    ],
+    "GameParameters": [
+     {
+      "Id": "3019447206",
+      "Name": "RTPC_WasteCannon_Volume_Factory",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\WasteCannon\\RTPC_WasteCannon_Volume_Factory",
+      "GUID": "{EE3E7F24-AF3F-4606-B731-F3C718180259}"
+     }
+    ]
+   },
+   {
+    "Id": "1355168291",
+    "Type": "User",
+    "GUID": "{701ECBBD-9C7B-4030-8CDB-749EE5D1C7B9}",
+    "Language": "SFX",
+    "Hash": "{55D30C15-FB16-078A-ED9E-C399C090F717}",
+    "ObjectPath": "Init",
+    "ShortName": "Init",
+    "Path": "Init.bnk",
+    "Plugins": {
+     "AudioDevices": [
+      {
+       "Id": "2317455096",
+       "Name": "No_Output",
+       "ObjectPath": "\\Devices\\Default Work Unit\\No_Output",
+       "GUID": "{0B1DABC0-A689-4364-A202-40CCCD490611}",
+       "LibName": "No Output",
+       "LibId": "11862023"
+      },
+      {
+       "Id": "3859886410",
+       "Name": "System",
+       "ObjectPath": "\\Devices\\Default Work Unit\\System",
+       "GUID": "{1402084F-F08C-4DDF-9136-61CB5719812B}",
+       "LibName": "System",
+       "LibId": "11403271"
+      }
+     ]
+    },
+    "Busses": [
+     {
+      "Id": "1649928128",
+      "Name": "WasteCannon_Volume_Factory",
+      "ObjectPath": "\\Busses\\Default Work Unit\\Master Audio Bus\\WasteCannon\\WasteCannon_Volume_Factory",
+      "GUID": "{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}"
+     },
+     {
+      "Id": "3803692087",
+      "Name": "Master Audio Bus",
+      "ObjectPath": "\\Busses\\Default Work Unit\\Master Audio Bus",
+      "GUID": "{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}"
+     }
+    ],
+    "GameParameters": [
+     {
+      "Id": "126616659",
+      "Name": "RTPC_Megaprojects_WaterDam_Volume_Factory",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\Megaprojects_WaterDam\\RTPC_Megaprojects_WaterDam_Volume_Factory",
+      "GUID": "{63DB5194-1799-4813-A015-937F781F5F73}"
+     },
+     {
+      "Id": "208774859",
+      "Name": "RTPC_Lithium_Volume_Dialogue",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\Lithium\\RTPC_Lithium_Volume_Dialogue",
+      "GUID": "{A79F769E-D7EB-4AE2-BEF2-511E3A9588DB}"
+     },
+     {
+      "Id": "1095561979",
+      "Name": "RTPC_QuantumTechUtils_Volume_Dialogue",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\QuantumTechUtils\\RTPC_QuantumTechUtils_Volume_Dialogue",
+      "GUID": "{87972AC4-E03D-40E8-BEFD-CAC35AD58856}"
+     },
+     {
+      "Id": "1336380489",
+      "Name": "RTPC_TruckStationsPlus_Volume_Dialogue",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\TruckStationsPlus\\RTPC_TruckStationsPlus_Volume_Dialogue",
+      "GUID": "{E8C0BFF8-6BD9-4665-898C-5287851CC0FD}"
+     },
+     {
+      "Id": "1549306175",
+      "Name": "RTPC_Megaprojects_PowerDomain_Volume_Dialogue",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\Megaprojects_PowerDomain\\RTPC_Megaprojects_PowerDomain_Volume_Dialogue",
+      "GUID": "{85034048-8886-43A7-A55B-E22BDEEC3766}"
+     },
+     {
+      "Id": "1611609285",
+      "Name": "RTPC_Megaprojects_WaterDam_Volume_Dialogue",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\Megaprojects_WaterDam\\RTPC_Megaprojects_WaterDam_Volume_Dialogue",
+      "GUID": "{66F88C04-CEA1-49B9-84B1-00D5074A4D17}"
+     },
+     {
+      "Id": "1770587797",
+      "Name": "RTPC_Lithium_Volume_Factory",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\Lithium\\RTPC_Lithium_Volume_Factory",
+      "GUID": "{8C7B501F-0FBD-4D95-B017-85E249FF28E1}"
+     },
+     {
+      "Id": "2082479922",
+      "Name": "RTPC_MegaprojectsLib_Volume_Dialogue",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\MegaprojectsLib\\RTPC_MegaprojectsLib_Volume_Dialogue",
+      "GUID": "{062586CC-5283-41DD-BE5E-63B797CA86AB}"
+     },
+     {
+      "Id": "3019447206",
+      "Name": "RTPC_WasteCannon_Volume_Factory",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\WasteCannon\\RTPC_WasteCannon_Volume_Factory",
+      "GUID": "{EE3E7F24-AF3F-4606-B731-F3C718180259}"
+     },
+     {
+      "Id": "3959344257",
+      "Name": "RTPC_AlkaLib_Volume_Factory",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\AlkaLib\\RTPC_AlkaLib_Volume_Factory",
+      "GUID": "{77C814D0-C68C-4C90-98C8-83B350C9B8A3}"
+     }
+    ]
+   }
+  ],
+  "FileHash": "{4993B7AA-0A5E-6A17-8F93-096B7A2D8934}"
+ }
+}
