@@ -7,9 +7,15 @@
 #include "Hologram/FGPoleHologram.h"
 #include "Hologram/FGConveyorPoleHologram.h"
 #include "Equipment/FGBuildGunBuild.h"
+#include "Buildables/FGBuildableConveyorBelt.h"
+#include "Buildables/FGBuildablePipeline.h"
+#include "Buildables/FGBuildablePipeHyper.h"
+#include "Buildables/FGBuildableRailroadTrack.h"
+#include "FGBuildablePipelineFlowIndicator.h"
+#include "FGPipeConnectionComponent.h"
 #include "Hologram/FGWireHologram.h"
+#include "Hologram/FGRailroadTrackHologram.h"
 #include "Holo_WireHologramBuildModes.h"
-//#include "Buildables/FGConveyorPoleStackable.h"
 #include "Equipment/FGBuildGunDismantle.h"
 #include "Equipment/FGHoverPack.h"
 #include "CP_ModConfigStruct.h"
@@ -21,7 +27,6 @@
 #include "Equipment/FGParachute.h"
 #include "Hologram/FGBlueprintHologram.h"
 #include <SessionSettings/SessionSettingsManager.h>
-#include <Logging/StructuredLog.h>
 #include "Buildables/FGBuildablePoleStackable.h"
 #include "Hologram/FGStackablePoleHologram.h"
 #include "Hologram/FGPipelineHologram.h"
@@ -31,9 +36,193 @@
 #include "CP_StackablePipelinePoleHologram.h"
 #include "FGRecipeManager.h"
 #include "TimerManager.h"
+#include "Hologram/HologramHelpers.h"
 
 namespace
 {
+	static constexpr float MaxSafeConveyorBeltLength = 5600.0f;
+	static constexpr float MaxSafePipelineLength = 5600.0f;
+	static constexpr float MaxSafeHypertubeLength = 10000.0f;
+	static constexpr float MaxSafeRailroadTrackLength = 10000.0f;
+
+	bool GetSplitData(
+		USplineComponent* spline,
+		float maxLength,
+		float& splitOffset,
+		TArray<FSplinePointData>& firstSplineData,
+		TArray<FSplinePointData>& secondSplineData)
+	{
+		if (!IsValid(spline))
+		{
+			return false;
+		}
+
+		const float length = spline->GetSplineLength();
+		if (length <= maxLength + 1.0f)
+		{
+			return false;
+		}
+
+		splitOffset = length / FMath::CeilToInt(length / maxLength);
+		FSplineUtils::SplitSplineAtDistance(spline, splitOffset, firstSplineData, secondSplineData);
+		return firstSplineData.Num() >= 2 && secondSplineData.Num() >= 2;
+	}
+
+	template<typename BuildableType, typename SplitterType>
+	void SplitLongBuildable(BuildableType* buildable, float maxLength, SplitterType&& splitter)
+	{
+		TArray<BuildableType*> buildablesToSplit { buildable };
+		while (!buildablesToSplit.IsEmpty())
+		{
+			BuildableType* currentBuildable = buildablesToSplit.Pop(EAllowShrinking::No);
+			if (!IsValid(currentBuildable) || currentBuildable->GetLength() <= maxLength + 1.0f)
+			{
+				continue;
+			}
+
+			const float previousLength = currentBuildable->GetLength();
+			const int32 segmentCount = FMath::CeilToInt(previousLength / maxLength);
+			const float splitOffset = previousLength / segmentCount;
+			const TArray<BuildableType*> splitBuildables = splitter(currentBuildable, splitOffset);
+			for (BuildableType* splitBuildable : splitBuildables)
+			{
+				if (IsValid(splitBuildable) &&
+					splitBuildable->GetLength() > maxLength + 1.0f &&
+					splitBuildable->GetLength() < previousLength - 1.0f)
+				{
+					buildablesToSplit.Add(splitBuildable);
+				}
+			}
+		}
+	}
+
+	void SplitLongConveyorBelt(AFGBuildableConveyorBelt* conveyorBelt)
+	{
+		if (!IsValid(conveyorBelt))
+		{
+			return;
+		}
+
+		float splitOffset;
+		TArray<FSplinePointData> firstSplineData;
+		TArray<FSplinePointData> secondSplineData;
+		if (!GetSplitData(
+			conveyorBelt->GetSplineComponent(),
+			MaxSafeConveyorBeltLength,
+			splitOffset,
+			firstSplineData,
+			secondSplineData))
+		{
+			return;
+		}
+
+		const TArray<AFGBuildableConveyorBelt*> splitBelts =
+			AFGBuildableConveyorBelt::Split(conveyorBelt, splitOffset, true);
+		if (splitBelts.Num() != 2 || !IsValid(splitBelts[0]) || !IsValid(splitBelts[1]))
+		{
+			return;
+		}
+
+		if (!IsValid(AFGBuildableConveyorBelt::Respline(splitBelts[0], firstSplineData)))
+		{
+			return;
+		}
+		AFGBuildableConveyorBelt* remainingBelt =
+			AFGBuildableConveyorBelt::Respline(splitBelts[1], secondSplineData);
+		if (!IsValid(remainingBelt))
+		{
+			return;
+		}
+
+		TWeakObjectPtr<AFGBuildableConveyorBelt> weakRemainingBelt(remainingBelt);
+		remainingBelt->GetWorldTimerManager().SetTimerForNextTick(
+			[weakRemainingBelt]()
+			{
+				SplitLongConveyorBelt(weakRemainingBelt.Get());
+			});
+	}
+
+	template<typename PipeType, typename SplitterType>
+	void SplitLongPipe(PipeType* pipe, float maxLength, SplitterType splitter)
+	{
+		if (!IsValid(pipe))
+		{
+			return;
+		}
+
+		float splitOffset;
+		TArray<FSplinePointData> firstSplineData;
+		TArray<FSplinePointData> secondSplineData;
+		if (!GetSplitData(
+			pipe->GetSplineComponent(),
+			maxLength,
+			splitOffset,
+			firstSplineData,
+			secondSplineData))
+		{
+			return;
+		}
+
+		const TArray<PipeType*> splitPipes = splitter(pipe, splitOffset);
+		if (splitPipes.Num() != 2 || !IsValid(splitPipes[0]) || !IsValid(splitPipes[1]))
+		{
+			return;
+		}
+
+		FConstructionPreferencesModule::SetPipeSpline(splitPipes[0], firstSplineData);
+		FConstructionPreferencesModule::SetPipeSpline(splitPipes[1], secondSplineData);
+
+		TWeakObjectPtr<PipeType> weakRemainingPipe(splitPipes[1]);
+		splitPipes[1]->GetWorldTimerManager().SetTimerForNextTick(
+			[weakRemainingPipe, maxLength, splitter]()
+			{
+				SplitLongPipe(weakRemainingPipe.Get(), maxLength, splitter);
+			});
+	}
+
+	void SplitLongSplineBuildable(AActor* buildable)
+	{
+		if (AFGBuildableConveyorBelt* conveyorBelt = Cast<AFGBuildableConveyorBelt>(buildable))
+		{
+			SplitLongConveyorBelt(conveyorBelt);
+		}
+		else if (AFGBuildablePipeline* pipeline = Cast<AFGBuildablePipeline>(buildable))
+		{
+			SplitLongPipe(pipeline, MaxSafePipelineLength,
+				[](AFGBuildablePipeline* pipe, float offset)
+				{
+					return AFGBuildablePipeline::Split(pipe, offset, true);
+				});
+		}
+		else if (AFGBuildablePipeHyper* hypertube = Cast<AFGBuildablePipeHyper>(buildable))
+		{
+			SplitLongPipe<AFGBuildablePipeBase>(hypertube, MaxSafeHypertubeLength,
+				[](AFGBuildablePipeBase* pipe, float offset)
+				{
+					TArray<AFGBuildablePipeBase*> splitPipes = AFGBuildablePipeBase::Splice(pipe, offset, 0.0f);
+					if (splitPipes.Num() == 2)
+					{
+						UFGPipeConnectionComponentBase* firstConnection = splitPipes[0]->GetConnection1();
+						UFGPipeConnectionComponentBase* secondConnection = splitPipes[1]->GetConnection0();
+						if (IsValid(firstConnection) && IsValid(secondConnection) &&
+							!firstConnection->IsConnected() && !secondConnection->IsConnected())
+						{
+							firstConnection->SetConnection(secondConnection);
+						}
+					}
+					return splitPipes;
+				});
+		}
+		else if (AFGBuildableRailroadTrack* railroadTrack = Cast<AFGBuildableRailroadTrack>(buildable))
+		{
+			SplitLongBuildable(railroadTrack, MaxSafeRailroadTrackLength,
+				[](AFGBuildableRailroadTrack* track, float offset)
+				{
+					return AFGBuildableRailroadTrack::Split(track, offset, true);
+				});
+		}
+	}
+
 	void RegisterInternalRecipe(AFGRecipeManager* recipeManager, TSubclassOf<UFGRecipe> recipe)
 	{
 		if (!IsValid(recipeManager) || !IsValid(recipe))
@@ -70,6 +259,54 @@ namespace
 }
 
 DEFINE_LOG_CATEGORY(LogConstructionPreferences);
+
+void FConstructionPreferencesModule::SetPipeSpline(
+	AFGBuildablePipeBase* pipe,
+	const TArray<FSplinePointData>& splineData)
+{
+	*pipe->GetMutableSplinePointData() = splineData;
+	pipe->GetSplineComponent()->SetSplineData(splineData, ESplineCoordinateSpace::Local);
+	pipe->mLength = pipe->GetSplineComponent()->GetSplineLength();
+	pipe->Internal_CallRemoveInstances();
+	pipe->CallSetupInstances();
+	pipe->ApplyCustomizationData_Native(pipe->GetCustomizationData_Native());
+
+	if (AFGBuildablePipeline* pipeline = Cast<AFGBuildablePipeline>(pipe))
+	{
+		AFGBuildablePipelineFlowIndicator* indicator = pipeline->GetFlowIndicator();
+		if (IsValid(indicator))
+		{
+			pipeline->AddIgnoredActorForIndicator(indicator);
+			FTransform indicatorTransform;
+			if (!pipeline->FindBestInidicatorPlacement(indicatorTransform))
+			{
+				indicatorTransform = pipe->GetSplineComponent()->GetTransformAtDistanceAlongSpline(
+					pipe->GetSplineComponent()->GetSplineLength() * 0.5f,
+					ESplineCoordinateSpace::World);
+				indicatorTransform.SetScale3D(indicator->GetActorScale3D());
+			}
+			AFGBuildablePipelineFlowIndicator* replacement = pipe->GetWorld()->SpawnActorDeferred<AFGBuildablePipelineFlowIndicator>(
+				indicator->GetClass(),
+				indicatorTransform,
+				pipeline,
+				nullptr,
+				ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+			if (IsValid(replacement))
+			{
+				const FFactoryCustomizationData customizationData = indicator->GetCustomizationData_Native();
+				pipeline->mFlowIndicator = nullptr;
+				indicator->Destroy();
+				replacement->mOwningPipeline = pipeline;
+				pipeline->mFlowIndicator = replacement;
+				replacement->SetCustomizationData_Native(customizationData);
+				replacement->FinishSpawning(indicatorTransform);
+				replacement->ForceNetUpdate();
+			}
+		}
+	}
+
+	pipe->ForceNetUpdate();
+}
 
 //#pragma optimize("", off)
 float FConstructionPreferencesModule::GetUseDistance(const AFGCharacterPlayer* self, float defaultDistance)
@@ -115,6 +352,27 @@ void FConstructionPreferencesModule::StartupModule() {
 	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::Construct, buildableHologramCDO,
 		[](auto& scope, AFGBuildableHologram* self, TArray<AActor*>& outChildren, FNetConstructionID constructionID)
 		{
+			if (self->IsA<AFGConveyorBeltHologram>() ||
+				self->IsA<AFGPipelineHologram>() ||
+				self->IsA<AFGRailroadTrackHologram>())
+			{
+				AActor* constructedActor = scope(self, outChildren, constructionID);
+				if (IsValid(constructedActor) && constructedActor->HasAuthority())
+				{
+					TWeakObjectPtr<AActor> weakConstructedActor = constructedActor;
+					self->GetWorldTimerManager().SetTimerForNextTick(
+						[weakConstructedActor]()
+						{
+							if (AActor* actor = weakConstructedActor.Get())
+							{
+								SplitLongSplineBuildable(actor);
+							}
+						});
+				}
+				scope.Override(constructedActor);
+				return;
+			}
+
 			bool shouldDestroySupport = false;
 			if (IsValid(Cast<AFGConveyorBeltHologram>(self->GetParentHologram())))
 			{
@@ -326,17 +584,21 @@ void FConstructionPreferencesModule::StartupModule() {
 			}
 		});
 
-	//AFGRailroadTrackHologram* rrhg = GetMutableDefault<AFGRailroadTrackHologram>();
-	//SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGRailroadTrackHologram::BeginPlay, rrhg, [](AFGRailroadTrackHologram* self)
-	//	{
-	//		USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
-	//		auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Railroad.Length");
-	//		if (!FMath::IsNearlyEqual(length, 100, 0.1)) // Check if default
-	//		{
-	//			self->mMaxLength = length * 100;
-	//			//UE_LOGFMT(LogConstructionPreferences, Display, "Railroad Max Length: {0}", self->mMaxLength);
-	//		}
-	//	});
+	AFGRailroadTrackHologram* railroadTrackHologramCDO = GetMutableDefault<AFGRailroadTrackHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGRailroadTrackHologram::BeginPlay, railroadTrackHologramCDO, [](AFGRailroadTrackHologram* self)
+		{
+			USessionSettingsManager* sessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+			if (!IsValid(sessionSettings))
+			{
+				return;
+			}
+
+			const float length = sessionSettings->GetFloatOptionValue("ConstructionPreferences.Railroad.Length");
+			if (!FMath::IsNearlyEqual(length, 100.0f, 0.1f))
+			{
+				self->mMaxLength = length * 100.0f;
+			}
+		});
 
 	AFGWireHologram* whg = GetMutableDefault<AFGWireHologram>();
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGWireHologram::BeginPlay, whg, [](AFGWireHologram* self)

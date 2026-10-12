@@ -4,6 +4,7 @@
 #include "FGCharacterPlayer.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogConstructionPreferences, Display, All);
+class AFGBuildablePipeBase;
 class FConstructionPreferencesModule : public FDefaultGameModuleImpl {
 public:
 	virtual void StartupModule() override;
@@ -11,4 +12,5 @@ public:
 	virtual bool IsGameModule() const override { return true; }
 
 	float GetUseDistance(const AFGCharacterPlayer* self, float defaultDistance);
+	static void SetPipeSpline(AFGBuildablePipeBase* pipe, const TArray<struct FSplinePointData>& splineData);
 };
