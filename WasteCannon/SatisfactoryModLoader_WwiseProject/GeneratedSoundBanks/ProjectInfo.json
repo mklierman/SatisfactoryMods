@@ -3,7 +3,7 @@
   "Project": {
    "Name": "SatisfactoryModLoader_WwiseProject",
    "GUID": "{893A3299-0101-4D2B-97D2-F23D667C2D1C}",
-   "Generator": "2025.1.6.9117"
+   "Generator": "2023.1.14.8770"
   },
   "CacheRoot": "../.cache",
   "Platforms": [
@@ -31,6 +31,6 @@
     "UseAsStandIn": "true"
    }
   ],
-  "FileHash": "{426C6B3A-481F-F23E-2316-1BA84D633428}"
+  "FileHash": "{00962DE6-5D47-AF64-A59D-A757AF85915A}"
  }
 }

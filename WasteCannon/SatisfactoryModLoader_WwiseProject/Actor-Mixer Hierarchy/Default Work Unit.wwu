@@ -1,0 +1,1231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{1D352AF5-39D5-4B6D-814D-7A38B1E00D8B}" SchemaVersion="119">
+	<AudioObjects>
+		<WorkUnit Name="Default Work Unit" ID="{1D352AF5-39D5-4B6D-814D-7A38B1E00D8B}" PersistMode="Standalone">
+			<ChildrenList>
+				<Folder Name="Lithium" ID="{863F8B8D-2AC2-4214-874E-84B98E0A9BBD}" ShortID="348544186">
+					<ChildrenList>
+						<Sound Name="GeneratorDisperser_Shutdown" ID="{2066549A-9061-49A2-93C6-E8FEF8080EDD}" ShortID="322327683">
+							<PropertyList>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="Att_GeneratorDisperser" ID="{F3A1494F-5848-4523-B776-4A96D2F03CB6}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Lithium_Volume_Factory" ID="{523560C4-EE07-4A07-8F2A-239AD86FF00B}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="GeneratorDisperser_Shutdown" ID="{87AE2B0B-3C7B-4AEA-9CCD-603976E9C18F}">
+									<Language>SFX</Language>
+									<AudioFile>GeneratorDisperser_Shutdown.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="707421527"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="GeneratorDisperser_Shutdown" ID="{87AE2B0B-3C7B-4AEA-9CCD-603976E9C18F}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="GeneratorDisperser_Startup" ID="{54ECA1CA-DD9E-45AF-A462-67DC6BFBC44D}" ShortID="451657276">
+							<PropertyList>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="Att_GeneratorDisperser" ID="{F3A1494F-5848-4523-B776-4A96D2F03CB6}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Lithium_Volume_Factory" ID="{523560C4-EE07-4A07-8F2A-239AD86FF00B}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="GeneratorDisperser_Startup" ID="{6AAB7D2F-3DD0-4F59-ABA2-6FCF66399BCA}">
+									<Language>SFX</Language>
+									<AudioFile>GeneratorDisperser_Startup.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="732790905"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="GeneratorDisperser_Startup" ID="{6AAB7D2F-3DD0-4F59-ABA2-6FCF66399BCA}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="GeneratorDisperser_Working" ID="{E43259DB-36E9-4B0A-94C6-84745EBE2567}" ShortID="73069724">
+							<PropertyList>
+								<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="Att_GeneratorDisperser" ID="{F3A1494F-5848-4523-B776-4A96D2F03CB6}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Lithium_Volume_Factory" ID="{523560C4-EE07-4A07-8F2A-239AD86FF00B}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="GeneratorDisperser_Working" ID="{9C06CDF1-3EF8-456B-98F4-F16C14F06286}">
+									<Language>SFX</Language>
+									<AudioFile>GeneratorDisperser_Working.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="219380862"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="GeneratorDisperser_Working" ID="{9C06CDF1-3EF8-456B-98F4-F16C14F06286}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Milestone_6_Li" ID="{BB691F87-ACFA-406A-B544-9E0C48D90E90}" ShortID="799760883">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>8</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Lithium_Volume_Dialogue" ID="{7FC4590A-509C-4ABF-B850-20BCA5B3F2C1}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Milestone_6_Li" ID="{593486F8-458C-41F6-A663-76CC7035DE9F}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Milestone_6_Li.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="123664634"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Milestone_6_Li" ID="{593486F8-458C-41F6-A663-76CC7035DE9F}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Milestone_7_Li" ID="{C609E794-67E5-443C-9554-CDDCCFBBDE4E}" ShortID="834972941">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>8</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Lithium_Volume_Dialogue" ID="{7FC4590A-509C-4ABF-B850-20BCA5B3F2C1}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Milestone_7_Li" ID="{776E5EAA-2636-48E5-B1CA-FB0582F46285}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Milestone_7_Li.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="861028009"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Milestone_7_Li" ID="{776E5EAA-2636-48E5-B1CA-FB0582F46285}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Milestone_8_Li" ID="{44AC7172-CD6B-4083-8C01-0F9A53E34991}" ShortID="696022463">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>8</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Lithium_Volume_Dialogue" ID="{7FC4590A-509C-4ABF-B850-20BCA5B3F2C1}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Milestone_8_Li" ID="{81DC65D4-1CDC-45BA-A67E-CB8C9CA64186}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Milestone_8_Li.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="47531867"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Milestone_8_Li" ID="{81DC65D4-1CDC-45BA-A67E-CB8C9CA64186}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Milestone_9_Li" ID="{844639D6-F3C3-4535-9C39-C009525D5467}" ShortID="1006925990">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>8</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Lithium_Volume_Dialogue" ID="{7FC4590A-509C-4ABF-B850-20BCA5B3F2C1}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Milestone_9_Li" ID="{ED0CB515-4F45-498E-9CAE-AF14D08A1671}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Milestone_9_Li.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="1001314720"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Milestone_9_Li" ID="{ED0CB515-4F45-498E-9CAE-AF14D08A1671}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Research_6_Li" ID="{E711D2A5-53B4-4BAC-9401-5A8BC4DE9DB0}" ShortID="875754774">
+							<PropertyList>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>8</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Lithium_Volume_Dialogue" ID="{7FC4590A-509C-4ABF-B850-20BCA5B3F2C1}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Research_6_Li" ID="{06DA475D-9C6A-4EB5-8C7F-E316DA65BF79}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Research_6_Li.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="842597536"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Research_6_Li" ID="{06DA475D-9C6A-4EB5-8C7F-E316DA65BF79}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Research_6_Li_Refund" ID="{286B87C4-1DAE-4EFB-8668-8EF13962ABEE}" ShortID="215923146">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>8</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Lithium_Volume_Dialogue" ID="{7FC4590A-509C-4ABF-B850-20BCA5B3F2C1}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Research_6_Li_Refund" ID="{CFC1DCF3-2579-43F0-8E0F-FF4872A71B3C}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Research_6_Li_Refund.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="269768605"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Research_6_Li_Refund" ID="{CFC1DCF3-2579-43F0-8E0F-FF4872A71B3C}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Research_7_Li_Refund" ID="{4A28B0B1-C791-4586-AA4A-062B447F1DFF}" ShortID="565587459">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>8</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Lithium_Volume_Dialogue" ID="{7FC4590A-509C-4ABF-B850-20BCA5B3F2C1}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Research_7_Li_Refund" ID="{E66C5253-2E20-4A30-929C-3F0B09213143}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Research_7_Li_Refund.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="1005085229"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Research_7_Li_Refund" ID="{E66C5253-2E20-4A30-929C-3F0B09213143}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Research_8_Li_Refund" ID="{D3FBB486-6AF6-44C8-A1CE-1115BF739BD2}" ShortID="134304461">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>8</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Lithium_Volume_Dialogue" ID="{7FC4590A-509C-4ABF-B850-20BCA5B3F2C1}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Research_8_Li_Refund" ID="{073A8463-6A95-4535-9A1B-D108BAD2858A}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Research_8_Li_Refund.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="619352038"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Research_8_Li_Refund" ID="{073A8463-6A95-4535-9A1B-D108BAD2858A}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Research_9_Li_Refund" ID="{60951CFA-101A-412E-9CEF-78808ABEE123}" ShortID="841208413">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>8</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Lithium_Volume_Dialogue" ID="{7FC4590A-509C-4ABF-B850-20BCA5B3F2C1}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Research_9_Li_Refund" ID="{64449B78-8AFF-4209-BEB9-26C400FE4D3C}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Research_9_Li_Refund.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="1001148382"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Research_9_Li_Refund" ID="{64449B78-8AFF-4209-BEB9-26C400FE4D3C}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Research_7_Li_Refund_01" ID="{1B4EBCDD-A19F-427E-B30F-3DEADA966BA3}" ShortID="1031130493">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>8</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Lithium_Volume_Dialogue" ID="{7FC4590A-509C-4ABF-B850-20BCA5B3F2C1}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Research_7_Li_Refund" ID="{9654C611-8C66-4674-BE6B-8F360328A337}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Research_7_Li_Refund.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="1005085229"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Research_7_Li_Refund" ID="{9654C611-8C66-4674-BE6B-8F360328A337}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="TruckStationsPlus" ID="{FE942DE4-5E87-4D30-8C8D-030AE5B54298}" ShortID="153343540">
+					<ChildrenList>
+						<Sound Name="MSG_TruckStationsPlus" ID="{EE6C1E9E-215C-4E16-BAE1-3BC53254BDCB}" ShortID="256053326">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="TruckStationsPlus_Volume_Dialogue" ID="{99D21528-8D40-4599-B2A8-9312AA9343C4}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_TruckStationsPlus" ID="{AD6715A5-3C65-4E60-B5B5-EE7C378F0E3F}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_TruckStationsPlus.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="696857576"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_TruckStationsPlus" ID="{AD6715A5-3C65-4E60-B5B5-EE7C378F0E3F}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="MegaprojectsLib" ID="{235FEEF2-71EB-420C-91D8-BD217A413394}" ShortID="250433045">
+					<ChildrenList>
+						<Sound Name="MSG_MegaprojectsManager" ID="{5CF612AD-EC4B-4E92-8172-9D654AE5C827}" ShortID="598117567">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="MegaprojectsLib_Volume_Dialogue" ID="{EA88C9D2-D821-4907-B899-B543CD76B976}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_MegaprojectsManager" ID="{DED68498-1550-4526-8662-037399746422}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_MegaprojectsManager.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="46287495"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_MegaprojectsManager" ID="{DED68498-1550-4526-8662-037399746422}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="Megaprojects_PowerDomain" ID="{6CE11A66-64F7-485F-B09D-6FB08BA0605A}" ShortID="358580932">
+					<ChildrenList>
+						<Sound Name="MSG_Scheamtic_PowerDomain" ID="{FF545C59-AEC9-4CF6-B076-850FDC59EB3A}" ShortID="225254803">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Megaprojects_PowerDomain_Volume_Dialogue" ID="{E1A63F49-3982-4AEC-965E-89B13F343D1E}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Scheamtic_PowerDomain" ID="{880E7723-D4BC-4749-B3BF-1FCAA1EB7851}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Scheamtic_PowerDomain.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="424607586"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Scheamtic_PowerDomain" ID="{880E7723-D4BC-4749-B3BF-1FCAA1EB7851}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Scheamtic_PowerDomain_Phase0" ID="{0EC56A45-3869-40FA-BDF7-FB6C6ECE6048}" ShortID="1055666537">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Megaprojects_PowerDomain_Volume_Dialogue" ID="{E1A63F49-3982-4AEC-965E-89B13F343D1E}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Scheamtic_PowerDomain_Phase0" ID="{B90E3D10-1B05-4D78-904E-53C89E618381}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Scheamtic_PowerDomain_Phase0.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="725662004"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Scheamtic_PowerDomain_Phase0" ID="{B90E3D10-1B05-4D78-904E-53C89E618381}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Scheamtic_PowerDomain_Phase1" ID="{73FE9115-AD56-4ABC-A471-456E469EA5E0}" ShortID="511184606">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Megaprojects_PowerDomain_Volume_Dialogue" ID="{E1A63F49-3982-4AEC-965E-89B13F343D1E}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Scheamtic_PowerDomain_Phase1" ID="{2571F697-832C-4697-BEA8-05C49C868A80}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Scheamtic_PowerDomain_Phase1.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="822099618"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Scheamtic_PowerDomain_Phase1" ID="{2571F697-832C-4697-BEA8-05C49C868A80}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Scheamtic_PowerDomain_Phase2" ID="{C5BE6321-9A0E-40A6-8DA2-28D3A3FDB21A}" ShortID="594594824">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Megaprojects_PowerDomain_Volume_Dialogue" ID="{E1A63F49-3982-4AEC-965E-89B13F343D1E}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Scheamtic_PowerDomain_Phase2" ID="{965E669E-C186-47EE-8A84-63AF7F0DE4E6}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Scheamtic_PowerDomain_Phase2.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="765805203"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Scheamtic_PowerDomain_Phase2" ID="{965E669E-C186-47EE-8A84-63AF7F0DE4E6}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Scheamtic_PowerDomain_Phase3" ID="{A2F23454-90FE-472D-A72B-8102E915EB5C}" ShortID="858151131">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Megaprojects_PowerDomain_Volume_Dialogue" ID="{E1A63F49-3982-4AEC-965E-89B13F343D1E}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Scheamtic_PowerDomain_Phase3" ID="{9D8D04F7-BF38-4D28-964C-391DB1946C21}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Scheamtic_PowerDomain_Phase3.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="621296017"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Scheamtic_PowerDomain_Phase3" ID="{9D8D04F7-BF38-4D28-964C-391DB1946C21}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="AlkaLib" ID="{EAE6FDC6-5233-4FCD-B9F7-39E8EEE14226}" ShortID="497808295">
+					<ChildrenList>
+						<Sound Name="ReactiveOreExtractor_Mining" ID="{2E4B8F8A-4415-464F-8596-35249C62AC50}" ShortID="590931616">
+							<PropertyList>
+								<Property Name="InitialDelay" Type="Real64">
+									<ValueList>
+										<Value>5</Value>
+									</ValueList>
+								</Property>
+								<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="Att_ReactiveOreExtractor" ID="{1C31908F-E1F6-43D4-B099-AA3453A50020}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="AlkaLib_Volume_Factory" ID="{17044D75-0B02-4047-807C-878B5011AB3B}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="ReactiveOreExtractor_Mining" ID="{EC0F500C-F4F7-4678-BDB6-2CB8E7972B90}">
+									<Language>SFX</Language>
+									<AudioFile>ReactiveOreExtractor_Mining.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="895141375"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="ReactiveOreExtractor_Mining" ID="{EC0F500C-F4F7-4678-BDB6-2CB8E7972B90}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="ReactiveOreExtractor_Pistons" ID="{3C48F34A-C58F-4C82-B4DA-9A323A3FA9F5}" ShortID="160847561">
+							<PropertyList>
+								<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="Att_ReactiveOreExtractor" ID="{1C31908F-E1F6-43D4-B099-AA3453A50020}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="AlkaLib_Volume_Factory" ID="{17044D75-0B02-4047-807C-878B5011AB3B}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="ReactiveOreExtractor_Pistons" ID="{68AE56B0-2799-4F83-85CB-DEF09344A53A}">
+									<Language>SFX</Language>
+									<AudioFile>ReactiveOreExtractor_Pistons.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="563801427"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="ReactiveOreExtractor_Pistons" ID="{68AE56B0-2799-4F83-85CB-DEF09344A53A}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="ReactiveOreExtractor_Start" ID="{EB824E53-32DD-40AF-9088-BA7D2F597221}" ShortID="752981708">
+							<PropertyList>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="Att_ReactiveOreExtractor" ID="{1C31908F-E1F6-43D4-B099-AA3453A50020}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="AlkaLib_Volume_Factory" ID="{17044D75-0B02-4047-807C-878B5011AB3B}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="ReactiveOreExtractor_Start" ID="{CC08FB75-935C-4138-8F3A-5B396A1FE3F6}">
+									<Language>SFX</Language>
+									<AudioFile>ReactiveOreExtractor_Start.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="155636249"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="ReactiveOreExtractor_Start" ID="{CC08FB75-935C-4138-8F3A-5B396A1FE3F6}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="QuantumTechUtils" ID="{8C60A65A-A4C9-4C44-9D0D-358A5FA6E50C}" ShortID="831256952">
+					<ChildrenList>
+						<Sound Name="MSG_Milestone_QuantumTechUtils" ID="{77B04E01-D89F-46B8-A503-E5953E0A674C}" ShortID="794857039">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="QuantumTechUtils_Volume_Dialogue" ID="{EF52DA8E-7732-447C-802A-D440A074AA01}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Milestone_QuantumTechUtils" ID="{C1E59FE8-BA66-418D-91B6-EF1048B631AE}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Milestone_QuantumTechUtils.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="6936492"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Milestone_QuantumTechUtils" ID="{C1E59FE8-BA66-418D-91B6-EF1048B631AE}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Research_Advanced" ID="{4ED19BA1-BC20-48B6-A74E-81B71575EFE1}" ShortID="304104078">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="QuantumTechUtils_Volume_Dialogue" ID="{EF52DA8E-7732-447C-802A-D440A074AA01}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Research_Advanced" ID="{2DA61F4A-B64E-43F0-85A1-605858E36AA4}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Research_Advanced.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="1035550020"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Research_Advanced" ID="{2DA61F4A-B64E-43F0-85A1-605858E36AA4}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Research_Tale1" ID="{08E60E37-16E7-438C-A1BF-191181A126A9}" ShortID="173999514">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="QuantumTechUtils_Volume_Dialogue" ID="{EF52DA8E-7732-447C-802A-D440A074AA01}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Research_Tale1" ID="{943E497A-30CC-4637-A5C4-3444665E6332}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Research_Tale1.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="594009715"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Research_Tale1" ID="{943E497A-30CC-4637-A5C4-3444665E6332}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Research_Tale2" ID="{41A7B83C-EE94-40BF-9D46-36757D73F6C4}" ShortID="561666049">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="QuantumTechUtils_Volume_Dialogue" ID="{EF52DA8E-7732-447C-802A-D440A074AA01}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Research_Tale2" ID="{21873034-F282-4E0B-A2DF-B2761DABD28D}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Research_Tale2.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="511856071"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Research_Tale2" ID="{21873034-F282-4E0B-A2DF-B2761DABD28D}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Research_Tale3" ID="{CEF25085-F67A-4649-9F0F-B2EFDEB45B6D}" ShortID="369760827">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="QuantumTechUtils_Volume_Dialogue" ID="{EF52DA8E-7732-447C-802A-D440A074AA01}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Research_Tale3" ID="{60B110D9-F729-4264-81A7-4EBE2EAF5F5C}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Research_Tale3.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="286080339"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Research_Tale3" ID="{60B110D9-F729-4264-81A7-4EBE2EAF5F5C}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Research_Tale4" ID="{55894617-3B37-44BC-AE24-D5BE48F08D9D}" ShortID="600139768">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="QuantumTechUtils_Volume_Dialogue" ID="{EF52DA8E-7732-447C-802A-D440A074AA01}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Research_Tale4" ID="{CD18CA0F-9424-4B01-A4FF-604F8949B31A}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Research_Tale4.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="1060149867"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Research_Tale4" ID="{CD18CA0F-9424-4B01-A4FF-604F8949B31A}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="Megaprojects_WaterDam" ID="{F6E81EE9-3117-47B6-A83B-09948EC79773}" ShortID="114001570">
+					<ChildrenList>
+						<Sound Name="MGS_Milestone_WaterDams" ID="{8480766C-85D4-495C-8145-E838AA856F6B}" ShortID="399937988">
+							<PropertyList>
+								<Property Name="EnableAttenuation" Type="bool" Value="False"/>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>3</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Megaprojects_WaterDam_Volume_Dialogue" ID="{728204B9-3546-4EDE-B1F5-6E7A9A6EE8A8}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MGS_Milestone_WaterDams" ID="{E038E611-5A79-4C7A-8DBC-9134798B0AED}">
+									<Language>SFX</Language>
+									<AudioFile>MGS_Milestone_WaterDams.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="202936041"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MGS_Milestone_WaterDams" ID="{E038E611-5A79-4C7A-8DBC-9134798B0AED}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Schematic_WaterDamA" ID="{5B156139-4EC4-469F-8258-5C16217B882A}" ShortID="988191989">
+							<PropertyList>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>3</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Megaprojects_WaterDam_Volume_Dialogue" ID="{728204B9-3546-4EDE-B1F5-6E7A9A6EE8A8}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Schematic_WaterDamA" ID="{1FA5AE13-3D2E-45BD-B2C0-E996BCF880BA}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Schematic_WaterDamA.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="361957115"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Schematic_WaterDamA" ID="{1FA5AE13-3D2E-45BD-B2C0-E996BCF880BA}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Schematic_WaterDamB" ID="{60BC9B89-5FAE-4F96-AA6C-F9D4813566B8}" ShortID="912465183">
+							<PropertyList>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>3</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Megaprojects_WaterDam_Volume_Dialogue" ID="{728204B9-3546-4EDE-B1F5-6E7A9A6EE8A8}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Schematic_WaterDamB" ID="{6AB42398-02AF-4754-990C-D10C0EAB2C19}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Schematic_WaterDamB.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="598335595"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Schematic_WaterDamB" ID="{6AB42398-02AF-4754-990C-D10C0EAB2C19}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Schematic_WaterDamBuilt" ID="{22905485-DB27-4FD7-AF69-4DAF85D757EA}" ShortID="584405080">
+							<PropertyList>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>3</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Megaprojects_WaterDam_Volume_Dialogue" ID="{728204B9-3546-4EDE-B1F5-6E7A9A6EE8A8}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Schematic_WaterDamBuilt" ID="{413EB198-8264-40AA-8483-9F837555892F}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Schematic_WaterDamBuilt.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="489132905"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Schematic_WaterDamBuilt" ID="{413EB198-8264-40AA-8483-9F837555892F}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="MSG_Schematic_WaterDamC" ID="{718CD42D-CC40-4CFC-B8DA-80BE875142B8}" ShortID="898539231">
+							<PropertyList>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>3</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Megaprojects_WaterDam_Volume_Dialogue" ID="{728204B9-3546-4EDE-B1F5-6E7A9A6EE8A8}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MSG_Schematic_WaterDamC" ID="{85FDBFC2-FC72-42F4-B07B-B41B0C719838}">
+									<Language>SFX</Language>
+									<AudioFile>MSG_Schematic_WaterDamC.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="145470597"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="MSG_Schematic_WaterDamC" ID="{85FDBFC2-FC72-42F4-B07B-B41B0C719838}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="WasteCannon" ID="{6A019FA9-171B-4D02-BC3A-8D1CB77C9E36}" ShortID="204763067">
+					<ChildrenList>
+						<Sound Name="WC_Charged" ID="{CFD02883-5F1E-4C05-9E22-E40A72565419}" ShortID="993216716">
+							<PropertyList>
+								<Property Name="3DSpatialization" Type="int16" Value="1"/>
+								<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+								<Property Name="MaxReachedBehavior" Type="int16" Value="1"/>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>2</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="WC_Default" ID="{B5885E41-4A22-40D2-8D59-1BFEBEDA980D}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="WasteCannon_Volume_Factory" ID="{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="WC_Charged" ID="{1B9C5B43-3F05-4889-B4E7-D94939B21568}">
+									<Language>SFX</Language>
+									<AudioFile>WC_Charged.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="768930073"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="WC_Charged" ID="{1B9C5B43-3F05-4889-B4E7-D94939B21568}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="WC_Moving" ID="{2554D6AA-2AC3-42B5-81E8-819F373A4B70}" ShortID="567498584">
+							<PropertyList>
+								<Property Name="3DSpatialization" Type="int16" Value="1"/>
+								<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+								<Property Name="MaxReachedBehavior" Type="int16" Value="1"/>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>-6</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="WC_Default" ID="{B5885E41-4A22-40D2-8D59-1BFEBEDA980D}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="WasteCannon_Volume_Factory" ID="{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="WC_Moving" ID="{9E3253A2-82C7-466C-AC3C-782900293D40}">
+									<Language>SFX</Language>
+									<AudioFile>WC_Moving.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="45291664"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="WC_Moving" ID="{9E3253A2-82C7-466C-AC3C-782900293D40}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="WC_Shooting_EchoImpact" ID="{B0B9B3A8-C6A4-4EF1-A4E9-0A3592170C04}" ShortID="936557492">
+							<PropertyList>
+								<Property Name="3DSpatialization" Type="int16" Value="1"/>
+								<Property Name="MaxReachedBehavior" Type="int16" Value="1"/>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="WC_Shooting_EchoImpact" ID="{5E892E58-EA2D-47C5-92F7-657F5809A2F5}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="WasteCannon_Volume_Factory" ID="{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="WC_Shooting_EchoImpact" ID="{C2423F79-D02C-4B06-8302-7C51717CC3F4}">
+									<Language>SFX</Language>
+									<AudioFile>WC_Shooting_EchoImpact.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="298123852"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="WC_Shooting_EchoImpact" ID="{C2423F79-D02C-4B06-8302-7C51717CC3F4}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="WC_Shooting_Flat" ID="{D436501F-4CC5-494E-8296-A56BD7EA516F}" ShortID="683270252">
+							<PropertyList>
+								<Property Name="3DSpatialization" Type="int16" Value="1"/>
+								<Property Name="MaxReachedBehavior" Type="int16" Value="1"/>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="WC_Shooting_Flat" ID="{2A610731-A31C-4A57-9393-A50C596D92EE}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="WasteCannon_Volume_Factory" ID="{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="WC_Shooting_Flat" ID="{49897901-5E51-42D5-BB7D-B4F47C75A5AB}">
+									<Language>SFX</Language>
+									<AudioFile>WC_Shooting_Flat.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="927162614"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="WC_Shooting_Flat" ID="{49897901-5E51-42D5-BB7D-B4F47C75A5AB}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="WC_Reload" ID="{14DA80F7-47B4-423D-A40A-CFE507C31A79}" ShortID="196746268">
+							<PropertyList>
+								<Property Name="3DSpatialization" Type="int16" Value="1"/>
+								<Property Name="MaxSoundPerInstance" Type="int16">
+									<ValueList>
+										<Value>1</Value>
+									</ValueList>
+								</Property>
+								<Property Name="UseMaxSoundPerInstance" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+								<Property Name="Volume" Type="Real64">
+									<ValueList>
+										<Value>-4</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Attenuation">
+									<ObjectRef Name="WC_Default" ID="{B5885E41-4A22-40D2-8D59-1BFEBEDA980D}" WorkUnitID="{B643A68E-8648-4129-A2C6-85C2033748F5}"/>
+								</Reference>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{5E1A4EE1-D6FC-490A-95BB-A8AD053F34E9}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="WasteCannon_Volume_Factory" ID="{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="WC_Reload" ID="{13567A2F-B1F3-4D21-8922-06C89DB59B48}">
+									<Language>SFX</Language>
+									<AudioFile>WC_Reload.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="328699641"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="WC_Reload" ID="{13567A2F-B1F3-4D21-8922-06C89DB59B48}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+					</ChildrenList>
+				</Folder>
+			</ChildrenList>
+		</WorkUnit>
+	</AudioObjects>
+</WwiseDocument>

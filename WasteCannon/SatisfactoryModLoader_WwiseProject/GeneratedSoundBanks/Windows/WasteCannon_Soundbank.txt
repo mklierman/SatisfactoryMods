@@ -17,9 +17,9 @@ Audio Bus	ID	Name			Wwise Object Path	Notes
 	3803692087	Master Audio Bus			\Default Work Unit\Master Audio Bus	
 
 In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
-	45291664	WC_Moving	.cache\8E\{8E631B37-DAC3-4600-95C1-E5E2D670366F}.wem		\Containers\Default Work Unit\WasteCannon\WC_Moving		990412
-	298123852	WC_Shooting_EchoImpact	.cache\24\{244D29CC-5831-2448-F442-2640E7BA094D}.wem		\Containers\Default Work Unit\WasteCannon\WC_Shooting_EchoImpact		729304
-	328699641	WC_Reload	.cache\54\{540A1677-C5F4-82ED-B86F-460F79F91250}.wem		\Containers\Default Work Unit\WasteCannon\WC_Reload		1587744
-	768930073	WC_Charged	.cache\41\{41C4EC87-DAD7-A4AF-09EA-2DA620107A87}.wem		\Containers\Default Work Unit\WasteCannon\WC_Charged		5380292
-	927162614	WC_Shooting_Flat	.cache\23\{23EBC475-5FB2-CCB5-7C1B-9BDC2E4DE3E5}.wem		\Containers\Default Work Unit\WasteCannon\WC_Shooting_Flat		851312
+	45291664	WC_Moving	D:\SatisfactoryModding\SatisfactoryModLoader\SatisfactoryModLoader_WwiseProject\.cache\Windows\SFX\WC_Moving_FBC78EF0.wem		\Actor-Mixer Hierarchy\Default Work Unit\WasteCannon\WC_Moving		990412
+	298123852	WC_Shooting_EchoImpact	D:\SatisfactoryModding\SatisfactoryModLoader\SatisfactoryModLoader_WwiseProject\.cache\Windows\SFX\WC_Shooting_EchoImpact_818F3B66.wem		\Actor-Mixer Hierarchy\Default Work Unit\WasteCannon\WC_Shooting_EchoImpact		729304
+	328699641	WC_Reload	D:\SatisfactoryModding\SatisfactoryModLoader\SatisfactoryModLoader_WwiseProject\.cache\Windows\SFX\WC_Reload_818F3B66.wem		\Actor-Mixer Hierarchy\Default Work Unit\WasteCannon\WC_Reload		1587744
+	768930073	WC_Charged	D:\SatisfactoryModding\SatisfactoryModLoader\SatisfactoryModLoader_WwiseProject\.cache\Windows\SFX\WC_Charged_FBC78EF0.wem		\Actor-Mixer Hierarchy\Default Work Unit\WasteCannon\WC_Charged		5380292
+	927162614	WC_Shooting_Flat	D:\SatisfactoryModding\SatisfactoryModLoader\SatisfactoryModLoader_WwiseProject\.cache\Windows\SFX\WC_Shooting_Flat_818F3B66.wem		\Actor-Mixer Hierarchy\Default Work Unit\WasteCannon\WC_Shooting_Flat		851312
 

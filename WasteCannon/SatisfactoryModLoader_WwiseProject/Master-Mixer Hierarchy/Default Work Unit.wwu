@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{36754444-35E2-498C-B23D-DEB6E2F58E40}" SchemaVersion="119">
+	<Busses>
+		<WorkUnit Name="Default Work Unit" ID="{36754444-35E2-498C-B23D-DEB6E2F58E40}" PersistMode="Standalone">
+			<ChildrenList>
+				<Bus Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}">
+					<ReferenceList>
+						<Reference Name="AudioDevice" PluginName="System" CompanyID="0" PluginID="174" PluginType="7">
+							<ObjectRef Name="System" ID="{1402084F-F08C-4DDF-9136-61CB5719812B}" WorkUnitID="{4ACA88FA-26E9-4F09-9C4C-1133B6B51587}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<Folder Name="Lithium" ID="{AC3D592A-5629-4A3B-B406-592FB32CAEA7}" ShortID="11781051">
+							<ChildrenList>
+								<Bus Name="Lithium_Volume_Dialogue" ID="{7FC4590A-509C-4ABF-B850-20BCA5B3F2C1}">
+									<ObjectLists>
+										<ObjectList Name="RTPC">
+											<Reference>
+												<Local>
+													<RTPC Name="" ID="{601D62C6-1292-4351-8402-423B2B82FE44}" ShortID="92725636">
+														<PropertyList>
+															<Property Name="PropertyName" Type="string" Value="BusVolume"/>
+														</PropertyList>
+														<ReferenceList>
+															<Reference Name="ControlInput">
+																<ObjectRef Name="RTPC_Lithium_Volume_Dialogue" ID="{A79F769E-D7EB-4AE2-BEF2-511E3A9588DB}" WorkUnitID="{A325D62B-A8F5-4042-A64D-BFF38D46AE8F}"/>
+															</Reference>
+															<Reference Name="Curve">
+																<Custom>
+																	<Curve Name="" ID="{6B656706-8604-424A-A8B0-930FCA670AB3}">
+																		<PropertyList>
+																			<Property Name="Flags" Type="int32" Value="3"/>
+																		</PropertyList>
+																		<PointList>
+																			<Point>
+																				<XPos>0</XPos>
+																				<YPos>-200</YPos>
+																				<Flags>5</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>1</XPos>
+																				<YPos>0</YPos>
+																				<Flags>37</Flags>
+																			</Point>
+																		</PointList>
+																	</Curve>
+																</Custom>
+															</Reference>
+														</ReferenceList>
+													</RTPC>
+												</Local>
+											</Reference>
+										</ObjectList>
+									</ObjectLists>
+								</Bus>
+								<Bus Name="Lithium_Volume_Factory" ID="{523560C4-EE07-4A07-8F2A-239AD86FF00B}">
+									<ObjectLists>
+										<ObjectList Name="RTPC">
+											<Reference>
+												<Local>
+													<RTPC Name="" ID="{B751AE41-79FD-45DB-BE4C-B804360330BC}" ShortID="371676872">
+														<PropertyList>
+															<Property Name="PropertyName" Type="string" Value="BusVolume"/>
+														</PropertyList>
+														<ReferenceList>
+															<Reference Name="ControlInput">
+																<ObjectRef Name="RTPC_Lithium_Volume_Factory" ID="{8C7B501F-0FBD-4D95-B017-85E249FF28E1}" WorkUnitID="{A325D62B-A8F5-4042-A64D-BFF38D46AE8F}"/>
+															</Reference>
+															<Reference Name="Curve">
+																<Custom>
+																	<Curve Name="" ID="{4CFB8FFC-B3CC-46DE-982B-66D2836868BC}">
+																		<PropertyList>
+																			<Property Name="Flags" Type="int32" Value="3"/>
+																		</PropertyList>
+																		<PointList>
+																			<Point>
+																				<XPos>0</XPos>
+																				<YPos>-200</YPos>
+																				<Flags>5</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>1</XPos>
+																				<YPos>0</YPos>
+																				<Flags>37</Flags>
+																			</Point>
+																		</PointList>
+																	</Curve>
+																</Custom>
+															</Reference>
+														</ReferenceList>
+													</RTPC>
+												</Local>
+											</Reference>
+										</ObjectList>
+									</ObjectLists>
+								</Bus>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="TruckStationsPlus" ID="{70A73B66-F841-49FE-A92D-C6E43D85B3DC}" ShortID="26102029">
+							<ChildrenList>
+								<Bus Name="TruckStationsPlus_Volume_Dialogue" ID="{99D21528-8D40-4599-B2A8-9312AA9343C4}">
+									<ObjectLists>
+										<ObjectList Name="RTPC">
+											<Reference>
+												<Local>
+													<RTPC Name="" ID="{2383A991-33E8-4565-9B5C-C59D1676CBD8}" ShortID="474183621">
+														<PropertyList>
+															<Property Name="PropertyName" Type="string" Value="BusVolume"/>
+														</PropertyList>
+														<ReferenceList>
+															<Reference Name="ControlInput">
+																<ObjectRef Name="RTPC_TruckStationsPlus_Volume_Dialogue" ID="{E8C0BFF8-6BD9-4665-898C-5287851CC0FD}" WorkUnitID="{A325D62B-A8F5-4042-A64D-BFF38D46AE8F}"/>
+															</Reference>
+															<Reference Name="Curve">
+																<Custom>
+																	<Curve Name="" ID="{0820306E-8507-4751-A1FB-EA5A18A8B515}">
+																		<PropertyList>
+																			<Property Name="Flags" Type="int32" Value="3"/>
+																		</PropertyList>
+																		<PointList>
+																			<Point>
+																				<XPos>0</XPos>
+																				<YPos>-200</YPos>
+																				<Flags>5</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>1</XPos>
+																				<YPos>0</YPos>
+																				<Flags>37</Flags>
+																			</Point>
+																		</PointList>
+																	</Curve>
+																</Custom>
+															</Reference>
+														</ReferenceList>
+													</RTPC>
+												</Local>
+											</Reference>
+										</ObjectList>
+									</ObjectLists>
+								</Bus>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="MegaprojectsLib" ID="{2FF726D6-9361-47DE-A06D-871CEBB5106B}" ShortID="1021011884">
+							<ChildrenList>
+								<Bus Name="MegaprojectsLib_Volume_Dialogue" ID="{EA88C9D2-D821-4907-B899-B543CD76B976}">
+									<ReferenceList>
+										<Reference Name="AudioDevice" PluginName="System" CompanyID="0" PluginID="174" PluginType="7">
+											<ObjectRef Name="System" ID="{1402084F-F08C-4DDF-9136-61CB5719812B}" WorkUnitID="{4ACA88FA-26E9-4F09-9C4C-1133B6B51587}"/>
+										</Reference>
+									</ReferenceList>
+									<ObjectLists>
+										<ObjectList Name="RTPC">
+											<Reference>
+												<Local>
+													<RTPC Name="" ID="{2EA8F548-45DE-48DD-88DF-581D01B56FFB}" ShortID="954191573">
+														<PropertyList>
+															<Property Name="PropertyName" Type="string" Value="BusVolume"/>
+														</PropertyList>
+														<ReferenceList>
+															<Reference Name="ControlInput">
+																<ObjectRef Name="RTPC_MegaprojectsLib_Volume_Dialogue" ID="{062586CC-5283-41DD-BE5E-63B797CA86AB}" WorkUnitID="{A325D62B-A8F5-4042-A64D-BFF38D46AE8F}"/>
+															</Reference>
+															<Reference Name="Curve">
+																<Custom>
+																	<Curve Name="" ID="{3BC5E15A-08B5-4641-9592-F37614DB6209}">
+																		<PropertyList>
+																			<Property Name="Flags" Type="int32" Value="3"/>
+																		</PropertyList>
+																		<PointList>
+																			<Point>
+																				<XPos>0</XPos>
+																				<YPos>-200</YPos>
+																				<Flags>5</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>1</XPos>
+																				<YPos>0</YPos>
+																				<Flags>37</Flags>
+																			</Point>
+																		</PointList>
+																	</Curve>
+																</Custom>
+															</Reference>
+														</ReferenceList>
+													</RTPC>
+												</Local>
+											</Reference>
+										</ObjectList>
+									</ObjectLists>
+								</Bus>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Megaprojects_PowerDomain" ID="{C2F344C4-130C-4543-95DB-ECA906D7D3AA}" ShortID="212474119">
+							<ChildrenList>
+								<Bus Name="Megaprojects_PowerDomain_Volume_Dialogue" ID="{E1A63F49-3982-4AEC-965E-89B13F343D1E}">
+									<ReferenceList>
+										<Reference Name="AudioDevice" PluginName="System" CompanyID="0" PluginID="174" PluginType="7">
+											<ObjectRef Name="System" ID="{1402084F-F08C-4DDF-9136-61CB5719812B}" WorkUnitID="{4ACA88FA-26E9-4F09-9C4C-1133B6B51587}"/>
+										</Reference>
+									</ReferenceList>
+									<ObjectLists>
+										<ObjectList Name="RTPC">
+											<Reference>
+												<Local>
+													<RTPC Name="" ID="{999645F8-1A7E-400A-95CE-C6AC601D29AA}" ShortID="838214704">
+														<PropertyList>
+															<Property Name="PropertyName" Type="string" Value="BusVolume"/>
+														</PropertyList>
+														<ReferenceList>
+															<Reference Name="ControlInput">
+																<ObjectRef Name="RTPC_Megaprojects_PowerDomain_Volume_Dialogue" ID="{85034048-8886-43A7-A55B-E22BDEEC3766}" WorkUnitID="{A325D62B-A8F5-4042-A64D-BFF38D46AE8F}"/>
+															</Reference>
+															<Reference Name="Curve">
+																<Custom>
+																	<Curve Name="" ID="{EC3F0AFC-A1A2-414B-92AD-57279DF1C6A7}">
+																		<PropertyList>
+																			<Property Name="Flags" Type="int32" Value="3"/>
+																		</PropertyList>
+																		<PointList>
+																			<Point>
+																				<XPos>0</XPos>
+																				<YPos>-200</YPos>
+																				<Flags>5</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>1</XPos>
+																				<YPos>0</YPos>
+																				<Flags>37</Flags>
+																			</Point>
+																		</PointList>
+																	</Curve>
+																</Custom>
+															</Reference>
+														</ReferenceList>
+													</RTPC>
+												</Local>
+											</Reference>
+										</ObjectList>
+									</ObjectLists>
+								</Bus>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="AlkaLib" ID="{FF5AC7C8-A45B-4BC0-8799-3954D4624558}" ShortID="181498439">
+							<ChildrenList>
+								<Bus Name="AlkaLib_Volume_Factory" ID="{17044D75-0B02-4047-807C-878B5011AB3B}">
+									<ObjectLists>
+										<ObjectList Name="RTPC">
+											<Reference>
+												<Local>
+													<RTPC Name="" ID="{A2C960B3-6A11-4255-BDDD-8101C211F064}" ShortID="562508228">
+														<PropertyList>
+															<Property Name="PropertyName" Type="string" Value="BusVolume"/>
+														</PropertyList>
+														<ReferenceList>
+															<Reference Name="ControlInput">
+																<ObjectRef Name="RTPC_AlkaLib_Volume_Factory" ID="{77C814D0-C68C-4C90-98C8-83B350C9B8A3}" WorkUnitID="{A325D62B-A8F5-4042-A64D-BFF38D46AE8F}"/>
+															</Reference>
+															<Reference Name="Curve">
+																<Custom>
+																	<Curve Name="" ID="{851DD2D1-CF6A-486A-AC3D-F8649AF1034C}">
+																		<PropertyList>
+																			<Property Name="Flags" Type="int32" Value="3"/>
+																		</PropertyList>
+																		<PointList>
+																			<Point>
+																				<XPos>0</XPos>
+																				<YPos>-200</YPos>
+																				<Flags>5</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>1</XPos>
+																				<YPos>0</YPos>
+																				<Flags>37</Flags>
+																			</Point>
+																		</PointList>
+																	</Curve>
+																</Custom>
+															</Reference>
+														</ReferenceList>
+													</RTPC>
+												</Local>
+											</Reference>
+										</ObjectList>
+									</ObjectLists>
+								</Bus>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="QuantumTechUtils" ID="{D5A8C0C2-FB3D-4169-A08D-4506674035BE}" ShortID="195795157">
+							<ChildrenList>
+								<Bus Name="QuantumTechUtils_Volume_Dialogue" ID="{EF52DA8E-7732-447C-802A-D440A074AA01}">
+									<ObjectLists>
+										<ObjectList Name="RTPC">
+											<Reference>
+												<Local>
+													<RTPC Name="" ID="{A8422E4D-F07D-4153-86BE-A4C38690011F}" ShortID="543799348">
+														<PropertyList>
+															<Property Name="PropertyName" Type="string" Value="BusVolume"/>
+														</PropertyList>
+														<ReferenceList>
+															<Reference Name="ControlInput">
+																<ObjectRef Name="RTPC_QuantumTechUtils_Volume_Dialogue" ID="{87972AC4-E03D-40E8-BEFD-CAC35AD58856}" WorkUnitID="{A325D62B-A8F5-4042-A64D-BFF38D46AE8F}"/>
+															</Reference>
+															<Reference Name="Curve">
+																<Custom>
+																	<Curve Name="" ID="{DBBE922E-688F-4BF2-8952-2D64E4333D33}">
+																		<PropertyList>
+																			<Property Name="Flags" Type="int32" Value="3"/>
+																		</PropertyList>
+																		<PointList>
+																			<Point>
+																				<XPos>0</XPos>
+																				<YPos>-200</YPos>
+																				<Flags>5</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>1</XPos>
+																				<YPos>0</YPos>
+																				<Flags>37</Flags>
+																			</Point>
+																		</PointList>
+																	</Curve>
+																</Custom>
+															</Reference>
+														</ReferenceList>
+													</RTPC>
+												</Local>
+											</Reference>
+										</ObjectList>
+									</ObjectLists>
+								</Bus>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Megaprojects_WaterDam" ID="{524F687A-B363-487B-AFAA-54A11406B5E6}" ShortID="30008997">
+							<ChildrenList>
+								<Bus Name="Megaprojects_WaterDam_Volume_Dialogue" ID="{728204B9-3546-4EDE-B1F5-6E7A9A6EE8A8}">
+									<ReferenceList>
+										<Reference Name="AudioDevice" PluginName="System" CompanyID="0" PluginID="174" PluginType="7">
+											<ObjectRef Name="System" ID="{1402084F-F08C-4DDF-9136-61CB5719812B}" WorkUnitID="{4ACA88FA-26E9-4F09-9C4C-1133B6B51587}"/>
+										</Reference>
+									</ReferenceList>
+									<ObjectLists>
+										<ObjectList Name="RTPC">
+											<Reference>
+												<Local>
+													<RTPC Name="" ID="{20EF277C-F981-4A31-B877-8070E2D5D571}" ShortID="219201524">
+														<PropertyList>
+															<Property Name="PropertyName" Type="string" Value="BusVolume"/>
+														</PropertyList>
+														<ReferenceList>
+															<Reference Name="ControlInput">
+																<ObjectRef Name="RTPC_Megaprojects_WaterDam_Volume_Dialogue" ID="{66F88C04-CEA1-49B9-84B1-00D5074A4D17}" WorkUnitID="{A325D62B-A8F5-4042-A64D-BFF38D46AE8F}"/>
+															</Reference>
+															<Reference Name="Curve">
+																<Custom>
+																	<Curve Name="" ID="{2C37AED3-1C39-4D7B-A394-698C85D697FC}">
+																		<PropertyList>
+																			<Property Name="Flags" Type="int32" Value="3"/>
+																		</PropertyList>
+																		<PointList>
+																			<Point>
+																				<XPos>0</XPos>
+																				<YPos>-200</YPos>
+																				<Flags>5</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>1</XPos>
+																				<YPos>0</YPos>
+																				<Flags>37</Flags>
+																			</Point>
+																		</PointList>
+																	</Curve>
+																</Custom>
+															</Reference>
+														</ReferenceList>
+													</RTPC>
+												</Local>
+											</Reference>
+										</ObjectList>
+									</ObjectLists>
+								</Bus>
+								<Bus Name="Megaprojects_WaterDam_Volume_Factory" ID="{E86D583D-ABBC-439D-8A4A-72131C35D19B}">
+									<ReferenceList>
+										<Reference Name="AudioDevice" PluginName="System" CompanyID="0" PluginID="174" PluginType="7">
+											<ObjectRef Name="System" ID="{1402084F-F08C-4DDF-9136-61CB5719812B}" WorkUnitID="{4ACA88FA-26E9-4F09-9C4C-1133B6B51587}"/>
+										</Reference>
+									</ReferenceList>
+									<ObjectLists>
+										<ObjectList Name="RTPC">
+											<Reference>
+												<Local>
+													<RTPC Name="" ID="{CAB65A2B-20AB-4846-A572-D74703B1F745}" ShortID="179321591">
+														<PropertyList>
+															<Property Name="PropertyName" Type="string" Value="BusVolume"/>
+														</PropertyList>
+														<ReferenceList>
+															<Reference Name="ControlInput">
+																<ObjectRef Name="RTPC_Megaprojects_WaterDam_Volume_Factory" ID="{63DB5194-1799-4813-A015-937F781F5F73}" WorkUnitID="{A325D62B-A8F5-4042-A64D-BFF38D46AE8F}"/>
+															</Reference>
+															<Reference Name="Curve">
+																<Custom>
+																	<Curve Name="" ID="{E9527DD3-D427-428D-96D0-288A0BAE9E1B}">
+																		<PropertyList>
+																			<Property Name="Flags" Type="int32" Value="3"/>
+																		</PropertyList>
+																		<PointList>
+																			<Point>
+																				<XPos>0</XPos>
+																				<YPos>-200</YPos>
+																				<Flags>5</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>1</XPos>
+																				<YPos>0</YPos>
+																				<Flags>37</Flags>
+																			</Point>
+																		</PointList>
+																	</Curve>
+																</Custom>
+															</Reference>
+														</ReferenceList>
+													</RTPC>
+												</Local>
+											</Reference>
+										</ObjectList>
+									</ObjectLists>
+								</Bus>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="WasteCannon" ID="{B6FB725F-912F-4327-840D-502D515CB081}" ShortID="1047919145">
+							<ChildrenList>
+								<Bus Name="WasteCannon_Volume_Factory" ID="{5F25BDFF-A10F-46E2-B854-02C5C65F44F5}">
+									<ReferenceList>
+										<Reference Name="AudioDevice" PluginName="System" CompanyID="0" PluginID="174" PluginType="7">
+											<ObjectRef Name="System" ID="{1402084F-F08C-4DDF-9136-61CB5719812B}" WorkUnitID="{4ACA88FA-26E9-4F09-9C4C-1133B6B51587}"/>
+										</Reference>
+									</ReferenceList>
+									<ObjectLists>
+										<ObjectList Name="RTPC">
+											<Reference>
+												<Local>
+													<RTPC Name="" ID="{12A85480-92EA-42AB-824B-8A2F39903208}" ShortID="1047949798">
+														<PropertyList>
+															<Property Name="PropertyName" Type="string" Value="BusVolume"/>
+														</PropertyList>
+														<ReferenceList>
+															<Reference Name="ControlInput">
+																<ObjectRef Name="RTPC_WasteCannon_Volume_Factory" ID="{EE3E7F24-AF3F-4606-B731-F3C718180259}" WorkUnitID="{A325D62B-A8F5-4042-A64D-BFF38D46AE8F}"/>
+															</Reference>
+															<Reference Name="Curve">
+																<Custom>
+																	<Curve Name="" ID="{5464F990-5B4B-4795-B06F-F2D207F35585}">
+																		<PropertyList>
+																			<Property Name="Flags" Type="int32" Value="3"/>
+																		</PropertyList>
+																		<PointList>
+																			<Point>
+																				<XPos>0</XPos>
+																				<YPos>-200</YPos>
+																				<Flags>5</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>1</XPos>
+																				<YPos>0</YPos>
+																				<Flags>37</Flags>
+																			</Point>
+																		</PointList>
+																	</Curve>
+																</Custom>
+															</Reference>
+														</ReferenceList>
+													</RTPC>
+												</Local>
+											</Reference>
+										</ObjectList>
+									</ObjectLists>
+								</Bus>
+							</ChildrenList>
+						</Folder>
+					</ChildrenList>
+				</Bus>
+			</ChildrenList>
+		</WorkUnit>
+	</Busses>
+</WwiseDocument>

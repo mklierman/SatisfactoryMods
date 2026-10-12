@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<PluginInfo Platform="Windows" BasePlatform="Windows">
-	<PluginLibs>
-		<PluginLib LibName="System" LibId="11403271" Type="AudioDevice"/>
-		<PluginLib LibName="No Output" LibId="11862023" Type="AudioDevice"/>
-	</PluginLibs>
-	<FileHash>{0A13F4BA-B100-584C-1D1C-B9267B7D267A}</FileHash>
-</PluginInfo>

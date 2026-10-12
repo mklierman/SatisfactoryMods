@@ -1,8 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WwiseDocument Type="WorkUnit" ID="{93832428-3463-48D4-BD1F-46380B36629E}" SchemaVersion="133">
+<WwiseDocument Type="WorkUnit" ID="{93832428-3463-48D4-BD1F-46380B36629E}" SchemaVersion="119">
 	<SoundBanks>
 		<WorkUnit Name="Default Work Unit" ID="{93832428-3463-48D4-BD1F-46380B36629E}" PersistMode="Standalone">
 			<ChildrenList>
+				<SoundBank Name="TruckStationsPlus_Soundbank" ID="{27F03F16-58B9-4FC1-A01D-8A01DDEDF2CC}">
+					<ObjectInclusionList>
+						<ObjectRef Name="TruckStationsPlus" ID="{70A73B66-F841-49FE-A92D-C6E43D85B3DC}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="TruckStationsPlus" ID="{FE942DE4-5E87-4D30-8C8D-030AE5B54298}" WorkUnitID="{1D352AF5-39D5-4B6D-814D-7A38B1E00D8B}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="TruckStationsPlus" ID="{0AB31AEE-6D00-4E4F-B733-B7F4C40E21AF}" WorkUnitID="{BE4CFC6F-1D57-454D-8C64-E85A33D7867C}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+				<SoundBank Name="AlkaLib_Soundbank" ID="{0FB60F36-F987-4544-B4DD-F8E4D45813F1}">
+					<ObjectInclusionList>
+						<ObjectRef Name="AlkaLib" ID="{149C3B00-3CC6-4606-A497-A1C7775F0B57}" WorkUnitID="{BE4CFC6F-1D57-454D-8C64-E85A33D7867C}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="AlkaLib" ID="{FF5AC7C8-A45B-4BC0-8799-3954D4624558}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="AlkaLib" ID="{EAE6FDC6-5233-4FCD-B9F7-39E8EEE14226}" WorkUnitID="{1D352AF5-39D5-4B6D-814D-7A38B1E00D8B}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+				<SoundBank Name="Lithium_Soundbank" ID="{437379DD-B06C-4008-86DD-505B3DEB7654}">
+					<ObjectInclusionList>
+						<ObjectRef Name="Lithium" ID="{863F8B8D-2AC2-4214-874E-84B98E0A9BBD}" WorkUnitID="{1D352AF5-39D5-4B6D-814D-7A38B1E00D8B}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Lithium" ID="{3945E676-EBBB-45BF-A98C-2F04C420CEF4}" WorkUnitID="{BE4CFC6F-1D57-454D-8C64-E85A33D7867C}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Lithium" ID="{AC3D592A-5629-4A3B-B406-592FB32CAEA7}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+				<SoundBank Name="MegaprojectsLib_Soundbank" ID="{AF51C525-EB1A-4B54-AD05-0CF720F779BE}">
+					<ObjectInclusionList>
+						<ObjectRef Name="MegaprojectsLib" ID="{235FEEF2-71EB-420C-91D8-BD217A413394}" WorkUnitID="{1D352AF5-39D5-4B6D-814D-7A38B1E00D8B}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="MegaprojectsLib" ID="{2FF726D6-9361-47DE-A06D-871CEBB5106B}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="MegaprojectsLib" ID="{9E80F673-1B90-4A3F-98CE-F7D5471F32DD}" WorkUnitID="{BE4CFC6F-1D57-454D-8C64-E85A33D7867C}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+				<SoundBank Name="Megaprojects_PowerDomain_Soundbank" ID="{615FDC29-0FCB-4E4C-94AE-7B4405DF4975}">
+					<ObjectInclusionList>
+						<ObjectRef Name="Megaprojects_PowerDomain" ID="{C2F344C4-130C-4543-95DB-ECA906D7D3AA}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Megaprojects_PowerDomain" ID="{6CE11A66-64F7-485F-B09D-6FB08BA0605A}" WorkUnitID="{1D352AF5-39D5-4B6D-814D-7A38B1E00D8B}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Megaprojects_PowerDomain" ID="{37AC2A09-893D-4C5F-BFE9-DAC53E57094E}" WorkUnitID="{BE4CFC6F-1D57-454D-8C64-E85A33D7867C}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+				<SoundBank Name="QuantumTechUtils_Soundbank" ID="{44E1826A-A5D4-4D01-BA34-8808FCA9BBD7}">
+					<ObjectInclusionList>
+						<ObjectRef Name="QuantumTechUtils" ID="{D5A8C0C2-FB3D-4169-A08D-4506674035BE}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="QuantumTechUtils" ID="{2682B09A-9ECD-41B8-A23E-095EA430321A}" WorkUnitID="{BE4CFC6F-1D57-454D-8C64-E85A33D7867C}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="QuantumTechUtils" ID="{8C60A65A-A4C9-4C44-9D0D-358A5FA6E50C}" WorkUnitID="{1D352AF5-39D5-4B6D-814D-7A38B1E00D8B}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+				<SoundBank Name="Megaprojects_WaterDam_Soundbank" ID="{E9C31042-1406-4F65-9533-05A1A25AB561}">
+					<ObjectInclusionList>
+						<ObjectRef Name="Megaprojects_WaterDam" ID="{F6E81EE9-3117-47B6-A83B-09948EC79773}" WorkUnitID="{1D352AF5-39D5-4B6D-814D-7A38B1E00D8B}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Megaprojects_WaterDam" ID="{524F687A-B363-487B-AFAA-54A11406B5E6}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Megaprojects_WaterDam" ID="{D1E94C9C-B62D-496D-96D7-A475FC595340}" WorkUnitID="{BE4CFC6F-1D57-454D-8C64-E85A33D7867C}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
 				<SoundBank Name="WasteCannon_Soundbank" ID="{2244DAF7-88ED-4AD6-80E5-F6A0D315E339}">
 					<ObjectInclusionList>
 						<ObjectRef Name="WasteCannon" ID="{B6FB725F-912F-4327-840D-502D515CB081}" WorkUnitID="{36754444-35E2-498C-B23D-DEB6E2F58E40}" Origin="Manual" Filter="7"/>
