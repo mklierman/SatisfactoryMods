@@ -1,6 +1,7 @@
 #include "ConstructionPreferencesModule.h"
 #include "Patching/NativeHookManager.h"
 #include "Hologram/FGConveyorBeltHologram.h"
+#include "Hologram/FGBuildableHologram.h"
 #include "Subsystem/SubsystemActorManager.h"
 #include "Hologram/FGHologram.h"
 #include "Hologram/FGPoleHologram.h"
@@ -14,20 +15,59 @@
 #include "CP_ModConfigStruct.h"
 #include "FGCharacterPlayer.h"
 #include "Hologram/FGConveyorLiftHologram.h"
-#include "Hologram/FGConveyorPoleHologram.h"
 #include "CP_Subsystem.h"
 #include "FGBuildableSubsystem.h"
-#include "FGCharacterPlayer.h"
 #include "Equipment/FGBuildGun.h"
 #include "Equipment/FGParachute.h"
 #include "Hologram/FGBlueprintHologram.h"
 #include <SessionSettings/SessionSettingsManager.h>
 #include <Logging/StructuredLog.h>
-#include "Equipment/FGBuildGunBuild.h"
 #include "Buildables/FGBuildablePoleStackable.h"
 #include "Hologram/FGStackablePoleHologram.h"
+#include "Hologram/FGPipelineHologram.h"
 #include "Hologram/FGPipelinePoleHologram.h"
 #include "CP_GameInstanceModule.h"
+#include "CP_StackableConveyorPoleHologram.h"
+#include "CP_StackablePipelinePoleHologram.h"
+#include "FGRecipeManager.h"
+#include "TimerManager.h"
+
+namespace
+{
+	void RegisterInternalRecipe(AFGRecipeManager* recipeManager, TSubclassOf<UFGRecipe> recipe)
+	{
+		if (!IsValid(recipeManager) || !IsValid(recipe))
+		{
+			return;
+		}
+
+		if (recipeManager->IsRecipeAvailable(recipe))
+		{
+			TArray<TSubclassOf<UFGRecipe>> recipesToRemove { recipe };
+			recipeManager->RemoveAvailableRecipes(recipesToRemove);
+		}
+		recipeManager->AddAvailableRecipe(recipe);
+	}
+
+	bool IsHypertubePipeline(const AFGPipelineHologram* pipelineHologram)
+	{
+		const TSubclassOf<AActor> buildClass = pipelineHologram->GetActorClass();
+		return IsValid(buildClass) && buildClass->GetName().Contains(TEXT("Hyper"), ESearchCase::IgnoreCase);
+	}
+
+	int32 GetPipelineSupportMode(const AFGPipelineHologram* pipelineHologram)
+	{
+		if (USessionSettingsManager* sessionSettings =
+			pipelineHologram->GetWorld()->GetSubsystem<USessionSettingsManager>())
+		{
+			return sessionSettings->GetIntOptionValue(
+				IsHypertubePipeline(pipelineHologram)
+					? TEXT("ConstructionPreferences.HyperTubePoleType")
+					: TEXT("ConstructionPreferences.PipePoleType"));
+		}
+		return 0;
+	}
+}
 
 DEFINE_LOG_CATEGORY(LogConstructionPreferences);
 
@@ -47,25 +87,70 @@ void FConstructionPreferencesModule::StartupModule() {
 			if (!IsValid(recipe)) {
 				return;
 			}
-			if (UCP_GameInstanceModule* CP_Instance = UCP_GameInstanceModule::Get(GWorld)) {
-				auto recipeName = recipe->GetName();
-				//UE_LOGFMT(LogConstructionPreferences, Display, "SetActiveRecipe: {0}", recipeName);
-
-				if (recipe == CP_Instance->Recipe_ConveyorPoleStackable) {
-					//Set Hologram Class to vanilla
-					AFGBuildablePoleStackable* Stackable = CP_Instance->Build_ConveyorPoleStackable.GetDefaultObject();
-					Stackable->mHologramClass = CP_Instance->Holo_ConveyorStackable;
-				} else if (CP_Instance->ConveyorBeltRecipes.Contains(recipe)) {
-					USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
-					auto beltOption = SessionSettings->GetIntOptionValue("ConstructionPreferences.ConveyorPoleType");
-					if (beltOption == 1) {
-						//Set Hologram Class to mods
-						AFGBuildablePoleStackable* Stackable = CP_Instance->Build_ConveyorPoleStackable.GetDefaultObject();
-						Stackable->mHologramClass = CP_Instance->Holo_CP_Stackable_Belt;
-					}
+			if (UCP_GameInstanceModule* gameInstanceModule = UCP_GameInstanceModule::Get(GWorld))
+			{
+				if (IsValid(gameInstanceModule->Build_ConveyorPoleStackable) && IsValid(gameInstanceModule->Holo_ConveyorStackable))
+				{
+					AFGBuildablePoleStackable* stackable = gameInstanceModule->Build_ConveyorPoleStackable.GetDefaultObject();
+					stackable->mHologramClass = gameInstanceModule->Holo_ConveyorStackable;
 				}
 			}
 		});
+
+	AFGRecipeManager* recipeManagerCDO = GetMutableDefault<AFGRecipeManager>();
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGRecipeManager::BeginPlay, recipeManagerCDO, [](AFGRecipeManager* self)
+		{
+			if (self->GetWorld()->GetNetMode() == NM_Client)
+			{
+				return;
+			}
+
+			if (UCP_GameInstanceModule* gameInstanceModule = UCP_GameInstanceModule::Get(self))
+			{
+				RegisterInternalRecipe(self, gameInstanceModule->Recipe_ConveyorPoleBeltStackable);
+			}
+		});
+
+	AFGBuildableHologram* buildableHologramCDO = GetMutableDefault<AFGBuildableHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::Construct, buildableHologramCDO,
+		[](auto& scope, AFGBuildableHologram* self, TArray<AActor*>& outChildren, FNetConstructionID constructionID)
+		{
+			bool shouldDestroySupport = false;
+			if (IsValid(Cast<AFGConveyorBeltHologram>(self->GetParentHologram())))
+			{
+				if (USessionSettingsManager* sessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>())
+				{
+					shouldDestroySupport =
+						sessionSettings->GetIntOptionValue("ConstructionPreferences.ConveyorPoleType") == 2;
+				}
+			}
+			else if (const AFGPipelineHologram* parentPipeline =
+				Cast<AFGPipelineHologram>(self->GetParentHologram()))
+			{
+				shouldDestroySupport = GetPipelineSupportMode(parentPipeline) == 2;
+			}
+
+			if (!shouldDestroySupport)
+			{
+				return;
+			}
+
+			AActor* temporarySupport = scope(self, outChildren, constructionID);
+			if (IsValid(temporarySupport))
+			{
+				TWeakObjectPtr<AActor> weakTemporarySupport = temporarySupport;
+				self->GetWorld()->GetTimerManager().SetTimerForNextTick(
+					FTimerDelegate::CreateLambda([weakTemporarySupport]()
+						{
+							if (weakTemporarySupport.IsValid())
+							{
+								weakTemporarySupport->Destroy();
+							}
+						}));
+			}
+			scope.Override(temporarySupport);
+		});
+
 	SUBSCRIBE_METHOD(AFGCharacterPlayer::GetUseDistance, [this](auto& scope, const AFGCharacterPlayer* self)
 		{
 			float result = scope(self);
@@ -101,8 +186,55 @@ void FConstructionPreferencesModule::StartupModule() {
 			self->mMaximumHeight = (maxHeight * 100);
 		});
 
-	AFGConveyorBeltHologram* bhg = GetMutableDefault<AFGConveyorBeltHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGConveyorBeltHologram::BeginPlay, bhg, [](AFGConveyorBeltHologram* self)
+	const TSubclassOf<AFGConveyorBeltHologram> beltHologramClass = LoadClass<AFGConveyorBeltHologram>(
+		nullptr,
+		TEXT("/Game/FactoryGame/Buildable/Factory/-Shared/Holo_ConveyorBelt.Holo_ConveyorBelt_C"));
+	AFGConveyorBeltHologram* beltHologramCDO = IsValid(beltHologramClass)
+		? beltHologramClass.GetDefaultObject()
+		: GetMutableDefault<AFGConveyorBeltHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::SpawnChildren, beltHologramCDO,
+		[](auto& scope, AFGConveyorBeltHologram* self, AActor* hologramOwner, FVector spawnLocation, APawn* hologramInstigator)
+		{
+			USessionSettingsManager* sessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+			UCP_GameInstanceModule* gameInstanceModule = UCP_GameInstanceModule::Get(self);
+			if (!IsValid(sessionSettings) || !IsValid(gameInstanceModule))
+			{
+				return;
+			}
+
+			switch (sessionSettings->GetIntOptionValue("ConstructionPreferences.ConveyorPoleType"))
+			{
+			case 1:
+				if (AFGRecipeManager* recipeManager = AFGRecipeManager::Get(self);
+					IsValid(recipeManager) &&
+					recipeManager->IsRecipeAvailable(gameInstanceModule->Recipe_ConveyorPoleStackable) &&
+					IsValid(gameInstanceModule->Build_ConveyorPoleStackable))
+				{
+					AFGBuildablePoleStackable* stackableCDO = gameInstanceModule->Build_ConveyorPoleStackable.GetDefaultObject();
+					const TSubclassOf<AFGHologram> previousHologramClass = stackableCDO->mHologramClass;
+					stackableCDO->mHologramClass = ACP_StackableConveyorPoleHologram::StaticClass();
+					self->mDefaultConveyorPoleRecipe = gameInstanceModule->Recipe_ConveyorPoleStackable;
+
+					scope(self, hologramOwner, spawnLocation, hologramInstigator);
+					stackableCDO->mHologramClass = previousHologramClass;
+					return;
+				}
+				break;
+			case 2:
+				if (IsValid(gameInstanceModule->Recipe_ConveyorPoleDefault))
+				{
+					self->mDefaultConveyorPoleRecipe = gameInstanceModule->Recipe_ConveyorPoleDefault;
+				}
+				break;
+			default:
+				if (IsValid(gameInstanceModule->Recipe_ConveyorPoleDefault))
+				{
+					self->mDefaultConveyorPoleRecipe = gameInstanceModule->Recipe_ConveyorPoleDefault;
+				}
+				break;
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGConveyorBeltHologram::BeginPlay, beltHologramCDO, [](AFGConveyorBeltHologram* self)
 		{
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.ConveyorBelt.Length");
@@ -112,8 +244,65 @@ void FConstructionPreferencesModule::StartupModule() {
 			}
 		});
 
-	AFGPipelineHologram* phg = GetMutableDefault<AFGPipelineHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGPipelineHologram::BeginPlay, phg, [](AFGPipelineHologram* self)
+	const TSubclassOf<AFGPipelineHologram> pipelineHologramClass = LoadClass<AFGPipelineHologram>(
+		nullptr,
+		TEXT("/Game/FactoryGame/Buildable/Factory/-Shared/Holo_Pipeline.Holo_Pipeline_C"));
+	AFGPipelineHologram* pipelineHologramCDO = IsValid(pipelineHologramClass)
+		? pipelineHologramClass.GetDefaultObject()
+		: GetMutableDefault<AFGPipelineHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineHologram::SpawnChildren, pipelineHologramCDO,
+		[](auto& scope, AFGPipelineHologram* self, AActor* hologramOwner, FVector spawnLocation, APawn* hologramInstigator)
+		{
+			UCP_GameInstanceModule* gameInstanceModule = UCP_GameInstanceModule::Get(self);
+			if (!IsValid(gameInstanceModule))
+			{
+				return;
+			}
+
+			const bool bIsHypertube = IsHypertubePipeline(self);
+			const TSubclassOf<UFGRecipe> defaultSupportRecipe = bIsHypertube
+				? gameInstanceModule->Recipe_HypertubeSupportDefault
+				: gameInstanceModule->Recipe_PipelineSupportDefault;
+
+			switch (GetPipelineSupportMode(self))
+			{
+			case 1:
+			{
+				const TSubclassOf<UFGRecipe> stackableRecipe = bIsHypertube
+					? gameInstanceModule->Recipe_HypertubeSupportStackable
+					: gameInstanceModule->Recipe_PipelineSupportStackable;
+				const TSubclassOf<AFGBuildablePoleStackable> stackableBuildable = bIsHypertube
+					? gameInstanceModule->Build_HypertubeSupportStackable
+					: gameInstanceModule->Build_PipelineSupportStackable;
+
+				if (AFGRecipeManager* recipeManager = AFGRecipeManager::Get(self);
+					IsValid(recipeManager) &&
+					IsValid(stackableRecipe) &&
+					IsValid(stackableBuildable) &&
+					recipeManager->IsRecipeAvailable(stackableRecipe))
+				{
+					AFGBuildablePoleStackable* stackableCDO = stackableBuildable.GetDefaultObject();
+					const TSubclassOf<AFGHologram> previousHologramClass = stackableCDO->mHologramClass;
+					stackableCDO->mHologramClass = ACP_StackablePipelinePoleHologram::StaticClass();
+					self->mDefaultPipelineSupportRecipe = stackableRecipe;
+
+					scope(self, hologramOwner, spawnLocation, hologramInstigator);
+					stackableCDO->mHologramClass = previousHologramClass;
+					return;
+				}
+				break;
+			}
+			case 2:
+			default:
+				break;
+			}
+
+			if (IsValid(defaultSupportRecipe))
+			{
+				self->mDefaultPipelineSupportRecipe = defaultSupportRecipe;
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGPipelineHologram::BeginPlay, pipelineHologramCDO, [](AFGPipelineHologram* self)
 		{
 			// Determine if is pipe or hypertube
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();

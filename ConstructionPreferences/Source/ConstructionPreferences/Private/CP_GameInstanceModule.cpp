@@ -1,9 +1,12 @@
 #include "CP_GameInstanceModule.h"
+#include "CP_StackableConveyorPoleHologram.h"
 #include "Algo/ForEach.h"
 #include "Algo/Transform.h"
+#include "Buildables/FGBuildable.h"
 #include "Buildables/FGBuildableConveyorBelt.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
+#include "Hologram/FGHologram.h"
 #include "Module/GameInstanceModuleManager.h"
 #include "Resources/FGBuildingDescriptor.h"
 
@@ -103,6 +106,52 @@ void UCP_GameInstanceModule::DispatchLifecycleEvent(ELifecyclePhase Phase)
 	//UE_LOG(LogConstructionPreferences, Error, TEXT("HELLO"));
 
 	if (Phase == ELifecyclePhase::POST_INITIALIZATION) {
+		Recipe_ConveyorPoleBeltStackable = LoadClass<UFGRecipe>(
+			nullptr,
+			TEXT("/ConstructionPreferences/Buildable/ConveyorPoleStackable/Recipe_ConveyorPole_CPStackable.Recipe_ConveyorPole_CPStackable_C"));
+		Recipe_ConveyorPoleDefault = LoadClass<UFGRecipe>(
+			nullptr,
+			TEXT("/Game/FactoryGame/Recipes/Buildings/Recipe_ConveyorPole.Recipe_ConveyorPole_C"));
+		Recipe_PipelineSupportDefault = LoadClass<UFGRecipe>(
+			nullptr,
+			TEXT("/Game/FactoryGame/Recipes/Buildings/Recipe_PipeSupport.Recipe_PipeSupport_C"));
+		Recipe_HypertubeSupportDefault = LoadClass<UFGRecipe>(
+			nullptr,
+			TEXT("/Game/FactoryGame/Recipes/Buildings/Recipe_PipeHyperSupport.Recipe_PipeHyperSupport_C"));
+		Recipe_PipelineSupportStackable = LoadClass<UFGRecipe>(
+			nullptr,
+			TEXT("/Game/FactoryGame/Recipes/Buildings/Recipe_PipeSupportStackable.Recipe_PipeSupportStackable_C"));
+		Recipe_HypertubeSupportStackable = LoadClass<UFGRecipe>(
+			nullptr,
+			TEXT("/Game/FactoryGame/Recipes/Buildings/Recipe_HyperPoleStackable.Recipe_HyperPoleStackable_C"));
+		Build_PipelineSupportStackable = LoadClass<AFGBuildablePoleStackable>(
+			nullptr,
+			TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupport/Build_PipeSupportStackable.Build_PipeSupportStackable_C"));
+		Build_HypertubeSupportStackable = LoadClass<AFGBuildablePoleStackable>(
+			nullptr,
+			TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupport/Build_HyperPoleStackable.Build_HyperPoleStackable_C"));
+
+		const TSubclassOf<AFGBuildable> beltStackableBuildable = LoadClass<AFGBuildable>(
+			nullptr,
+			TEXT("/ConstructionPreferences/Buildable/ConveyorPoleStackable/CP_Build_ConveyorPole_Stackable.CP_Build_ConveyorPole_Stackable_C"));
+
+		if (IsValid(beltStackableBuildable))
+		{
+			beltStackableBuildable.GetDefaultObject()->mHologramClass = ACP_StackableConveyorPoleHologram::StaticClass();
+		}
+
+		if (!IsValid(Recipe_ConveyorPoleBeltStackable) ||
+			!IsValid(Recipe_ConveyorPoleDefault) ||
+			!IsValid(Recipe_PipelineSupportDefault) ||
+			!IsValid(Recipe_HypertubeSupportDefault) ||
+			!IsValid(Recipe_PipelineSupportStackable) ||
+			!IsValid(Recipe_HypertubeSupportStackable) ||
+			!IsValid(Build_PipelineSupportStackable) ||
+			!IsValid(Build_HypertubeSupportStackable))
+		{
+			UE_LOG(LogConstructionPreferences, Error, TEXT("Failed to load one or more default support recipes"));
+		}
+
 		StackablePoleCDO = Build_ConveyorPoleStackable.GetDefaultObject();
 
 		TSet<FTopLevelAssetPath> AssetPaths;

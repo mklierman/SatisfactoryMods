@@ -33,6 +33,30 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Construction Preferences")
 	TSubclassOf<UFGRecipe> Recipe_ConveyorPoleStackable;
 
+	UPROPERTY(Transient)
+	TSubclassOf<UFGRecipe> Recipe_ConveyorPoleBeltStackable;
+
+	UPROPERTY(Transient)
+	TSubclassOf<UFGRecipe> Recipe_ConveyorPoleDefault;
+
+	UPROPERTY(Transient)
+	TSubclassOf<UFGRecipe> Recipe_PipelineSupportDefault;
+
+	UPROPERTY(Transient)
+	TSubclassOf<UFGRecipe> Recipe_HypertubeSupportDefault;
+
+	UPROPERTY(Transient)
+	TSubclassOf<UFGRecipe> Recipe_PipelineSupportStackable;
+
+	UPROPERTY(Transient)
+	TSubclassOf<UFGRecipe> Recipe_HypertubeSupportStackable;
+
+	UPROPERTY(Transient)
+	TSubclassOf<AFGBuildablePoleStackable> Build_PipelineSupportStackable;
+
+	UPROPERTY(Transient)
+	TSubclassOf<AFGBuildablePoleStackable> Build_HypertubeSupportStackable;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Construction Preferences")
 	TSubclassOf<AFGBuildablePoleStackable> Build_ConveyorPoleStackable;
 
