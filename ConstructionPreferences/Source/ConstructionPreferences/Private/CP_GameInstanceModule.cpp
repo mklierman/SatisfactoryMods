@@ -1,5 +1,6 @@
 #include "CP_GameInstanceModule.h"
 #include "CP_StackableConveyorPoleHologram.h"
+#include "CP_StackablePoleHologram.h"
 #include "Algo/ForEach.h"
 #include "Algo/Transform.h"
 #include "Buildables/FGBuildable.h"
@@ -138,6 +139,10 @@ void UCP_GameInstanceModule::DispatchLifecycleEvent(ELifecyclePhase Phase)
 		if (IsValid(beltStackableBuildable))
 		{
 			beltStackableBuildable.GetDefaultObject()->mHologramClass = ACP_StackableConveyorPoleHologram::StaticClass();
+		}
+		if (IsValid(Build_ConveyorPoleStackable))
+		{
+			Build_ConveyorPoleStackable.GetDefaultObject()->mHologramClass = ACP_StackablePoleHologram::StaticClass();
 		}
 
 		if (!IsValid(Recipe_ConveyorPoleBeltStackable) ||

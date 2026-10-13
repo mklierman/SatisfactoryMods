@@ -4,8 +4,6 @@
 #include "Hologram/FGBuildableHologram.h"
 #include "Subsystem/SubsystemActorManager.h"
 #include "Hologram/FGHologram.h"
-#include "Hologram/FGPoleHologram.h"
-#include "Hologram/FGConveyorPoleHologram.h"
 #include "Equipment/FGBuildGunBuild.h"
 #include "Buildables/FGBuildableConveyorBelt.h"
 #include "Buildables/FGBuildablePipeline.h"
@@ -28,13 +26,14 @@
 #include "Hologram/FGBlueprintHologram.h"
 #include <SessionSettings/SessionSettingsManager.h>
 #include "Buildables/FGBuildablePoleStackable.h"
-#include "Hologram/FGStackablePoleHologram.h"
 #include "Hologram/FGPipelineHologram.h"
-#include "Hologram/FGPipelinePoleHologram.h"
 #include "CP_GameInstanceModule.h"
 #include "CP_StackableConveyorPoleHologram.h"
+#include "CP_StackablePoleHologram.h"
 #include "CP_StackablePipelinePoleHologram.h"
 #include "FGRecipeManager.h"
+#include "FGPlayerController.h"
+#include "FGConstructDisqualifier.h"
 #include "TimerManager.h"
 #include "Hologram/HologramHelpers.h"
 
@@ -44,6 +43,57 @@ namespace
 	static constexpr float MaxSafePipelineLength = 5600.0f;
 	static constexpr float MaxSafeHypertubeLength = 10000.0f;
 	static constexpr float MaxSafeRailroadTrackLength = 10000.0f;
+
+	bool IsControlDown(const AFGHologram* hologram)
+	{
+		APawn* instigator = IsValid(hologram) ? hologram->GetConstructionInstigator() : nullptr;
+		AFGPlayerController* controller = IsValid(instigator) ? Cast<AFGPlayerController>(instigator->GetController()) : nullptr;
+		if (!IsValid(controller) && IsValid(hologram) && IsValid(hologram->GetWorld()))
+		{
+			controller = Cast<AFGPlayerController>(hologram->GetWorld()->GetFirstPlayerController());
+		}
+
+		return IsValid(controller) &&
+			controller->IsLocalController() &&
+			(controller->IsInputKeyDown(EKeys::LeftControl) || controller->IsInputKeyDown(EKeys::RightControl));
+	}
+
+	int32 GetActivePoleIndex(const AFGSplineHologram* hologram)
+	{
+		const ESplineHologramBuildStep buildStep = const_cast<AFGSplineHologram*>(hologram)->GetCurrentBuildStep();
+		return buildStep == ESplineHologramBuildStep::SHBS_FindStart ||
+			buildStep == ESplineHologramBuildStep::SHBS_AdjustStartingPole ? 0 : 1;
+	}
+
+	bool IsStackablePole(const FHitResult& hitResult)
+	{
+		return IsValid(Cast<AFGBuildablePoleStackable>(hitResult.GetActor()));
+	}
+
+	void UpdateStackedPoleDisqualifiers(AFGBuildableHologram* parent, const AFGBuildableHologram* child)
+	{
+		TArray<TSubclassOf<UFGConstructDisqualifier>> disqualifiers;
+		parent->GetConstructDisqualifiers(disqualifiers);
+		if (disqualifiers.Remove(UFGCDInvalidFloor::StaticClass()) > 0)
+		{
+			parent->ResetConstructDisqualifiers();
+			for (const TSubclassOf<UFGConstructDisqualifier>& disqualifier : disqualifiers)
+			{
+				parent->AddConstructDisqualifier(disqualifier);
+			}
+		}
+
+		TArray<TSubclassOf<UFGConstructDisqualifier>> childDisqualifiers;
+		child->GetConstructDisqualifiers(childDisqualifiers);
+		for (const TSubclassOf<UFGConstructDisqualifier>& disqualifier : childDisqualifiers)
+		{
+			if (disqualifier != UFGCDInvalidFloor::StaticClass() && !disqualifiers.Contains(disqualifier))
+			{
+				parent->AddConstructDisqualifier(disqualifier);
+				disqualifiers.Add(disqualifier);
+			}
+		}
+	}
 
 	bool GetSplitData(
 		USplineComponent* spline,
@@ -127,6 +177,7 @@ namespace
 		{
 			return;
 		}
+
 		AFGBuildableConveyorBelt* remainingBelt =
 			AFGBuildableConveyorBelt::Respline(splitBelts[1], secondSplineData);
 		if (!IsValid(remainingBelt))
@@ -317,11 +368,13 @@ float FConstructionPreferencesModule::GetUseDistance(const AFGCharacterPlayer* s
 }
 //#pragma optimize("", on)
 
-void FConstructionPreferencesModule::StartupModule() {
+void FConstructionPreferencesModule::StartupModule()
+{
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD(UFGBuildGunStateBuild::SetActiveRecipe, [this](auto& scope, UFGBuildGunStateBuild* self, TSubclassOf< class UFGRecipe > recipe)
+	SUBSCRIBE_METHOD(UFGBuildGunStateBuild::SetActiveRecipe, [this](auto& scope, UFGBuildGunStateBuild* self, TSubclassOf<class UFGRecipe> recipe)
 		{
-			if (!IsValid(recipe)) {
+			if (!IsValid(recipe))
+			{
 				return;
 			}
 			if (UCP_GameInstanceModule* gameInstanceModule = UCP_GameInstanceModule::Get(GWorld))
@@ -329,7 +382,7 @@ void FConstructionPreferencesModule::StartupModule() {
 				if (IsValid(gameInstanceModule->Build_ConveyorPoleStackable) && IsValid(gameInstanceModule->Holo_ConveyorStackable))
 				{
 					AFGBuildablePoleStackable* stackable = gameInstanceModule->Build_ConveyorPoleStackable.GetDefaultObject();
-					stackable->mHologramClass = gameInstanceModule->Holo_ConveyorStackable;
+					stackable->mHologramClass = ACP_StackablePoleHologram::StaticClass();
 				}
 			}
 		});
@@ -349,8 +402,7 @@ void FConstructionPreferencesModule::StartupModule() {
 		});
 
 	AFGBuildableHologram* buildableHologramCDO = GetMutableDefault<AFGBuildableHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::Construct, buildableHologramCDO,
-		[](auto& scope, AFGBuildableHologram* self, TArray<AActor*>& outChildren, FNetConstructionID constructionID)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGBuildableHologram::Construct, buildableHologramCDO, [](auto& scope, AFGBuildableHologram* self, TArray<AActor*>& outChildren, FNetConstructionID constructionID)
 		{
 			if (self->IsA<AFGConveyorBeltHologram>() ||
 				self->IsA<AFGPipelineHologram>() ||
@@ -444,14 +496,11 @@ void FConstructionPreferencesModule::StartupModule() {
 			self->mMaximumHeight = (maxHeight * 100);
 		});
 
-	const TSubclassOf<AFGConveyorBeltHologram> beltHologramClass = LoadClass<AFGConveyorBeltHologram>(
-		nullptr,
-		TEXT("/Game/FactoryGame/Buildable/Factory/-Shared/Holo_ConveyorBelt.Holo_ConveyorBelt_C"));
+	const TSubclassOf<AFGConveyorBeltHologram> beltHologramClass = LoadClass<AFGConveyorBeltHologram>(nullptr, TEXT("/Game/FactoryGame/Buildable/Factory/-Shared/Holo_ConveyorBelt.Holo_ConveyorBelt_C"));
 	AFGConveyorBeltHologram* beltHologramCDO = IsValid(beltHologramClass)
 		? beltHologramClass.GetDefaultObject()
 		: GetMutableDefault<AFGConveyorBeltHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::SpawnChildren, beltHologramCDO,
-		[](auto& scope, AFGConveyorBeltHologram* self, AActor* hologramOwner, FVector spawnLocation, APawn* hologramInstigator)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::SpawnChildren, beltHologramCDO, [](auto& scope, AFGConveyorBeltHologram* self, AActor* hologramOwner, FVector spawnLocation, APawn* hologramInstigator)
 		{
 			USessionSettingsManager* sessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			UCP_GameInstanceModule* gameInstanceModule = UCP_GameInstanceModule::Get(self);
@@ -460,9 +509,8 @@ void FConstructionPreferencesModule::StartupModule() {
 				return;
 			}
 
-			switch (sessionSettings->GetIntOptionValue("ConstructionPreferences.ConveyorPoleType"))
+			if (sessionSettings->GetIntOptionValue("ConstructionPreferences.ConveyorPoleType") == 1)
 			{
-			case 1:
 				if (AFGRecipeManager* recipeManager = AFGRecipeManager::Get(self);
 					IsValid(recipeManager) &&
 					recipeManager->IsRecipeAvailable(gameInstanceModule->Recipe_ConveyorPoleStackable) &&
@@ -477,39 +525,93 @@ void FConstructionPreferencesModule::StartupModule() {
 					stackableCDO->mHologramClass = previousHologramClass;
 					return;
 				}
-				break;
-			case 2:
-				if (IsValid(gameInstanceModule->Recipe_ConveyorPoleDefault))
-				{
-					self->mDefaultConveyorPoleRecipe = gameInstanceModule->Recipe_ConveyorPoleDefault;
-				}
-				break;
-			default:
-				if (IsValid(gameInstanceModule->Recipe_ConveyorPoleDefault))
-				{
-					self->mDefaultConveyorPoleRecipe = gameInstanceModule->Recipe_ConveyorPoleDefault;
-				}
-				break;
+			}
+
+			if (IsValid(gameInstanceModule->Recipe_ConveyorPoleDefault))
+			{
+				self->mDefaultConveyorPoleRecipe = gameInstanceModule->Recipe_ConveyorPoleDefault;
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::TrySnapToActor, beltHologramCDO, [](auto& scope, AFGConveyorBeltHologram* self, const FHitResult& hitResult)
+		{
+			if (!IsControlDown(self) || !IsStackablePole(hitResult))
+			{
+				return;
+			}
+
+			const int32 poleIndex = GetActivePoleIndex(self);
+			ACP_StackableConveyorPoleHologram* poleHologram =
+				Cast<ACP_StackableConveyorPoleHologram>(self->mChildPoleHologram[poleIndex]);
+			if (!IsValid(poleHologram))
+			{
+				return;
+			}
+
+			self->mSnappedConnectionComponents[poleIndex] = nullptr;
+			if (poleHologram->TrySnapToActor(hitResult))
+			{
+				scope.Override(false);
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::IsValidHitResult, beltHologramCDO, [](auto& scope, const AFGConveyorBeltHologram* self, const FHitResult& hitResult)
+		{
+			if (!IsControlDown(self) || !IsStackablePole(hitResult))
+			{
+				return;
+			}
+
+			const int32 poleIndex = GetActivePoleIndex(self);
+			if (IsValid(Cast<ACP_StackableConveyorPoleHologram>(self->mChildPoleHologram[poleIndex])))
+			{
+				scope.Override(true);
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::CanTakeNextBuildStep, beltHologramCDO, [](auto& scope, const AFGConveyorBeltHologram* self)
+		{
+			const int32 poleIndex = GetActivePoleIndex(self);
+			const ACP_StackableConveyorPoleHologram* poleHologram =
+				Cast<ACP_StackableConveyorPoleHologram>(self->mChildPoleHologram[poleIndex]);
+			if (IsValid(poleHologram) && poleHologram->IsStackedOnPole() && poleHologram->CanConstruct())
+			{
+				scope.Override(true);
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGConveyorBeltHologram::CheckValidPlacement, beltHologramCDO, [](AFGConveyorBeltHologram* self)
+		{
+			const int32 poleIndex = GetActivePoleIndex(self);
+			const ACP_StackableConveyorPoleHologram* poleHologram =
+				Cast<ACP_StackableConveyorPoleHologram>(self->mChildPoleHologram[poleIndex]);
+			if (IsValid(poleHologram) && poleHologram->IsStackedOnPole())
+			{
+				UpdateStackedPoleDisqualifiers(self, poleHologram);
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGConveyorBeltHologram::Scroll, beltHologramCDO, [](auto& scope, AFGConveyorBeltHologram* self, int32 delta)
+		{
+			const int32 poleIndex = GetActivePoleIndex(self);
+			ACP_StackableConveyorPoleHologram* poleHologram =
+				Cast<ACP_StackableConveyorPoleHologram>(self->mChildPoleHologram[poleIndex]);
+			if (IsValid(poleHologram) && poleHologram->IsStackedOnPole())
+			{
+				poleHologram->RotateStackedPole(delta);
+				scope.Cancel();
 			}
 		});
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGConveyorBeltHologram::BeginPlay, beltHologramCDO, [](AFGConveyorBeltHologram* self)
 		{
-			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
-			auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.ConveyorBelt.Length");
-			if (!FMath::IsNearlyEqual(length, 56, 0.1)) // Check if default
+			USessionSettingsManager* sessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+			const float length = sessionSettings->GetFloatOptionValue("ConstructionPreferences.ConveyorBelt.Length");
+			if (!FMath::IsNearlyEqual(length, 56.0f, 0.1f))
 			{
-				self->mMaxSplineLength = length * 100;
+				self->mMaxSplineLength = length * 100.0f;
 			}
 		});
 
-	const TSubclassOf<AFGPipelineHologram> pipelineHologramClass = LoadClass<AFGPipelineHologram>(
-		nullptr,
-		TEXT("/Game/FactoryGame/Buildable/Factory/-Shared/Holo_Pipeline.Holo_Pipeline_C"));
+	const TSubclassOf<AFGPipelineHologram> pipelineHologramClass = LoadClass<AFGPipelineHologram>(nullptr, TEXT("/Game/FactoryGame/Buildable/Factory/-Shared/Holo_Pipeline.Holo_Pipeline_C"));
 	AFGPipelineHologram* pipelineHologramCDO = IsValid(pipelineHologramClass)
 		? pipelineHologramClass.GetDefaultObject()
 		: GetMutableDefault<AFGPipelineHologram>();
-	SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineHologram::SpawnChildren, pipelineHologramCDO,
-		[](auto& scope, AFGPipelineHologram* self, AActor* hologramOwner, FVector spawnLocation, APawn* hologramInstigator)
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineHologram::SpawnChildren, pipelineHologramCDO, [](auto& scope, AFGPipelineHologram* self, AActor* hologramOwner, FVector spawnLocation, APawn* hologramInstigator)
 		{
 			UCP_GameInstanceModule* gameInstanceModule = UCP_GameInstanceModule::Get(self);
 			if (!IsValid(gameInstanceModule))
@@ -522,9 +624,7 @@ void FConstructionPreferencesModule::StartupModule() {
 				? gameInstanceModule->Recipe_HypertubeSupportDefault
 				: gameInstanceModule->Recipe_PipelineSupportDefault;
 
-			switch (GetPipelineSupportMode(self))
-			{
-			case 1:
+			if (GetPipelineSupportMode(self) == 1)
 			{
 				const TSubclassOf<UFGRecipe> stackableRecipe = bIsHypertube
 					? gameInstanceModule->Recipe_HypertubeSupportStackable
@@ -548,11 +648,6 @@ void FConstructionPreferencesModule::StartupModule() {
 					stackableCDO->mHologramClass = previousHologramClass;
 					return;
 				}
-				break;
-			}
-			case 2:
-			default:
-				break;
 			}
 
 			if (IsValid(defaultSupportRecipe))
@@ -560,27 +655,82 @@ void FConstructionPreferencesModule::StartupModule() {
 				self->mDefaultPipelineSupportRecipe = defaultSupportRecipe;
 			}
 		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineHologram::TrySnapToActor, pipelineHologramCDO, [](auto& scope, AFGPipelineHologram* self, const FHitResult& hitResult)
+		{
+			if (!IsControlDown(self) || !IsStackablePole(hitResult))
+			{
+				return;
+			}
+
+			const int32 poleIndex = GetActivePoleIndex(self);
+			ACP_StackablePipelinePoleHologram* poleHologram =
+				Cast<ACP_StackablePipelinePoleHologram>(self->mChildPoleHologram[poleIndex]);
+			if (!IsValid(poleHologram))
+			{
+				return;
+			}
+
+			self->mSnappedConnectionComponents[poleIndex] = nullptr;
+			if (poleHologram->TrySnapToActor(hitResult))
+			{
+				scope.Override(false);
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineHologram::IsValidHitResult, pipelineHologramCDO, [](auto& scope, const AFGPipelineHologram* self, const FHitResult& hitResult)
+		{
+			if (!IsControlDown(self) || !IsStackablePole(hitResult))
+			{
+				return;
+			}
+
+			const int32 poleIndex = GetActivePoleIndex(self);
+			const ACP_StackablePipelinePoleHologram* poleHologram =
+				Cast<ACP_StackablePipelinePoleHologram>(self->mChildPoleHologram[poleIndex]);
+			if (IsValid(poleHologram))
+			{
+				scope.Override(true);
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineHologram::CanTakeNextBuildStep, pipelineHologramCDO, [](auto& scope, const AFGPipelineHologram* self)
+		{
+			const int32 poleIndex = GetActivePoleIndex(self);
+			const ACP_StackablePipelinePoleHologram* poleHologram =
+				Cast<ACP_StackablePipelinePoleHologram>(self->mChildPoleHologram[poleIndex]);
+			if (IsValid(poleHologram) && poleHologram->IsStackedOnPole() && poleHologram->CanConstruct())
+			{
+				scope.Override(true);
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGPipelineHologram::CheckValidPlacement, pipelineHologramCDO, [](AFGPipelineHologram* self)
+		{
+			const int32 poleIndex = GetActivePoleIndex(self);
+			const ACP_StackablePipelinePoleHologram* poleHologram =
+				Cast<ACP_StackablePipelinePoleHologram>(self->mChildPoleHologram[poleIndex]);
+			if (IsValid(poleHologram) && poleHologram->IsStackedOnPole())
+			{
+				UpdateStackedPoleDisqualifiers(self, poleHologram);
+			}
+		});
+	SUBSCRIBE_METHOD_VIRTUAL(AFGPipelineHologram::Scroll, pipelineHologramCDO, [](auto& scope, AFGPipelineHologram* self, int32 delta)
+		{
+			const int32 poleIndex = GetActivePoleIndex(self);
+			ACP_StackablePipelinePoleHologram* poleHologram =
+				Cast<ACP_StackablePipelinePoleHologram>(self->mChildPoleHologram[poleIndex]);
+			if (IsValid(poleHologram) && poleHologram->IsStackedOnPole())
+			{
+				poleHologram->RotateStackedPole(delta);
+				scope.Cancel();
+			}
+		});
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGPipelineHologram::BeginPlay, pipelineHologramCDO, [](AFGPipelineHologram* self)
 		{
-			// Determine if is pipe or hypertube
-			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
-			if (self->mBuildClass->GetName().ToLower().Contains("hyper"))
+			USessionSettingsManager* sessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
+			const bool bIsHypertube = IsHypertubePipeline(self);
+			const float defaultLength = bIsHypertube ? 100.0f : 56.0f;
+			const float length = sessionSettings->GetFloatOptionValue(bIsHypertube ? TEXT("ConstructionPreferences.Hypertube.Length") : TEXT("ConstructionPreferences.Pipeline.Length"));
+			if (!FMath::IsNearlyEqual(length, defaultLength, 0.1f))
 			{
-				// Do hypertube stuff
-				//UE_LOGFMT(LogConstructionPreferences, Display, "Hypertube Max Length: {0}", self->mMaxSplineLength);
-				auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Hypertube.Length");
-				if (!FMath::IsNearlyEqual(length, 100, 0.1)) // Check if default
-				{
-					self->mMaxSplineLength = length * 100;
-				}
-			}
-			else
-			{
-				auto length = SessionSettings->GetFloatOptionValue("ConstructionPreferences.Pipeline.Length");
-				if (!FMath::IsNearlyEqual(length, 56, 0.1)) // Check if default
-				{
-					self->mMaxSplineLength = length * 100;
-				}
+				self->mMaxSplineLength = length * 100.0f;
 			}
 		});
 
