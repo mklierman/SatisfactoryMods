@@ -1,6 +1,4 @@
 #include "CP_GameInstanceModule.h"
-#include "CP_StackableConveyorPoleHologram.h"
-#include "CP_StackablePoleHologram.h"
 #include "Algo/ForEach.h"
 #include "Algo/Transform.h"
 #include "Buildables/FGBuildable.h"
@@ -107,9 +105,7 @@ void UCP_GameInstanceModule::DispatchLifecycleEvent(ELifecyclePhase Phase)
 	//UE_LOG(LogConstructionPreferences, Error, TEXT("HELLO"));
 
 	if (Phase == ELifecyclePhase::POST_INITIALIZATION) {
-		Recipe_ConveyorPoleBeltStackable = LoadClass<UFGRecipe>(
-			nullptr,
-			TEXT("/ConstructionPreferences/Buildable/ConveyorPoleStackable/Recipe_ConveyorPole_CPStackable.Recipe_ConveyorPole_CPStackable_C"));
+		Recipe_ConveyorPoleBeltStackable = LoadClass<UFGRecipe>(nullptr, TEXT("/ConstructionPreferences/Buildable/ConveyorPoleStackable/Recipe_ConveyorPole_CPStackable.Recipe_ConveyorPole_CPStackable_C"));
 		Recipe_ConveyorPoleDefault = LoadClass<UFGRecipe>(
 			nullptr,
 			TEXT("/Game/FactoryGame/Recipes/Buildings/Recipe_ConveyorPole.Recipe_ConveyorPole_C"));
@@ -132,17 +128,9 @@ void UCP_GameInstanceModule::DispatchLifecycleEvent(ELifecyclePhase Phase)
 			nullptr,
 			TEXT("/Game/FactoryGame/Buildable/Factory/PipelineSupport/Build_HyperPoleStackable.Build_HyperPoleStackable_C"));
 
-		const TSubclassOf<AFGBuildable> beltStackableBuildable = LoadClass<AFGBuildable>(
-			nullptr,
-			TEXT("/ConstructionPreferences/Buildable/ConveyorPoleStackable/CP_Build_ConveyorPole_Stackable.CP_Build_ConveyorPole_Stackable_C"));
-
-		if (IsValid(beltStackableBuildable))
+		if (IsValid(Build_ConveyorPoleStackable) && IsValid(Holo_ConveyorStackable))
 		{
-			beltStackableBuildable.GetDefaultObject()->mHologramClass = ACP_StackableConveyorPoleHologram::StaticClass();
-		}
-		if (IsValid(Build_ConveyorPoleStackable))
-		{
-			Build_ConveyorPoleStackable.GetDefaultObject()->mHologramClass = ACP_StackablePoleHologram::StaticClass();
+			Build_ConveyorPoleStackable.GetDefaultObject()->mHologramClass = Holo_ConveyorStackable;
 		}
 
 		if (!IsValid(Recipe_ConveyorPoleBeltStackable) ||

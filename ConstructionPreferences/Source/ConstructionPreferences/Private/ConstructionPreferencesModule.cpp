@@ -4,7 +4,7 @@
 #include "Hologram/FGBuildableHologram.h"
 #include "Subsystem/SubsystemActorManager.h"
 #include "Hologram/FGHologram.h"
-#include "Equipment/FGBuildGunBuild.h"
+#include "Hologram/FGStackablePoleHologram.h"
 #include "Buildables/FGBuildableConveyorBelt.h"
 #include "Buildables/FGBuildablePipeline.h"
 #include "Buildables/FGBuildablePipeHyper.h"
@@ -29,7 +29,6 @@
 #include "Hologram/FGPipelineHologram.h"
 #include "CP_GameInstanceModule.h"
 #include "CP_StackableConveyorPoleHologram.h"
-#include "CP_StackablePoleHologram.h"
 #include "CP_StackablePipelinePoleHologram.h"
 #include "FGRecipeManager.h"
 #include "FGPlayerController.h"
@@ -274,21 +273,6 @@ namespace
 		}
 	}
 
-	void RegisterInternalRecipe(AFGRecipeManager* recipeManager, TSubclassOf<UFGRecipe> recipe)
-	{
-		if (!IsValid(recipeManager) || !IsValid(recipe))
-		{
-			return;
-		}
-
-		if (recipeManager->IsRecipeAvailable(recipe))
-		{
-			TArray<TSubclassOf<UFGRecipe>> recipesToRemove { recipe };
-			recipeManager->RemoveAvailableRecipes(recipesToRemove);
-		}
-		recipeManager->AddAvailableRecipe(recipe);
-	}
-
 	bool IsHypertubePipeline(const AFGPipelineHologram* pipelineHologram)
 	{
 		const TSubclassOf<AActor> buildClass = pipelineHologram->GetActorClass();
@@ -371,18 +355,14 @@ float FConstructionPreferencesModule::GetUseDistance(const AFGCharacterPlayer* s
 void FConstructionPreferencesModule::StartupModule()
 {
 #if !WITH_EDITOR
-	SUBSCRIBE_METHOD(UFGBuildGunStateBuild::SetActiveRecipe, [this](auto& scope, UFGBuildGunStateBuild* self, TSubclassOf<class UFGRecipe> recipe)
+	AFGStackablePoleHologram* stackablePoleHologramCDO = GetMutableDefault<AFGStackablePoleHologram>();
+	SUBSCRIBE_METHOD_VIRTUAL(AFGHologram::IsHologramIdenticalToActor, stackablePoleHologramCDO, [](auto& scope, const AFGHologram* self, AActor* actor, const FTransform& hologramTransform)
 		{
-			if (!IsValid(recipe))
+			if (self->IsA<AFGStackablePoleHologram>())
 			{
-				return;
-			}
-			if (UCP_GameInstanceModule* gameInstanceModule = UCP_GameInstanceModule::Get(GWorld))
-			{
-				if (IsValid(gameInstanceModule->Build_ConveyorPoleStackable) && IsValid(gameInstanceModule->Holo_ConveyorStackable))
+				if (const AFGBuildablePoleStackable* pole = Cast<AFGBuildablePoleStackable>(actor); IsValid(pole) && pole->GetActorLocation().Equals(hologramTransform.GetLocation(), 10.0f))
 				{
-					AFGBuildablePoleStackable* stackable = gameInstanceModule->Build_ConveyorPoleStackable.GetDefaultObject();
-					stackable->mHologramClass = ACP_StackablePoleHologram::StaticClass();
+					scope.Override(true);
 				}
 			}
 		});
@@ -395,9 +375,10 @@ void FConstructionPreferencesModule::StartupModule()
 				return;
 			}
 
-			if (UCP_GameInstanceModule* gameInstanceModule = UCP_GameInstanceModule::Get(self))
+			if (UCP_GameInstanceModule* gameInstanceModule = UCP_GameInstanceModule::Get(self); IsValid(gameInstanceModule) && IsValid(gameInstanceModule->Recipe_ConveyorPoleBeltStackable) && self->IsRecipeAvailable(gameInstanceModule->Recipe_ConveyorPoleBeltStackable))
 			{
-				RegisterInternalRecipe(self, gameInstanceModule->Recipe_ConveyorPoleBeltStackable);
+				TArray<TSubclassOf<UFGRecipe>> recipesToRemove { gameInstanceModule->Recipe_ConveyorPoleBeltStackable };
+				self->RemoveAvailableRecipes(recipesToRemove);
 			}
 		});
 
