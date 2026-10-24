@@ -10,8 +10,6 @@
 #include "Hologram/FGHologram.h"
 #include "FGGameMode.h"
 #include "GameFramework/PlayerStart.h"
-#include "ParadiseIsland_Subsystem.h"
-#include "Subsystem/SubsystemActorManager.h"
 #include "FGGameEngine.h"
 #include "FGGameMode.h"
 
@@ -20,6 +18,7 @@
 void FParadiseIslandModule::StartupModule()
 {
 	AFGResourceNode* rn = GetMutableDefault<AFGResourceNode>();
+#if !WITH_EDITOR	
 	SUBSCRIBE_METHOD_VIRTUAL_AFTER(AFGResourceNode::BeginPlay, rn, [this](AFGResourceNode* self)
 		{
 			auto tags = self->Tags;
@@ -36,6 +35,7 @@ void FParadiseIslandModule::StartupModule()
 			{
 				auto state = Cast<AFGGameState>(self->GetWorld()->GetGameState());
 				auto puritySettings = state->GetNodePuritySettings();
+				auto randomSeed = state->GetNodeRandomizationSeed();
 				switch (puritySettings)
 				{
 				case ENodePuritySettings::NPS_NoChange:
@@ -44,47 +44,40 @@ void FParadiseIslandModule::StartupModule()
 				}
 				case ENodePuritySettings::NPS_AllImpure:
 				{
-					self->mPurity = EResourcePurity::RP_Inpure;
+					self->SetResourcePurity(EResourcePurity::RP_Inpure);
+					self->SetResourcePurityOverride(EResourcePurity::RP_Inpure);
 					break;
 				}
 				case ENodePuritySettings::NPS_AllNormal:
 				{
-					self->mPurity = EResourcePurity::RP_Normal;
+					self->SetResourcePurity(EResourcePurity::RP_Normal);
+					self->SetResourcePurityOverride(EResourcePurity::RP_Normal);
 					break;
 				}
 				case ENodePuritySettings::NPS_AllPure:
 				{
-					self->mPurity = EResourcePurity::RP_Pure;
+					self->SetResourcePurity(EResourcePurity::RP_Pure);
+					self->SetResourcePurityOverride(EResourcePurity::RP_Pure);
 					break;
 				}
 				case ENodePuritySettings::NPS_AllRandom:
 				{
-					USubsystemActorManager* SubsystemActorManager = self->GetWorld()->GetSubsystem<USubsystemActorManager>();
-					AParadiseIsland_Subsystem* piSubsystem = SubsystemActorManager->GetSubsystemActor<AParadiseIsland_Subsystem>();
-					
-					if (piSubsystem->NodePuritySettings.Contains(self))
+					FRandomStream randomStream(randomSeed);
+					int32 randomValue = randomStream.RandRange(1, 3);
+					if (randomValue == 1)
 					{
-						auto savedPurity = piSubsystem->NodePuritySettings.Find(self);
-						self->mPurity = *savedPurity;
+						self->SetResourcePurity(EResourcePurity::RP_Inpure);
+						self->SetResourcePurityOverride(EResourcePurity::RP_Inpure);
+					}
+					else if (randomValue == 2)
+					{
+						self->SetResourcePurity(EResourcePurity::RP_Normal);
+						self->SetResourcePurityOverride(EResourcePurity::RP_Normal);
 					}
 					else
 					{
-						int32 RandomValue = FMath::RandRange(1, 3);
-						if (RandomValue == 1)
-						{
-							self->mPurity = EResourcePurity::RP_Inpure;
-							piSubsystem->NodePuritySettings.Add(self, EResourcePurity::RP_Inpure);
-						}
-						else if (RandomValue == 2)
-						{
-							self->mPurity = EResourcePurity::RP_Normal;
-							piSubsystem->NodePuritySettings.Add(self, EResourcePurity::RP_Normal);
-						}
-						else
-						{
-							self->mPurity = EResourcePurity::RP_Pure;
-							piSubsystem->NodePuritySettings.Add(self, EResourcePurity::RP_Pure);
-						}
+						self->SetResourcePurity(EResourcePurity::RP_Pure);
+						self->SetResourcePurityOverride(EResourcePurity::RP_Pure);
 					}
 					break;
 				}
@@ -92,11 +85,13 @@ void FParadiseIslandModule::StartupModule()
 				{
 					if (self->mPurity == EResourcePurity::RP_Normal)
 					{
-						self->mPurity = EResourcePurity::RP_Inpure;
+						self->SetResourcePurity(EResourcePurity::RP_Inpure);
+						self->SetResourcePurityOverride(EResourcePurity::RP_Inpure);
 					}
 					else if (self->mPurity == EResourcePurity::RP_Pure)
 					{
-						self->mPurity = EResourcePurity::RP_Normal;
+						self->SetResourcePurity(EResourcePurity::RP_Normal);
+						self->SetResourcePurityOverride(EResourcePurity::RP_Normal);
 					}
 					break;
 				}
@@ -104,18 +99,19 @@ void FParadiseIslandModule::StartupModule()
 				{
 					if (self->mPurity == EResourcePurity::RP_Normal)
 					{
-						self->mPurity = EResourcePurity::RP_Pure;
+						self->SetResourcePurity(EResourcePurity::RP_Pure);
+						self->SetResourcePurityOverride(EResourcePurity::RP_Pure);
 					}
 					else if (self->mPurity == EResourcePurity::RP_Inpure)
 					{
-						self->mPurity = EResourcePurity::RP_Normal;
+						self->SetResourcePurity(EResourcePurity::RP_Normal);
+						self->SetResourcePurityOverride(EResourcePurity::RP_Normal);
 					}
 					break;
 				}
 				}
 			}
 		});
-#if !WITH_EDITOR	
 #endif
 	//SUBSCRIBE_METHOD(AFGResourceNodeManager::ApplyRandomizationSettings, [](auto& scope, AFGResourceNodeManager* self, ENodeRandomizationMode randomizationMode, ENodePuritySettings puritySettings, const int32 seed)
 	//	{
