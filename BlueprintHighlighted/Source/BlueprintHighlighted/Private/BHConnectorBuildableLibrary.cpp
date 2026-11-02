@@ -828,7 +828,7 @@ namespace
 
 	bool IsInDismantleSelection(const UFGBuildGunStateDismantle* State, AActor* Actor)
 	{
-		return State && Actor && (State->mPendingDismantleActors.Contains(Actor) || State->mCurrentlySelectedActor == Actor);
+		return UBHConnectorBuildableLibrary::IsActorInDismantleSelection(State, Actor);
 	}
 
 	void ForgetFirstDismantleHighlight(UFGBuildGunStateDismantle* State)
@@ -863,7 +863,7 @@ namespace
 			return;
 		}
 
-		if (State->mPendingDismantleActors.Num() == 0 && State->mCurrentlySelectedActor == nullptr)
+		if (!UBHConnectorBuildableLibrary::HasDismantleSelection(State))
 		{
 			ForgetFirstDismantleHighlight(State);
 			return;
@@ -885,6 +885,16 @@ namespace
 			ForgetFirstDismantleHighlight(State);
 		}
 	}
+}
+
+bool UBHConnectorBuildableLibrary::IsActorInDismantleSelection(const UFGBuildGunStateDismantle* State, AActor* Actor)
+{
+	return State && Actor && (State->mPendingDismantleActors.Contains(Actor) || State->mCurrentlySelectedActor == Actor);
+}
+
+bool UBHConnectorBuildableLibrary::HasDismantleSelection(const UFGBuildGunStateDismantle* State)
+{
+	return State->mPendingDismantleActors.Num() > 0 || State->mCurrentlySelectedActor != nullptr;
 }
 
 AActor* UBHConnectorBuildableLibrary::GetFirstHighlightedDismantleActor(UFGBuildGunStateDismantle* DismantleState)
