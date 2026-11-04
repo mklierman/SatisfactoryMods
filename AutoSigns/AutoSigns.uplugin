@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.3.0",
+	"VersionName": "1.4.0",
 	"FriendlyName": "Auto Signs",
 	"Description": "",
 	"Category": "Modding",
@@ -21,8 +21,8 @@
 			"SemVersion": "^3.12.0"
 		}
 	],
-	"SemVersion": "1.3.0",
-	"GameVersion": ">=502094",
+	"SemVersion": "1.4.0",
+	"GameVersion": ">=517554",
 	"Modules": [
 		{
 			"Name": "AutoSigns",
