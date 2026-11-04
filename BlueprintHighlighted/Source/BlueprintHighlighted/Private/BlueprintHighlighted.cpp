@@ -1,36 +1,73 @@
 #include "BlueprintHighlighted.h"
 
 #include "BHConnectorBuildableLibrary.h"
+#include "Engine/BlueprintGeneratedClass.h"
+#include "Engine/DynamicBlueprintBinding.h"
 #include "Engine/SCS_Node.h"
+#include "Engine/SimpleConstructionScript.h"
+#include "Patching/BlueprintHookBlueprint.h"
 #include "Patching/BlueprintHookManager.h"
-#include "UObject/UObjectIterator.h"
 
 namespace
 {
+	const TCHAR* BuildGunMixinClassPath = TEXT("/BlueprintHighlighted/BH_Mixin_BuildGun.BH_Mixin_BuildGun_C");
+
+	FDelegateHandle PreGarbageCollectHandle;
+
 	// SML applies BH_Mixin_BuildGun by adding a transient SCS node (plus its component template and an input binding
 	// wrapper) to BP_BuildGun_C after the class has loaded. Cooked Blueprint classes sit in GC clusters, and GC does not
 	// see references added to a cluster afterwards, so it frees those objects and the saved build gun crashes in
-	// USCS_Node::GetSCS when it is respawned on save load. Rooting them before every GC keeps them alive.
-	void KeepMixinObjectsAlive()
+	// USCS_Node::GetSCS when it is respawned on save load. Rooting them keeps them alive.
+	//
+	// Only the build gun class is touched: it is found through our own mixin's MixinTargetClass, so no other class or
+	// mod's mixins are walked. SML creates these objects once per class and reuses them, so rooting once is enough.
+	// Returns false until SML has installed the mixin.
+	bool RootBuildGunMixinObjects()
 	{
-		for (TObjectIterator<USCS_Node> It; It; ++It)
+		const UHookBlueprintGeneratedClass* MixinClass = FindObject<UHookBlueprintGeneratedClass>(nullptr, BuildGunMixinClassPath);
+		UBlueprintGeneratedClass* BuildGunClass = MixinClass ? MixinClass->MixinTargetClass.Get() : nullptr;
+		if (!BuildGunClass || !BuildGunClass->SimpleConstructionScript)
 		{
-			USCS_Node* Node = *It;
-			if (Node->HasAnyFlags(RF_Transient) && Node->ComponentClass == UBlueprintMixinHostComponent::StaticClass())
+			return false;
+		}
+
+		USCS_Node* HostNode = nullptr;
+		for (USCS_Node* Node : BuildGunClass->SimpleConstructionScript->GetRootNodes())
+		{
+			if (Node && Node->HasAnyFlags(RF_Transient) && Node->ComponentClass == UBlueprintMixinHostComponent::StaticClass())
 			{
-				Node->AddToRoot();
-				if (Node->ComponentTemplate)
-				{
-					Node->ComponentTemplate->AddToRoot();
-				}
+				HostNode = Node;
+				break;
 			}
 		}
-		for (TObjectIterator<UMixinInputDelegateBinding> It; It; ++It)
+		if (!HostNode)
 		{
-			if (It->HasAnyFlags(RF_Transient))
+			return false;
+		}
+
+		HostNode->AddToRoot();
+		if (HostNode->ComponentTemplate)
+		{
+			HostNode->ComponentTemplate->AddToRoot();
+		}
+		for (UDynamicBlueprintBinding* Binding : BuildGunClass->DynamicBindingObjects)
+		{
+			if (Binding && Binding->IsA<UMixinInputDelegateBinding>())
 			{
-				It->AddToRoot();
+				Binding->AddToRoot();
 			}
+		}
+		return true;
+	}
+
+	void OnPreGarbageCollect()
+	{
+		// Runs before each GC until the objects are rooted, then unregisters itself. Every GC before that point is
+		// a single FindObject lookup.
+		if (RootBuildGunMixinObjects())
+		{
+			FCoreUObjectDelegates::GetPreGarbageCollectDelegate().Remove(PreGarbageCollectHandle);
+			PreGarbageCollectHandle.Reset();
 		}
 	}
 }
@@ -42,7 +79,7 @@ void FBlueprintHighlightedModule::StartupModule()
 	// The editor strips these nodes before saving assets, so only the game needs them kept alive.
 	if (!GIsEditor)
 	{
-		FCoreUObjectDelegates::GetPreGarbageCollectDelegate().AddStatic(&KeepMixinObjectsAlive);
+		PreGarbageCollectHandle = FCoreUObjectDelegates::GetPreGarbageCollectDelegate().AddStatic(&OnPreGarbageCollect);
 	}
 }
 
