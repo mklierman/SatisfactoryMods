@@ -2,12 +2,19 @@ param (
     [string]$SingleFolder = ""
 )
 
-$SMLPath = "C:\Modding\SML\Mods\GameFeatures"
+$SMLModsPath = "C:\Modding\SatisfactoryModLoader\Mods"
+$SMLPath = $SMLModsPath + "\GameFeatures"
 $ModDir = "C:\Modding\SatisfactoryMods"
 
 function New-Sym-Link ($Link) {
-    Remove-Item ($SMLPath + "\" + $Link) -ErrorAction SilentlyContinue -Recurse
-    New-Item -Path ($SMLPath + "\" + $Link) -ItemType SymbolicLink -Value ($ModDir + "\" + $Link) -Force
+    $LinkRoot = $SMLPath
+    if ($Link -eq "AccessTransformerEditor") {
+        $LinkRoot = $SMLModsPath
+        Remove-Item ($SMLPath + "\" + $Link) -ErrorAction SilentlyContinue -Recurse
+    }
+
+    Remove-Item ($LinkRoot + "\" + $Link) -ErrorAction SilentlyContinue -Recurse
+    New-Item -Path ($LinkRoot + "\" + $Link) -ItemType Junction -Value ($ModDir + "\" + $Link) -Force
 }
 
 if ($SingleFolder -ne "") {

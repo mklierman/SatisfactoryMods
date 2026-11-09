@@ -1,0 +1,25 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.0",
+	"FriendlyName": "Access Transformer Editor",
+	"Description": "Edit AccessTransformers.ini files from the Unreal Editor",
+	"Category": "Modding",
+	"CreatedBy": "SirDigby",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": false,
+	"EnabledByDefault": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "AccessTransformerEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	]
+}
