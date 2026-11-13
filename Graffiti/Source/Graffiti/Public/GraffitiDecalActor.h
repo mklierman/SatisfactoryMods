@@ -29,7 +29,7 @@ public:
 	virtual bool NeedTransform_Implementation() override;
 	virtual bool ShouldSave_Implementation() const override;
 
-	void InitializeGraffiti(const FPersistentGlobalIconId& InIconId, const FLinearColor& InTint, float InSize, bool bInMirrorHorizontal);
+	void InitializeGraffiti(const FPersistentGlobalIconId& InIconId, const FLinearColor& InTint, float InSize, bool bInMirrorHorizontal, int32 InLayerOrder);
 
 	UFUNCTION(BlueprintPure, Category = "Graffiti")
 	const FPersistentGlobalIconId& GetIconId() const { return IconId; }
@@ -42,6 +42,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Graffiti")
 	bool IsMirroredHorizontally() const { return bMirrorHorizontal; }
+
+	UFUNCTION(BlueprintPure, Category = "Graffiti")
+	int32 GetLayerOrder() const { return LayerOrder; }
 
 protected:
 	UFUNCTION()
@@ -66,6 +69,9 @@ protected:
 
 	UPROPERTY(SaveGame, ReplicatedUsing = OnRep_GraffitiData, BlueprintReadOnly, Category = "Graffiti")
 	bool bMirrorHorizontal = false;
+
+	UPROPERTY(SaveGame, ReplicatedUsing = OnRep_GraffitiData, BlueprintReadOnly, Category = "Graffiti")
+	int32 LayerOrder = 0;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UMaterialInstanceDynamic> DynamicMaterial;

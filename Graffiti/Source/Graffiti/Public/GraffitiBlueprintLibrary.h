@@ -98,6 +98,9 @@ public:
 	static void SetGraffitiPlacementGridSize(UObject* WorldContext, float GridSize);
 
 	UFUNCTION(BlueprintPure, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
+	static float GetGraffitiPlacementGridSize(UObject* WorldContext);
+
+	UFUNCTION(BlueprintPure, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
 	static bool IsGraffitiPlacementGridSnapping(UObject* WorldContext);
 
 	UFUNCTION(BlueprintPure, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))

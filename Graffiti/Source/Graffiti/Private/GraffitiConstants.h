@@ -13,7 +13,10 @@ namespace Graffiti
 	inline constexpr float DecalDepth = 8.0f;
 	inline constexpr float SurfaceOffset = 1.0f;
 	inline constexpr float PreviewFadeScreenSize = 0.002f;
-	inline constexpr int32 PreviewSortOrder = 100;
+	inline constexpr float LayerNormalAlignment = 0.9f;
+	inline constexpr float LayerPlaneTolerance = 25.0f;
+	inline constexpr float SquareRadiusScale = 0.70710678f;
+	inline constexpr int32 PreviewSortOrder = MAX_int32;
 
 	inline constexpr TCHAR DecalMaterialPath[] = TEXT("/Graffiti/Materials/M_GraffitiDecal.M_GraffitiDecal");
 	inline const FName IconTextureParameter = TEXT("IconTexture");

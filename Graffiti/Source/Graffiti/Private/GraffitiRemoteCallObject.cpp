@@ -68,10 +68,7 @@ void UGraffitiRemoteCallObject::ServerSpray_Implementation(
 		return;
 	}
 
-	FVector ViewLocation;
-	FRotator ViewRotation;
-	GetOwnerPlayerController()->GetPlayerViewPoint(ViewLocation, ViewRotation);
-	const FRotator Rotation = GraffitiPlacementMath::MakeDecalRotation(Hit.ImpactNormal, ViewRotation.Vector(), RollDegrees);
+	const FQuat Rotation = GraffitiPlacementMath::MakeDecalRotation(Hit.ImpactNormal, RollDegrees);
 	const FVector PlacementPoint = bSnapToGrid
 		? GraffitiPlacementMath::SnapPointToWorldGrid(Hit.ImpactPoint, Hit.ImpactNormal, GridSize)
 		: Hit.ImpactPoint;
@@ -81,9 +78,29 @@ void UGraffitiRemoteCallObject::ServerSpray_Implementation(
 	SpawnParameters.Owner = GetOwnerPlayerController();
 	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	if (AGraffitiDecalActor* Graffiti = GetWorld()->SpawnActor<AGraffitiDecalActor>(AGraffitiDecalActor::StaticClass(), Location, Rotation, SpawnParameters))
+	int32 LayerOrder = 1;
+	for (TActorIterator<AGraffitiDecalActor> It(GetWorld()); It; ++It)
 	{
-		Graffiti->InitializeGraffiti(InIconId, InTint.GetClamped(), InSize, bMirrorHorizontal);
+		const bool bCanOverlap = GraffitiPlacementMath::CanDecalsOverlap(
+			Location,
+			Hit.ImpactNormal,
+			InSize,
+			It->GetActorLocation(),
+			It->GetActorForwardVector(),
+			It->GetGraffitiSize(),
+			Graffiti::LayerNormalAlignment,
+			Graffiti::LayerPlaneTolerance,
+			Graffiti::SquareRadiusScale);
+		if (bCanOverlap && It->GetLayerOrder() < MAX_int32)
+		{
+			LayerOrder = FMath::Max(LayerOrder, It->GetLayerOrder() + 1);
+		}
+	}
+
+	const FTransform Transform(Rotation, Location);
+	if (AGraffitiDecalActor* Graffiti = GetWorld()->SpawnActor<AGraffitiDecalActor>(AGraffitiDecalActor::StaticClass(), Transform, SpawnParameters))
+	{
+		Graffiti->InitializeGraffiti(InIconId, InTint.GetClamped(), InSize, bMirrorHorizontal, LayerOrder);
 	}
 }
 

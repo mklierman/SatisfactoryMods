@@ -78,6 +78,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Graffiti|Placement")
 	bool IsGridSnappingEnabled() const { return bGridSnapEnabled; }
 
+	UFUNCTION(BlueprintPure, Category = "Graffiti|Placement")
+	float GetGridSnapSize() const { return GridSnapSize; }
+
 	UPROPERTY(BlueprintAssignable, Category = "Graffiti|Placement")
 	FGraffitiPlacementValidityChanged OnPlacementValidityChanged;
 

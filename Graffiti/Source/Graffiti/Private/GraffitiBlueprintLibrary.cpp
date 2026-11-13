@@ -267,10 +267,19 @@ void UGraffitiBlueprintLibrary::ToggleGraffitiPlacementGridSnapping(UObject* Wor
 
 void UGraffitiBlueprintLibrary::SetGraffitiPlacementGridSize(UObject* WorldContext, float GridSize)
 {
-	if (UGraffitiPlacementComponent* Placement = GetPlacementComponent(WorldContext, false))
+	if (UGraffitiPlacementComponent* Placement = GetPlacementComponent(WorldContext, true))
 	{
 		Placement->SetGridSnapSize(GridSize);
 	}
+}
+
+float UGraffitiBlueprintLibrary::GetGraffitiPlacementGridSize(UObject* WorldContext)
+{
+	if (const UGraffitiPlacementComponent* Placement = GetPlacementComponent(WorldContext, false))
+	{
+		return Placement->GetGridSnapSize();
+	}
+	return 100.0f;
 }
 
 bool UGraffitiBlueprintLibrary::IsGraffitiPlacementGridSnapping(UObject* WorldContext)

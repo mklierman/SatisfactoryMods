@@ -70,7 +70,7 @@ void UGraffitiPlacementComponent::TickComponent(float DeltaTime, ELevelTick Tick
 		? GraffitiPlacementMath::SnapPointToWorldGrid(Hit.ImpactPoint, Hit.ImpactNormal, FMath::Clamp(GridSnapSize, Graffiti::MinGridSize, Graffiti::MaxGridSize))
 		: Hit.ImpactPoint;
 	PreviewDecal->SetWorldLocation(PlacementPoint + Hit.ImpactNormal * Graffiti::SurfaceOffset);
-	PreviewDecal->SetWorldRotation(GraffitiPlacementMath::MakeDecalRotation(Hit.ImpactNormal, ViewRotation.Vector(), RollDegrees));
+	PreviewDecal->SetWorldRotation(GraffitiPlacementMath::MakeDecalRotation(Hit.ImpactNormal, RollDegrees));
 	PreviewDecal->DecalSize = FVector(Graffiti::DecalDepth, PreviewSize * 0.5f, PreviewSize * 0.5f);
 	PreviewDecal->MarkRenderTransformDirty();
 	PreviewDecal->MarkRenderStateDirty();
