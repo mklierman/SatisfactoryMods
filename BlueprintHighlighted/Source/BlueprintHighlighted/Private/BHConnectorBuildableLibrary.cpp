@@ -15,6 +15,7 @@
 #include "Buildables/FGBuildableConveyorAttachment.h"
 #include "Buildables/FGBuildableConveyorLift.h"
 #include "Buildables/FGBuildablePassthrough.h"
+#include "Buildables/FGBuildablePipeBase.h"
 #include "FGConnectionComponent.h"
 #include "Buildables/FGBuildableRailroadTrack.h"
 #include "Buildables/FGBuildableSplitterSmart.h"
@@ -401,10 +402,50 @@ namespace
 		SetLiftSnappedPassthroughs(NewLift, NewHoles);
 	}
 
+	void ReconnectPipePassthroughs(
+		AFGBuildablePipeBase* OriginalPipe,
+		AFGBuildablePipeBase* NewPipe,
+		const TMap<AFGBuildable*, AFGBuildable*>& OldToNewBuildables)
+	{
+		const TArray<AFGBuildablePassthrough*> OriginalHoles = OriginalPipe->GetSnappedPassthroughs();
+		if (OriginalHoles.IsEmpty()) return;
+
+		TArray<AFGBuildablePassthrough*> NewHoles;
+		bool bMappedAny = false;
+		for (AFGBuildablePassthrough* OriginalHole : OriginalHoles)
+		{
+			AFGBuildable* const* Mapped = OriginalHole ? OldToNewBuildables.Find(OriginalHole) : nullptr;
+			AFGBuildablePassthrough* NewHole = Mapped ? Cast<AFGBuildablePassthrough>(*Mapped) : nullptr;
+			NewHoles.Add(NewHole); // Preserve endpoint slots, including unselected/null holes.
+			if (NewHole)
+			{
+				bMappedAny = true;
+				RelinkPassthroughConnections(OriginalHole, NewHole, OldToNewBuildables);
+			}
+		}
+		if (!bMappedAny || NewPipe->GetSnappedPassthroughs() == NewHoles) return;
+
+		FArrayProperty* Property = CastField<FArrayProperty>(AFGBuildablePipeBase::StaticClass()->FindPropertyByName(TEXT("mSnappedPassthroughs")));
+		FObjectPropertyBase* Inner = Property ? CastField<FObjectPropertyBase>(Property->Inner) : nullptr;
+		if (!Property || !Inner) return;
+		FScriptArrayHelper Array(Property, Property->ContainerPtrToValuePtr<void>(NewPipe));
+		Array.EmptyValues();
+		for (AFGBuildablePassthrough* Hole : NewHoles)
+			Inner->SetObjectPropertyValue(Array.GetRawPtr(Array.AddValue()), Hole);
+		NewPipe->ForceNetUpdate();
+	}
+
 	void ReconnectPassthroughSnaps(
 		AFGBuildable* OriginalBuildable,
 		const TMap<AFGBuildable*, AFGBuildable*>& OldToNewBuildables)
 	{
+		if (AFGBuildablePipeBase* OriginalPipe = Cast<AFGBuildablePipeBase>(OriginalBuildable))
+		{
+			AFGBuildable* const* Mapped = OldToNewBuildables.Find(OriginalPipe);
+			if (AFGBuildablePipeBase* NewPipe = Mapped ? Cast<AFGBuildablePipeBase>(*Mapped) : nullptr)
+				ReconnectPipePassthroughs(OriginalPipe, NewPipe, OldToNewBuildables);
+			return;
+		}
 		if (AFGBuildableConveyorLift* OriginalLift = Cast<AFGBuildableConveyorLift>(OriginalBuildable))
 		{
 			AFGBuildable* const* MappedLift = OldToNewBuildables.Find(OriginalLift);
@@ -423,6 +464,10 @@ namespace
 
 		for (const TPair<AFGBuildable*, AFGBuildable*>& Pair : OldToNewBuildables)
 		{
+			AFGBuildablePipeBase* OriginalPipe = Cast<AFGBuildablePipeBase>(Pair.Key);
+			AFGBuildablePipeBase* NewPipe = Cast<AFGBuildablePipeBase>(Pair.Value);
+			if (OriginalPipe && NewPipe && OriginalPipe->GetSnappedPassthroughs().Contains(OriginalHole))
+				ReconnectPipePassthroughs(OriginalPipe, NewPipe, OldToNewBuildables);
 			AFGBuildableConveyorLift* OriginalLift = Cast<AFGBuildableConveyorLift>(Pair.Key);
 			AFGBuildableConveyorLift* NewLift = Cast<AFGBuildableConveyorLift>(Pair.Value);
 			if (!OriginalLift || !NewLift)
@@ -828,7 +873,7 @@ namespace
 
 	bool IsInDismantleSelection(const UFGBuildGunStateDismantle* State, AActor* Actor)
 	{
-		return State && Actor && (State->mPendingDismantleActors.Contains(Actor) || State->mCurrentlySelectedActor == Actor);
+		return State && Actor && (State->GetPendingDismantleActors().Contains(Actor) || State->GetSelectedActor() == Actor);
 	}
 
 	void ForgetFirstDismantleHighlight(UFGBuildGunStateDismantle* State)
@@ -863,7 +908,7 @@ namespace
 			return;
 		}
 
-		if (State->mPendingDismantleActors.Num() == 0 && State->mCurrentlySelectedActor == nullptr)
+		if (State->GetNumPendingDismantleActors(false) == 0 && State->GetSelectedActor() == nullptr)
 		{
 			ForgetFirstDismantleHighlight(State);
 			return;
