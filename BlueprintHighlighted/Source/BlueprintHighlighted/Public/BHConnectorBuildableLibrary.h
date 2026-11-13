@@ -82,5 +82,10 @@ public:
 
 	static void InstallDismantleHighlightTracking();
 
+	// The AccessTransformers friend grant only covers members of this class, so free helpers in the .cpp
+	// read the dismantle state's private selection through these.
+	static bool IsActorInDismantleSelection(const UFGBuildGunStateDismantle* State, AActor* Actor);
+	static bool HasDismantleSelection(const UFGBuildGunStateDismantle* State);
+
 	static void RefreshBuildableInstances(AFGBuildable* Buildable);
 };
