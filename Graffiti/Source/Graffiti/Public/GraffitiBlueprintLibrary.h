@@ -79,6 +79,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
 	static void SetGraffitiPlacementScale(UObject* WorldContext, float NewSize);
 
+	UFUNCTION(BlueprintPure, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
+	static float GetGraffitiPlacementScale(UObject* WorldContext);
+
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
 	static void ToggleGraffitiPlacementMirror(UObject* WorldContext);
 

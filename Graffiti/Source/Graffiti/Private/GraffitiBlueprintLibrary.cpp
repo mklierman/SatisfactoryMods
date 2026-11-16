@@ -224,6 +224,15 @@ void UGraffitiBlueprintLibrary::SetGraffitiPlacementScale(UObject* WorldContext,
 	}
 }
 
+float UGraffitiBlueprintLibrary::GetGraffitiPlacementScale(UObject* WorldContext)
+{
+	if (const UGraffitiPlacementComponent* Placement = GetPlacementComponent(WorldContext, false))
+	{
+		return Placement->GetPlacementScale();
+	}
+	return 200.0f;
+}
+
 void UGraffitiBlueprintLibrary::ToggleGraffitiPlacementMirror(UObject* WorldContext)
 {
 	if (UGraffitiPlacementComponent* Placement = GetPlacementComponent(WorldContext, false))
