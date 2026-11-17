@@ -8,7 +8,7 @@ public class Graffiti : ModuleRules
 		CppStandard = CppStandardVersion.Cpp20;
 
 		PublicDependencyModuleNames.AddRange(new string[] {
-			"Core", "CoreUObject", "Engine",
+			"Core", "CoreUObject", "Engine", "NetCore",
 			"DummyHeaders",
 			"FactoryGame", "SML"
 		});

@@ -1,11 +1,10 @@
 #include "GraffitiRemoteCallObject.h"
 
-#include "EngineUtils.h"
 #include "FGPlayerController.h"
 #include "GraffitiConstants.h"
-#include "GraffitiDecalActor.h"
 #include "GraffitiIconUtils.h"
 #include "GraffitiPlacementMath.h"
+#include "GraffitiSubsystem.h"
 #include "Net/UnrealNetwork.h"
 
 void UGraffitiRemoteCallObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -74,33 +73,10 @@ void UGraffitiRemoteCallObject::ServerSpray_Implementation(
 		: Hit.ImpactPoint;
 	const FVector Location = PlacementPoint + Hit.ImpactNormal * Graffiti::SurfaceOffset;
 
-	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.Owner = GetOwnerPlayerController();
-	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	int32 LayerOrder = 1;
-	for (TActorIterator<AGraffitiDecalActor> It(GetWorld()); It; ++It)
-	{
-		const bool bCanOverlap = GraffitiPlacementMath::CanDecalsOverlap(
-			Location,
-			Hit.ImpactNormal,
-			InSize,
-			It->GetActorLocation(),
-			It->GetActorForwardVector(),
-			It->GetGraffitiSize(),
-			Graffiti::LayerNormalAlignment,
-			Graffiti::LayerPlaneTolerance,
-			Graffiti::SquareRadiusScale);
-		if (bCanOverlap && It->GetLayerOrder() < MAX_int32)
-		{
-			LayerOrder = FMath::Max(LayerOrder, It->GetLayerOrder() + 1);
-		}
-	}
-
 	const FTransform Transform(Rotation, Location);
-	if (AGraffitiDecalActor* Graffiti = GetWorld()->SpawnActor<AGraffitiDecalActor>(AGraffitiDecalActor::StaticClass(), Transform, SpawnParameters))
+	if (AGraffitiSubsystem* Subsystem = AGraffitiSubsystem::Get(this))
 	{
-		Graffiti->InitializeGraffiti(InIconId, InTint.GetClamped(), InSize, bMirrorHorizontal, LayerOrder);
+		Subsystem->AddGraffiti(Transform, InIconId, InTint, InSize, bMirrorHorizontal);
 	}
 }
 
@@ -114,23 +90,9 @@ void UGraffitiRemoteCallObject::ServerErase_Implementation(float MaximumDistance
 	FHitResult Hit;
 	if (TraceFromOwner(MaximumDistance, Hit))
 	{
-		AGraffitiDecalActor* ClosestGraffiti = nullptr;
-		float ClosestDistanceSquared = TNumericLimits<float>::Max();
-		for (TActorIterator<AGraffitiDecalActor> It(GetWorld()); It; ++It)
+		if (AGraffitiSubsystem* Subsystem = AGraffitiSubsystem::Get(this))
 		{
-			AGraffitiDecalActor* Graffiti = *It;
-			const float DistanceSquared = FVector::DistSquared(Graffiti->GetActorLocation(), Hit.ImpactPoint);
-			const float EraseRadius = Graffiti->GetGraffitiSize() * 0.6f;
-			if (DistanceSquared <= FMath::Square(EraseRadius) && DistanceSquared < ClosestDistanceSquared)
-			{
-				ClosestGraffiti = Graffiti;
-				ClosestDistanceSquared = DistanceSquared;
-			}
-		}
-
-		if (ClosestGraffiti)
-		{
-			ClosestGraffiti->Destroy();
+			Subsystem->RemoveClosestGraffiti(Hit.ImpactPoint);
 		}
 	}
 }
