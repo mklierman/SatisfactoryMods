@@ -26,9 +26,6 @@ struct GRAFFITI_API FGraffitiRecord : public FFastArraySerializerItem
 	FPersistentGlobalIconId IconId;
 
 	UPROPERTY(SaveGame)
-	FLinearColor Tint = FLinearColor::White;
-
-	UPROPERTY(SaveGame)
 	float Size = 200.0f;
 
 	UPROPERTY(SaveGame)
@@ -83,7 +80,6 @@ public:
 	uint64 AddGraffiti(
 		const FTransform& Transform,
 		const FPersistentGlobalIconId& IconId,
-		const FLinearColor& Tint,
 		float Size,
 		bool bMirrorHorizontal);
 
@@ -94,7 +90,6 @@ public:
 		const FGuid& EntryId,
 		const FTransform& Transform,
 		const FPersistentGlobalIconId& IconId,
-		const FLinearColor& Tint,
 		float Size,
 		bool bMirrorHorizontal,
 		int32& InOutLayerOrder);
@@ -122,7 +117,6 @@ private:
 	uint64 AddGraffitiInternal(
 		const FTransform& Transform,
 		const FPersistentGlobalIconId& IconId,
-		const FLinearColor& Tint,
 		float Size,
 		bool bMirrorHorizontal,
 		int32 LayerOrder,

@@ -90,7 +90,6 @@ AGraffitiSubsystem* AGraffitiSubsystem::Get(const UObject* WorldContext)
 uint64 AGraffitiSubsystem::AddGraffiti(
 	const FTransform& Transform,
 	const FPersistentGlobalIconId& IconId,
-	const FLinearColor& Tint,
 	float Size,
 	bool bMirrorHorizontal)
 {
@@ -102,7 +101,7 @@ uint64 AGraffitiSubsystem::AddGraffiti(
 	const float ClampedSize = FMath::Clamp(Size, Graffiti::MinSize, Graffiti::MaxSize);
 	const FVector Location = Transform.GetLocation();
 	const int32 LayerOrder = CalculateLayerOrder(Transform, ClampedSize);
-	const uint64 NewId = AddGraffitiInternal(Transform, IconId, Tint, ClampedSize, bMirrorHorizontal, LayerOrder);
+	const uint64 NewId = AddGraffitiInternal(Transform, IconId, ClampedSize, bMirrorHorizontal, LayerOrder);
 	UE_LOG(LogGraffitiSubsystem, Display, TEXT("Added graffiti record %llu at %s"), NewId, *Location.ToCompactString());
 	return NewId;
 }
@@ -110,7 +109,6 @@ uint64 AGraffitiSubsystem::AddGraffiti(
 uint64 AGraffitiSubsystem::AddGraffitiInternal(
 	const FTransform& Transform,
 	const FPersistentGlobalIconId& IconId,
-	const FLinearColor& Tint,
 	float Size,
 	bool bMirrorHorizontal,
 	int32 LayerOrder,
@@ -131,7 +129,6 @@ uint64 AGraffitiSubsystem::AddGraffitiInternal(
 	Record.Id = NextGraffitiId++;
 	Record.Transform = Transform;
 	Record.IconId = IconId;
-	Record.Tint = Tint.GetClamped();
 	Record.Size = FMath::Clamp(Size, Graffiti::MinSize, Graffiti::MaxSize);
 	Record.bMirrorHorizontal = bMirrorHorizontal;
 	Record.LayerOrder = FMath::Max(0, LayerOrder);
@@ -181,7 +178,6 @@ uint64 AGraffitiSubsystem::RegisterContainerEntry(
 	const FGuid& EntryId,
 	const FTransform& Transform,
 	const FPersistentGlobalIconId& IconId,
-	const FLinearColor& Tint,
 	float Size,
 	bool bMirrorHorizontal,
 	int32& InOutLayerOrder)
@@ -197,7 +193,6 @@ uint64 AGraffitiSubsystem::RegisterContainerEntry(
 		FGraffitiRecord& Record = GraffitiRecords.Items[ExistingIndex];
 		Record.Transform = Transform;
 		Record.IconId = IconId;
-		Record.Tint = Tint.GetClamped();
 		Record.Size = FMath::Clamp(Size, Graffiti::MinSize, Graffiti::MaxSize);
 		Record.bMirrorHorizontal = bMirrorHorizontal;
 		if (InOutLayerOrder > 0)
@@ -219,7 +214,6 @@ uint64 AGraffitiSubsystem::RegisterContainerEntry(
 	return AddGraffitiInternal(
 		Transform,
 		IconId,
-		Tint,
 		ClampedSize,
 		bMirrorHorizontal,
 		InOutLayerOrder,
@@ -552,7 +546,6 @@ void AGraffitiSubsystem::ConfigureDecal(UDecalComponent* Decal, const FGraffitiR
 	}
 
 	DynamicMaterial->SetTextureParameterValue(Graffiti::IconTextureParameter, IconTexture);
-	DynamicMaterial->SetVectorParameterValue(Graffiti::TintParameter, Record.Tint);
 	DynamicMaterial->SetScalarParameterValue(Graffiti::MirrorParameter, Record.bMirrorHorizontal ? 1.0f : 0.0f);
 	Decal->SetWorldTransform(Record.Transform);
 	Decal->DecalSize = FVector(Graffiti::DecalDepth, Record.Size * 0.5f, Record.Size * 0.5f);
@@ -653,7 +646,6 @@ void AGraffitiSubsystem::MigrateLegacyActors()
 		AddGraffitiInternal(
 			LegacyActor->GetActorTransform(),
 			LegacyActor->GetIconId(),
-			LegacyActor->GetTint(),
 			LegacyActor->GetGraffitiSize(),
 			LegacyActor->IsMirroredHorizontally(),
 			LegacyActor->GetLayerOrder());

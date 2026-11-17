@@ -20,9 +20,6 @@ struct GRAFFITI_API FGraffitiContainerEntry
 	FPersistentGlobalIconId IconId;
 
 	UPROPERTY(SaveGame)
-	FLinearColor Tint = FLinearColor::White;
-
-	UPROPERTY(SaveGame)
 	float Size = 200.0f;
 
 	UPROPERTY(SaveGame)
@@ -47,7 +44,6 @@ public:
 	FGuid AddGraffiti(
 		const FTransform& WorldTransform,
 		const FPersistentGlobalIconId& IconId,
-		const FLinearColor& Tint,
 		float Size,
 		bool bMirrorHorizontal);
 

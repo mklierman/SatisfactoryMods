@@ -20,6 +20,5 @@ namespace Graffiti
 
 	inline constexpr TCHAR DecalMaterialPath[] = TEXT("/Graffiti/Materials/M_GraffitiDecal.M_GraffitiDecal");
 	inline const FName IconTextureParameter = TEXT("IconTexture");
-	inline const FName TintParameter = TEXT("Tint");
 	inline const FName MirrorParameter = TEXT("MirrorHorizontal");
 }

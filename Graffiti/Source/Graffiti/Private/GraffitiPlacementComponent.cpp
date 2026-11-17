@@ -76,7 +76,7 @@ void UGraffitiPlacementComponent::TickComponent(float DeltaTime, ELevelTick Tick
 	PreviewDecal->MarkRenderStateDirty();
 }
 
-bool UGraffitiPlacementComponent::StartPlacement(const FPersistentGlobalIconId& IconId, FLinearColor Tint, float InitialSize, float InitialRollDegrees)
+bool UGraffitiPlacementComponent::StartPlacement(const FPersistentGlobalIconId& IconId, float InitialSize, float InitialRollDegrees)
 {
 	if (!Graffiti::ResolveIconTexture(this, IconId))
 	{
@@ -84,7 +84,6 @@ bool UGraffitiPlacementComponent::StartPlacement(const FPersistentGlobalIconId& 
 	}
 
 	SelectedIconId = IconId;
-	SelectedTint = Tint.GetClamped();
 	PreviewSize = FMath::Clamp(InitialSize, Graffiti::MinSize, Graffiti::MaxSize);
 	RollDegrees = FMath::UnwindDegrees(InitialRollDegrees);
 	bMirrorHorizontal = false;
@@ -103,14 +102,14 @@ bool UGraffitiPlacementComponent::StartPlacement(const FPersistentGlobalIconId& 
 	return true;
 }
 
-bool UGraffitiPlacementComponent::StartPlacementFromLocalIconId(int32 LocalIconId, FLinearColor Tint, float InitialSize, float InitialRollDegrees)
+bool UGraffitiPlacementComponent::StartPlacementFromLocalIconId(int32 LocalIconId, float InitialSize, float InitialRollDegrees)
 {
 	AFGIconDatabaseSubsystem* Database = AFGIconDatabaseSubsystem::Get(this);
 	if (!Database || !Database->IsInitialized())
 	{
 		return false;
 	}
-	return StartPlacement(Database->ResolveLocalIconId(LocalIconId), Tint, InitialSize, InitialRollDegrees);
+	return StartPlacement(Database->ResolveLocalIconId(LocalIconId), InitialSize, InitialRollDegrees);
 }
 
 bool UGraffitiPlacementComponent::ConfirmPlacement()
@@ -124,7 +123,6 @@ bool UGraffitiPlacementComponent::ConfirmPlacement()
 	{
 		RCO->ServerSpray(
 			SelectedIconId,
-			SelectedTint,
 			PreviewSize,
 			RollDegrees,
 			FMath::Clamp(MaximumDistance, Graffiti::MinDistance, Graffiti::MaxDistance),
@@ -268,7 +266,6 @@ void UGraffitiPlacementComponent::UpdatePreviewMaterial()
 
 	DynamicMaterial = UMaterialInstanceDynamic::Create(DecalMaterial, this);
 	DynamicMaterial->SetTextureParameterValue(Graffiti::IconTextureParameter, IconTexture);
-	DynamicMaterial->SetVectorParameterValue(Graffiti::TintParameter, SelectedTint);
 	DynamicMaterial->SetScalarParameterValue(Graffiti::MirrorParameter, bMirrorHorizontal ? 1.0f : 0.0f);
 	if (PreviewDecal)
 	{

@@ -38,7 +38,6 @@ void AGraffitiDecalActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AGraffitiDecalActor, IconId);
-	DOREPLIFETIME(AGraffitiDecalActor, Tint);
 	DOREPLIFETIME(AGraffitiDecalActor, Size);
 	DOREPLIFETIME(AGraffitiDecalActor, bMirrorHorizontal);
 	DOREPLIFETIME(AGraffitiDecalActor, LayerOrder);
@@ -46,14 +45,12 @@ void AGraffitiDecalActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 void AGraffitiDecalActor::InitializeGraffiti(
 	const FPersistentGlobalIconId& InIconId,
-	const FLinearColor& InTint,
 	float InSize,
 	bool bInMirrorHorizontal,
 	int32 InLayerOrder)
 {
 	check(HasAuthority());
 	IconId = InIconId;
-	Tint = InTint;
 	Size = FMath::Clamp(InSize, Graffiti::MinSize, Graffiti::MaxSize);
 	bMirrorHorizontal = bInMirrorHorizontal;
 	LayerOrder = FMath::Max(0, InLayerOrder);
@@ -99,7 +96,6 @@ void AGraffitiDecalActor::RefreshDecal()
 	}
 
 	DynamicMaterial->SetTextureParameterValue(Graffiti::IconTextureParameter, IconTexture);
-	DynamicMaterial->SetVectorParameterValue(Graffiti::TintParameter, Tint);
 	DynamicMaterial->SetScalarParameterValue(Graffiti::MirrorParameter, bMirrorHorizontal ? 1.0f : 0.0f);
 	DecalComponent->DecalSize = FVector(Graffiti::DecalDepth, Size * 0.5f, Size * 0.5f);
 	DecalComponent->SetSortOrder(LayerOrder);

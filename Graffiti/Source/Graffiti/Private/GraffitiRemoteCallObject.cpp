@@ -32,7 +32,6 @@ UGraffitiRemoteCallObject* UGraffitiRemoteCallObject::Get(UObject* WorldContext)
 
 bool UGraffitiRemoteCallObject::ServerSpray_Validate(
 	const FPersistentGlobalIconId& InIconId,
-	FLinearColor InTint,
 	float InSize,
 	float RollDegrees,
 	float MaximumDistance,
@@ -40,9 +39,7 @@ bool UGraffitiRemoteCallObject::ServerSpray_Validate(
 	bool,
 	float GridSize)
 {
-	const bool bFiniteTint = FMath::IsFinite(InTint.R) && FMath::IsFinite(InTint.G) && FMath::IsFinite(InTint.B) && FMath::IsFinite(InTint.A);
 	return InIconId.IconID >= 0 &&
-		bFiniteTint &&
 		FMath::IsFinite(InSize) && InSize >= Graffiti::MinSize && InSize <= Graffiti::MaxSize &&
 		FMath::IsFinite(RollDegrees) &&
 		FMath::IsFinite(MaximumDistance) && MaximumDistance >= Graffiti::MinDistance && MaximumDistance <= Graffiti::MaxDistance &&
@@ -51,7 +48,6 @@ bool UGraffitiRemoteCallObject::ServerSpray_Validate(
 
 void UGraffitiRemoteCallObject::ServerSpray_Implementation(
 	const FPersistentGlobalIconId& InIconId,
-	FLinearColor InTint,
 	float InSize,
 	float RollDegrees,
 	float MaximumDistance,
@@ -109,7 +105,7 @@ void UGraffitiRemoteCallObject::ServerSpray_Implementation(
 
 			if (Container)
 			{
-				if (Container->AddGraffiti(Transform, InIconId, InTint, InSize, bMirrorHorizontal).IsValid())
+				if (Container->AddGraffiti(Transform, InIconId, InSize, bMirrorHorizontal).IsValid())
 				{
 					return;
 				}
@@ -119,7 +115,7 @@ void UGraffitiRemoteCallObject::ServerSpray_Implementation(
 
 	if (AGraffitiSubsystem* Subsystem = AGraffitiSubsystem::Get(this))
 	{
-		Subsystem->AddGraffiti(Transform, InIconId, InTint, InSize, bMirrorHorizontal);
+		Subsystem->AddGraffiti(Transform, InIconId, InSize, bMirrorHorizontal);
 	}
 }
 

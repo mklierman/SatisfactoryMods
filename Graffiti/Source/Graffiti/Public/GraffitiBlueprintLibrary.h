@@ -38,7 +38,6 @@ public:
 	static bool RequestSprayGraffiti(
 		UObject* WorldContext,
 		const FPersistentGlobalIconId& IconId,
-		FLinearColor Tint,
 		float Size = 200.0f,
 		float RollDegrees = 0.0f,
 		float MaximumDistance = 1500.0f,
@@ -50,19 +49,19 @@ public:
 	static bool RequestEraseGraffiti(UObject* WorldContext, float MaximumDistance = 1500.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
-	static bool StartGraffitiPlacement(UObject* WorldContext, const FPersistentGlobalIconId& IconId, FLinearColor Tint, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
+	static bool StartGraffitiPlacement(UObject* WorldContext, const FPersistentGlobalIconId& IconId, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
-	static bool StartGraffitiPlacementFromLocalIconId(UObject* WorldContext, int32 LocalIconId, FLinearColor Tint, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
+	static bool StartGraffitiPlacementFromLocalIconId(UObject* WorldContext, int32 LocalIconId, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
-	static bool StartGraffitiPlacementFromPicker(UObject* WorldContext, int32 PickerIconId, UObject* PickerTexture, FLinearColor Tint, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
+	static bool StartGraffitiPlacementFromPicker(UObject* WorldContext, int32 PickerIconId, UObject* PickerTexture, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
-	static bool ToggleGraffitiPlacementFromLocalIconId(UObject* WorldContext, int32 LocalIconId, FLinearColor Tint, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
+	static bool ToggleGraffitiPlacementFromLocalIconId(UObject* WorldContext, int32 LocalIconId, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
-	static bool ToggleGraffitiPlacementFromPicker(UObject* WorldContext, int32 PickerIconId, UObject* PickerTexture, FLinearColor Tint, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
+	static bool ToggleGraffitiPlacementFromPicker(UObject* WorldContext, int32 PickerIconId, UObject* PickerTexture, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
 	static bool ConfirmGraffitiPlacement(UObject* WorldContext);

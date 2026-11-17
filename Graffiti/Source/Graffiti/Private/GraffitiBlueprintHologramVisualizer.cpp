@@ -1,7 +1,6 @@
 #include "GraffitiBlueprintHologramVisualizer.h"
 
 #include "Components/DecalComponent.h"
-#include "FGGameUserSettings.h"
 #include "FGBuildableGraffitiContainer.h"
 #include "GraffitiConstants.h"
 #include "GraffitiIconUtils.h"
@@ -12,8 +11,8 @@
 
 UGraffitiBlueprintHologramVisualizer::UGraffitiBlueprintHologramVisualizer()
 {
-	PrimaryComponentTick.bCanEverTick = true;
-	PrimaryComponentTick.bStartWithTickEnabled = true;
+	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
 }
 
 void UGraffitiBlueprintHologramVisualizer::Initialize(
@@ -21,8 +20,7 @@ void UGraffitiBlueprintHologramVisualizer::Initialize(
 	const AFGBuildableGraffitiContainer* Container,
 	USceneComponent* BuildableRoot)
 {
-	Hologram = BlueprintHologram;
-	if (!IsValid(Hologram) || !IsValid(Container) || !IsValid(BuildableRoot))
+	if (!IsValid(BlueprintHologram) || !IsValid(Container) || !IsValid(BuildableRoot))
 	{
 		SetComponentTickEnabled(false);
 		return;
@@ -37,7 +35,7 @@ void UGraffitiBlueprintHologramVisualizer::Initialize(
 
 	for (const FGraffitiContainerEntry& Entry : Container->GetEntries())
 	{
-		UTexture* IconTexture = Graffiti::ResolveIconTexture(Hologram, Entry.IconId);
+		UTexture* IconTexture = Graffiti::ResolveIconTexture(BlueprintHologram, Entry.IconId);
 		if (!IconTexture)
 		{
 			continue;
@@ -64,19 +62,7 @@ void UGraffitiBlueprintHologramVisualizer::Initialize(
 		Decal->FadeScreenSize = Graffiti::PreviewFadeScreenSize;
 		Decal->SetSortOrder(Entry.LayerOrder);
 		PreviewDecals.Add(Decal);
-		PreviewMaterials.Add(DynamicMaterial);
 	}
-
-	ApplyHologramTint(true);
-}
-
-void UGraffitiBlueprintHologramVisualizer::TickComponent(
-	float DeltaTime,
-	ELevelTick TickType,
-	FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	ApplyHologramTint(false);
 }
 
 void UGraffitiBlueprintHologramVisualizer::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -89,54 +75,6 @@ void UGraffitiBlueprintHologramVisualizer::EndPlay(const EEndPlayReason::Type En
 		}
 	}
 	PreviewDecals.Reset();
-	PreviewMaterials.Reset();
 	Super::EndPlay(EndPlayReason);
-}
-
-void UGraffitiBlueprintHologramVisualizer::ApplyHologramTint(bool bForce)
-{
-	if (!IsValid(Hologram))
-	{
-		return;
-	}
-
-	const EHologramMaterialState State = Hologram->GetHologramMaterialState();
-	if (!bForce && State == LastMaterialState)
-	{
-		return;
-	}
-
-	LastMaterialState = State;
-	const FLinearColor Tint = ResolveHologramTint(State);
-	for (UMaterialInstanceDynamic* Material : PreviewMaterials)
-	{
-		if (IsValid(Material))
-		{
-			Material->SetVectorParameterValue(Graffiti::TintParameter, Tint);
-		}
-	}
-}
-
-FLinearColor UGraffitiBlueprintHologramVisualizer::ResolveHologramTint(EHologramMaterialState State) const
-{
-	const UFGGameUserSettings* Settings = UFGGameUserSettings::GetFGGameUserSettings();
-	FVector Color(0.0f, 0.75f, 1.0f);
-	if (Settings)
-	{
-		switch (State)
-		{
-		case EHologramMaterialState::HMS_WARNING:
-			Color = Settings->GetHologramSoftClearanceColor();
-			break;
-		case EHologramMaterialState::HMS_ERROR:
-			Color = Settings->GetHologramInvalidColor();
-			break;
-		case EHologramMaterialState::HMS_OK:
-		default:
-			Color = Settings->GetHologramBuildColor();
-			break;
-		}
-	}
-	return FLinearColor(Color.X, Color.Y, Color.Z, 1.0f);
 }
 

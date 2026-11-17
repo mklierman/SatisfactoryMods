@@ -25,10 +25,10 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement")
-	bool StartPlacement(const FPersistentGlobalIconId& IconId, FLinearColor Tint, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
+	bool StartPlacement(const FPersistentGlobalIconId& IconId, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement")
-	bool StartPlacementFromLocalIconId(int32 LocalIconId, FLinearColor Tint, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
+	bool StartPlacementFromLocalIconId(int32 LocalIconId, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement")
 	bool ConfirmPlacement();
@@ -96,9 +96,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graffiti|Placement", meta = (ClampMin = "1.0", ClampMax = "1000.0"))
 	float GridSnapSize = 100.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graffiti|Placement")
-	FLinearColor InvalidPreviewTint = FLinearColor(1.0f, 0.1f, 0.1f, 0.45f);
-
 private:
 	APlayerController* ResolvePlayerController() const;
 	void EnsurePreviewComponent();
@@ -117,9 +114,6 @@ private:
 
 	UPROPERTY(Transient)
 	FPersistentGlobalIconId SelectedIconId;
-
-	UPROPERTY(Transient)
-	FLinearColor SelectedTint = FLinearColor::White;
 
 	UPROPERTY(Transient)
 	float PreviewSize = 200.0f;

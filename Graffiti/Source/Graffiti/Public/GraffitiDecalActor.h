@@ -29,13 +29,10 @@ public:
 	virtual bool NeedTransform_Implementation() override;
 	virtual bool ShouldSave_Implementation() const override;
 
-	void InitializeGraffiti(const FPersistentGlobalIconId& InIconId, const FLinearColor& InTint, float InSize, bool bInMirrorHorizontal, int32 InLayerOrder);
+	void InitializeGraffiti(const FPersistentGlobalIconId& InIconId, float InSize, bool bInMirrorHorizontal, int32 InLayerOrder);
 
 	UFUNCTION(BlueprintPure, Category = "Graffiti")
 	const FPersistentGlobalIconId& GetIconId() const { return IconId; }
-
-	UFUNCTION(BlueprintPure, Category = "Graffiti")
-	FLinearColor GetTint() const { return Tint; }
 
 	UFUNCTION(BlueprintPure, Category = "Graffiti")
 	float GetGraffitiSize() const { return Size; }
@@ -60,9 +57,6 @@ protected:
 
 	UPROPERTY(SaveGame, ReplicatedUsing = OnRep_GraffitiData, BlueprintReadOnly, Category = "Graffiti")
 	FPersistentGlobalIconId IconId;
-
-	UPROPERTY(SaveGame, ReplicatedUsing = OnRep_GraffitiData, BlueprintReadOnly, Category = "Graffiti")
-	FLinearColor Tint = FLinearColor::White;
 
 	UPROPERTY(SaveGame, ReplicatedUsing = OnRep_GraffitiData, BlueprintReadOnly, Category = "Graffiti", meta = (ClampMin = "25.0", ClampMax = "1000.0"))
 	float Size = 200.0f;

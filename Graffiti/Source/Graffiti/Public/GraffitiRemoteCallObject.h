@@ -19,7 +19,6 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Graffiti|Networking")
 	void ServerSpray(
 		const FPersistentGlobalIconId& IconId,
-		FLinearColor Tint,
 		float Size,
 		float RollDegrees,
 		float MaximumDistance = 1500.0f,
@@ -29,7 +28,6 @@ public:
 
 	bool ServerSpray_Validate(
 		const FPersistentGlobalIconId& IconId,
-		FLinearColor Tint,
 		float Size,
 		float RollDegrees,
 		float MaximumDistance,
@@ -39,7 +37,6 @@ public:
 
 	void ServerSpray_Implementation(
 		const FPersistentGlobalIconId& IconId,
-		FLinearColor Tint,
 		float Size,
 		float RollDegrees,
 		float MaximumDistance,

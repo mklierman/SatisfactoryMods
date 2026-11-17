@@ -19,7 +19,6 @@ AFGBuildableGraffitiContainer::AFGBuildableGraffitiContainer(const FObjectInitia
 FGuid AFGBuildableGraffitiContainer::AddGraffiti(
 	const FTransform& WorldTransform,
 	const FPersistentGlobalIconId& IconId,
-	const FLinearColor& Tint,
 	float Size,
 	bool bMirrorHorizontal)
 {
@@ -32,7 +31,6 @@ FGuid AFGBuildableGraffitiContainer::AddGraffiti(
 	Entry.EntryId = FGuid::NewGuid();
 	Entry.RelativeTransform = WorldTransform.GetRelativeTransform(GetActorTransform());
 	Entry.IconId = IconId;
-	Entry.Tint = Tint.GetClamped();
 	Entry.Size = FMath::Clamp(Size, Graffiti::MinSize, Graffiti::MaxSize);
 	Entry.bMirrorHorizontal = bMirrorHorizontal;
 
@@ -43,7 +41,6 @@ FGuid AFGBuildableGraffitiContainer::AddGraffiti(
 			Entry.EntryId,
 			Entry.RelativeTransform * GetActorTransform(),
 			Entry.IconId,
-			Entry.Tint,
 			Entry.Size,
 			Entry.bMirrorHorizontal,
 			Entry.LayerOrder);
@@ -151,7 +148,6 @@ bool AFGBuildableGraffitiContainer::RegisterEntries()
 			Entry.EntryId,
 			Entry.RelativeTransform * GetActorTransform(),
 			Entry.IconId,
-			Entry.Tint,
 			Entry.Size,
 			Entry.bMirrorHorizontal,
 			Entry.LayerOrder);

@@ -105,7 +105,6 @@ bool UGraffitiBlueprintLibrary::GetRandomGraffitiIcon(UObject* WorldContext, boo
 bool UGraffitiBlueprintLibrary::RequestSprayGraffiti(
 	UObject* WorldContext,
 	const FPersistentGlobalIconId& IconId,
-	FLinearColor Tint,
 	float Size,
 	float RollDegrees,
 	float MaximumDistance,
@@ -115,7 +114,7 @@ bool UGraffitiBlueprintLibrary::RequestSprayGraffiti(
 {
 	if (UGraffitiRemoteCallObject* RCO = UGraffitiRemoteCallObject::Get(WorldContext))
 	{
-		RCO->ServerSpray(IconId, Tint, Size, RollDegrees, MaximumDistance, MirrorHorizontal, SnapToGrid, GridSize);
+		RCO->ServerSpray(IconId, Size, RollDegrees, MaximumDistance, MirrorHorizontal, SnapToGrid, GridSize);
 		return true;
 	}
 	return false;
@@ -131,31 +130,31 @@ bool UGraffitiBlueprintLibrary::RequestEraseGraffiti(UObject* WorldContext, floa
 	return false;
 }
 
-bool UGraffitiBlueprintLibrary::StartGraffitiPlacement(UObject* WorldContext, const FPersistentGlobalIconId& IconId, FLinearColor Tint, float InitialSize, float InitialRollDegrees)
+bool UGraffitiBlueprintLibrary::StartGraffitiPlacement(UObject* WorldContext, const FPersistentGlobalIconId& IconId, float InitialSize, float InitialRollDegrees)
 {
 	if (UGraffitiPlacementComponent* Placement = GetPlacementComponent(WorldContext, true))
 	{
-		return Placement->StartPlacement(IconId, Tint, InitialSize, InitialRollDegrees);
+		return Placement->StartPlacement(IconId, InitialSize, InitialRollDegrees);
 	}
 	return false;
 }
 
-bool UGraffitiBlueprintLibrary::StartGraffitiPlacementFromLocalIconId(UObject* WorldContext, int32 LocalIconId, FLinearColor Tint, float InitialSize, float InitialRollDegrees)
+bool UGraffitiBlueprintLibrary::StartGraffitiPlacementFromLocalIconId(UObject* WorldContext, int32 LocalIconId, float InitialSize, float InitialRollDegrees)
 {
 	if (UGraffitiPlacementComponent* Placement = GetPlacementComponent(WorldContext, true))
 	{
-		return Placement->StartPlacementFromLocalIconId(LocalIconId, Tint, InitialSize, InitialRollDegrees);
+		return Placement->StartPlacementFromLocalIconId(LocalIconId, InitialSize, InitialRollDegrees);
 	}
 	return false;
 }
 
-bool UGraffitiBlueprintLibrary::StartGraffitiPlacementFromPicker(UObject* WorldContext, int32 PickerIconId, UObject* PickerTexture, FLinearColor Tint, float InitialSize, float InitialRollDegrees)
+bool UGraffitiBlueprintLibrary::StartGraffitiPlacementFromPicker(UObject* WorldContext, int32 PickerIconId, UObject* PickerTexture, float InitialSize, float InitialRollDegrees)
 {
 	const FPersistentGlobalIconId IconId = MakePersistentGraffitiIconIdFromPicker(WorldContext, PickerIconId, PickerTexture);
-	return IconId.IconID != INDEX_NONE && StartGraffitiPlacement(WorldContext, IconId, Tint, InitialSize, InitialRollDegrees);
+	return IconId.IconID != INDEX_NONE && StartGraffitiPlacement(WorldContext, IconId, InitialSize, InitialRollDegrees);
 }
 
-bool UGraffitiBlueprintLibrary::ToggleGraffitiPlacementFromLocalIconId(UObject* WorldContext, int32 LocalIconId, FLinearColor Tint, float InitialSize, float InitialRollDegrees)
+bool UGraffitiBlueprintLibrary::ToggleGraffitiPlacementFromLocalIconId(UObject* WorldContext, int32 LocalIconId, float InitialSize, float InitialRollDegrees)
 {
 	UGraffitiPlacementComponent* Placement = GetPlacementComponent(WorldContext, true);
 	if (!Placement)
@@ -164,10 +163,10 @@ bool UGraffitiBlueprintLibrary::ToggleGraffitiPlacementFromLocalIconId(UObject* 
 	}
 	return Placement->IsPlacementActive()
 		? Placement->ConfirmPlacement()
-		: Placement->StartPlacementFromLocalIconId(LocalIconId, Tint, InitialSize, InitialRollDegrees);
+		: Placement->StartPlacementFromLocalIconId(LocalIconId, InitialSize, InitialRollDegrees);
 }
 
-bool UGraffitiBlueprintLibrary::ToggleGraffitiPlacementFromPicker(UObject* WorldContext, int32 PickerIconId, UObject* PickerTexture, FLinearColor Tint, float InitialSize, float InitialRollDegrees)
+bool UGraffitiBlueprintLibrary::ToggleGraffitiPlacementFromPicker(UObject* WorldContext, int32 PickerIconId, UObject* PickerTexture, float InitialSize, float InitialRollDegrees)
 {
 	UGraffitiPlacementComponent* Placement = GetPlacementComponent(WorldContext, true);
 	if (!Placement)
@@ -180,7 +179,7 @@ bool UGraffitiBlueprintLibrary::ToggleGraffitiPlacementFromPicker(UObject* World
 	}
 
 	const FPersistentGlobalIconId IconId = MakePersistentGraffitiIconIdFromPicker(WorldContext, PickerIconId, PickerTexture);
-	return IconId.IconID != INDEX_NONE && Placement->StartPlacement(IconId, Tint, InitialSize, InitialRollDegrees);
+	return IconId.IconID != INDEX_NONE && Placement->StartPlacement(IconId, InitialSize, InitialRollDegrees);
 }
 
 bool UGraffitiBlueprintLibrary::ConfirmGraffitiPlacement(UObject* WorldContext)
