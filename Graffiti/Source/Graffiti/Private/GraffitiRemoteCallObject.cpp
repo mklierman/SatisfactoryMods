@@ -1,6 +1,9 @@
 #include "GraffitiRemoteCallObject.h"
 
 #include "FGPlayerController.h"
+#include "FGBlueprintSubsystem.h"
+#include "FGBuildableGraffitiContainer.h"
+#include "Buildables/FGBuildableBlueprintDesigner.h"
 #include "GraffitiConstants.h"
 #include "GraffitiIconUtils.h"
 #include "GraffitiPlacementMath.h"
@@ -74,6 +77,46 @@ void UGraffitiRemoteCallObject::ServerSpray_Implementation(
 	const FVector Location = PlacementPoint + Hit.ImpactNormal * Graffiti::SurfaceOffset;
 
 	const FTransform Transform(Rotation, Location);
+	if (AFGBlueprintSubsystem* BlueprintSubsystem = AFGBlueprintSubsystem::Get(GetWorld()))
+	{
+		if (AFGBuildableBlueprintDesigner* Designer = BlueprintSubsystem->IsLocationInsideABlueprintDesigner(Location))
+		{
+			AFGBuildableGraffitiContainer* Container = nullptr;
+			for (AFGBuildable* Buildable : Designer->GetBuildablesInBlueprintDesigner())
+			{
+				if (AFGBuildableGraffitiContainer* ExistingContainer = Cast<AFGBuildableGraffitiContainer>(Buildable))
+				{
+					Container = ExistingContainer;
+					break;
+				}
+			}
+
+			if (!Container)
+			{
+				Container = GetWorld()->SpawnActorDeferred<AFGBuildableGraffitiContainer>(
+					AFGBuildableGraffitiContainer::StaticClass(),
+					Designer->GetActorTransform(),
+					nullptr,
+					nullptr,
+					ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+				if (Container)
+				{
+					Container->SetInsideBlueprintDesigner(Designer);
+					Container->FinishSpawning(Designer->GetActorTransform());
+					Designer->OnBuildableConstructedInsideDesigner(Container);
+				}
+			}
+
+			if (Container)
+			{
+				if (Container->AddGraffiti(Transform, InIconId, InTint, InSize, bMirrorHorizontal).IsValid())
+				{
+					return;
+				}
+			}
+		}
+	}
+
 	if (AGraffitiSubsystem* Subsystem = AGraffitiSubsystem::Get(this))
 	{
 		Subsystem->AddGraffiti(Transform, InIconId, InTint, InSize, bMirrorHorizontal);

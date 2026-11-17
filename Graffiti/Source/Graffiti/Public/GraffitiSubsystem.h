@@ -8,6 +8,7 @@
 #include "GraffitiSubsystem.generated.h"
 
 class AGraffitiSubsystem;
+class AFGBuildableGraffitiContainer;
 class UDecalComponent;
 
 USTRUCT()
@@ -35,6 +36,12 @@ struct GRAFFITI_API FGraffitiRecord : public FFastArraySerializerItem
 
 	UPROPERTY(SaveGame)
 	int32 LayerOrder = 0;
+
+	UPROPERTY(SaveGame)
+	TObjectPtr<AFGBuildableGraffitiContainer> SourceContainer;
+
+	UPROPERTY(SaveGame)
+	FGuid SourceEntryId;
 };
 
 USTRUCT()
@@ -82,6 +89,18 @@ public:
 
 	bool RemoveClosestGraffiti(const FVector& Location);
 
+	uint64 RegisterContainerEntry(
+		AFGBuildableGraffitiContainer* Container,
+		const FGuid& EntryId,
+		const FTransform& Transform,
+		const FPersistentGlobalIconId& IconId,
+		const FLinearColor& Tint,
+		float Size,
+		bool bMirrorHorizontal,
+		int32& InOutLayerOrder);
+
+	bool UnregisterContainerEntry(AFGBuildableGraffitiContainer* Container, const FGuid& EntryId);
+
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -106,7 +125,12 @@ private:
 		const FLinearColor& Tint,
 		float Size,
 		bool bMirrorHorizontal,
-		int32 LayerOrder);
+		int32 LayerOrder,
+		AFGBuildableGraffitiContainer* SourceContainer = nullptr,
+		const FGuid& SourceEntryId = FGuid());
+
+	int32 CalculateLayerOrder(const FTransform& Transform, float Size);
+	int32 FindContainerRecordIndex(const AFGBuildableGraffitiContainer* Container, const FGuid& EntryId) const;
 
 	void RebuildRuntimeIndex();
 	void EnsureRuntimeIndex();

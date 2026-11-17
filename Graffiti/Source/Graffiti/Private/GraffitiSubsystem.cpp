@@ -3,6 +3,7 @@
 #include "Components/DecalComponent.h"
 #include "EngineUtils.h"
 #include "FGIconDatabaseSubsystem.h"
+#include "FGBuildableGraffitiContainer.h"
 #include "GameFramework/PlayerController.h"
 #include "GraffitiConstants.h"
 #include "GraffitiDecalActor.h"
@@ -98,37 +99,9 @@ uint64 AGraffitiSubsystem::AddGraffiti(
 		return 0;
 	}
 
-	EnsureRuntimeIndex();
 	const float ClampedSize = FMath::Clamp(Size, Graffiti::MinSize, Graffiti::MaxSize);
 	const FVector Location = Transform.GetLocation();
-	const FVector SurfaceNormal = Transform.GetUnitAxis(EAxis::X);
-	int32 LayerOrder = 1;
-
-	TArray<int32> NearbyRecords;
-	FindRecordsNear(Location, ClampedSize + Graffiti::MaxSize, NearbyRecords);
-	for (const int32 RecordIndex : NearbyRecords)
-	{
-		if (!GraffitiRecords.Items.IsValidIndex(RecordIndex))
-		{
-			continue;
-		}
-
-		const FGraffitiRecord& Existing = GraffitiRecords.Items[RecordIndex];
-		if (GraffitiPlacementMath::CanDecalsOverlap(
-			Location,
-			SurfaceNormal,
-			ClampedSize,
-			Existing.Transform.GetLocation(),
-			Existing.Transform.GetUnitAxis(EAxis::X),
-			Existing.Size,
-			Graffiti::LayerNormalAlignment,
-			Graffiti::LayerPlaneTolerance,
-			Graffiti::SquareRadiusScale) && Existing.LayerOrder < MAX_int32)
-		{
-			LayerOrder = FMath::Max(LayerOrder, Existing.LayerOrder + 1);
-		}
-	}
-
+	const int32 LayerOrder = CalculateLayerOrder(Transform, ClampedSize);
 	const uint64 NewId = AddGraffitiInternal(Transform, IconId, Tint, ClampedSize, bMirrorHorizontal, LayerOrder);
 	UE_LOG(LogGraffitiSubsystem, Display, TEXT("Added graffiti record %llu at %s"), NewId, *Location.ToCompactString());
 	return NewId;
@@ -140,7 +113,9 @@ uint64 AGraffitiSubsystem::AddGraffitiInternal(
 	const FLinearColor& Tint,
 	float Size,
 	bool bMirrorHorizontal,
-	int32 LayerOrder)
+	int32 LayerOrder,
+	AFGBuildableGraffitiContainer* SourceContainer,
+	const FGuid& SourceEntryId)
 {
 	if (!HasAuthority())
 	{
@@ -160,10 +135,126 @@ uint64 AGraffitiSubsystem::AddGraffitiInternal(
 	Record.Size = FMath::Clamp(Size, Graffiti::MinSize, Graffiti::MaxSize);
 	Record.bMirrorHorizontal = bMirrorHorizontal;
 	Record.LayerOrder = FMath::Max(0, LayerOrder);
+	Record.SourceContainer = SourceContainer;
+	Record.SourceEntryId = SourceEntryId;
 	GraffitiRecords.MarkItemDirty(Record);
 	bRuntimeIndexDirty = true;
 	ForceNetUpdate();
 	return Record.Id;
+}
+
+int32 AGraffitiSubsystem::CalculateLayerOrder(const FTransform& Transform, float Size)
+{
+	EnsureRuntimeIndex();
+	const FVector Location = Transform.GetLocation();
+	const FVector SurfaceNormal = Transform.GetUnitAxis(EAxis::X);
+	int32 LayerOrder = 1;
+	TArray<int32> NearbyRecords;
+	FindRecordsNear(Location, Size + Graffiti::MaxSize, NearbyRecords);
+	for (const int32 RecordIndex : NearbyRecords)
+	{
+		if (!GraffitiRecords.Items.IsValidIndex(RecordIndex))
+		{
+			continue;
+		}
+
+		const FGraffitiRecord& Existing = GraffitiRecords.Items[RecordIndex];
+		if (GraffitiPlacementMath::CanDecalsOverlap(
+			Location,
+			SurfaceNormal,
+			Size,
+			Existing.Transform.GetLocation(),
+			Existing.Transform.GetUnitAxis(EAxis::X),
+			Existing.Size,
+			Graffiti::LayerNormalAlignment,
+			Graffiti::LayerPlaneTolerance,
+			Graffiti::SquareRadiusScale) && Existing.LayerOrder < MAX_int32)
+		{
+			LayerOrder = FMath::Max(LayerOrder, Existing.LayerOrder + 1);
+		}
+	}
+	return LayerOrder;
+}
+
+uint64 AGraffitiSubsystem::RegisterContainerEntry(
+	AFGBuildableGraffitiContainer* Container,
+	const FGuid& EntryId,
+	const FTransform& Transform,
+	const FPersistentGlobalIconId& IconId,
+	const FLinearColor& Tint,
+	float Size,
+	bool bMirrorHorizontal,
+	int32& InOutLayerOrder)
+{
+	if (!HasAuthority() || !IsValid(Container) || !EntryId.IsValid())
+	{
+		return 0;
+	}
+
+	const int32 ExistingIndex = FindContainerRecordIndex(Container, EntryId);
+	if (GraffitiRecords.Items.IsValidIndex(ExistingIndex))
+	{
+		FGraffitiRecord& Record = GraffitiRecords.Items[ExistingIndex];
+		Record.Transform = Transform;
+		Record.IconId = IconId;
+		Record.Tint = Tint.GetClamped();
+		Record.Size = FMath::Clamp(Size, Graffiti::MinSize, Graffiti::MaxSize);
+		Record.bMirrorHorizontal = bMirrorHorizontal;
+		if (InOutLayerOrder > 0)
+		{
+			Record.LayerOrder = InOutLayerOrder;
+		}
+		InOutLayerOrder = Record.LayerOrder;
+		GraffitiRecords.MarkItemDirty(Record);
+		bRuntimeIndexDirty = true;
+		ForceNetUpdate();
+		return Record.Id;
+	}
+
+	const float ClampedSize = FMath::Clamp(Size, Graffiti::MinSize, Graffiti::MaxSize);
+	if (InOutLayerOrder <= 0)
+	{
+		InOutLayerOrder = CalculateLayerOrder(Transform, ClampedSize);
+	}
+	return AddGraffitiInternal(
+		Transform,
+		IconId,
+		Tint,
+		ClampedSize,
+		bMirrorHorizontal,
+		InOutLayerOrder,
+		Container,
+		EntryId);
+}
+
+bool AGraffitiSubsystem::UnregisterContainerEntry(AFGBuildableGraffitiContainer* Container, const FGuid& EntryId)
+{
+	if (!HasAuthority())
+	{
+		return false;
+	}
+
+	const int32 RecordIndex = FindContainerRecordIndex(Container, EntryId);
+	if (!GraffitiRecords.Items.IsValidIndex(RecordIndex))
+	{
+		return false;
+	}
+
+	const uint64 RemovedId = GraffitiRecords.Items[RecordIndex].Id;
+	GraffitiRecords.Items.RemoveAt(RecordIndex);
+	GraffitiRecords.MarkArrayDirty();
+	ReleaseDecal(RemovedId);
+	bRuntimeIndexDirty = true;
+	ForceNetUpdate();
+	return true;
+}
+
+int32 AGraffitiSubsystem::FindContainerRecordIndex(const AFGBuildableGraffitiContainer* Container, const FGuid& EntryId) const
+{
+	return GraffitiRecords.Items.IndexOfByPredicate([Container, &EntryId](const FGraffitiRecord& Record)
+	{
+		return Record.SourceContainer == Container && Record.SourceEntryId == EntryId;
+	});
 }
 
 bool AGraffitiSubsystem::RemoveClosestGraffiti(const FVector& Location)
@@ -201,7 +292,13 @@ bool AGraffitiSubsystem::RemoveClosestGraffiti(const FVector& Location)
 		return false;
 	}
 
-	const uint64 RemovedId = GraffitiRecords.Items[ClosestIndex].Id;
+	const FGraffitiRecord& ClosestRecord = GraffitiRecords.Items[ClosestIndex];
+	if (IsValid(ClosestRecord.SourceContainer) && ClosestRecord.SourceEntryId.IsValid())
+	{
+		return ClosestRecord.SourceContainer->RemoveGraffitiEntry(ClosestRecord.SourceEntryId);
+	}
+
+	const uint64 RemovedId = ClosestRecord.Id;
 	GraffitiRecords.Items.RemoveAt(ClosestIndex);
 	GraffitiRecords.MarkArrayDirty();
 	ReleaseDecal(RemovedId);
@@ -255,7 +352,16 @@ void AGraffitiSubsystem::PostLoadGame_Implementation(int32, int32)
 	bRuntimeIndexDirty = true;
 }
 
-void AGraffitiSubsystem::GatherDependencies_Implementation(TArray<UObject*>&) {}
+void AGraffitiSubsystem::GatherDependencies_Implementation(TArray<UObject*>& OutDependentObjects)
+{
+	for (const FGraffitiRecord& Record : GraffitiRecords.Items)
+	{
+		if (IsValid(Record.SourceContainer))
+		{
+			OutDependentObjects.AddUnique(Record.SourceContainer);
+		}
+	}
+}
 
 bool AGraffitiSubsystem::NeedTransform_Implementation()
 {
