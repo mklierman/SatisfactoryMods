@@ -14,7 +14,7 @@ ALBOutlineSubsystem* ALBOutlineSubsystem::Get(UObject* worldContext)
 		USubsystemActorManager* SubsystemActorManager = WorldObject->GetSubsystem<USubsystemActorManager>();
 		check(SubsystemActorManager);
 
-		for (auto Subsystem : SubsystemActorManager->SubsystemActors)
+		for (auto Subsystem : SubsystemActorManager->GetSubsystemActors())
 		{
 			if (Subsystem.Key->IsChildOf(StaticClass()))
 			{
@@ -32,7 +32,7 @@ void ALBOutlineSubsystem::BeginPlay()
 	mGameUserSettings = UFGGameUserSettings::GetFGGameUserSettings();
 	if (mGameUserSettings)
 	{
-		mCachedDismantleColor = mGameUserSettings->mDismantleHologramColour;
+		mCachedDismantleColor = mGameUserSettings->GetmDismantleHologramColour();
 	}
 }
 
