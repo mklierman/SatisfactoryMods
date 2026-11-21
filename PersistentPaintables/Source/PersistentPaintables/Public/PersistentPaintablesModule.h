@@ -61,6 +61,10 @@ public:
 
 	bool IsSupportTouchingPipe(AFGBuildablePipeline* pipe, AFGBuildable* support) const;
 
+	FVector GetSupportSnapLocation(AFGBuildable* support) const;
+
+	void BuildSupportMap(AFGPipeNetwork* pipeNetwork);
+
 	UFUNCTION()
 	void StartTimer(AFGPipeNetwork* self, TSubclassOf< UFGItemDescriptor > descriptor);
 
@@ -70,10 +74,21 @@ public:
 
 	void HookPipes();
 
+	void QueuePipeColorUpdate(AFGBuildable* buildable, AFGPipeNetwork* pipeNetwork);
+
+	void FlushPipeColorUpdates();
+
 	TArray<AActor*> FindNearbySupports(AFGBuildable* pipe, UFGPipeConnectionComponentBase* pipeConn);
 
 	TArray<AActor*> PotentialSupports;
 	TArray<TWeakObjectPtr<AActor>> WeakPotentialSupports;
+	TMap<TWeakObjectPtr<AFGBuildablePipeline>, TArray<TWeakObjectPtr<AFGBuildable>>> SupportsByPipe;
+	TMap<FIntVector, TArray<TWeakObjectPtr<AFGBuildable>>> SupportSpatialCells;
+	TWeakObjectPtr<UWorld> SupportSpatialWorld;
+	bool bSupportSpatialIndexDirty = true;
+	TMap<TWeakObjectPtr<AFGBuildable>, TWeakObjectPtr<AFGPipeNetwork>> PendingPipeColorUpdates;
+	bool bPipeColorUpdateScheduled = false;
+	bool bApplyingColor = false;
 
 	void AFGBuildableHologramConstruct(AFGBuildableHologram* self);
 };

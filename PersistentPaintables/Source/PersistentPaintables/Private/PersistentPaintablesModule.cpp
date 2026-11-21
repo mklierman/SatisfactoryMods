@@ -2,6 +2,7 @@
 
 #include "Buildables/FGBuildable.h"
 #include "Buildables/FGBuildablePoleStackable.h"
+#include "Components/SplineComponent.h"
 #include "FGLightweightBuildableSubsystem.h"
 #include "FGPipeSubsystem.h"
 #include "Hologram/FGFoundationHologram.h"
@@ -26,6 +27,7 @@ static constexpr float SUPPORT_DIST = 5.0f;                 // distance threshol
 static constexpr float SUPPORT_DIST_SQ = SUPPORT_DIST * SUPPORT_DIST; // squared threshold so we don't call sqrt
 static constexpr float SUPPORT_SPLINE_TOUCH_DIST = 50.0f;
 static constexpr float SUPPORT_SPLINE_TOUCH_DIST_SQ = SUPPORT_SPLINE_TOUCH_DIST * SUPPORT_SPLINE_TOUCH_DIST;
+static constexpr float SUPPORT_SPATIAL_CELL_SIZE = 1000.0f;
 static constexpr float NEARBY_SUPPORT_SEARCH_RADIUS = 5.0f;
 
 #pragma optimize("", off)
@@ -35,6 +37,7 @@ void FPersistentPaintablesModule::ApplyColor(AFGBuildable* buildable, UClass* in
 {
 	if (buildable && buildable->GetCanBeColored_Implementation() && inSwatchClass)
 	{
+		TGuardValue<bool> ApplyingColorGuard(bApplyingColor, true);
 
 		// Mark this as a custom-painted buildable and push the data down to the actor
 
@@ -106,6 +109,7 @@ void FPersistentPaintablesModule::UpdateNetworkColor(AFGPipeNetwork* pipeNetwork
 			WeakPotentialSupports.Add(pot);
 		}
 	}
+	BuildSupportMap(pipeNetwork);
 
 	// Color every fluid integrant in this network
 	for (auto& fi : pipeNetwork->mFluidIntegrants)
@@ -274,6 +278,23 @@ bool FPersistentPaintablesModule::IsSupportTouchingPipe(AFGBuildablePipeline* pi
 		return false;
 	}
 
+	const FVector supportLocation = GetSupportSnapLocation(support);
+
+	const float offset = pipe->FindOffsetClosestToLocation(supportLocation);
+	FVector pipeLocation = FVector::ZeroVector;
+	FVector pipeDirection = FVector::ZeroVector;
+	pipe->GetLocationAndDirectionAtOffset(offset, pipeLocation, pipeDirection);
+
+	return FVector::DistSquared(supportLocation, pipeLocation) <= SUPPORT_SPLINE_TOUCH_DIST_SQ;
+}
+
+FVector FPersistentPaintablesModule::GetSupportSnapLocation(AFGBuildable* support) const
+{
+	if (!IsValid(support))
+	{
+		return FVector::ZeroVector;
+	}
+
 	FVector supportLocation = support->GetActorLocation();
 	TArray<UActorComponent*> components;
 	support->GetComponents(components);
@@ -285,23 +306,100 @@ bool FPersistentPaintablesModule::IsSupportTouchingPipe(AFGBuildablePipeline* pi
 			break;
 		}
 	}
+	return supportLocation;
+}
 
-	const float offset = pipe->FindOffsetClosestToLocation(supportLocation);
-	FVector pipeLocation = FVector::ZeroVector;
-	FVector pipeDirection = FVector::ZeroVector;
-	pipe->GetLocationAndDirectionAtOffset(offset, pipeLocation, pipeDirection);
 
-	return FVector::DistSquared(supportLocation, pipeLocation) <= SUPPORT_SPLINE_TOUCH_DIST_SQ;
+void FPersistentPaintablesModule::BuildSupportMap(AFGPipeNetwork* pipeNetwork)
+{
+	if (!IsValid(pipeNetwork))
+	{
+		return;
+	}
+
+	auto ToCell = [](const FVector& location) {
+		return FIntVector(
+			FMath::FloorToInt(location.X / SUPPORT_SPATIAL_CELL_SIZE),
+			FMath::FloorToInt(location.Y / SUPPORT_SPATIAL_CELL_SIZE),
+			FMath::FloorToInt(location.Z / SUPPORT_SPATIAL_CELL_SIZE));
+	};
+	UWorld* world = pipeNetwork->GetWorld();
+	if (SupportSpatialWorld.Get() != world || bSupportSpatialIndexDirty)
+	{
+		SupportSpatialCells.Reset();
+		SupportSpatialWorld = world;
+		for (const TWeakObjectPtr<AActor>& weakActor : WeakPotentialSupports)
+		{
+			if (AFGBuildable* support = Cast<AFGBuildable>(weakActor.Get()))
+			{
+				if (IsPipeSupport(support))
+				{
+					SupportSpatialCells.FindOrAdd(ToCell(GetSupportSnapLocation(support))).Add(support);
+				}
+			}
+		}
+		bSupportSpatialIndexDirty = false;
+	}
+
+	for (auto& integrant : pipeNetwork->mFluidIntegrants)
+	{
+		AFGBuildablePipeline* pipe = Cast<AFGBuildablePipeline>(integrant);
+		const USplineComponent* spline = IsValid(pipe) ? pipe->GetSplineComponent() : nullptr;
+		if (!IsValid(spline))
+		{
+			continue;
+		}
+
+		SupportsByPipe.Remove(pipe);
+		const FBox bounds = spline->Bounds.GetBox().ExpandBy(SUPPORT_SPLINE_TOUCH_DIST);
+		if (!bounds.IsValid || !FMath::IsFinite(bounds.Min.X) || !FMath::IsFinite(bounds.Min.Y) ||
+			!FMath::IsFinite(bounds.Min.Z) || !FMath::IsFinite(bounds.Max.X) ||
+			!FMath::IsFinite(bounds.Max.Y) || !FMath::IsFinite(bounds.Max.Z))
+		{
+			continue;
+		}
+		const FIntVector minCell = ToCell(bounds.Min);
+		const FIntVector maxCell = ToCell(bounds.Max);
+		if (maxCell.X - minCell.X > 128 || maxCell.Y - minCell.Y > 128 || maxCell.Z - minCell.Z > 128)
+		{
+			continue;
+		}
+		for (int32 x = minCell.X; x <= maxCell.X; ++x)
+		{
+			for (int32 y = minCell.Y; y <= maxCell.Y; ++y)
+			{
+				for (int32 z = minCell.Z; z <= maxCell.Z; ++z)
+				{
+					const TArray<TWeakObjectPtr<AFGBuildable>>* candidates =
+						SupportSpatialCells.Find(FIntVector(x, y, z));
+					if (!candidates)
+					{
+						continue;
+					}
+					for (const TWeakObjectPtr<AFGBuildable>& weakSupport : *candidates)
+					{
+						if (AFGBuildable* support = weakSupport.Get())
+						{
+							if (IsSupportTouchingPipe(pipe, support))
+							{
+								SupportsByPipe.FindOrAdd(pipe).AddUnique(support);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 void FPersistentPaintablesModule::ColorSupports(AFGBuildablePipeline* pipe, FFactoryCustomizationData& newData)
 {
-	// Pipeline supports commonly touch the middle of a pipe spline rather than an endpoint.
-	for (const TWeakObjectPtr<AActor>& weakActor : WeakPotentialSupports)
+	// Mid-span support links are precomputed once per network using a spatial index.
+	if (const TArray<TWeakObjectPtr<AFGBuildable>>* supports = SupportsByPipe.Find(pipe))
 	{
-		if (AFGBuildable* support = Cast<AFGBuildable>(weakActor.Get()))
+		for (const TWeakObjectPtr<AFGBuildable>& weakSupport : *supports)
 		{
-			if (IsSupportTouchingPipe(pipe, support))
+			if (AFGBuildable* support = weakSupport.Get())
 			{
 				ApplyColor(support, swatchClass, newData);
 			}
@@ -479,6 +577,10 @@ void FPersistentPaintablesModule::AddBuildable(AFGBuildable* buildable, const AF
 {
 	if (buildable)
 	{
+		if (IsPipeSupport(buildable))
+		{
+			bSupportSpatialIndexDirty = true;
+		}
 		if (auto pipe = Cast<AFGBuildablePipeline>(buildable))
 		{
 			USessionSettingsManager* SessionSettings = buildable->GetWorld()->GetSubsystem<USessionSettingsManager>();
@@ -512,11 +614,13 @@ void FPersistentPaintablesModule::AddBuildable(AFGBuildable* buildable, const AF
 						WeakPotentialSupports.Add(pot);
 					}
 				}
+				bSupportSpatialIndexDirty = true;
 
 				auto connComp = Cast<UFGPipeConnectionComponent>(pipe->GetConnection0());
 				auto pipeNetworkId = connComp->GetPipeNetworkID();
 				auto pipeSubsystem = AFGPipeSubsystem::Get(buildable->GetWorld());
 				auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
+				BuildSupportMap(network);
 				UpdateColorSingle(pipe, network);
 			}
 		}
@@ -541,11 +645,51 @@ void FPersistentPaintablesModule::AddBuildable(AFGBuildable* buildable, const AF
 	}
 }
 
+void FPersistentPaintablesModule::QueuePipeColorUpdate(AFGBuildable* buildable, AFGPipeNetwork* pipeNetwork)
+{
+	if (!IsValid(buildable) || !IsValid(pipeNetwork))
+	{
+		return;
+	}
+
+	PendingPipeColorUpdates.FindOrAdd(buildable) = pipeNetwork;
+	if (bPipeColorUpdateScheduled)
+	{
+		return;
+	}
+
+	bPipeColorUpdateScheduled = true;
+	AsyncTask(ENamedThreads::GameThread, [this]() { FlushPipeColorUpdates(); });
+}
+
+void FPersistentPaintablesModule::FlushPipeColorUpdates()
+{
+	bPipeColorUpdateScheduled = false;
+	TMap<TWeakObjectPtr<AFGBuildable>, TWeakObjectPtr<AFGPipeNetwork>> updates = MoveTemp(PendingPipeColorUpdates);
+	PendingPipeColorUpdates.Reset();
+
+	for (const auto& update : updates)
+	{
+		if (AFGBuildable* buildable = update.Key.Get())
+		{
+			if (AFGPipeNetwork* pipeNetwork = update.Value.Get())
+			{
+				UpdateColorSingle(buildable, pipeNetwork);
+			}
+		}
+	}
+}
+
 void FPersistentPaintablesModule::HookPipes()
 {
 #if !WITH_EDITOR
 	SUBSCRIBE_METHOD_AFTER(UFGPipeConnectionComponent::OnFluidDescriptorUpdated_GameThread, [this](UFGPipeConnectionComponent* self)
 		{
+			if (bApplyingColor)
+			{
+				return;
+			}
+
 			USessionSettingsManager* SessionSettings = self->GetWorld()->GetSubsystem<USessionSettingsManager>();
 			auto optionValue = SessionSettings->GetBoolOptionValue("PersistentPaintables.AutoPaintPipes");
 			auto paintNetwork = SessionSettings->GetBoolOptionValue("PersistentPaintables.PaintNetwork");
@@ -561,9 +705,7 @@ void FPersistentPaintablesModule::HookPipes()
 						auto network = pipeSubsystem->FindPipeNetwork(pipeNetworkId);
 						if (network)
 						{
-							AsyncTask(ENamedThreads::GameThread, [=, this]() {
-								UpdateColorSingle(buildable, network);
-								});
+							QueuePipeColorUpdate(buildable, network);
 						}
 					}
 				}
