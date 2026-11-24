@@ -156,5 +156,6 @@ private:
 	TMap<FSpatialCell, TSet<uint64>> SpatialCells;
 	bool bRuntimeIndexDirty = true;
 	bool bLegacyMigrationAttempted = false;
+	bool bInitialActivationComplete = false;
 };
 

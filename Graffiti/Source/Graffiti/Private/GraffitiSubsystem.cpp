@@ -22,6 +22,7 @@ namespace
 	constexpr float ActivationDistance = 30000.0f;
 	constexpr float DeactivationDistance = 35000.0f;
 	constexpr int32 MaxActivationsPerTick = 64;
+	constexpr int32 MaxInitialActivationsPerTick = 512;
 	constexpr int32 MaxPooledDecals = 512;
 }
 
@@ -478,13 +479,22 @@ void AGraffitiSubsystem::RefreshVisibleDecals()
 
 	TArray<int32> NearbyRecords;
 	FindRecordsNear(ViewLocation, ActivationDistance, NearbyRecords);
-	int32 ActivationsRemaining = MaxActivationsPerTick;
+	int32 ActivationsRemaining = bInitialActivationComplete
+		? MaxActivationsPerTick
+		: MaxInitialActivationsPerTick;
 	int32 ActivatedCount = 0;
+	bool bActivationBacklogRemaining = false;
+	bool bActivationFailed = false;
 	for (const int32 RecordIndex : NearbyRecords)
 	{
-		if (ActivationsRemaining <= 0 || !GraffitiRecords.Items.IsValidIndex(RecordIndex))
+		if (ActivationsRemaining <= 0)
 		{
+			bActivationBacklogRemaining = true;
 			break;
+		}
+		if (!GraffitiRecords.Items.IsValidIndex(RecordIndex))
+		{
+			continue;
 		}
 
 		const FGraffitiRecord& Record = GraffitiRecords.Items[RecordIndex];
@@ -503,8 +513,16 @@ void AGraffitiSubsystem::RefreshVisibleDecals()
 		}
 		else
 		{
+			bActivationFailed = true;
 			break;
 		}
+	}
+
+	if (!bInitialActivationComplete && ActiveDecals.Num() > 0 &&
+		!bActivationBacklogRemaining && !bActivationFailed)
+	{
+		bInitialActivationComplete = true;
+		UE_LOG(LogGraffitiSubsystem, Display, TEXT("Initial decal activation catch-up complete (%d active)"), ActiveDecals.Num());
 	}
 
 	if (ActivatedCount > 0)

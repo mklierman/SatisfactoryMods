@@ -21,7 +21,7 @@ public:
 		const FPersistentGlobalIconId& IconId,
 		float Size,
 		float RollDegrees,
-		float MaximumDistance = 1500.0f,
+		float MaximumDistance = 2000.0f,
 		bool bMirrorHorizontal = false,
 		bool bSnapToGrid = false,
 		float GridSize = 100.0f);
@@ -45,7 +45,7 @@ public:
 		float GridSize);
 
 	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Graffiti|Networking")
-	void ServerErase(float MaximumDistance = 1500.0f);
+	void ServerErase(float MaximumDistance = 2000.0f);
 	bool ServerErase_Validate(float MaximumDistance);
 	void ServerErase_Implementation(float MaximumDistance);
 

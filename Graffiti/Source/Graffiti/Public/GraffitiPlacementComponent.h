@@ -85,7 +85,7 @@ public:
 	FGraffitiPlacementValidityChanged OnPlacementValidityChanged;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graffiti|Placement", meta = (ClampMin = "100.0", ClampMax = "3000.0"))
-	float MaximumDistance = 1500.0f;
+	float MaximumDistance = 2000.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Graffiti|Placement", meta = (ClampMin = "1.0"))
 	float RotationStep = 15.0f;

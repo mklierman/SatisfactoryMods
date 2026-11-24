@@ -207,6 +207,15 @@ void UGraffitiBlueprintLibrary::AdjustGraffitiPlacementRotation(UObject* WorldCo
 	}
 }
 
+float UGraffitiBlueprintLibrary::GetGraffitiPlacementRollDegrees(UObject* WorldContext)
+{
+	if (const UGraffitiPlacementComponent* Placement = GetPlacementComponent(WorldContext, false))
+	{
+		return Placement->GetPlacementRotation();
+	}
+	return 0.0f;
+}
+
 void UGraffitiBlueprintLibrary::AdjustGraffitiPlacementScale(UObject* WorldContext, float DeltaSize)
 {
 	if (UGraffitiPlacementComponent* Placement = GetPlacementComponent(WorldContext, false))

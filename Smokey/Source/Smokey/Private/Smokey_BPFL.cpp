@@ -12,6 +12,8 @@
 #include "NiagaraSystem.h"
 #include "ParticleHelper.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "TimerManager.h"
+#include "UObject/StrongObjectPtr.h"
 #include "UObject/UnrealType.h"
 
 namespace
@@ -42,14 +44,21 @@ namespace
 		float MaxCameraDistance;
 		ENiagaraRendererPixelCoverageMode PixelCoverageMode;
 		float PixelCoverageBlend;
-		TWeakObjectPtr<UMaterialInterface> Material;
+		TStrongObjectPtr<UMaterialInterface> Material;
 		int32 ReferenceCount = 0;
 	};
 
 	struct FNiagaraMaterialParameterState
 	{
+		FNiagaraMaterialParameterState(const FNiagaraVariable& inParameter, UMaterialInterface* inMaterial, bool hadOverride) :
+			Parameter(inParameter),
+			Material(inMaterial),
+			HadOverride(hadOverride)
+		{
+		}
+
 		FNiagaraVariable Parameter;
-		TWeakObjectPtr<UMaterialInterface> Material;
+		TStrongObjectPtr<UMaterialInterface> Material;
 		bool HadOverride;
 	};
 
@@ -74,7 +83,7 @@ namespace
 		bool ActivatedBySmokey = false;
 		bool MadeVisibleBySmokey = false;
 
-		TArray<TWeakObjectPtr<UMaterialInterface>> Materials;
+		TArray<TStrongObjectPtr<UMaterialInterface>> Materials;
 		TArray<FNiagaraMaterialParameterState> NiagaraMaterialParameters;
 		TSet<TWeakObjectPtr<UMaterialInstanceDynamic>> DynamicMaterials;
 		TSet<TWeakObjectPtr<UNiagaraSpriteRendererProperties>> SpriteRenderers;
@@ -95,6 +104,87 @@ namespace
 	TMap<TWeakObjectPtr<AFGBuildable>, FBuildableState> buildableStates;
 	TMap<UClass*, TArray<TWeakObjectPtr<UFXSystemComponent>>> effectTemplatesByClass;
 	TSet<TWeakObjectPtr<AFGBuildable>> pendingBuildables;
+	TMap<TWeakObjectPtr<AFGBuildable>, int32> pendingRetryCounts;
+	TMap<TWeakObjectPtr<UWorld>, FTimerHandle> pendingRetryTimers;
+
+	constexpr float pendingRetryInterval = 0.25f;
+	constexpr int32 maxPendingRetries = 40;
+
+	void SchedulePendingRetry(UWorld* world);
+
+	void RetryPendingBuildables(TWeakObjectPtr<UWorld> worldKey)
+	{
+		pendingRetryTimers.Remove(worldKey);
+
+		UWorld* world = worldKey.Get();
+		if (!world)
+		{
+			return;
+		}
+
+		TArray<TWeakObjectPtr<AFGBuildable>> buildablesToRetry;
+		for (const TWeakObjectPtr<AFGBuildable>& pendingBuildable : pendingBuildables)
+		{
+			if (!pendingBuildable.IsValid())
+			{
+				pendingRetryCounts.Remove(pendingBuildable);
+				continue;
+			}
+
+			if (pendingBuildable->GetWorld() == world)
+			{
+				buildablesToRetry.Add(pendingBuildable);
+			}
+		}
+
+		for (const TWeakObjectPtr<AFGBuildable>& pendingBuildable : buildablesToRetry)
+		{
+			int32& retryCount = pendingRetryCounts.FindOrAdd(pendingBuildable);
+			if (retryCount >= maxPendingRetries)
+			{
+				pendingBuildables.Remove(pendingBuildable);
+				pendingRetryCounts.Remove(pendingBuildable);
+				continue;
+			}
+
+			++retryCount;
+			USmokey_BPFL::ConfigureBuildableParticleSystems(pendingBuildable.Get());
+		}
+
+		for (const TWeakObjectPtr<AFGBuildable>& pendingBuildable : pendingBuildables)
+		{
+			if (pendingBuildable.IsValid() && pendingBuildable->GetWorld() == world)
+			{
+				SchedulePendingRetry(world);
+				break;
+			}
+		}
+	}
+
+	void SchedulePendingRetry(UWorld* world)
+	{
+		if (!world)
+		{
+			return;
+		}
+
+		const TWeakObjectPtr<UWorld> worldKey(world);
+		if (pendingRetryTimers.Contains(worldKey))
+		{
+			return;
+		}
+
+		FTimerHandle timerHandle;
+		world->GetTimerManager().SetTimer(
+			timerHandle,
+			FTimerDelegate::CreateLambda([worldKey]()
+			{
+				RetryPendingBuildables(worldKey);
+			}),
+			pendingRetryInterval,
+			false);
+		pendingRetryTimers.Add(worldKey, timerHandle);
+	}
 
 	bool HasScalarParameter(UMaterialInterface* material, const FMaterialParameterInfo& parameter)
 	{
@@ -332,7 +422,7 @@ namespace
 
 		for (int32 materialIndex = 0; materialIndex < component->GetNumMaterials(); ++materialIndex)
 		{
-			componentState.Materials.Add(component->GetMaterial(materialIndex));
+			componentState.Materials.Emplace(component->GetMaterial(materialIndex));
 		}
 
 		if (auto particleComponent = Cast<UParticleSystemComponent>(component))
@@ -368,7 +458,7 @@ namespace
 			rendererState.MaxCameraDistance = spriteRenderer->MaxCameraDistance;
 			rendererState.PixelCoverageMode = spriteRenderer->PixelCoverageMode;
 			rendererState.PixelCoverageBlend = spriteRenderer->PixelCoverageBlend;
-			rendererState.Material = spriteRenderer->Material.Get();
+			rendererState.Material.Reset(spriteRenderer->Material.Get());
 		}
 
 		++rendererState.ReferenceCount;
@@ -460,7 +550,7 @@ namespace
 		const auto configuredSystem = configuredNiagaraSystems.Find(componentKey);
 		const bool componentNeedsRefresh = !configuredSystem || configuredSystem->Get() != niagaraSystem;
 
-		if (hasSpriteRenderer && niagaraComponent->IsActive() && (rendererChanged || componentNeedsRefresh))
+		if (hasSpriteRenderer && (rendererChanged || componentNeedsRefresh))
 		{
 			configuredNiagaraSystems.Add(componentKey, niagaraSystem);
 			niagaraComponent->ReinitializeSystem();
@@ -501,7 +591,7 @@ namespace
 					return state.Parameter == parameter;
 				}))
 			{
-				componentState.NiagaraMaterialParameters.Add({parameter, material, hadOverride});
+				componentState.NiagaraMaterialParameters.Emplace(parameter, material, hadOverride);
 			}
 
 			ConfigureMaterial(material, [niagaraComponent, &parameter](UMaterialInterface* parentMaterial)
@@ -699,10 +789,12 @@ void USmokey_BPFL::ConfigureBuildableParticleSystems(AFGBuildable* buildable)
 	if (effectComponents.IsEmpty())
 	{
 		pendingBuildables.Add(buildable);
+		SchedulePendingRetry(buildable->GetWorld());
 	}
 	else
 	{
 		pendingBuildables.Remove(buildable);
+		pendingRetryCounts.Remove(buildable);
 	}
 
 	for (UFXSystemComponent* component : effectComponents)
@@ -809,6 +901,7 @@ void USmokey_BPFL::ConfigureBuildableParticleSystems(AFGBuildable* buildable)
 		for (const TWeakObjectPtr<AFGBuildable>& pendingBuildable : buildablesToConfigure)
 		{
 			pendingBuildables.Remove(pendingBuildable);
+			pendingRetryCounts.Remove(pendingBuildable);
 			USmokey_BPFL::ConfigureBuildableParticleSystems(pendingBuildable.Get());
 		}
 	}
@@ -825,19 +918,21 @@ void USmokey_BPFL::RestoreBuildableParticleSystems(AFGBuildable* buildable)
 	auto buildableState = buildableStates.Find(buildableKey);
 	if (!buildableState)
 	{
+		pendingBuildables.Remove(buildableKey);
+		pendingRetryCounts.Remove(buildableKey);
 		return;
 	}
 
 	for (const TWeakObjectPtr<UFXSystemComponent>& componentKey : buildableState->EffectComponents)
 	{
-		auto component = componentKey.Get();
-		auto componentState = componentStates.Find(componentKey);
-		if (!component || !componentState)
+		if (auto component = componentKey.Get())
 		{
-			continue;
+			if (auto componentState = componentStates.Find(componentKey))
+			{
+				RestoreComponent(component, *componentState);
+			}
 		}
 
-		RestoreComponent(component, *componentState);
 		componentStates.Remove(componentKey);
 	}
 
@@ -859,4 +954,5 @@ void USmokey_BPFL::RestoreBuildableParticleSystems(AFGBuildable* buildable)
 
 	buildableStates.Remove(buildableKey);
 	pendingBuildables.Remove(buildableKey);
+	pendingRetryCounts.Remove(buildableKey);
 }

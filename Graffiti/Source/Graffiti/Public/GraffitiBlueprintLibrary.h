@@ -40,13 +40,13 @@ public:
 		const FPersistentGlobalIconId& IconId,
 		float Size = 200.0f,
 		float RollDegrees = 0.0f,
-		float MaximumDistance = 1500.0f,
+		float MaximumDistance = 2000.0f,
 		bool MirrorHorizontal = false,
 		bool SnapToGrid = false,
 		float GridSize = 100.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Spray", meta = (WorldContext = "WorldContext"))
-	static bool RequestEraseGraffiti(UObject* WorldContext, float MaximumDistance = 1500.0f);
+	static bool RequestEraseGraffiti(UObject* WorldContext, float MaximumDistance = 2000.0f);
 
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
 	static bool StartGraffitiPlacement(UObject* WorldContext, const FPersistentGlobalIconId& IconId, float InitialSize = 200.0f, float InitialRollDegrees = 0.0f);
@@ -71,6 +71,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
 	static void AdjustGraffitiPlacementRotation(UObject* WorldContext, float DeltaDegrees);
+
+	UFUNCTION(BlueprintPure, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
+	static float GetGraffitiPlacementRollDegrees(UObject* WorldContext);
 
 	UFUNCTION(BlueprintCallable, Category = "Graffiti|Placement", meta = (WorldContext = "WorldContext"))
 	static void AdjustGraffitiPlacementScale(UObject* WorldContext, float DeltaSize);

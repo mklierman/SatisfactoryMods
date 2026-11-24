@@ -5,12 +5,13 @@
 namespace Graffiti
 {
 	inline constexpr float MinSize = 25.0f;
-	inline constexpr float MaxSize = 1000.0f;
+	inline constexpr float MaxSize = 5000.0f;
 	inline constexpr float MinDistance = 100.0f;
 	inline constexpr float MaxDistance = 3000.0f;
 	inline constexpr float MinGridSize = 1.0f;
 	inline constexpr float MaxGridSize = 1000.0f;
-	inline constexpr float DecalDepth = 8.0f;
+	// Allow decals to reach recessed sections of layered building meshes.
+	inline constexpr float DecalDepth = 100.0f;
 	inline constexpr float SurfaceOffset = 1.0f;
 	inline constexpr float PreviewFadeScreenSize = 0.002f;
 	inline constexpr float LayerNormalAlignment = 0.9f;

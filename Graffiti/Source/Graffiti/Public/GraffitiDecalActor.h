@@ -58,7 +58,7 @@ protected:
 	UPROPERTY(SaveGame, ReplicatedUsing = OnRep_GraffitiData, BlueprintReadOnly, Category = "Graffiti")
 	FPersistentGlobalIconId IconId;
 
-	UPROPERTY(SaveGame, ReplicatedUsing = OnRep_GraffitiData, BlueprintReadOnly, Category = "Graffiti", meta = (ClampMin = "25.0", ClampMax = "1000.0"))
+	UPROPERTY(SaveGame, ReplicatedUsing = OnRep_GraffitiData, BlueprintReadOnly, Category = "Graffiti", meta = (ClampMin = "25.0", ClampMax = "5000.0"))
 	float Size = 200.0f;
 
 	UPROPERTY(SaveGame, ReplicatedUsing = OnRep_GraffitiData, BlueprintReadOnly, Category = "Graffiti")

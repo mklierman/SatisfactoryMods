@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.2.0",
-	"SemVersion": "1.2.0",
+	"VersionName": "1.3.0",
+	"SemVersion": "1.3.0",
 	"FriendlyName": "Soft Clearance for Everything",
 	"Description": "All Buildings have Soft Clearance!",
 	"Category": "Modding",
@@ -26,9 +26,9 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.12.0"
+			"SemVersion": "^3.12.1"
 		}
 	],
 	"AcceptsAnyRemoteVersion": false,
-	"GameVersion": ">=502094"
+	"GameVersion": ">=520140"
 }
