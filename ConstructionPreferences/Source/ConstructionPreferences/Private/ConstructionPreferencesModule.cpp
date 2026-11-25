@@ -11,6 +11,8 @@
 #include "Buildables/FGBuildableRailroadTrack.h"
 #include "FGBuildablePipelineFlowIndicator.h"
 #include "FGPipeConnectionComponent.h"
+#include "FGSplineCollisionComponent.h"
+#include "FGSplineMeshGenerationLibrary.h"
 #include "Hologram/FGWireHologram.h"
 #include "Hologram/FGRailroadTrackHologram.h"
 #include "Holo_WireHologramBuildModes.h"
@@ -300,8 +302,27 @@ void FConstructionPreferencesModule::SetPipeSpline(
 	const TArray<FSplinePointData>& splineData)
 {
 	*pipe->GetMutableSplinePointData() = splineData;
-	pipe->GetSplineComponent()->SetSplineData(splineData, ESplineCoordinateSpace::Local);
-	pipe->mLength = pipe->GetSplineComponent()->GetSplineLength();
+	USplineComponent* spline = pipe->GetSplineComponent();
+	spline->SetSplineData(splineData, ESplineCoordinateSpace::Local);
+	pipe->mLength = spline->GetSplineLength();
+
+	if (UFGSplineCollisionComponent* collision = pipe->mCollisionComponent)
+	{
+		TArray<FCachedCollisionBoxInfo> boxes;
+		UFGSplineMeshGenerationLibrary::BuildSplineCollisionInfoBoxesWithVariableSteps(
+			spline, AFGBuildablePipeBase::COLLISION_EXTENT, AFGBuildablePipeBase::COLLISION_SPACING,
+			boxes, AFGBuildablePipeBase::COLLISION_OFFSET);
+
+		const bool wasRegistered = collision->IsRegistered();
+		collision->DestroyPhysics();
+		collision->mCachedCollisionInfo.Reset();
+		collision->AddBoxes(boxes);
+		if (wasRegistered)
+		{
+			collision->RegisterComponent();
+		}
+	}
+
 	pipe->Internal_CallRemoveInstances();
 	pipe->CallSetupInstances();
 	pipe->ApplyCustomizationData_Native(pipe->GetCustomizationData_Native());
