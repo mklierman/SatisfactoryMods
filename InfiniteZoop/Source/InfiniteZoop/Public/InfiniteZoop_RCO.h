@@ -50,7 +50,15 @@ public:
 
     UFUNCTION(Reliable, Server)
     void SetDesiredZoop(AFGBuildableHologram* hologram, FIntVector newZoop);
+
+    int32 GetTemporaryZoopAmount() const { return TemporaryZoopAmount; }
+    void SetTemporaryZoopAmount(int32 Amount);
+
 private:
+    UFUNCTION(Client, Reliable)
+    void ClientSetTemporaryZoopAmount(int32 Amount);
+
+    int32 TemporaryZoopAmount = 0;
 
     /** Needed for RCO to work */
     UPROPERTY(Replicated)

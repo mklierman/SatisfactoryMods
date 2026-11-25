@@ -2,6 +2,7 @@
 
 
 #include "InfiniteZoop_RCO.h"
+#include "InfiniteZoop_ClientSubsystem.h"
 #include "Registry/RemoteCallObjectRegistry.h"
 #include "Net/UnrealNetwork.h"
 #include <Logging/StructuredLog.h>
@@ -35,5 +36,19 @@ void UInfiniteZoop_RCO::SetDesiredZoop_Implementation(AFGBuildableHologram* holo
 	if (hologram)
 	{
 		hologram->mDesiredZoop = newZoop;
+	}
+}
+
+void UInfiniteZoop_RCO::SetTemporaryZoopAmount(int32 Amount)
+{
+	TemporaryZoopAmount = Amount;
+	ClientSetTemporaryZoopAmount(Amount);
+}
+
+void UInfiniteZoop_RCO::ClientSetTemporaryZoopAmount_Implementation(int32 Amount)
+{
+	if (AInfiniteZoop_ClientSubsystem* Subsystem = AInfiniteZoop_ClientSubsystem::Get(this))
+	{
+		Subsystem->tempZoopAmount = Amount;
 	}
 }

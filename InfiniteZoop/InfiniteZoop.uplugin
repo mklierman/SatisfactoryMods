@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.11.2",
-	"SemVersion": "1.11.2",
+	"VersionName": "1.11.3",
+	"SemVersion": "1.11.3",
 	"FriendlyName": "Infinite Zoop",
 	"Description": "Adds a research tree in the MAM where you can improve your Zoop capacity",
 	"Category": "Modding",
@@ -19,7 +19,7 @@
 		{
 			"Name": "SML",
 			"Enabled": true,
-			"SemVersion": "^3.12.0"
+			"SemVersion": "^3.12.1"
 		}
 	],
 	"Modules": [
@@ -29,5 +29,5 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"GameVersion": ">=491125"
+	"GameVersion": ">=520140"
 }
